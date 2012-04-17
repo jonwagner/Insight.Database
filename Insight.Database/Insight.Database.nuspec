@@ -1,0 +1,14 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Insight.Database</id>
+    <version>1.0.0.0</version>
+    <title>Insight.Database</title>
+    <authors>Jon Wagner</authors>
+    <description>Lightweight, super-fast ORM</description>
+    <language>en-US</language>
+  </metadata>
+  <files>
+    <file src="\bin\Release\Insight.Database.dll" target="lib" />
+  </files>
+</package>

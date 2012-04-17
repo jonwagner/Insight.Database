@@ -1,0 +1,132 @@
+﻿<Project DefaultTargets="AutoBuild" xmlns="http://schemas.microsoft.com/developer/msbuild/2003" ToolsVersion="4.0">
+
+	<!-- ********************************************************************** -->
+	<!-- BEGINNING OF CONFIGURATION DATA -->
+	<!-- ********************************************************************** -->
+	<PropertyGroup>
+		<Configuration>Release</Configuration>
+	</PropertyGroup>
+
+	<!-- These are the solutions to build -->
+	<ItemGroup>
+		<SolutionFiles Include="**\*.sln"/>
+	</ItemGroup>
+
+	<!-- This is the list of assemblyinfo files that we need to insert version information into -->
+	<ItemGroup>
+		<AssemblyInfoFiles Include="**\AssemblyInfo.cs"/>
+	</ItemGroup>
+
+	<!-- This is the list of nuget package files that we need to insert version information into -->
+	<ItemGroup>
+		<NuGetFiles Include="**\*.nuspec"/>
+	</ItemGroup>
+
+	<!-- This is the list of nuget package files that we need to delete when we build -->
+	<ItemGroup>
+		<NuPackFiles Include="**\*.nupkg" Exclude="packages\**\*.nupkg"/>
+	</ItemGroup>
+
+	<!-- ********************************************************************** -->
+	<!-- END OF CONFIGURATION DATA -->
+	<!-- ********************************************************************** -->
+	<PropertyGroup>
+		<VersionFile>version.txt</VersionFile>
+	</PropertyGroup>
+
+	<!-- Standard autobuild. -->
+	<Target Name="AutoBuild">
+		<!-- If there is anything outgoing from here, you can't update the version -->
+		<Exec Command="hg outgoing" CustomErrorRegularExpression="changeset" IgnoreExitCode="true"/>
+		<HgPull LocalPath="$(MSBuildProjectDirectory)"/>
+
+		<!-- Increment the version number. This sets $(Revision) to the tagged number. -->
+		<CallTarget Targets="IncrementVersion"/>
+		<HgPush LocalPath="$(MSBuildProjectDirectory)"/>
+
+		<!-- Build and post the module -->
+		<CallTarget Targets="Publish"/>
+	</Target>
+
+	<!-- IncrementVersion - Increments the version number. $(Revision) will be the new revision. -->
+	<Target Name="IncrementVersion">
+		<HgUpdate LocalPath="$(MSBuildProjectDirectory)"/>
+
+		<!-- Update the build number from the version file -->
+		<Version VersionFile="$(VersionFile)" BuildType="Increment" RevisionType="None">
+			<Output TaskParameter="Major" PropertyName="Major" />
+			<Output TaskParameter="Minor" PropertyName="Minor" />
+			<Output TaskParameter="Build" PropertyName="Build" />
+			<Output TaskParameter="Revision" PropertyName="Revision" />
+		</Version>
+
+		<HgCommit LocalPath="." Message="Version $(Major).$(Minor).$(Build)"/>
+		<HgTag LocalPath="$(MSBuildProjectDirectory)" Tag="Version $(Major).$(Minor).$(Build)"/>
+	</Target>
+
+	<!-- GetLocalVersion - Gets the version information for the local repository -->
+	<Target Name="GetLocalVersion">
+		<!-- Get the major/minor/build number from the version file -->
+		<Version VersionFile="$(VersionFile)" BuildType="None" RevisionType="None">
+			<Output TaskParameter="Major" PropertyName="Major" />
+			<Output TaskParameter="Minor" PropertyName="Minor" />
+			<Output TaskParameter="Build" PropertyName="Build" />
+		</Version>
+
+		<HgVersion LocalPath = ".">
+			<Output TaskParameter="Revision" PropertyName="Revision" />
+		</HgVersion>
+
+		<Message Text="Current Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+	</Target>
+
+	<!-- Generate the assembly info with the revision -->
+	<Target Name="AssemblyInfo" DependsOnTargets ="GetLocalVersion">
+		<Message Text="Building Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+
+		<!-- Write the assembly information to the file -->
+		<FileUpdate Files="@(AssemblyInfoFiles)"
+										Regex="AssemblyVersion\s*\(\s*&quot;.*&quot;\s*\)\s*\]"
+										ReplacementText="AssemblyVersion(&quot;$(Major).$(Minor).$(Build).$(Revision)&quot;)]"/>
+		<FileUpdate Files="@(AssemblyInfoFiles)"
+										Regex="AssemblyFileVersion\s*\(\s*&quot;.*&quot;\s*\)\s*\]"
+										ReplacementText="AssemblyFileVersion(&quot;$(Major).$(Minor).$(Build).$(Revision)&quot;)]"/>
+
+		<Message Text="Updating NuGet Package Versions" />
+		<XmlUpdate XmlFileName="%(NuGetFiles.Identity)"
+		   XPath="//package/metadata/version"
+		   Value="$(Major).$(Minor).$(Build).$(Revision)" />
+	</Target>
+
+	<!-- Build the program -->
+	<Target Name="Build" DependsOnTargets="AssemblyInfo">
+
+		<Message Text="Building Version: $(Major).$(Minor).$(Build).$(Revision)"/>
+		<Delete Files="%(NuPackFiles.Identity)"/>
+
+		<!-- Build the solution -->
+		<MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration)" StopOnFirstFailure="true"/>
+
+		<!-- Build the NuGet Packages -->
+		<MakeDir Directories="Build\Output"/>
+		<Exec Command="nuget.exe pack %(NuGetFiles.Identity) /OutputDirectory Build\Output"/>
+
+		<!-- Make sure that we revert the assembly info -->
+		<CallTarget Targets="RevertAssemblyInfo"/>
+		<OnError ExecuteTargets="RevertAssemblyInfo"/>
+	</Target>
+	
+	<Target Name="RevertAssemblyInfo">
+		<!-- Revert the Assembly Info files when complete -->
+		<Exec Command="hg revert --no-backup %(AssemblyInfoFiles.Identity)" Condition="Exists(%(AssemblyInfoFiles.Identity))" />
+		<Exec Command="hg revert --no-backup %(NuGetFiles.Identity)" Condition="Exists(%(NuGetFiles.Identity))" />
+	</Target>
+	
+	<Target Name="Publish" DependsOnTargets="Build">
+		<Message Text="Publishing NuGet Packages to $(PublishFolder)" />
+		<ItemGroup>
+			<OutputFiles Include="Build\Output\*.nupkg"/>
+		</ItemGroup>
+		<Copy DestinationFolder="$(PublishFolder)" SourceFiles="%(OutputFiles.Identity)" Condition="Exists($(PublishFolder))"/>
+	</Target>
+</Project>

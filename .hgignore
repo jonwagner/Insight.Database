@@ -1,0 +1,10 @@
+glob:bin
+glob:obj
+glob:*.user
+glob:*.suo
+syntax: glob
+*.docstates
+*.nupkg
+*.orig
+*.rej
+StyleCop.Cache
