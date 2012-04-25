@@ -676,7 +676,7 @@ namespace Insight.Database.CodeGenerator
 
 				if (count == 0)
 				{
-					command.CommandText = Regex.Replace(command.CommandText, _parameterPrefixRegex + Regex.Escape(parameterName), "(SELECT NULL WHERE 1 = 0)", RegexOptions.IgnoreCase);
+					command.CommandText = Regex.Replace(command.CommandText, _parameterPrefixRegex + Regex.Escape(parameterName), "SELECT NULL WHERE 1 = 0", RegexOptions.IgnoreCase);
 				}
 				else
 				{
@@ -686,14 +686,14 @@ namespace Insight.Database.CodeGenerator
 						match =>
 						{
 							var grp = match.Value;
-							var sb = new StringBuilder("(");
+							var sb = new StringBuilder();
 
 							// append the parameters
 							sb.Append(grp).Append(1);
 							for (int i = 2; i <= count; i++)
 								sb.Append(',').Append(grp).Append(i);
 
-							return sb.Append(')').ToString();
+							return sb.ToString();
 						},
 						RegexOptions.IgnoreCase);
 				}

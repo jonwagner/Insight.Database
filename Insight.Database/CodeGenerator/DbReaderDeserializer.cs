@@ -765,7 +765,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Ldarg_0);												// push MethodHolder
 			il.Emit(OpCodes.Ldfld, fieldInfo);										// get the delegate
 			il.Emit(OpCodes.Ldarg_1);												// push reader
-			il.Emit(OpCodes.Call, fieldInfo.FieldType.GetMethod("Invoke"));		// inboke the delegate
+			il.Emit(OpCodes.Call, fieldInfo.FieldType.GetMethod("Invoke"));		// invoke the delegate
 
 			// if we don't have a callback, then we are going to store the value directly into the field on T
 			if (!hasCallback)

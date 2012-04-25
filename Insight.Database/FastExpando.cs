@@ -260,11 +260,13 @@ namespace Insight.Database
 		{
 			foreach (KeyValuePair<string, string> pair in map)
 			{
+				string key = pair.Key.ToUpperInvariant();
+
 				object value;
-				if (data.TryGetValue(pair.Key, out value))
+				if (data.TryGetValue(key, out value))
 				{
-					data.Remove(pair.Key);
-					data.Add(pair.Value, value);
+					data.Remove(key);
+					data.Add(pair.Value.ToUpperInvariant(), value);
 				}				
 			}
 		}
@@ -277,16 +279,11 @@ namespace Insight.Database
 		public FastExpando Transform(IDictionary<string, string> map)
 		{
 			FastExpando other = new FastExpando();
+			foreach (var pair in data)
+				other.data.Add(pair.Key, pair.Value);
 
-			foreach (KeyValuePair<string, object> pair in data)
-			{
-				string key;
-				if (!map.TryGetValue(pair.Key, out key))
-					key = pair.Key;
-
-				// copy the value to the other object
-				other.data.Add(key, pair.Value);
-			}
+			// mutate the results
+			other.Mutate(map);
 
 			return other;
 		}

@@ -96,7 +96,7 @@ This supports up to 5 types, and there are ways to manually handle the mapping, 
 ## Multiple Result Sets ##
 Sometimes a query returns multiple record sets. Sorry, gang, but you will have to do a *little* bit of work.
 
-	using (SqlConnection conn = new SqlConnection(connectionString).Open())
+	using (SqlConnection conn = new SqlConnection(connectionString).OpenConnection())
 	using (SqlDataReader reader = conn.GetReader("GetBeerAndChips", new { Pub = "Fergie's" }))
 	{
 		List<Beer> beer = reader.ToList<Beer>();
@@ -222,10 +222,7 @@ Good news. Free beer!
 
 # Documentation #
 
-Coming soon! (**Wanna help**?)
-
-For now, check out the optional parameters and overloads for more goodies.
-
+See the wiki! Help write some sample code!
 
 # Design Goals #
 This section attempts to explain the design philosophy behind the Insight.Database library.

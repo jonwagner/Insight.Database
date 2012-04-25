@@ -71,6 +71,25 @@ namespace Insight.Database
 
 			return cmd;
 		}
+
+		/// <summary>
+		/// Create a DbCommand for a given Sql and parameters. This method does not support auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">Object containing the parameters to send to the database.</param>
+		/// <param name="commandTimeout">Optinal command timeout to use.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>An IDbCommand that can be executed on the connection.</returns>
+		public static IDbCommand CreateCommandSql(
+			this IDbConnection connection, 
+			string sql, 
+			object parameters = null, 
+			int? commandTimeout = null, 
+			IDbTransaction transaction = null)
+		{
+			return connection.CreateCommand(sql, parameters, CommandType.Text, commandTimeout, transaction);
+		}
 		#endregion
 
 		#region Execute Methods
@@ -656,7 +675,7 @@ namespace Insight.Database
 		}
 
 		/// <summary>
-		/// Asynchronously executes a query and performs a callback to read the data in the IDataReader.
+		/// Executes a query and performs a callback to read the data in the IDataReader.
 		/// </summary>
 		/// <typeparam name="T">The type of object returned from the reader callback.</typeparam>
 		/// <param name="connection">The connection to execute on.</param>
@@ -690,7 +709,7 @@ namespace Insight.Database
 		}
 
 		/// <summary>
-		/// Asynchronously executes a query and performs a callback to read the data in the IDataReader.
+		/// Executes a query and performs a callback to read the data in the IDataReader.
 		/// </summary>
 		/// <typeparam name="T">The type of object returned from the reader callback.</typeparam>
 		/// <param name="connection">The connection to execute on.</param>
@@ -753,6 +772,28 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query and performs an action for each item in the result.
 		/// </summary>
+		/// <param name="connection">The connection to execute on.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameters for the query.</param>
+		/// <param name="action">The reader callback.</param>
+		/// <param name="commandBehavior">The behavior of the command.</param>
+		/// <param name="commandTimeout">An optional timeout for the command.</param>
+		/// <param name="transaction">An optional transaction to participate in.</param>
+		public static void ForEachSql(
+			this IDbConnection connection,
+			string sql,
+			object parameters,
+			Action<dynamic> action,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			connection.ForEach(sql, parameters, action, CommandType.Text, commandBehavior, commandTimeout, transaction);
+		}
+
+		/// <summary>
+		/// Executes a query and performs an action for each item in the result.
+		/// </summary>
 		/// <typeparam name="T">The type of object to read.</typeparam>
 		/// <param name="connection">The connection to execute on.</param>
 		/// <param name="sql">The sql to execute.</param>
@@ -784,6 +825,29 @@ namespace Insight.Database
 					return false;
 				},
 				commandBehavior);
+		}
+
+		/// <summary>
+		/// Executes a query and performs an action for each item in the result.
+		/// </summary>
+		/// <typeparam name="T">The type of object to read.</typeparam>
+		/// <param name="connection">The connection to execute on.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameters for the query.</param>
+		/// <param name="action">The reader callback.</param>
+		/// <param name="commandBehavior">The behavior of the command.</param>
+		/// <param name="commandTimeout">An optional timeout for the command.</param>
+		/// <param name="transaction">An optional transaction to participate in.</param>
+		public static void ForEachSql<T>(
+			this IDbConnection connection,
+			string sql,
+			object parameters,
+			Action<T> action,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			connection.ForEach(sql, parameters, action, CommandType.Text, commandBehavior, commandTimeout, transaction);
 		}
 		#endregion
 

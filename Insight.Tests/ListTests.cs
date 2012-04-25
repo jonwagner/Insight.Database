@@ -87,7 +87,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestEnumerableValueParameters ()
 		{
-			string sql = "SELECT p FROM (SELECT p=0 UNION SELECT 1 UNION SELECT 2) as v WHERE p IN @p";
+			string sql = "SELECT p FROM (SELECT p=0 UNION SELECT 1 UNION SELECT 2) as v WHERE p IN (@p)";
 
 			for (int i = 0; i < 3; i++)
 			{
