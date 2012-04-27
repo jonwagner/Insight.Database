@@ -192,24 +192,6 @@
            </Member>
           </Members>
          </Type>
-         <Type Name="ExpandoGenerator`1">
-          <Members>
-           <Member Name="#.cctor()">
-            <Messages>
-             <Message TypeName="InitializeReferenceTypeStaticFieldsInline" Category="Microsoft.Performance" CheckId="CA1810" Status="Excluded" Created="2011-08-25 17:40:33Z">
-              <Issue>
-               <Item>'ExpandoGenerator&lt;T&gt;'</Item>
-              </Issue>
-              <Notes>
-               <User Name="jonw">
-                <Note Id="4" />
-               </User>
-              </Notes>
-             </Message>
-            </Messages>
-           </Member>
-          </Members>
-         </Type>
         </Types>
        </Namespace>
       </Namespaces>
@@ -221,7 +203,6 @@
    <User Name="jonw">
     <Note Id="0" Modified="2011-08-23 00:17:40Z">Code review completed</Note>
     <Note Id="3" Modified="2011-08-24 20:42:17Z">The internal implementation of FastExpando is not relevant to the name of the class.</Note>
-    <Note Id="4" Modified="2011-08-25 17:42:05Z">Members are too complex to instantiate inline.</Note>
    </User>
   </Notes>
   <Rules>

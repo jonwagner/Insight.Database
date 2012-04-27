@@ -29,12 +29,17 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		private static MethodInfo _fastExpandoSetValue = typeof(FastExpando).GetMethod("SetValue", BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { typeof(string), typeof(object) }, null);
 
-        public static FastExpando Convert(object obj)
+        /// <summary>
+        /// Converts an object to a FastExpando.
+        /// </summary>
+        /// <param name="value">The object to convert.</param>
+        /// <returns>A FastExpando representing the public properties of the object.</returns>
+        public static FastExpando Convert(object value)
         {
             // get the converter for the type
-            var converter = _converters.GetOrAdd(obj.GetType(), CreateConverter);
+            var converter = _converters.GetOrAdd(value.GetType(), CreateConverter);
 
-            return converter(obj);
+            return converter(value);
         }
 
         /// <summary>
@@ -87,6 +92,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Gets the public accessors on type T.
 		/// </summary>
+        /// <param name="type">The type of object to be able to convert.</param>
 		/// <returns>A list of the public accessors.</returns>
 		private static List<ClassPropInfo> GetAccessors(Type type)
 		{
