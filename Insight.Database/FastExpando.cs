@@ -27,12 +27,11 @@ namespace Insight.Database
 		/// <summary>
 		/// Creates an expando from an object.
 		/// </summary>
-		/// <typeparam name="T">The type of object to parse.</typeparam>
 		/// <param name="obj">The object to initialize with.</param>
-		/// <returns>A FastExpando containing the public properties and fields of o.</returns>
-		public static FastExpando FromObject<T>(T obj)
+		/// <returns>A FastExpando containing the public properties and fields of obj.</returns>
+		public static FastExpando FromObject(object obj)
 		{
-			return ExpandoGenerator<T>.Converter(obj);
+			return ExpandoGenerator.Convert(obj);
 		}
 		#endregion
 
@@ -78,10 +77,9 @@ namespace Insight.Database
 		/// <summary>
 		/// Expand this expando with the public members of another object.
 		/// </summary>
-		/// <typeparam name="T">The type of the other object.</typeparam>
 		/// <param name="other">The other object.</param>
 		/// <returns>This expanded FastExpando.</returns>
-		public FastExpando Expand<T>(T other)
+		public FastExpando Expand(object other)
 		{
 			return Expand(FastExpando.FromObject(other));
 		}
