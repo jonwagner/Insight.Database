@@ -32,16 +32,14 @@
   </Target>
   <!-- IncrementVersion - Increments the version number. $(Revision) will be the new revision. -->
   <Target Name="IncrementVersion">
-    <HgUpdate LocalPath="$(MSBuildProjectDirectory)" />
     <!-- Update the build number from the version file -->
     <Version VersionFile="$(VersionFile)" BuildType="Increment" RevisionType="None">
       <Output TaskParameter="Major" PropertyName="Major" />
       <Output TaskParameter="Minor" PropertyName="Minor" />
       <Output TaskParameter="Build" PropertyName="Build" />
-      <Output TaskParameter="Revision" PropertyName="Revision" />
     </Version>
-    <HgCommit LocalPath="." Message="Version $(Major).$(Minor).$(Build)" />
-    <HgTag LocalPath="$(MSBuildProjectDirectory)" Tag="Version $(Major).$(Minor).$(Build)" />
+    <Exec Command="git commit -a -m &quot;Version $(Major).$(Minor).$(Build)&quot;" />
+    <Exec Command="git tag &quot;Version $(Major).$(Minor).$(Build)&quot;" />
   </Target>
   <!-- GetLocalVersion - Gets the version information for the local repository -->
   <Target Name="GetLocalVersion">
@@ -51,23 +49,20 @@
       <Output TaskParameter="Minor" PropertyName="Minor" />
       <Output TaskParameter="Build" PropertyName="Build" />
     </Version>
-    <HgVersion LocalPath=".">
-      <Output TaskParameter="Revision" PropertyName="Revision" />
-    </HgVersion>
-    <Message Text="Current Version: $(Major).$(Minor).$(Build).$(Revision)" />
+    <Message Text="Current Version: $(Major).$(Minor).$(Build)" />
   </Target>
   <!-- Generate the assembly info with the revision -->
   <Target Name="AssemblyInfo" DependsOnTargets="GetLocalVersion">
-    <Message Text="Building Version: $(Major).$(Minor).$(Build).$(Revision)" />
+    <Message Text="Building Version: $(Major).$(Minor).$(Build)" />
     <!-- Write the assembly information to the file -->
-    <FileUpdate Files="@(AssemblyInfoFiles)" Regex="AssemblyVersion\s*\(\s*&quot;.*&quot;\s*\)\s*\]" ReplacementText="AssemblyVersion(&quot;$(Major).$(Minor).$(Build).$(Revision)&quot;)]" />
-    <FileUpdate Files="@(AssemblyInfoFiles)" Regex="AssemblyFileVersion\s*\(\s*&quot;.*&quot;\s*\)\s*\]" ReplacementText="AssemblyFileVersion(&quot;$(Major).$(Minor).$(Build).$(Revision)&quot;)]" />
+    <FileUpdate Files="@(AssemblyInfoFiles)" Regex="AssemblyVersion\s*\(\s*&quot;.*&quot;\s*\)\s*\]" ReplacementText="AssemblyVersion(&quot;$(Major).$(Minor).$(Build)&quot;)]" />
+    <FileUpdate Files="@(AssemblyInfoFiles)" Regex="AssemblyFileVersion\s*\(\s*&quot;.*&quot;\s*\)\s*\]" ReplacementText="AssemblyFileVersion(&quot;$(Major).$(Minor).$(Build)&quot;)]" />
     <Message Text="Updating NuGet Package Versions" />
-    <XmlUpdate XmlFileName="%(NuGetFiles.Identity)" XPath="//package/metadata/version" Value="$(Major).$(Minor).$(Build).$(Revision)" />
+    <XmlUpdate XmlFileName="%(NuGetFiles.Identity)" XPath="//package/metadata/version" Value="$(Major).$(Minor).$(Build)" />
   </Target>
   <!-- Build the program -->
   <Target Name="Build" DependsOnTargets="AssemblyInfo">
-    <Message Text="Building Version: $(Major).$(Minor).$(Build).$(Revision)" />
+    <Message Text="Building Version: $(Major).$(Minor).$(Build)" />
     <Delete Files="%(NuPackFiles.Identity)" />
     <!-- Build the solution -->
     <MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration)" StopOnFirstFailure="true" />
@@ -80,9 +75,8 @@
   </Target>
   <Target Name="RevertAssemblyInfo">
     <!-- Revert the Assembly Info files when complete -->
-    <Exec Command="hg revert --no-backup %(AssemblyInfoFiles.Identity)" Condition="Exists(%(AssemblyInfoFiles.Identity))" />
-    <Exec Command="hg revert --no-backup %(NuGetFiles.Identity)" Condition="Exists(%(NuGetFiles.Identity))" />
+    <Exec Command="git checkout %(AssemblyInfoFiles.Identity)" Condition="Exists(%(AssemblyInfoFiles.Identity))" />
+    <Exec Command="git checkout %(NuGetFiles.Identity)" Condition="Exists(%(NuGetFiles.Identity))" />
   </Target>
   <Import Project="packages\BuildTools.AutoBuild.1.0.17.47\tools\Build\MSBuild.Community.Tasks.Targets" />
-  <Import Project="packages\BuildTools.AutoBuild.1.0.17.47\tools\Build\MSBuild.Mercurial.Tasks" />
 </Project>

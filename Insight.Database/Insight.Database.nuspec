@@ -2,7 +2,7 @@
 <package>
 	<metadata>
 		<id>Insight.Database</id>
-		<version>1.0.0.0</version>
+		<version>1.1.0</version>
 		<title>Insight.Database</title>
 		<authors>Jon Wagner</authors>
 		<description>A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.</description>
