@@ -174,5 +174,40 @@ namespace Insight.Tests
 			Assert.AreEqual("Text", goo[0].Goo);
 		}
 		#endregion
-	}
+
+        #region c# 4.5 Async Methods
+        #region Helper Classes
+        #pragma warning disable 0649
+        class Data
+        {
+            public int Int;
+            public string String;
+        }
+        #endregion
+
+        [Test]
+        public async void TestThatSingleClassIsDeserialized()
+        {
+            var list = await _connection.AsyncQuerySql<Data>("SELECT Int=1, String='foo'", new { });
+
+            Assert.IsNotNull(list);
+            Assert.AreEqual(1, list.Count);
+            var item = list[0];
+            Assert.IsNotNull(item);
+            Assert.AreEqual(1, item.Int);
+            Assert.AreEqual("foo", item.String);
+        }
+
+        /// <summary>
+        /// Asynchronously run a command that is not a query
+        /// </summary>
+        [Test]
+        public async void AsyncNonQuery()
+        {
+            await _connection.AsyncExecuteSql("DECLARE @i int", Parameters.Empty, closeConnection: true);
+
+            Assert.IsTrue(_connection.State == ConnectionState.Closed);
+        }
+        #endregion
+    }
 }
