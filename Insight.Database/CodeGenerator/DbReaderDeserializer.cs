@@ -677,15 +677,17 @@ namespace Insight.Database.CodeGenerator
 			bool useCallback,
 			Dictionary<Type, string> idColumns)
 		{
-			// detect all of the columns and generate the method holder
-			int nextColumn = 0;
-			MethodHolder foo = new MethodHolder();
-			foo.T = DbReaderDeserializer<T>.GetClassDeserializer(reader, nextColumn, DetectNextColumn<T, TSub1>(idColumns, reader, ref nextColumn));
-			foo.T1 = (typeof(TSub1) != typeof(NoClass)) ? DbReaderDeserializer<TSub1>.GetClassDeserializer(reader, nextColumn, DetectNextColumn<TSub1, TSub2>(idColumns, reader, ref nextColumn)) : null;
-			foo.T2 = (typeof(TSub2) != typeof(NoClass)) ? DbReaderDeserializer<TSub2>.GetClassDeserializer(reader, nextColumn, DetectNextColumn<TSub2, TSub3>(idColumns, reader, ref nextColumn)) : null;
-			foo.T3 = (typeof(TSub3) != typeof(NoClass)) ? DbReaderDeserializer<TSub3>.GetClassDeserializer(reader, nextColumn, DetectNextColumn<TSub3, TSub4>(idColumns, reader, ref nextColumn)) : null;
-			foo.T4 = (typeof(TSub4) != typeof(NoClass)) ? DbReaderDeserializer<TSub4>.GetClassDeserializer(reader, nextColumn, DetectNextColumn<TSub4, TSub5>(idColumns, reader, ref nextColumn)) : null;
-			foo.T5 = (typeof(TSub5) != typeof(NoClass)) ? DbReaderDeserializer<TSub5>.GetClassDeserializer(reader, nextColumn, reader.FieldCount) : null;
+            // detect all of the columns and generate the method holder
+            int column = 0;
+            int nextColumn = column;
+
+            MethodHolder foo = new MethodHolder();
+            foo.T = DbReaderDeserializer<T>.GetClassDeserializer(reader, column, DetectNextColumn<T, TSub1>(idColumns, reader, ref nextColumn)); column = nextColumn;
+            foo.T1 = (typeof(TSub1) != typeof(NoClass)) ? DbReaderDeserializer<TSub1>.GetClassDeserializer(reader, column, DetectNextColumn<TSub1, TSub2>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+            foo.T2 = (typeof(TSub2) != typeof(NoClass)) ? DbReaderDeserializer<TSub2>.GetClassDeserializer(reader, column, DetectNextColumn<TSub2, TSub3>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+            foo.T3 = (typeof(TSub3) != typeof(NoClass)) ? DbReaderDeserializer<TSub3>.GetClassDeserializer(reader, column, DetectNextColumn<TSub3, TSub4>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+            foo.T4 = (typeof(TSub4) != typeof(NoClass)) ? DbReaderDeserializer<TSub4>.GetClassDeserializer(reader, column, DetectNextColumn<TSub4, TSub5>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+            foo.T5 = (typeof(TSub5) != typeof(NoClass)) ? DbReaderDeserializer<TSub5>.GetClassDeserializer(reader, column, reader.FieldCount) : null;
 
 			// create a new anonymous method that takes an IDataReader and returns T
 			var dm = new DynamicMethod(
