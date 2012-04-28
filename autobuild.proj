@@ -66,6 +66,8 @@
     <Delete Files="%(NuPackFiles.Identity)" />
     <!-- Build the solution -->
     <MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration)" StopOnFirstFailure="true" />
+    <!-- Test Before Packaging -->
+    <Exec Command="packages\NUnit.2.5.10.11092\tools\\nunit-console .\Insight.Tests\bin\$(Configuration)\Insight.Tests.dll"/>
     <!-- Build the NuGet Packages -->
     <MakeDir Directories="Build\Output" />
     <Exec Command="nuget.exe pack %(NuGetFiles.Identity) /OutputDirectory Build\Output" />
