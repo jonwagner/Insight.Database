@@ -39,7 +39,7 @@
       <Output TaskParameter="Build" PropertyName="Build" />
     </Version>
     <Exec Command="git commit -a -m &quot;Version $(Major).$(Minor).$(Build)&quot;" />
-    <Exec Command="git tag &quot;Version $(Major).$(Minor).$(Build)&quot;" />
+    <Exec Command="git tag -a -m &quot;Version $(Major).$(Minor).$(Build)&quot; Version_$(Major).$(Minor).$(Build)" />
   </Target>
   <!-- GetLocalVersion - Gets the version information for the local repository -->
   <Target Name="GetLocalVersion">
