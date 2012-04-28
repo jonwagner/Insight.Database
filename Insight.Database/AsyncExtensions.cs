@@ -108,7 +108,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<FastExpando>> AsyncQuery(
+		public static Task<IList<FastExpando>> AsyncQuery(
 			this SqlConnection connection,
 			string sql,
 			object parameters = null,
@@ -134,7 +134,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuery<TResult>(
+		public static Task<IList<TResult>> AsyncQuery<TResult>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -161,7 +161,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuery<TResult, TSub1>(
+		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -189,7 +189,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuery<TResult, TSub1, TSub2>(
+		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -218,7 +218,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3>(
+		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -248,7 +248,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3, TSub4>(
+		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3, TSub4>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -279,7 +279,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
+		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -303,7 +303,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<FastExpando>> AsyncQuerySql(
+		public static Task<IList<FastExpando>> AsyncQuerySql(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -327,7 +327,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuerySql<TResult>(
+		public static Task<IList<TResult>> AsyncQuerySql<TResult>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -352,7 +352,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuerySql<TResult, TSub1>(
+		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -378,7 +378,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuerySql<TResult, TSub1, TSub2>(
+		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -405,7 +405,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3>(
+		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -433,7 +433,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3, TSub4>(
+		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3, TSub4>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -462,7 +462,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<List<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
+		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -484,7 +484,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<List<FastExpando>> AsyncQuery(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<FastExpando>> AsyncQuery(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.AsyncExecuteAndAutoClose(
 				c => c.AsyncGetReader(commandBehavior).ToList(),
@@ -498,7 +498,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<List<T>> AsyncQuery<T>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> AsyncQuery<T>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.AsyncExecuteAndAutoClose(
 				c => c.AsyncGetReader(commandBehavior).ToList<T>(),
@@ -513,7 +513,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<List<T>> AsyncQuery<T, TSub1>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> AsyncQuery<T, TSub1>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.AsyncExecuteAndAutoClose(
 				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1>(),
@@ -529,7 +529,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<List<T>> AsyncQuery<T, TSub1, TSub2>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.AsyncExecuteAndAutoClose(
 				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2>(),
@@ -546,7 +546,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<List<T>> AsyncQuery<T, TSub1, TSub2, TSub3>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2, TSub3>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.AsyncExecuteAndAutoClose(
 				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2, TSub3>(),
@@ -564,7 +564,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<List<T>> AsyncQuery<T, TSub1, TSub2, TSub3, TSub4>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2, TSub3, TSub4>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.AsyncExecuteAndAutoClose(
 				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4>(),
@@ -583,7 +583,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<List<T>> AsyncQuery<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.AsyncExecuteAndAutoClose(
 				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(),
@@ -709,7 +709,7 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<List<FastExpando>> ToList(this Task<IDataReader> task)
+		public static Task<IList<FastExpando>> ToList(this Task<IDataReader> task)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
 			return task.ContinueWith(t => t.Result.ToList(), TaskContinuationOptions.ExecuteSynchronously);
@@ -721,7 +721,7 @@ namespace Insight.Database
 		/// <typeparam name="T">The type of object to return.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<List<T>> ToList<T>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToList<T>(this Task<IDataReader> task)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
 			return task.ContinueWith(t => t.Result.ToList<T>(), TaskContinuationOptions.ExecuteSynchronously);
@@ -734,7 +734,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<List<T>> ToList<T, TSub1>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToList<T, TSub1>(this Task<IDataReader> task)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
 			return task.ContinueWith(t => t.Result.ToList<T, TSub1>(), TaskContinuationOptions.ExecuteSynchronously);
@@ -748,7 +748,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<List<T>> ToList<T, TSub1, TSub2>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToList<T, TSub1, TSub2>(this Task<IDataReader> task)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
 			return task.ContinueWith(t => t.Result.ToList<T, TSub1, TSub2>(), TaskContinuationOptions.ExecuteSynchronously);
@@ -763,7 +763,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<List<T>> ToList<T, TSub1, TSub2, TSub3>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToList<T, TSub1, TSub2, TSub3>(this Task<IDataReader> task)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
 			return task.ContinueWith(t => t.Result.ToList<T, TSub1, TSub2, TSub3>(), TaskContinuationOptions.ExecuteSynchronously);
@@ -779,7 +779,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub4">The type of object to return as subobject 4.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<List<T>> ToList<T, TSub1, TSub2, TSub3, TSub4>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToList<T, TSub1, TSub2, TSub3, TSub4>(this Task<IDataReader> task)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
 			return task.ContinueWith(t => t.Result.ToList<T, TSub1, TSub2, TSub3, TSub4>(), TaskContinuationOptions.ExecuteSynchronously);
@@ -796,7 +796,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub5">The type of object to return as subobject 5.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<List<T>> ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this Task<IDataReader> task)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
 			return task.ContinueWith(t => t.Result.ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(), TaskContinuationOptions.ExecuteSynchronously);

@@ -249,7 +249,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<FastExpando> Query(
+		public static IList<FastExpando> Query(
 			this IDbConnection connection,
 			string sql,
 			object parameters = null,
@@ -275,7 +275,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> Query<TResult>(
+		public static IList<TResult> Query<TResult>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -302,7 +302,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> Query<TResult, TSub1>(
+		public static IList<TResult> Query<TResult, TSub1>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -330,7 +330,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> Query<TResult, TSub1, TSub2>(
+		public static IList<TResult> Query<TResult, TSub1, TSub2>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -359,7 +359,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> Query<TResult, TSub1, TSub2, TSub3>(
+		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -389,7 +389,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4>(
+		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -420,7 +420,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
+		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -444,7 +444,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<FastExpando> QuerySql(
+		public static IList<FastExpando> QuerySql(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -468,7 +468,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> QuerySql<TResult>(
+		public static IList<TResult> QuerySql<TResult>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -493,7 +493,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> QuerySql<TResult, TSub1>(
+		public static IList<TResult> QuerySql<TResult, TSub1>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -519,7 +519,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> QuerySql<TResult, TSub1, TSub2>(
+		public static IList<TResult> QuerySql<TResult, TSub1, TSub2>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -546,7 +546,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> QuerySql<TResult, TSub1, TSub2, TSub3>(
+		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -574,7 +574,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4>(
+		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,
@@ -603,7 +603,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static List<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
+		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
 			this IDbConnection connection, 
 			string sql,
 			object parameters = null,

@@ -20,7 +20,7 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
-		public static List<FastExpando> ToList(this IDataReader reader)
+		public static IList<FastExpando> ToList(this IDataReader reader)
 		{
 			return reader.AsEnumerable().ToList();
 		}
@@ -31,7 +31,7 @@ namespace Insight.Database
 		/// <typeparam name="T">The expected type of the object.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
-		public static List<T> ToList<T>(this IDataReader reader)
+		public static IList<T> ToList<T>(this IDataReader reader)
 		{
 			return reader.AsEnumerable<T>().ToList();
 		}
@@ -43,7 +43,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
-		public static List<T> ToList<T, TSub1>(this IDataReader reader)
+		public static IList<T> ToList<T, TSub1>(this IDataReader reader)
 		{
 			return reader.AsEnumerable<T, TSub1>().ToList();
 		}
@@ -56,7 +56,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub2">The expected type of sub object 2.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
-		public static List<T> ToList<T, TSub1, TSub2>(this IDataReader reader)
+		public static IList<T> ToList<T, TSub1, TSub2>(this IDataReader reader)
 		{
 			return reader.AsEnumerable<T, TSub1, TSub2>().ToList();
 		}
@@ -70,7 +70,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub3">The expected type of sub object 3.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
-		public static List<T> ToList<T, TSub1, TSub2, TSub3>(this IDataReader reader)
+		public static IList<T> ToList<T, TSub1, TSub2, TSub3>(this IDataReader reader)
 		{
 			return reader.AsEnumerable<T, TSub1, TSub2, TSub3>().ToList();
 		}
@@ -85,7 +85,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub4">The expected type of sub object 4.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
-		public static List<T> ToList<T, TSub1, TSub2, TSub3, TSub4>(this IDataReader reader)
+		public static IList<T> ToList<T, TSub1, TSub2, TSub3, TSub4>(this IDataReader reader)
 		{
 			return reader.AsEnumerable<T, TSub1, TSub2, TSub3, TSub4>().ToList();
 		}
@@ -101,7 +101,7 @@ namespace Insight.Database
 		/// <typeparam name="TSub5">The expected type of sub object 5.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
-		public static List<T> ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this IDataReader reader)
+		public static IList<T> ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this IDataReader reader)
 		{
 			return reader.AsEnumerable<T, TSub1, TSub2, TSub3, TSub4, TSub5>().ToList();
 		}

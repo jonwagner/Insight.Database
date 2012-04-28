@@ -294,12 +294,12 @@ namespace Insight.Database.Sample
 		#region Querying for Objects
 		static void Query_Query()
 		{
-			List<Beer> beer = Database.Connection().Query<Beer>("FindBeer", new { Name = "IPA" });
+			IList<Beer> beer = Database.Connection().Query<Beer>("FindBeer", new { Name = "IPA" });
 		}
 
 		static void Query_QuerySql()
 		{
-			List<Beer> beer = Database.Connection().QuerySql<Beer>("SELECT * FROM Beer WHERE Name = @Name", new { Name = "IPA" });
+			IList<Beer> beer = Database.Connection().QuerySql<Beer>("SELECT * FROM Beer WHERE Name = @Name", new { Name = "IPA" });
 		}
 
 		static void Query_ToList()
@@ -307,7 +307,7 @@ namespace Insight.Database.Sample
 			using (SqlConnection connection = Database.Open())
 			using (IDataReader reader = connection.GetReader("FindBeer", new { Name = "IPA" }))
 			{
-				List<Beer> beer = reader.ToList<Beer>();
+				IList<Beer> beer = reader.ToList<Beer>();
 			}
 		}
 
@@ -410,7 +410,7 @@ namespace Insight.Database.Sample
 
 		static void Async_Query()
 		{
-			Task<List<Beer>> task = Database.Connection().AsyncQuery<Beer>("FindBeer", new { Name = "IPA" });
+			Task<IList<Beer>> task = Database.Connection().AsyncQuery<Beer>("FindBeer", new { Name = "IPA" });
 
 			// do stuff
 
