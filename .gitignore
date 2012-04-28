@@ -1,0 +1,10 @@
+bin
+obj
+*.user
+*.suo
+*.docstates
+*.nupkg
+*.orig
+*.rej
+StyleCop.Cache
+TestResult.xml
