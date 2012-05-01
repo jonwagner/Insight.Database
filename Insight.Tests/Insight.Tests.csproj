@@ -58,6 +58,7 @@
   <ItemGroup>
     <Compile Include="BaseDbTest.cs" />
     <Compile Include="BulkCopyTests.cs" />
+    <Compile Include="ColumnAttributeTests.cs" />
     <Compile Include="ConnectionTests.cs" />
     <Compile Include="ConnectionStringSettingsTests.cs" />
     <Compile Include="FastExpandoTests.cs" />

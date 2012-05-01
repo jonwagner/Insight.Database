@@ -59,6 +59,7 @@
     <Compile Include="ConnectionStringSettingsExtensions.cs" />
     <Compile Include="DBCommandExtensions.cs" />
     <Compile Include="DBConnectionExtensions.cs" />
+    <Compile Include="ColumnAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DBReaderExtensions.cs" />
     <Compile Include="Parameters.cs" />

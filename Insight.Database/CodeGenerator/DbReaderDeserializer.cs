@@ -72,19 +72,33 @@ namespace Insight.Database.CodeGenerator
 							.Select(p => p.GetGetMethod()).First();
 
 			// if this is an object (and not a value type) get the get properties for the types that we pass in
-			if (!typeof(T).IsValueType 
+			if (!typeof(T).IsValueType
 				&& typeof(T) != typeof(XmlDocument)
 				&& typeof(T) != typeof(XDocument))
 			{
 				// get all fields in the class
 				foreach (var f in typeof(T).GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-					if (!_setMethods.ContainsKey(f.Name.ToUpperInvariant()))
-						_setMethods.Add(f.Name.ToUpperInvariant(), new ClassPropInfo(typeof(T), f.Name, getMethod: false));
+				{
+					// see if there is a column attribute defined on the field
+					var attribute = f.GetCustomAttributes(typeof(ColumnAttribute), true).OfType<ColumnAttribute>().FirstOrDefault();
+					string name = (attribute != null) ? attribute.ColumnName : f.Name;
+					name = name.ToUpperInvariant();
+
+					if (!_setMethods.ContainsKey(name))
+						_setMethods.Add(name, new ClassPropInfo(typeof(T), f.Name, getMethod: false));
+				}
 
 				// get all properties in the class
 				foreach (var p in typeof(T).GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-					if (!_setMethods.ContainsKey(p.Name.ToUpperInvariant()))
-						_setMethods.Add(p.Name.ToUpperInvariant(), new ClassPropInfo(typeof(T), p.Name, getMethod: false));
+				{
+					// see if there is a column attribute defined on the field
+					var attribute = p.GetCustomAttributes(typeof(ColumnAttribute), true).OfType<ColumnAttribute>().FirstOrDefault();
+					string name = (attribute != null) ? attribute.ColumnName : p.Name;
+					name = name.ToUpperInvariant();
+
+					if (!_setMethods.ContainsKey(name))
+						_setMethods.Add(name, new ClassPropInfo(typeof(T), p.Name, getMethod: false));
+				}
 			}
 		}
 		#endregion
@@ -102,7 +116,7 @@ namespace Insight.Database.CodeGenerator
 
 			// try to get the deserializer. if not found, create one.
 			return _deserializers.GetOrAdd(
-				identity, 
+				identity,
 				key =>
 				{
 					if (typeof(T) == typeof(FastExpando))
@@ -625,7 +639,8 @@ namespace Insight.Database.CodeGenerator
 	/// <typeparam name="TSub3">The third subtype.</typeparam>
 	/// <typeparam name="TSub4">The fourth subtype.</typeparam>
 	/// <typeparam name="TSub5">The fifth subtype.</typeparam>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]	static class DbReaderDeserializer<T, TSub1, TSub2, TSub3, TSub4, TSub5>
+	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
+	static class DbReaderDeserializer<T, TSub1, TSub2, TSub3, TSub4, TSub5>
 	{
 		#region Private Members
 		/// <summary>
@@ -657,7 +672,7 @@ namespace Insight.Database.CodeGenerator
 
 			// try to get the deserializer. if not found, create one.
 			return _deserializers.GetOrAdd(
-				identity, 
+				identity,
 				key =>
 				{
 					return GetMultiDeserializer(reader, useCallback, idColumns);
@@ -677,23 +692,23 @@ namespace Insight.Database.CodeGenerator
 			bool useCallback,
 			Dictionary<Type, string> idColumns)
 		{
-            // detect all of the columns and generate the method holder
-            int column = 0;
-            int nextColumn = column;
+			// detect all of the columns and generate the method holder
+			int column = 0;
+			int nextColumn = column;
 
-            MethodHolder foo = new MethodHolder();
-            foo.T = DbReaderDeserializer<T>.GetClassDeserializer(reader, column, DetectNextColumn<T, TSub1>(idColumns, reader, ref nextColumn)); column = nextColumn;
-            foo.T1 = (typeof(TSub1) != typeof(NoClass)) ? DbReaderDeserializer<TSub1>.GetClassDeserializer(reader, column, DetectNextColumn<TSub1, TSub2>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-            foo.T2 = (typeof(TSub2) != typeof(NoClass)) ? DbReaderDeserializer<TSub2>.GetClassDeserializer(reader, column, DetectNextColumn<TSub2, TSub3>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-            foo.T3 = (typeof(TSub3) != typeof(NoClass)) ? DbReaderDeserializer<TSub3>.GetClassDeserializer(reader, column, DetectNextColumn<TSub3, TSub4>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-            foo.T4 = (typeof(TSub4) != typeof(NoClass)) ? DbReaderDeserializer<TSub4>.GetClassDeserializer(reader, column, DetectNextColumn<TSub4, TSub5>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-            foo.T5 = (typeof(TSub5) != typeof(NoClass)) ? DbReaderDeserializer<TSub5>.GetClassDeserializer(reader, column, reader.FieldCount) : null;
+			MethodHolder foo = new MethodHolder();
+			foo.T = DbReaderDeserializer<T>.GetClassDeserializer(reader, column, DetectNextColumn<T, TSub1>(idColumns, reader, ref nextColumn)); column = nextColumn;
+			foo.T1 = (typeof(TSub1) != typeof(NoClass)) ? DbReaderDeserializer<TSub1>.GetClassDeserializer(reader, column, DetectNextColumn<TSub1, TSub2>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+			foo.T2 = (typeof(TSub2) != typeof(NoClass)) ? DbReaderDeserializer<TSub2>.GetClassDeserializer(reader, column, DetectNextColumn<TSub2, TSub3>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+			foo.T3 = (typeof(TSub3) != typeof(NoClass)) ? DbReaderDeserializer<TSub3>.GetClassDeserializer(reader, column, DetectNextColumn<TSub3, TSub4>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+			foo.T4 = (typeof(TSub4) != typeof(NoClass)) ? DbReaderDeserializer<TSub4>.GetClassDeserializer(reader, column, DetectNextColumn<TSub4, TSub5>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
+			foo.T5 = (typeof(TSub5) != typeof(NoClass)) ? DbReaderDeserializer<TSub5>.GetClassDeserializer(reader, column, reader.FieldCount) : null;
 
 			// create a new anonymous method that takes an IDataReader and returns T
 			var dm = new DynamicMethod(
-				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", typeof(T).FullName, Guid.NewGuid()), 
+				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", typeof(T).FullName, Guid.NewGuid()),
 				typeof(T),
-				new[] { typeof(MethodHolder), typeof(IDataReader), typeof(Action<T, TSub1, TSub2, TSub3, TSub4, TSub5>) }, 
+				new[] { typeof(MethodHolder), typeof(IDataReader), typeof(Action<T, TSub1, TSub2, TSub3, TSub4, TSub5>) },
 				true);
 			var il = dm.GetILGenerator();
 
