@@ -30,5 +30,28 @@ namespace Insight.Database
 		{
 			return builder.Connection().OpenConnection();
 		}
+
+		#region Dynamic Invocation Helper
+		/// <summary>
+		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
+		/// </summary>
+		/// <param name="builder">The connection to use.</param>
+		/// <returns>A DynamicConnection using the given connection.</returns>
+		public static dynamic Dynamic(this SqlConnectionStringBuilder builder)
+		{
+			return builder.Connection().Dynamic();
+		}
+
+		/// <summary>
+		/// Converts the connection to a connection that can be invoked dynamically to return lists of type T.
+		/// </summary>
+		/// <param name="builder">The connection to use.</param>
+		/// <typeparam name="T">The type of object to return from queries.</typeparam>
+		/// <returns>A DynamicConnection using the given connection.</returns>
+		public static dynamic Dynamic<T>(this SqlConnectionStringBuilder builder)
+		{
+			return builder.Connection().Dynamic<T>();
+		}
+		#endregion
 	}
 }

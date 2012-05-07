@@ -370,12 +370,12 @@ namespace Insight.Database.Sample
 		#region Dynamic Database Calls
 		static void DynamicCall_Simple()
 		{
-			IList<Beer> beer = Database.Connection().Dynamic<Beer>().FindBeer("IPA");
+			IList<Beer> beer = Database.Dynamic<Beer>().FindBeer("IPA");
 		}
 
 		static void DynamicCall_Named()
 		{
-			IList<Beer> beer = Database.Connection().Dynamic<Beer>().FindBeer(name: "IPA");
+			IList<Beer> beer = Database.Dynamic<Beer>().FindBeer(name: "IPA");
 		}
 
 		static void DynamicCall_Transaction()
