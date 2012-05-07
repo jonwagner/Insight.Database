@@ -71,6 +71,21 @@ namespace Insight.Database.CodeGenerator
 
 			_isValueType = _listType.IsValueType || listType == typeof(string);
 
+			// SQL Server tells us the precision of the columns
+			// but the TDS parser doesn't like the ones set on money, smallmoney and date
+			// so we have to override them
+			_schemaTable.Columns["NumericScale"].ReadOnly = false;
+			foreach (DataRow row in _schemaTable.Rows)
+			{
+				string dataType = row["DataTypeName"].ToString();
+				if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
+					row["NumericScale"] = 4;
+				else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
+					row["NumericScale"] = 4;
+				else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
+					row["NumericScale"] = 0;
+			}
+ 
 			// if this is not a value type, then we need to have methods to pull values out of the object
 			if (!_isValueType)
 			{
