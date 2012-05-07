@@ -21,12 +21,15 @@ namespace Insight.Tests
 			// clean up old stuff first
 			CleanupObjects ();
 
-			_connection.ExecuteSql ("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
-			_connection.ExecuteSql ("CREATE TYPE [InsightTestDataTable] AS TABLE ([Int] [int] NOT NULL, [IntNull][int])");
-			_connection.ExecuteSql ("CREATE TYPE [InsightTestDataTable2] AS TABLE ([Int] [decimal] NOT NULL, [IntNull][decimal])");
-			_connection.ExecuteSql ("CREATE PROCEDURE [Int32TestProc] @p [Int32Table] READONLY AS SELECT * FROM @p");
-			_connection.ExecuteSql ("CREATE PROCEDURE [InsightTestDataTestProc] @p [InsightTestDataTable] READONLY AS SELECT * FROM @p");
-			_connection.ExecuteSql ("CREATE PROCEDURE [InsightTestDataTestProc2] @p [InsightTestDataTable2] READONLY AS SELECT * FROM @p");
+			_connection.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
+			_connection.ExecuteSql("CREATE TYPE [InsightTestDataTable] AS TABLE ([Int] [int] NOT NULL, [IntNull][int])");
+			_connection.ExecuteSql("CREATE TYPE [InsightTestDataTable2] AS TABLE ([Int] [decimal] NOT NULL, [IntNull][decimal])");
+			_connection.ExecuteSql("CREATE PROCEDURE [Int32TestProc] @p [Int32Table] READONLY AS SELECT * FROM @p");
+			_connection.ExecuteSql("CREATE PROCEDURE [InsightTestDataTestProc] @p [InsightTestDataTable] READONLY AS SELECT * FROM @p");
+			_connection.ExecuteSql("CREATE PROCEDURE [InsightTestDataTestProc2] @p [InsightTestDataTable2] READONLY AS SELECT * FROM @p");
+
+			_connection.ExecuteSql("CREATE TYPE [EvilTypes] AS TABLE (a [money], b [smallmoney], c [date])");
+			_connection.ExecuteSql("CREATE PROCEDURE [EvilProc] @p [EvilTypes] READONLY AS SELECT * FROM @p");
 		}
 
 		[TestFixtureTearDown]
@@ -56,6 +59,11 @@ namespace Insight.Tests
 			catch { }
 			try
 			{
+				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'EvilProc') DROP PROCEDURE [EvilProc]");
+			}
+			catch { }
+			try
+			{
 				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
 			}
 			catch { }
@@ -68,7 +76,12 @@ namespace Insight.Tests
 			{
 				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataTable2') DROP TYPE [InsightTestDataTable2]");
 			}
-			catch { }		
+			catch { }
+			try
+			{
+				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.types WHERE name = 'EvilTypes') DROP TYPE [EvilTypes]");
+			}
+			catch { }
 		}
 		#endregion
 
@@ -167,6 +180,28 @@ namespace Insight.Tests
 
 			// make sure that we CAN send up a null item in the list
 			Assert.AreEqual (3, _connection.Query<InsightTestData> ("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
+		}
+
+		class Data
+		{
+			public decimal a;
+			public decimal b;
+			public DateTime c;
+		}
+
+		[Test]
+		public void TestThatEvilTypesCanBeSentToServer()
+		{
+			var o = new Data()
+			{
+				a = 0.1m,
+				b = 0.2m,
+				c = DateTime.Now
+			};
+
+			var list = new List<Data>() { o };
+
+			_connection.Query("EvilProc", new { p = list});			
 		}
 		#endregion
 
