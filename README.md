@@ -79,6 +79,11 @@ Don't like classes? Use dynamic objects! This is great for those "utility projec
 
 Your objects can go round trip.
 
+## Even More Convenience for Stored Procs ##
+Use dynamic invocation of stored procedures! MMM. Syntactic sugar...
+
+	IList<Beer> beer = Database.Dynamic<Beer>().FindBeer(name: "IPA");
+
 ## Multi-Class Result Sets ##
 Returning a hierarchy of objects? Got that too. Simply pass a list of types into the Query method and we will figure out the rest.
 
