@@ -81,33 +81,33 @@ namespace Insight.Tests
 
 		#region Asynchronous Queries
 		[Test]
-		public void AsyncExecuteSqlShouldAutoClose ()
+		public void ExecuteSqlAsyncShouldAutoClose ()
 		{
 			_connection.Close ();
 
-			int i = _connection.AsyncExecuteSql ("SELECT 1").Result;
+			int i = _connection.ExecuteSqlAsync ("SELECT 1").Result;
 			Assert.AreEqual (-1, i);
 
 			Assert.AreEqual (ConnectionState.Closed, _connection.State);
 		}
 
 		[Test]
-		public void AsyncQuerySqlShouldAutoClose ()
+		public void QuerySqlAsyncShouldAutoClose ()
 		{
 			_connection.Close ();
 
-			int i = _connection.AsyncQuerySql<int> ("SELECT 1").Result.FirstOrDefault ();
+			int i = _connection.QuerySqlAsync<int> ("SELECT 1").Result.FirstOrDefault ();
 			Assert.AreEqual (1, i);
 
 			Assert.AreEqual (ConnectionState.Closed, _connection.State);
 		}
 
 		[Test]
-		public void AsyncQueryProcShouldAutoClose ()
+		public void QueryAsyncProcShouldAutoClose ()
 		{
 			_connection.Close ();
 
-			_connection.AsyncQuerySql ("sp_who").Result.FirstOrDefault ();
+			_connection.QuerySqlAsync ("sp_who").Result.FirstOrDefault ();
 
 			Assert.AreEqual (ConnectionState.Closed, _connection.State);
 		}

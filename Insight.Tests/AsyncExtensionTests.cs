@@ -51,7 +51,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestNonQuery ()
 		{
-			var task = _connection.AsyncExecuteSql ("DECLARE @i int", Parameters.Empty, closeConnection: true);
+			var task = _connection.ExecuteSqlAsync ("DECLARE @i int", Parameters.Empty, closeConnection: true);
 			task.Wait ();
 
 			Assert.IsTrue (_connection.State == ConnectionState.Closed);
@@ -63,7 +63,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestAsyncReader()
 		{
-			var task = _connection.AsyncQuerySql(
+			var task = _connection.QuerySqlAsync(
 				"SELECT 1", 
 				Parameters.Empty, 
 				reader =>
@@ -89,7 +89,7 @@ namespace Insight.Tests
 		{
 			int result = 0;
 
-			var task = _connection.AsyncQuerySql (
+			var task = _connection.QuerySqlAsync (
 				"SELECT 1", 
 				Parameters.Empty, 
 				reader =>
@@ -116,7 +116,7 @@ namespace Insight.Tests
 		{
 			int result = 0;
 
-			var task = _connection.AsyncQuerySql(
+			var task = _connection.QuerySqlAsync(
 				"THIS IS INVALID SQL",
 				Parameters.Empty,
 				reader =>
@@ -139,7 +139,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestNonQuerySqlError ()
 		{
-			var task = _connection.AsyncExecuteSql ("THIS IS INVALID SQL", Parameters.Empty, closeConnection: true);
+			var task = _connection.ExecuteSqlAsync ("THIS IS INVALID SQL", Parameters.Empty, closeConnection: true);
 
 			Assert.Throws<AggregateException> (() => task.Wait ());
 			Assert.IsTrue (_connection.State == ConnectionState.Closed);
@@ -154,7 +154,7 @@ namespace Insight.Tests
 			dynamic foo = null;
 			dynamic goo = null;
 
-			var task = _connection.AsyncQuerySql(
+			var task = _connection.QuerySqlAsync(
 				"SELECT Foo=1 SELECT Goo='Text'",
 				Parameters.Empty,
 				reader =>
@@ -188,7 +188,7 @@ namespace Insight.Tests
         [Test]
         public async void TestThatSingleClassIsDeserialized()
         {
-            var list = await _connection.AsyncQuerySql<Data>("SELECT Int=1, String='foo'", new { });
+            var list = await _connection.QuerySqlAsync<Data>("SELECT Int=1, String='foo'", new { });
 
             Assert.IsNotNull(list);
             Assert.AreEqual(1, list.Count);
@@ -204,7 +204,7 @@ namespace Insight.Tests
         [Test]
         public async void AsyncNonQuery()
         {
-            await _connection.AsyncExecuteSql("DECLARE @i int", Parameters.Empty, closeConnection: true);
+            await _connection.ExecuteSqlAsync("DECLARE @i int", Parameters.Empty, closeConnection: true);
 
             Assert.IsTrue(_connection.State == ConnectionState.Closed);
         }

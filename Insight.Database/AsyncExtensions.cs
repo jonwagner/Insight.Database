@@ -26,7 +26,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<int> AsyncExecute(
+		public static Task<int> ExecuteAsync(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -35,7 +35,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
+			return connection.ExecuteAsyncAndAutoClose(
 				c =>
 				{
 					SqlCommand command = (SqlCommand)c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
@@ -51,7 +51,7 @@ namespace Insight.Database
 		/// <param name="command">The command to execute.</param>
 		/// <param name="closeConnection">True to close the connection after the operation is complete.</param>
 		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		public static Task<int> AsyncExecute(this SqlCommand command, bool closeConnection = false)
+		public static Task<int> ExecuteAsync(this SqlCommand command, bool closeConnection = false)
 		{
 			DBConnectionExtensions.DetectAutoOpen(command.Connection, ref closeConnection);
 
@@ -83,7 +83,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout for the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<int> AsyncExecuteSql(
+		public static Task<int> ExecuteSqlAsync(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -91,7 +91,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecute(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction);
+			return connection.ExecuteAsync(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction);
 		}
 		#endregion
 
@@ -108,7 +108,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<FastExpando>> AsyncQuery(
+		public static Task<IList<FastExpando>> QueryAsync(
 			this SqlConnection connection,
 			string sql,
 			object parameters = null,
@@ -117,8 +117,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList(),
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList(),
 				commandBehavior);
 		}
 
@@ -134,7 +134,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuery<TResult>(
+		public static Task<IList<TResult>> QueryAsync<TResult>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -143,8 +143,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
 				commandBehavior);
 		}
 
@@ -161,7 +161,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1>(
+		public static Task<IList<TResult>> QueryAsync<TResult, TSub1>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -170,8 +170,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1>(),
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1>(),
 				commandBehavior);
 		}
 
@@ -189,7 +189,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2>(
+		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -198,196 +198,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2>(),
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3>(
-			this SqlConnection connection, 
-			string sql, 
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3>(),
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
-		/// <typeparam name="TSub4">The type of object to return as subobject 4.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3, TSub4>(
-			this SqlConnection connection, 
-			string sql, 
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4>(),
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
-		/// <typeparam name="TSub4">The type of object to return as subobject 4.</typeparam>
-		/// <typeparam name="TSub5">The type of object to return as subobject 5.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuery<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
-			this SqlConnection connection, 
-			string sql, 
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(),
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<FastExpando>> AsyncQuerySql(
-			this SqlConnection connection, 
-			string sql, 
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList(),
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuerySql<TResult>(
-			this SqlConnection connection, 
-			string sql, 
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1>(
-			this SqlConnection connection, 
-			string sql, 
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1>(),
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2>(
-			this SqlConnection connection, 
-			string sql, 
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2>(),
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2>(),
 				commandBehavior);
 		}
 
@@ -401,20 +213,22 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3>(
+		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2, TSub3>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3>(),
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3>(),
 				commandBehavior);
 		}
 
@@ -429,20 +243,22 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3, TSub4>(
+		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2, TSub3, TSub4>(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4>(),
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4>(),
 				commandBehavior);
 		}
 
@@ -458,11 +274,36 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static Task<IList<TResult>> AsyncQuerySql<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
+		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
+			this SqlConnection connection, 
+			string sql, 
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<FastExpando>> QuerySqlAsync(
 			this SqlConnection connection, 
 			string sql, 
 			object parameters = null,
@@ -470,8 +311,167 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(),
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList(),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QuerySqlAsync<TResult>(
+			this SqlConnection connection, 
+			string sql, 
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1>(
+			this SqlConnection connection, 
+			string sql, 
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1>(),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
+		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2>(
+			this SqlConnection connection, 
+			string sql, 
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2>(),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
+		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
+		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2, TSub3>(
+			this SqlConnection connection, 
+			string sql, 
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3>(),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
+		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
+		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
+		/// <typeparam name="TSub4">The type of object to return as subobject 4.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2, TSub3, TSub4>(
+			this SqlConnection connection, 
+			string sql, 
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4>(),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
+		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
+		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
+		/// <typeparam name="TSub4">The type of object to return as subobject 4.</typeparam>
+		/// <typeparam name="TSub5">The type of object to return as subobject 5.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
+			this SqlConnection connection, 
+			string sql, 
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(),
 				commandBehavior);
 		}
 		#endregion
@@ -484,10 +484,10 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<FastExpando>> AsyncQuery(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<FastExpando>> QueryAsync(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
-			return cmd.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(commandBehavior).ToList(),
+			return cmd.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList(),
 				commandBehavior);
 		}
 
@@ -498,10 +498,10 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> AsyncQuery<T>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
-			return cmd.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(commandBehavior).ToList<T>(),
+			return cmd.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList<T>(),
 				commandBehavior);
 		}
 
@@ -513,10 +513,10 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> AsyncQuery<T, TSub1>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
-			return cmd.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1>(),
+			return cmd.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1>(),
 				commandBehavior);
 		}
 
@@ -529,10 +529,10 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
-			return cmd.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2>(),
+			return cmd.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2>(),
 				commandBehavior);
 		}
 
@@ -546,10 +546,10 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2, TSub3>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
-			return cmd.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2, TSub3>(),
+			return cmd.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2, TSub3>(),
 				commandBehavior);
 		}
 
@@ -564,10 +564,10 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2, TSub3, TSub4>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3, TSub4>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
-			return cmd.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4>(),
+			return cmd.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4>(),
 				commandBehavior);
 		}
 
@@ -583,10 +583,10 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> AsyncQuery<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
-			return cmd.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(),
+			return cmd.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(),
 				commandBehavior);
 		}
 		#endregion
@@ -604,7 +604,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
-		public static Task AsyncQuery(
+		public static Task QueryAsync(
 			this SqlConnection connection,
 			string sql,
 			object parameters,
@@ -614,8 +614,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
 					.ContinueWith(t => { read(t.Result); return false; }),
 				commandBehavior);
 		}
@@ -631,7 +631,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
-		public static Task AsyncQuerySql(
+		public static Task QuerySqlAsync(
 			this SqlConnection connection,
 			string sql,
 			object parameters,
@@ -640,8 +640,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
 					.ContinueWith(t => { read(t.Result); return false; }),
 				commandBehavior);
 		}
@@ -659,7 +659,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
-		public static Task<T> AsyncQuery<T>(
+		public static Task<T> QueryAsync<T>(
 			this SqlConnection connection,
 			string sql,
 			object parameters,
@@ -669,8 +669,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
 					.ContinueWith(t => read(t.Result)),
 				commandBehavior);
 		}
@@ -687,7 +687,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
-		public static Task<T> AsyncQuerySql<T>(
+		public static Task<T> QuerySqlAsync<T>(
 			this SqlConnection connection,
 			string sql,
 			object parameters,
@@ -696,8 +696,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.AsyncExecuteAndAutoClose(
-				c => c.AsyncGetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+			return connection.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
 					.ContinueWith(t => read(t.Result)),
 				commandBehavior);
 		}
@@ -815,7 +815,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
-		private static Task<IDataReader> AsyncGetReader(
+		private static Task<IDataReader> GetReaderAsync(
 			this SqlConnection connection,
 			string sql,
 			object parameters = null,
@@ -826,7 +826,7 @@ namespace Insight.Database
 		{
 			SqlCommand cmd = (SqlCommand)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
 
-			return cmd.AsyncGetReader(commandBehavior);
+			return cmd.GetReaderAsync(commandBehavior);
 		}
 
 		/// <summary>
@@ -835,7 +835,7 @@ namespace Insight.Database
 		/// <param name="command">The command to execute.</param>
 		/// <param name="commandBehavior">The behavior for the command.</param>
 		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		private static Task<IDataReader> AsyncGetReader(this SqlCommand command, CommandBehavior commandBehavior = CommandBehavior.Default)
+		private static Task<IDataReader> GetReaderAsync(this SqlCommand command, CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
 			return Task<IDataReader>.Factory.FromAsync(command.BeginExecuteReader(commandBehavior), ar => command.EndExecuteReader(ar));
 		}
@@ -850,9 +850,9 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="commandBehavior">The commandbehavior of the command.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> AsyncExecuteAndAutoClose<T>(this SqlConnection connection, Func<SqlConnection, Task<T>> action, CommandBehavior commandBehavior)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlConnection connection, Func<SqlConnection, Task<T>> action, CommandBehavior commandBehavior)
 		{
-			return connection.AsyncExecuteAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
+			return connection.ExecuteAsyncAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
 		}
 
 		/// <summary>
@@ -863,7 +863,7 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> AsyncExecuteAndAutoClose<T>(this SqlConnection connection, Func<SqlConnection, Task<T>> action, bool closeConnection)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlConnection connection, Func<SqlConnection, Task<T>> action, bool closeConnection)
 		{
 			DBConnectionExtensions.DetectAutoOpen(connection, ref closeConnection);
 
@@ -888,9 +888,9 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="commandBehavior">The commandbehavior of the command.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> AsyncExecuteAndAutoClose<T>(this SqlCommand command, Func<SqlCommand, Task<T>> action, CommandBehavior commandBehavior)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlCommand command, Func<SqlCommand, Task<T>> action, CommandBehavior commandBehavior)
 		{
-			return command.AsyncExecuteAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
+			return command.ExecuteAsyncAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
 		}
 
 		/// <summary>
@@ -901,7 +901,7 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> AsyncExecuteAndAutoClose<T>(this SqlCommand command, Func<SqlCommand, Task<T>> action, bool closeConnection)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlCommand command, Func<SqlCommand, Task<T>> action, bool closeConnection)
 		{
 			DBConnectionExtensions.DetectAutoOpen(command.Connection, ref closeConnection);
 

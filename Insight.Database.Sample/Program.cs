@@ -401,7 +401,7 @@ namespace Insight.Database.Sample
 		{
 			Beer beer = new Beer() { Name = "Sly Fox IPA" };
 
-			Task task = Database.Connection().AsyncExecute("InsertBeer", beer);
+			Task task = Database.Connection().ExecuteAsync("InsertBeer", beer);
 
 			// do stuff
 
@@ -410,7 +410,7 @@ namespace Insight.Database.Sample
 
 		static void Async_Query()
 		{
-			Task<IList<Beer>> task = Database.Connection().AsyncQuery<Beer>("FindBeer", new { Name = "IPA" });
+			Task<IList<Beer>> task = Database.Connection().QueryAsync<Beer>("FindBeer", new { Name = "IPA" });
 
 			// do stuff
 

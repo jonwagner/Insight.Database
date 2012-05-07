@@ -119,12 +119,12 @@
         <Types>
          <Type Name="AsyncExtensions">
           <Members>
-           <Member Name="#AsyncExecute(System.Data.SqlClient.SqlConnection,System.String,System.Object,System.Data.CommandType,System.Boolean,System.Nullable`1&lt;System.Int32&gt;,System.Data.IDbTransaction)">
+           <Member Name="#ExecuteAsync(System.Data.SqlClient.SqlConnection,System.String,System.Object,System.Data.CommandType,System.Boolean,System.Nullable`1&lt;System.Int32&gt;,System.Data.IDbTransaction)">
             <Messages>
              <Message TypeName="ConsiderPassingBaseTypesAsParameters" Category="Microsoft.Design" CheckId="CA1011" Status="Excluded" Created="2011-08-23 00:17:28Z">
               <Issue>
                <Item>'connection'</Item>
-               <Item>'AsyncExtensions.AsyncExecute(this SqlConnection, string, object, CommandType, bool, int?, IDbTransaction)'</Item>
+               <Item>'AsyncExtensions.ExecuteAsync(this SqlConnection, string, object, CommandType, bool, int?, IDbTransaction)'</Item>
                <Item>'SqlConnection'</Item>
                <Item>'IDbConnection'</Item>
               </Issue>
@@ -136,12 +136,12 @@
              </Message>
             </Messages>
            </Member>
-           <Member Name="#AsyncGetReader(System.Data.SqlClient.SqlConnection,System.String,System.Object,System.Data.CommandType,System.Data.CommandBehavior,System.Nullable`1&lt;System.Int32&gt;,System.Data.IDbTransaction)">
+           <Member Name="#GetReaderAsync(System.Data.SqlClient.SqlConnection,System.String,System.Object,System.Data.CommandType,System.Data.CommandBehavior,System.Nullable`1&lt;System.Int32&gt;,System.Data.IDbTransaction)">
             <Messages>
              <Message TypeName="ConsiderPassingBaseTypesAsParameters" Category="Microsoft.Design" CheckId="CA1011" Status="Excluded" Created="2011-08-23 00:17:28Z">
               <Issue>
                <Item>'connection'</Item>
-               <Item>'AsyncExtensions.AsyncGetReader(this SqlConnection, string, object, CommandType, CommandBehavior, int?, IDbTransaction)'</Item>
+               <Item>'AsyncExtensions.GetReaderAsync(this SqlConnection, string, object, CommandType, CommandBehavior, int?, IDbTransaction)'</Item>
                <Item>'SqlConnection'</Item>
                <Item>'IDbConnection'</Item>
               </Issue>

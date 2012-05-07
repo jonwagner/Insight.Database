@@ -59,7 +59,7 @@ namespace Insight.Database
 				{
 					// execute the command
 					if (doAsync)
-						return ((SqlCommand)cmd).AsyncQuery();
+						return ((SqlCommand)cmd).QueryAsync();
 					else
 						return _connection.Query(cmd);
 				});
@@ -268,7 +268,7 @@ namespace Insight.Database
 				{
 					// execute the command
 					if (doAsync)
-						return ((SqlCommand)cmd).AsyncQuery<T>();
+						return ((SqlCommand)cmd).QueryAsync<T>();
 					else
 						return cmd.Connection.Query<T>(cmd);
 				});
@@ -310,7 +310,7 @@ namespace Insight.Database
 				{
 					// execute the command
 					if (doAsync)
-						return ((SqlCommand)cmd).AsyncQuery<TResult, TSub1>();
+						return ((SqlCommand)cmd).QueryAsync<TResult, TSub1>();
 					else
 						return cmd.Connection.Query<TResult, TSub1>(cmd);
 				});
