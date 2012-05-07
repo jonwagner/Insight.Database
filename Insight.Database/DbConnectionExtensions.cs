@@ -239,6 +239,78 @@ namespace Insight.Database
 
 		#region Query Methods
 		/// <summary>
+		/// Execute an existing command, and translate the result set into a FastExpando. This method supports auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static IList<FastExpando> Query(
+			this IDbConnection connection,
+			IDbCommand command,
+			CommandBehavior commandBehavior = CommandBehavior.Default)
+		{
+			return connection.ExecuteAndAutoClose(
+				c =>
+				{
+					using (IDataReader reader = command.ExecuteReader())
+					{
+						return reader.ToList();
+					}
+				},
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Execute an existing command, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
+		/// <returns>A data reader with the results.</returns>
+		public static IList<TResult> Query<TResult>(
+			this IDbConnection connection,
+			IDbCommand command,
+			CommandBehavior commandBehavior = CommandBehavior.Default)
+		{
+			return connection.ExecuteAndAutoClose(
+				c =>
+				{
+					using (IDataReader reader = command.ExecuteReader())
+					{
+						return reader.ToList<TResult>();
+					}
+				},
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Execute an existing command, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
+		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
+		/// <returns>A data reader with the results.</returns>
+		public static IList<TResult> Query<TResult, TSub1>(
+			this IDbConnection connection,
+			IDbCommand command,
+			CommandBehavior commandBehavior = CommandBehavior.Default)
+		{
+			return connection.ExecuteAndAutoClose(
+				c =>
+				{
+					using (IDataReader reader = command.ExecuteReader())
+					{
+						return reader.ToList<TResult, TSub1>();
+					}
+				},
+				commandBehavior);
+		}
+
+		/// <summary>
 		/// Create a command, execute it, and translate the result set into a FastExpando. This method supports auto-open.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
@@ -902,6 +974,29 @@ namespace Insight.Database
 				if (closeConnection)
 					connection.Close();
 			}
+		}
+		#endregion
+
+		#region Dynamic Invocation Helper
+		/// <summary>
+		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <returns>A DynamicConnection using the given connection.</returns>
+		public static dynamic Dynamic(this IDbConnection connection)
+		{
+			return new DynamicConnection(connection);
+		}
+
+		/// <summary>
+		/// Converts the connection to a connection that can be invoked dynamically to return lists of type T.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T">The type of object to return from queries.</typeparam>
+		/// <returns>A DynamicConnection using the given connection.</returns>
+		public static dynamic Dynamic<T>(this IDbConnection connection)
+		{
+			return new DynamicConnection<T>(connection);
 		}
 		#endregion
 

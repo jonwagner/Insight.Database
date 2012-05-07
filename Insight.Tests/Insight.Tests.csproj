@@ -72,6 +72,7 @@
     <Compile Include="AsyncExtensionTests.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DynamicConnectionTest.cs" />
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>

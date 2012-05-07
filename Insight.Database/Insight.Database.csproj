@@ -49,6 +49,7 @@
     <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
     <Compile Include="CodeGenerator\DbReaderDeserializer.cs" />
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
+    <Compile Include="DynamicConnection.cs" />
     <Compile Include="ExpandoExtensions.cs" />
     <Compile Include="FastExpando.cs" />
     <Compile Include="CodeGenerator\IlHelper.cs" />

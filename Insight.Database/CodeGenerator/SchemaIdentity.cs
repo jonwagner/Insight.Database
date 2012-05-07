@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 
@@ -40,8 +41,14 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="schemaTable">The schema table to analyze.</param>
 		public SchemaIdentity(DataTable schemaTable)
 		{
+			// if there is no schema table, then we got an empty recordset. There are no columns to map, so create an empty schema.
 			if (schemaTable == null)
-				throw new ArgumentNullException("schemaTable", "schemaTable cannot be null. Generally this indicates that the IDataReader did not return any data.");
+			{
+				schemaTable = new DataTable();
+				schemaTable.Locale = CultureInfo.InvariantCulture;
+				schemaTable.Columns.Add("ColumnName");
+				schemaTable.Columns.Add("DataType");
+			}
 
 			SchemaTable = schemaTable;
 
