@@ -44,6 +44,12 @@ namespace Insight.Database.Sample
 			Dynamic_ForEach();
 			#endregion
 
+			#region Dynamic Database Calls
+			DynamicCall_Simple();
+			DynamicCall_Named();
+			DynamicCall_Transaction();
+			#endregion
+
 			#region Lists of Objects
 			List_ValueTypeSql();
 			List_ValueTypeStoredProcedure();
@@ -358,6 +364,27 @@ namespace Insight.Database.Sample
 				});
 
 			Database.Connection().ExecuteSql("DELETE FROM Beer WHERE Name = @Name", ipa);
+		}
+		#endregion
+
+		#region Dynamic Database Calls
+		static void DynamicCall_Simple()
+		{
+			IList<Beer> beer = Database.Connection().Dynamic<Beer>().FindBeer("IPA");
+		}
+
+		static void DynamicCall_Named()
+		{
+			IList<Beer> beer = Database.Connection().Dynamic<Beer>().FindBeer(name: "IPA");
+		}
+
+		static void DynamicCall_Transaction()
+		{
+			using (SqlConnection connection = Database.Open())
+			using (SqlTransaction t = connection.BeginTransaction())
+			{
+				IList<Beer> beer = connection.Dynamic<Beer>().FindBeer(name: "IPA", transaction: t);
+			}
 		}
 		#endregion
 

@@ -142,11 +142,24 @@ namespace Insight.Database
 				cmd.CommandText,
 				name =>
 				{
-					// call the server to get the parameters
-					SqlCommandBuilder.DeriveParameters((SqlCommand)cmd);
+					SqlConnection connection = (SqlConnection)cmd.Connection;
+					bool autoClose = connection.State != ConnectionState.Open;
+					if (autoClose)
+						connection.Open();
+
+					try
+					{
+						// call the server to get the parameters
+						SqlCommandBuilder.DeriveParameters((SqlCommand)cmd);
+					}
+					finally
+					{
+						if (autoClose)
+							connection.Close();
+					}
 
 					// copy the parameters so we can reuse them
-					List<IDbDataParameter> parameters = cmd.Parameters.Cast<IDbDataParameter>().ToList();
+					List<IDbDataParameter> parameters = cmd.Parameters.Cast<IDbDataParameter>().Where(p => p.Direction == ParameterDirection.Input).ToList();
 					cmd.Parameters.Clear();
 
 					return parameters;
