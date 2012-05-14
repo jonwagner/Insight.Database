@@ -88,42 +88,58 @@ namespace Insight.Database
 				doAsync = true;
 			}
 
-			// create a command
-			IDbCommand cmd = _connection.CreateCommand();
-			cmd.CommandType = CommandType.StoredProcedure;
-			cmd.CommandText = procName;
-			cmd.Connection = _connection;
+			int? timeout = null;
+			IDbTransaction transaction = null;
+			IDbCommand cmd = null;
 
 			// check for a transaction
 			int txIndex = callInfo.ArgumentNames.IndexOf("transaction");
 			if (txIndex >= 0)
+				transaction = (IDbTransaction)args[txIndex + unnamedParameterCount];
+
+			// check for a timeout
+			int timeoutIndex = callInfo.ArgumentNames.IndexOf("timeout");
+			if (timeoutIndex >= 0)
+				timeout = (int)args[timeoutIndex + unnamedParameterCount];
+
+			// if there is exactly one unnamed parameter, and it's a reference type
+			if (unnamedParameterCount == 1 && !args[0].GetType().IsValueType)
 			{
-				cmd.Transaction = (IDbTransaction)args[txIndex + unnamedParameterCount];
+				cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
 			}
-
-			// fill in the parameters for the command object
-			// we will do the values next
-			DeriveParameters(cmd);
-
-			// look at the unnamed parameters first. we will add them by position.
-			for (int i = 0; i < unnamedParameterCount; i++)
+			else
 			{
-				// add the unnamed parameters by index
-				IDbDataParameter p = (IDbDataParameter)cmd.Parameters[i];
-				p.Value = args[i];
-			}
+				// create a command
+				cmd = _connection.CreateCommand();
+				cmd.CommandType = CommandType.StoredProcedure;
+				cmd.CommandText = procName;
+				cmd.Connection = _connection;
+				cmd.Transaction = transaction;
 
-			// go through all of the named arguments next. Note that they may overwrite indexed parameters.
-			for (int i = unnamedParameterCount; i < callInfo.ArgumentNames.Count; i++)
-			{
-				string parameterName = "@" + callInfo.ArgumentNames[i];
+				// fill in the parameters for the command object
+				// we will do the values next
+				DeriveParameters(cmd);
 
-				// ignore the transaction parameter
-				if (String.Equals(parameterName, "@transaction", StringComparison.OrdinalIgnoreCase))
-					continue;
+				// look at the unnamed parameters first. we will add them by position.
+				for (int i = 0; i < unnamedParameterCount; i++)
+				{
+					// add the unnamed parameters by index
+					IDbDataParameter p = (IDbDataParameter)cmd.Parameters[i];
+					p.Value = args[i];
+				}
 
-				IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
-				p.Value = args[i];
+				// go through all of the named arguments next. Note that they may overwrite indexed parameters.
+				for (int i = unnamedParameterCount; i < callInfo.ArgumentNames.Count; i++)
+				{
+					string parameterName = "@" + callInfo.ArgumentNames[i];
+
+					// ignore the transaction parameter
+					if (String.Equals(parameterName, "@transaction", StringComparison.OrdinalIgnoreCase))
+						continue;
+
+					IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
+					p.Value = args[i];
+				}
 			}
 
 			// run the query and translate the results

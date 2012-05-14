@@ -84,6 +84,12 @@ Use dynamic invocation of stored procedures! MMM. Syntactic sugar...
 
 	IList<Beer> beer = Database.Dynamic<Beer>().FindBeer(name: "IPA");
 
+Or...
+
+	Beer beer = new Beer();
+	Database.Dynamic().InsertBeer(beer);
+	// yes, we convert beer to parameters for you. You're welcome.
+
 ## Multi-Class Result Sets ##
 Returning a hierarchy of objects? Got that too. Simply pass a list of types into the Query method and we will figure out the rest.
 

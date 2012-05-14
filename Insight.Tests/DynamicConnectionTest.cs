@@ -61,5 +61,20 @@ namespace Insight.Tests
 				_connection.Dynamic().InsightTestProc(transaction: t, value: 5);
 			}
 		}
+
+		[Test]
+		public void TestObjectParameter()
+		{
+			using (SqlTransaction t = _connection.BeginTransaction())
+			{
+				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
+
+				Data d = new Data() { Value = 10 };
+				IList<Data> list = _connection.Dynamic<Data>().InsightTestProc(d, transaction: t);
+				Data result = list.First();
+
+				Assert.AreEqual(d.Value, result.Value);
+			}
+		}
 	}
 }
