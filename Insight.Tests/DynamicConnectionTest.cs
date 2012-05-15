@@ -76,5 +76,20 @@ namespace Insight.Tests
 				Assert.AreEqual(d.Value, result.Value);
 			}
 		}
+
+		[Test]
+		public void TestSingleStringParameter()
+		{
+			using (SqlTransaction t = _connection.BeginTransaction())
+			{
+				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value", transaction: t);
+
+				string value = "foo";
+				IList<string> list = _connection.Dynamic<string>().InsightTestProc(value, transaction: t);
+				string result = list.First();
+
+				Assert.AreEqual(value, result);
+			}
+		}
 	}
 }

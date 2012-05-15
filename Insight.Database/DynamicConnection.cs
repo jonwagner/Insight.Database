@@ -91,24 +91,35 @@ namespace Insight.Database
 			int? timeout = null;
 			IDbTransaction transaction = null;
 			IDbCommand cmd = null;
+			int specialParameters = 0;
 
 			// check for a transaction
 			int txIndex = callInfo.ArgumentNames.IndexOf("transaction");
 			if (txIndex >= 0)
+			{
 				transaction = (IDbTransaction)args[txIndex + unnamedParameterCount];
+				specialParameters++;
+			}
 
 			// check for a timeout
 			int timeoutIndex = callInfo.ArgumentNames.IndexOf("timeout");
 			if (timeoutIndex >= 0)
+			{
 				timeout = (int)args[timeoutIndex + unnamedParameterCount];
+				specialParameters++;
+			}
 
-			// if there is exactly one unnamed parameter, and it's a reference type
-			if (unnamedParameterCount == 1 && !args[0].GetType().IsValueType)
+			// if there is exactly one unnamed parameter, and the named parameters are all special parameters, and it's a reference type (and not a string)
+			if (unnamedParameterCount == 1 &&
+				(callInfo.ArgumentNames.Count == specialParameters) && 
+				!args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
 			{
 				cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
 			}
 			else
 			{
+				// this isn't a single-object parameter, so we are going to map the parameters by position and by name
+
 				// create a command
 				cmd = _connection.CreateCommand();
 				cmd.CommandType = CommandType.StoredProcedure;
