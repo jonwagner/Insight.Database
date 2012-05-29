@@ -41,17 +41,6 @@ namespace Insight.Tests
 		}
 
 		[Test]
-		async public void AsyncTest()
-		{
-			using (SqlTransaction t = _connection.BeginTransaction())
-			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
-
-				List<Data> task = await _connection.Dynamic<Data>().InsightTestProcAsync(transaction: t, value: 5);
-			}
-		}
-
-		[Test]
 		public void TestExecute()
 		{
 			using (SqlTransaction t = _connection.BeginTransaction())
