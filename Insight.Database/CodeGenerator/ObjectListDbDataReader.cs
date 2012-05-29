@@ -44,10 +44,33 @@ namespace Insight.Database.CodeGenerator
 		private object _current;
 
 		/// <summary>
+		/// The ordinal of the last column retrieved.
+		/// </summary>
+		private int _currentOrdinal;
+
+		/// <summary>
+		/// Caches the value of the last column retrieved.
+		/// </summary>
+		private object _currentValue;
+
+		/// <summary>
+		/// Caches the ordinal of the last string column retrieved.
+		/// </summary>
+		private int _currentStringOrdinal;
+
+		/// <summary>
+		/// Caches the string value of the last column retrieved.
+		/// </summary>
+		private string _currentStringValue;
+
+		/// <summary>
 		/// True when we are processing a list of value types (or strings).
 		/// </summary>
 		private bool _isValueType;
 
+		/// <summary>
+		/// Information about how to serialize the object.
+		/// </summary>
 		private FieldReaderData _readerData;
 
 		/// <summary>
@@ -161,6 +184,12 @@ namespace Insight.Database.CodeGenerator
 			{
 				_current = _list.Current;
 
+				// reset the column that we are currently reading
+				_currentOrdinal = -1;
+				_currentValue = null;
+				_currentStringOrdinal = -1;
+				_currentStringValue = null;
+
 				// not allowed to have nulls in the list
 				if (_current == null && !_isValueType)
 					throw new InvalidOperationException("Cannot send a list of objects to a table-valued parameter when the list contains a null value");
@@ -176,17 +205,90 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The value of the column.</returns>
 		public override object GetValue(int ordinal)
 		{
-			// value types just need to be converted
-			if (_isValueType)
+			// if we have switched columns, get the value
+			// do this only once per ordinal, because the object may be doing calculatey things
+			if (ordinal != _currentOrdinal)
 			{
-				if (ordinal == 0)
-					return _current;
+				_currentOrdinal = ordinal;
+
+				// if we are reading IEnumerable<ValueType>, then there is one column and the value just needs to be converted
+				if (_isValueType)
+				{
+					if (ordinal == 0)
+						_currentValue = _current;
+					else
+						throw new ArgumentOutOfRangeException("ordinal");
+				}
 				else
-					throw new ArgumentOutOfRangeException("ordinal");
+				{
+					// we are reading IEnumerable<ObjectType>, so look up the accessor and call it
+					_currentValue = _readerData.Accessors[ordinal](_current);
+				}
 			}
 
-			// this is a class type, so look up the accessor and call it
-			return _readerData.Accessors[ordinal](_current);
+			// update the current ordinal and return the value
+			return _currentValue;
+		}
+
+		/// <summary>
+		/// Returns the value of a column as a string.
+		/// </summary>
+		/// <param name="ordinal">The ordinal of the column.</param>
+		/// <returns>The string value.</returns>
+		public override string GetString(int ordinal)
+		{
+			// only convert values to strings once
+			if (ordinal != _currentStringOrdinal)
+			{
+				_currentStringOrdinal = ordinal;
+
+				// convert the current value to a string
+				object value = GetValue(ordinal);
+				_currentStringValue = value as string;
+
+				// if it's not a string and 
+				if (_currentStringValue == null && value != null)
+				{
+					// if the string is a value type, then convert it directly
+					// otherwise we serialize the type to xml
+					if (value.GetType().IsValueType)
+						_currentStringValue = value.ToString();
+					else
+						_currentStringValue = TypeHelper.SerializeObjectToXml(value, _readerData.MemberTypes[ordinal]);
+				}
+			}
+
+			return _currentStringValue;
+		}
+
+		/// <summary>
+		/// Reads a stream of characters from the specified column offset into the buffer as an array, starting at the given buffer offset.
+		/// </summary>
+		/// <param name="ordinal">The ordinal of the column to read.</param>
+		/// <param name="dataOffset">The offset into the data to start reading.</param>
+		/// <param name="buffer">The buffer to copy characters into.</param>
+		/// <param name="bufferOffset">The offset into the buffer to copy into.</param>
+		/// <param name="length">The number of characters to copy.</param>
+		/// <returns>The number of characters remaining after the read.</returns>
+		public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
+		{
+			// String.CopyTo can only support Int32 precision, but we shouldn't expect an in-memory string to be larger than that.
+			if (dataOffset > Int32.MaxValue)
+				throw new ArgumentOutOfRangeException("dataOffset");
+
+			// if the value is not a string and not a primitive type, then serialize it as xml
+			string value = GetString(ordinal);
+
+			// if the buffer is null, then just return the length
+			if (buffer == null)
+				return value.Length;
+
+			// determine the number of characters to read
+			length = Math.Min(value.Length - (int)dataOffset, length);
+
+			value.CopyTo((int)dataOffset, buffer, bufferOffset, length);
+
+			return length;
 		}
 
 		/// <summary>
@@ -270,16 +372,9 @@ namespace Insight.Database.CodeGenerator
 			return (long)GetValue(ordinal);
 		}
 
-		public override string GetString(int ordinal)
+		public override object this[int ordinal]
 		{
-			object value = GetValue(ordinal);
-
-			// if this is a string, then return it
-			string s = value as string;
-			if (value == null || s != null)
-				return s;
-
-			return (string)TypeHelper.SerializeObjectToXml(value, _readerData.MemberTypes[ordinal]);
+			get { return GetValue(ordinal); }
 		}
 		#endregion
 
@@ -305,11 +400,6 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
-		{
-			throw new NotImplementedException();
-		}
-
-		public override long GetChars(int ordinal, long dataOffset, char[] buffer, int bufferOffset, int length)
 		{
 			throw new NotImplementedException();
 		}
@@ -350,11 +440,6 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		public override object this[string name]
-		{
-			get { throw new NotImplementedException(); }
-		}
-
-		public override object this[int ordinal]
 		{
 			get { throw new NotImplementedException(); }
 		}

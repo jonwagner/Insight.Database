@@ -24,9 +24,11 @@ namespace Insight.Tests
 			_connection.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
 			_connection.ExecuteSql("CREATE TYPE [InsightTestDataTable] AS TABLE ([Int] [int] NOT NULL, [IntNull][int])");
 			_connection.ExecuteSql("CREATE TYPE [InsightTestDataTable2] AS TABLE ([Int] [decimal] NOT NULL, [IntNull][decimal])");
+			_connection.ExecuteSql("CREATE TYPE [InsightTestDataStringTable] AS TABLE ([String] [varchar](128) NOT NULL)");
 			_connection.ExecuteSql("CREATE PROCEDURE [Int32TestProc] @p [Int32Table] READONLY AS SELECT * FROM @p");
 			_connection.ExecuteSql("CREATE PROCEDURE [InsightTestDataTestProc] @p [InsightTestDataTable] READONLY AS SELECT * FROM @p");
 			_connection.ExecuteSql("CREATE PROCEDURE [InsightTestDataTestProc2] @p [InsightTestDataTable2] READONLY AS SELECT * FROM @p");
+			_connection.ExecuteSql("CREATE PROCEDURE [InsightTestDataStringTestProc] @p [InsightTestDataStringTable] READONLY AS SELECT * FROM @p");
 
 			_connection.ExecuteSql("CREATE TYPE [EvilTypes] AS TABLE (a [money], b [smallmoney], c [date])");
 			_connection.ExecuteSql("CREATE PROCEDURE [EvilProc] @p [EvilTypes] READONLY AS SELECT * FROM @p");
@@ -42,46 +44,24 @@ namespace Insight.Tests
 
 		private void CleanupObjects()
 		{
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'Int32TestProc') DROP PROCEDURE [Int32TestProc]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestDataTestProc') DROP PROCEDURE [InsightTestDataTestProc]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestDataTestProc2') DROP PROCEDURE [InsightTestDataTestProc2]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestDataStringTestProc') DROP PROCEDURE [InsightTestDataStringTestProc]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'EvilProc') DROP PROCEDURE [EvilProc]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataTable') DROP TYPE [InsightTestDataTable]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataTable2') DROP TYPE [InsightTestDataTable2]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataStringTable') DROP TYPE [InsightTestDataStringTable]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'EvilTypes') DROP TYPE [EvilTypes]");
+		}
+		private void Cleanup(string sql)
+		{ 
 			try
 			{
-				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'Int32TestProc') DROP PROCEDURE [Int32TestProc]");
+				_connection.ExecuteSql(sql);
 			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestDataTestProc') DROP PROCEDURE [InsightTestDataTestProc]");
-			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestDataTestProc2') DROP PROCEDURE [InsightTestDataTestProc2]");
-			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'EvilProc') DROP PROCEDURE [EvilProc]");
-			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
-			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataTable') DROP TYPE [InsightTestDataTable]");
-			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataTable2') DROP TYPE [InsightTestDataTable2]");
-			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.types WHERE name = 'EvilTypes') DROP TYPE [EvilTypes]");
-			}
-			catch { }
+			catch { }		
 		}
 		#endregion
 
@@ -90,6 +70,16 @@ namespace Insight.Tests
 		{
 			public int Int;
 			public int? IntNull { get; set; }
+		}
+
+		class InsightTestDataString
+		{
+			public string String;
+		}
+
+		class InsightTestDataIntString
+		{
+			public int String;
 		}
 		#endregion
 
@@ -202,6 +192,46 @@ namespace Insight.Tests
 			var list = new List<Data>() { o };
 
 			_connection.Query("EvilProc", new { p = list});			
+		}
+
+		[Test]
+		public void TestThatStringTypesAreReadProperly()
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				// build test data
+				InsightTestDataString[] array = new InsightTestDataString[i];
+				for (int j = 0; j < i; j++)
+					array[j] = new InsightTestDataString() { String = j.ToString() };
+
+				// run the query
+				var items = _connection.Query<InsightTestDataString>("InsightTestDataStringTestProc", new { p = array.ToList() });
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
+				for (int j = 0; j < i; j++)
+					Assert.AreEqual(j.ToString(), items[j].String);
+			}
+		}
+
+		[Test]
+		public void TestThatIntsAreConvertedToStringsProperly()
+		{
+			// send up an int and see if it is coerced to a string properly
+
+			for (int i = 0; i < 3; i++)
+			{
+				// build test data
+				InsightTestDataIntString[] array = new InsightTestDataIntString[i];
+				for (int j = 0; j < i; j++)
+					array[j] = new InsightTestDataIntString() { String = j };
+
+				// run the query
+				var items = _connection.Query<InsightTestDataString>("InsightTestDataStringTestProc", new { p = array.ToList() });
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
+				for (int j = 0; j < i; j++)
+					Assert.AreEqual(j.ToString(), items[j].String);
+			}
 		}
 		#endregion
 
