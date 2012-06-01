@@ -77,6 +77,35 @@ namespace Insight.Tests
 
 			Assert.AreEqual(ConnectionState.Closed, _connection.State);
 		}
+
+		[Test]
+		public void ConnectionsShouldBeReusableForQuerySql()
+		{
+			// make sure the connection is closed
+			_connection.Close();
+
+			var results = _connection.QuerySql("SELECT 1");
+			var results2 = _connection.QuerySql("SELECT 1");
+		}
+
+		[Test]
+		public void ConnectionsShouldBeReusableForQuery()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
+
+				// make sure the connection is closed
+				_connection.Close();
+
+				var results = _connection.Query("InsightTestProc", new { Int = 2 });
+				var results2 = _connection.Query("InsightTestProc", new { Int = 2 });
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP PROC InsightTestProc");
+			}
+		}
 		#endregion
 
 		#region Asynchronous Queries
