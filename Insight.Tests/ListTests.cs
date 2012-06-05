@@ -10,7 +10,7 @@ using System.Dynamic;
 namespace Insight.Tests
 {
 	[TestFixture]
-	public class ListTests :BaseDbTest
+	public class ListTests : BaseDbTest
 	{
 		#region SetUp and TearDown
 		[TestFixtureSetUp]

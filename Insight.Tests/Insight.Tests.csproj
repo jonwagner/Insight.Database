@@ -34,6 +34,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="MiniProfiler">
+      <HintPath>..\packages\MiniProfiler.2.0.1\lib\net40\MiniProfiler.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -62,6 +65,7 @@
     <Compile Include="ConnectionTests.cs" />
     <Compile Include="ConnectionStringSettingsTests.cs" />
     <Compile Include="FastExpandoTests.cs" />
+    <Compile Include="MiniProfilerTests.cs" />
     <Compile Include="XmlTests.cs" />
     <Compile Include="DbReaderTests.cs" />
     <Compile Include="DynamicParameterTests.cs" />

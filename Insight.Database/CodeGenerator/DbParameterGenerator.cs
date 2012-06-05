@@ -160,17 +160,27 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The list of parameter names.</returns>
 		private static List<SqlParameter> DeriveParameters(IDbCommand command)
 		{
+			string sql = command.CommandText;
+
 			// for SqlServer stored procs, we can call the server to derive them
 			if (command.CommandType == CommandType.StoredProcedure)
 			{
-				SqlCommand sql = command as SqlCommand;
-				if (sql != null)
-					return DeriveParametersFromSqlProcedure(sql);
+				SqlCommand sqlCommand = command as SqlCommand;
+
+				// if the command is not a SqlCommand, then maybe it is wrapped by something like MiniProfiler
+				if (sqlCommand == null && command.GetType().Name == "ProfiledDbCommand")
+				{
+					dynamic dynamicCommand = command;
+					sqlCommand = dynamicCommand.InternalCommand;
+				}
+
+				if (sqlCommand != null)
+					return DeriveParametersFromSqlProcedure(sqlCommand);
 			}
 
 			// otherwise we have to look at the text
 			// the text can even contain the parameters in a comment (e.g. "myproc -- @p, @q")
-			return DeriveParametersFromSqlText(command.CommandText);
+			return DeriveParametersFromSqlText(sql);
 		}
 
 		/// <summary>
