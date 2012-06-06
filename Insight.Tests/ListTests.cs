@@ -144,6 +144,26 @@ namespace Insight.Tests
 		}
 
 		/// <summary>
+		/// This method name COULD be longer.
+		/// We want: connection.Query("PROC", list, Parameters.Empty) to send list to a single TVP
+		/// </summary>
+		[Test]
+		public void EnumerablePassedDirectlyToProcWithOneTVPParameterShouldMapListToParameter()
+		{
+			// build test data
+			InsightTestData[] array = new InsightTestData[3];
+			for (int j = 0; j < 3; j++)
+				array[j] = new InsightTestData() { Int = j };
+
+			// run the query
+			var items = _connection.Query<InsightTestData>("InsightTestDataTestProc", array);
+			Assert.IsNotNull(items);
+			Assert.AreEqual(3, items.Count);
+			for (int j = 0; j < 3; j++)
+				Assert.AreEqual(j, items[j].Int);
+		}
+
+		/// <summary>
 		/// Test support for enumerable parameters of classes sent as table value parameters.
 		/// </summary>
 		[Test]
@@ -225,6 +245,27 @@ namespace Insight.Tests
 					Assert.AreEqual(j.ToString(), items[j].String);
 			}
 		}
+
+		/// <summary>
+		/// This method name COULD be longer.
+		/// We want: connection.Query("PROC", list, Parameters.Empty) to send list to a single TVP
+		/// </summary>
+		[Test]
+		public void AsyncEnumerablePassedDirectlyToProcWithOneTVPParameterShouldMapListToParameter()
+		{
+			// build test data
+			InsightTestData[] array = new InsightTestData[3];
+			for (int j = 0; j < 3; j++)
+				array[j] = new InsightTestData() { Int = j };
+
+			// run the query
+			var items = _connection.QueryAsync<InsightTestData>("InsightTestDataTestProc", array).Result;
+			Assert.IsNotNull(items);
+			Assert.AreEqual(3, items.Count);
+			for (int j = 0; j < 3; j++)
+				Assert.AreEqual(j, items[j].Int);
+		}
+
 		#endregion
 
 		#region Mismatch Tests

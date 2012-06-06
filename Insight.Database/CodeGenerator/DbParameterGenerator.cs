@@ -255,11 +255,27 @@ namespace Insight.Database.CodeGenerator
 			List<SqlParameter> parameters = DeriveParameters(command);
 
 			// create a dynamic method
-			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "CreateParameters-{0}", Guid.NewGuid()), null, new[] { typeof(IDbCommand), typeof(object) }, type, true);
+			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
 
+			// special case if the parameters object is an IEnumerable or Array
+			// look for the parameter that is a Structured object and pass the array to the TVP
+			if (typeof(IEnumerable).IsAssignableFrom(type))
+			{
+				SqlParameter sqlParameter = parameters.Find(p => p.SqlDbType == SqlDbType.Structured);
+				string parameterName = sqlParameter.ParameterName;
+				string tableTypeName = sqlParameter.TypeName;
+				if (tableTypeName.Count(c => c == '.') > 1)
+					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
+
+				return (IDbCommand cmd, object o) => { ListParameterHelper.AddEnumerableParameters(cmd, parameterName, tableTypeName, typeOwner, o); };
+			}
+
+			// start creating a dynamic method
+			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "CreateParameters-{0}", Guid.NewGuid()), null, new[] { typeof(IDbCommand), typeof(object) }, typeOwner, true);
 			var il = dm.GetILGenerator();
-			il.DeclareLocal(typeof(Int32));										// loc.0 = string.length
 
+			// start the standard serialization method
+			il.DeclareLocal(typeof(Int32));											// loc.0 = string.length
 			il.Emit(OpCodes.Ldarg_0);												// push arg.0 (command), stack => [command]
 			il.EmitCall(OpCodes.Callvirt, _iDbCommandGetParameters, null);			// call getparams, stack => [parameters]
 
