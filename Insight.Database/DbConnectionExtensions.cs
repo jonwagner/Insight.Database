@@ -1000,6 +1000,136 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region Insert Members
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is commonly used to retrieve identity values from the database upon an insert.
+		/// The result set is expected to contain one record that is merged into the object upon return.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="inserted">
+		/// The object that is being inserted and should be merged.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>The object after merging the results.</returns>
+		public static TResult Insert<TResult>(
+			this IDbConnection connection,
+			string sql,
+			TResult inserted,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			connection.ExecuteAndAutoClose(
+				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction).Merge(inserted),
+				commandBehavior);
+
+			return inserted;
+		}
+
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is commonly used to retrieve identity values from the database upon an insert.
+		/// The result set is expected to contain one record that is merged into the object upon return.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="inserted">
+		/// The object that is being inserted and should be merged.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>The object after merging the results.</returns>
+		public static TResult InsertSql<TResult>(
+			this IDbConnection connection,
+			string sql,
+			TResult inserted,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.Insert<TResult>(sql, inserted, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+		}
+
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is commonly used to retrieve identity values from the database upon an insert.
+		/// The result set is expected to contain one record per insertedObject, in the same order as the insertedObjects.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="inserted">
+		/// The list of objects that is being inserted and should be merged.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>The list of objects after merging the results.</returns>
+		public static IEnumerable<TResult> InsertList<TResult>(
+			this IDbConnection connection,
+			string sql,
+			IEnumerable<TResult> inserted,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAndAutoClose(
+				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction).Merge(inserted),
+				commandBehavior);
+		}
+
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is commonly used to retrieve identity values from the database upon an insert.
+		/// The result set is expected to contain one record per insertedObject, in the same order as the insertedObjects.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="inserted">
+		/// The list of objects that is being inserted and should be merged.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <returns>The list of objects after merging the results.</returns>
+		public static IEnumerable<TResult> InsertListSql<TResult>(
+			this IDbConnection connection,
+			string sql,
+			IEnumerable<TResult> inserted,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.ExecuteAndAutoClose(
+				c => c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction).Merge(inserted),
+				commandBehavior);
+		}		
+		#endregion
+
 		#region Helper Methods
 		/// <summary>
 		/// Detect if a connection needs to be automatically opened and closed.

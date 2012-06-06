@@ -265,7 +265,63 @@ namespace Insight.Database
 
 			return reader.AsEnumerable(r => mapper(r, callback));
 		}
+		#endregion
 
+		#region Merge Methods
+		/// <summary>
+		/// Merges the results of a recordset into an existing object.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="reader">The recordset to read.</param>
+		/// <param name="item">The item to merge into.</param>
+		/// <returns>The item that has been merged.</returns>
+		/// <remarks>
+		/// This method reads a single record from the reader and overwrites the values of the object.
+		/// The reader is then advanced to the next result or disposed.
+		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
+		/// </remarks>
+		public static T Merge<T>(this IDataReader reader, T item)
+		{
+			var merger = DbReaderDeserializer<T>.GetMerger(reader);
+
+			// read the identities from the recordset and merge it into the object
+			reader.Read();
+			merger(reader, item);
+
+			// we are done with this result set, so move onto the next or clean up the reader
+			if (!reader.NextResult())
+				reader.Dispose();
+
+			return item;
+		}
+
+		/// <summary>
+		/// Merges the results of a recordset into a list of existing objects.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="reader">The recordset to read.</param>
+		/// <param name="items">The list of items to merge into.</param>
+		/// <returns>The list of merged objects.</returns>
+		public static IEnumerable<T> Merge<T>(this IDataReader reader, IEnumerable<T> items)
+		{
+			var merger = DbReaderDeserializer<T>.GetMerger(reader);
+
+			// read the identities of each item from the recordset and merge them into the objects
+			foreach (T item in items)
+			{
+				reader.Read();
+				merger(reader, item);
+			}
+
+			// we are done with this result set, so move onto the next or clean up the reader
+			if (!reader.NextResult())
+				reader.Dispose();
+
+			return items;
+		}
+		#endregion
+
+		#region Private Methods
 		/// <summary>
 		/// Read a data reader and map the objects as they are read.
 		/// </summary>

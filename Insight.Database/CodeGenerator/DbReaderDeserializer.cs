@@ -54,9 +54,14 @@ namespace Insight.Database.CodeGenerator
 		private static ConstructorInfo _constructor = typeof(T).GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
 
 		/// <summary>
-		/// The cache for the deserializers.
+		/// The cache for the deserializers that deserialize into new objects.
 		/// </summary>
 		private static ConcurrentDictionary<SchemaIdentity, Func<IDataReader, T>> _deserializers = new ConcurrentDictionary<SchemaIdentity, Func<IDataReader, T>>();
+
+		/// <summary>
+		/// The cache for mergers that deserialize into existing objects.
+		/// </summary>
+		private static ConcurrentDictionary<SchemaIdentity, Func<IDataReader, T, T>> _mergers = new ConcurrentDictionary<SchemaIdentity, Func<IDataReader, T, T>>();
 		#endregion
 
 		#region Constructors
@@ -130,7 +135,26 @@ namespace Insight.Database.CodeGenerator
 					else if (typeof(T).IsValueType || typeof(T) == typeof(string))
 						return GetValueDeserializer();
 					else
-						return GetClassDeserializer(reader);
+						return (Func<IDataReader, T>)GetClassDeserializer(reader, createNewObject: true);
+				});
+		}
+
+		/// <summary>
+		/// Get a deserializer to read the fields of class T from the given reader into an existing object.
+		/// </summary>
+		/// <param name="reader">The reader to read from.</param>
+		/// <returns>A function that can deserialize a T from the reader.</returns>
+		public static Func<IDataReader, T, T> GetMerger(IDataReader reader)
+		{
+			// get the class deserializer
+			SchemaIdentity identity = new SchemaIdentity(reader);
+
+			// try to get the deserializer. if not found, create one.
+			return _mergers.GetOrAdd(
+				identity,
+				key =>
+				{
+					return (Func<IDataReader, T, T>)GetClassDeserializer(reader, createNewObject: false);
 				});
 		}
 		#endregion
@@ -142,8 +166,9 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="reader">The reader to analyze.</param>
 		/// <param name="startBound">The index of the first column to read.</param>
 		/// <param name="endBound">The index of the last column to read.</param>
-		/// <returns>A function that reads a T from an IDataReader.</returns>
-		internal static Func<IDataReader, T> GetClassDeserializer(IDataReader reader, int startBound, int endBound)
+		/// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in.</param>
+		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;</returns>
+		internal static Delegate GetClassDeserializer(IDataReader reader, int startBound, int endBound, bool createNewObject)
 		{
 			// get the schema table in case we need it
 			DataTable schemaTable = reader.GetSchemaTable();
@@ -168,13 +193,20 @@ namespace Insight.Database.CodeGenerator
 					setters.Add(null);
 			}
 
+			// the method can either be:
+			// createNewObject => Func<IDataReader, T>
+			// !createNewObject => Func<IDataReader, T, T>
 			// create a new anonymous method that takes an IDataReader and returns T
-			var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", typeof(T).FullName, Guid.NewGuid()), typeof(T), new[] { typeof(IDataReader) }, true);
+			var dm = new DynamicMethod(
+				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", typeof(T).FullName, Guid.NewGuid()), 
+				typeof(T),
+				createNewObject ? new[] { typeof(IDataReader) } : new[] { typeof(IDataReader), typeof(T) }, 
+				true);
 
 			// get the il generator and put some local variables on the stack
 			var il = dm.GetILGenerator();
 			il.DeclareLocal(typeof(int));					// loc.0 = index
-			il.DeclareLocal(typeof(T));					// loc.1 = result
+			il.DeclareLocal(typeof(T));						// loc.1 = result
 			il.DeclareLocal(typeof(string));				// loc.2 = string (for enum processing)
 
 			// initialize index = 0
@@ -185,7 +217,12 @@ namespace Insight.Database.CodeGenerator
 			if (_constructor == null)
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find default constructor for type {0}", typeof(T).FullName));
 			il.BeginExceptionBlock();
-			il.Emit(OpCodes.Newobj, _constructor);			// push new T, stack => [target]
+
+			// if we are supposed to create a new object, then new that up, otherwise use the object passed in as an argument 
+			if (createNewObject)
+				il.Emit(OpCodes.Newobj, _constructor);		// push new T, stack => [target]
+			else
+				il.Emit(OpCodes.Ldarg_1);					// push arg.1 (T), stack => [target]
 			il.Emit(OpCodes.Stloc_1);						// pop loc.1 (result), stack => [empty]
 
 			for (int index = startBound; index < endBound; index++)
@@ -407,7 +444,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Ret);
 
 			// create the function
-			return (Func<IDataReader, T>)dm.CreateDelegate(typeof(Func<IDataReader, T>));
+			return dm.CreateDelegate(createNewObject ? typeof(Func<IDataReader, T>) : typeof(Func<IDataReader, T, T>));
 		}
 
 		/// <summary>
@@ -426,10 +463,11 @@ namespace Insight.Database.CodeGenerator
 		/// Compiles and returns a method that deserializes class T from an IDataReader record.
 		/// </summary>
 		/// <param name="reader">The reader to analyze.</param>
+		/// <param name="createNewObject">True to create a deserializer that creates new objects, False to take an object as input.</param>
 		/// <returns>A function that reads a T from an IDataReader.</returns>
-		private static Func<IDataReader, T> GetClassDeserializer(IDataReader reader)
+		private static Delegate GetClassDeserializer(IDataReader reader, bool createNewObject)
 		{
-			return GetClassDeserializer(reader, 0, reader.FieldCount);
+			return GetClassDeserializer(reader, 0, reader.FieldCount, createNewObject);
 		}
 		#endregion
 
@@ -697,12 +735,12 @@ namespace Insight.Database.CodeGenerator
 			int nextColumn = column;
 
 			MethodHolder foo = new MethodHolder();
-			foo.T = DbReaderDeserializer<T>.GetClassDeserializer(reader, column, DetectNextColumn<T, TSub1>(idColumns, reader, ref nextColumn)); column = nextColumn;
-			foo.T1 = (typeof(TSub1) != typeof(NoClass)) ? DbReaderDeserializer<TSub1>.GetClassDeserializer(reader, column, DetectNextColumn<TSub1, TSub2>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-			foo.T2 = (typeof(TSub2) != typeof(NoClass)) ? DbReaderDeserializer<TSub2>.GetClassDeserializer(reader, column, DetectNextColumn<TSub2, TSub3>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-			foo.T3 = (typeof(TSub3) != typeof(NoClass)) ? DbReaderDeserializer<TSub3>.GetClassDeserializer(reader, column, DetectNextColumn<TSub3, TSub4>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-			foo.T4 = (typeof(TSub4) != typeof(NoClass)) ? DbReaderDeserializer<TSub4>.GetClassDeserializer(reader, column, DetectNextColumn<TSub4, TSub5>(idColumns, reader, ref nextColumn)) : null; column = nextColumn;
-			foo.T5 = (typeof(TSub5) != typeof(NoClass)) ? DbReaderDeserializer<TSub5>.GetClassDeserializer(reader, column, reader.FieldCount) : null;
+			foo.T = (Func<IDataReader, T>)DbReaderDeserializer<T>.GetClassDeserializer(reader, column, DetectNextColumn<T, TSub1>(idColumns, reader, ref nextColumn), true); column = nextColumn;
+			foo.T1 = (Func<IDataReader, TSub1>)((typeof(TSub1) != typeof(NoClass)) ? DbReaderDeserializer<TSub1>.GetClassDeserializer(reader, column, DetectNextColumn<TSub1, TSub2>(idColumns, reader, ref nextColumn), true) : null); column = nextColumn;
+			foo.T2 = (Func<IDataReader, TSub2>)((typeof(TSub2) != typeof(NoClass)) ? DbReaderDeserializer<TSub2>.GetClassDeserializer(reader, column, DetectNextColumn<TSub2, TSub3>(idColumns, reader, ref nextColumn), true) : null); column = nextColumn;
+			foo.T3 = (Func<IDataReader, TSub3>)((typeof(TSub3) != typeof(NoClass)) ? DbReaderDeserializer<TSub3>.GetClassDeserializer(reader, column, DetectNextColumn<TSub3, TSub4>(idColumns, reader, ref nextColumn), true) : null); column = nextColumn;
+			foo.T4 = (Func<IDataReader, TSub4>)((typeof(TSub4) != typeof(NoClass)) ? DbReaderDeserializer<TSub4>.GetClassDeserializer(reader, column, DetectNextColumn<TSub4, TSub5>(idColumns, reader, ref nextColumn), true) : null); column = nextColumn;
+			foo.T5 = (Func<IDataReader, TSub5>)((typeof(TSub5) != typeof(NoClass)) ? DbReaderDeserializer<TSub5>.GetClassDeserializer(reader, column, reader.FieldCount, true) : null);
 
 			// create a new anonymous method that takes an IDataReader and returns T
 			var dm = new DynamicMethod(
@@ -716,11 +754,11 @@ namespace Insight.Database.CodeGenerator
 			// Create a new object and store it into loc.0
 			///////////////////////////////////////////////////
 			// loc.0 = GetT
-			il.DeclareLocal(typeof(T));											// loc.0 = result
+			il.DeclareLocal(typeof(T));													// loc.0 = result
 
 			// if we have a callback, then at the end we are going to call: callback (target, t, t1, t2, t3, t4, t5);
 			if (useCallback)
-				il.Emit(OpCodes.Ldarg_2);											// push callback
+				il.Emit(OpCodes.Ldarg_2);												// push callback
 
 			///////////////////////////////////////////////////
 			// Read the main object
@@ -729,7 +767,7 @@ namespace Insight.Database.CodeGenerator
 			{
 				FieldInfo fieldT = typeof(MethodHolder).GetField("T");
 				il.Emit(OpCodes.Ldarg_0);												// push MethodHolder
-				il.Emit(OpCodes.Ldfld, fieldT);										// get T delegate
+				il.Emit(OpCodes.Ldfld, fieldT);											// get T delegate
 				il.Emit(OpCodes.Ldarg_1);												// push reader
 				il.Emit(OpCodes.Callvirt, fieldT.FieldType.GetMethod("Invoke"));		// call f (reader), stack is now T
 
@@ -779,9 +817,9 @@ namespace Insight.Database.CodeGenerator
 
 			// invoke the delegate to get the sub-object
 			FieldInfo fieldInfo = typeof(MethodHolder).GetField(field);
-			il.Emit(OpCodes.Ldarg_0);												// push MethodHolder
-			il.Emit(OpCodes.Ldfld, fieldInfo);										// get the delegate
-			il.Emit(OpCodes.Ldarg_1);												// push reader
+			il.Emit(OpCodes.Ldarg_0);											// push MethodHolder
+			il.Emit(OpCodes.Ldfld, fieldInfo);									// get the delegate
+			il.Emit(OpCodes.Ldarg_1);											// push reader
 			il.Emit(OpCodes.Call, fieldInfo.FieldType.GetMethod("Invoke"));		// invoke the delegate
 
 			// if we don't have a callback, then we are going to store the value directly into the field on T

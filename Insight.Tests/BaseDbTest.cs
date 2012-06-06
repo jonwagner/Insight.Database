@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Insight.Database;
 using NUnit.Framework;
 using System.Data.SqlClient;
 using System.Transactions;
@@ -52,5 +53,18 @@ namespace Insight.Tests
 		protected SqlConnection _connection;
 		protected TransactionScope _transaction;
 		#endregion
+
+		/// <summary>
+		/// Execute some SQL that should clean something up. Catch exceptions so we clean up as much as possible.
+		/// </summary>
+		/// <param name="sql">The SQL to execute.</param>
+		protected void Cleanup(string sql)
+		{
+			try
+			{
+				_connection.ExecuteSql(sql);
+			}
+			catch { }
+		}
 	}
 }

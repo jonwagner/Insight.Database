@@ -55,14 +55,6 @@ namespace Insight.Tests
 			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataStringTable') DROP TYPE [InsightTestDataStringTable]");
 			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'EvilTypes') DROP TYPE [EvilTypes]");
 		}
-		private void Cleanup(string sql)
-		{ 
-			try
-			{
-				_connection.ExecuteSql(sql);
-			}
-			catch { }		
-		}
 		#endregion
 
 		#region Helper Class
