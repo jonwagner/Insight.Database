@@ -167,7 +167,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="startBound">The index of the first column to read.</param>
 		/// <param name="endBound">The index of the last column to read.</param>
 		/// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in.</param>
-		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;</returns>
+		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		internal static Delegate GetClassDeserializer(IDataReader reader, int startBound, int endBound, bool createNewObject)
 		{
 			// get the schema table in case we need it

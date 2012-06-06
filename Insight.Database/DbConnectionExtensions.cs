@@ -1009,11 +1009,11 @@ namespace Insight.Database
 		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="inserted">
 		/// The object that is being inserted and should be merged.
 		/// If null, then the results are merged into the parameters object.
 		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
