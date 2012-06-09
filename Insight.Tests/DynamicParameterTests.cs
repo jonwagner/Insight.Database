@@ -9,7 +9,7 @@ using NUnit.Framework;
 namespace Insight.Tests
 {
 	/// <summary>
-	/// TODO: Update summary.
+	/// Tests that dynamic objects can be sent to the database and retrieved.
 	/// </summary>
 	[TestFixture]
 	public class DynamicParameterTests : BaseDbTest
