@@ -17,6 +17,7 @@ using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Reliable;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -165,17 +166,22 @@ namespace Insight.Database.CodeGenerator
 			// for SqlServer stored procs, we can call the server to derive them
 			if (command.CommandType == CommandType.StoredProcedure)
 			{
+				// if we have a SqlCommand, use it
 				SqlCommand sqlCommand = command as SqlCommand;
+				if (sqlCommand != null)
+					return DeriveParametersFromSqlProcedure(sqlCommand);
+
+				// if we have a reliable command, break it down
+				ReliableCommand reliable = command as ReliableCommand;
+				if (reliable != null)
+					return DeriveParameters(reliable.InnerCommand);
 
 				// if the command is not a SqlCommand, then maybe it is wrapped by something like MiniProfiler
 				if (sqlCommand == null && command.GetType().Name == "ProfiledDbCommand")
 				{
 					dynamic dynamicCommand = command;
-					sqlCommand = dynamicCommand.InternalCommand;
+					return DeriveParameters(dynamicCommand.InternalCommand);
 				}
-
-				if (sqlCommand != null)
-					return DeriveParametersFromSqlProcedure(sqlCommand);
 			}
 
 			// otherwise we have to look at the text

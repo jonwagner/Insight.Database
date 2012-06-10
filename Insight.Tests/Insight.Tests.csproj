@@ -37,6 +37,9 @@
     <Reference Include="MiniProfiler">
       <HintPath>..\packages\MiniProfiler.2.0.1\lib\net40\MiniProfiler.dll</HintPath>
     </Reference>
+    <Reference Include="Moq">
+      <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
+    </Reference>
     <Reference Include="nunit.framework">
       <HintPath>..\packages\NUnit.2.5.10.11092\lib\nunit.framework.dll</HintPath>
     </Reference>
@@ -67,6 +70,7 @@
     <Compile Include="FastExpandoTests.cs" />
     <Compile Include="InsertTests.cs" />
     <Compile Include="MiniProfilerTests.cs" />
+    <Compile Include="RetryStrategyTests.cs" />
     <Compile Include="XmlTests.cs" />
     <Compile Include="DbReaderTests.cs" />
     <Compile Include="DynamicParameterTests.cs" />
