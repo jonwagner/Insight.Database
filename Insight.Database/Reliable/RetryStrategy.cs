@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Insight.Database.Reliable
 {
@@ -15,12 +16,14 @@ namespace Insight.Database.Reliable
 	{
 		#region Constructors
 		/// <summary>
-		/// Initializes static members of the RetryStrategy class.
+		/// Timespan for not repeating a timer operation.
 		/// </summary>
-		static RetryStrategy()
-		{
-			Default = new RetryStrategy();
-		}
+		private static readonly TimeSpan NoRepeat = new TimeSpan(-1);
+
+		/// <summary>
+		/// The default retry strategy to use if none is specified.
+		/// </summary>
+		private static readonly RetryStrategy _default = new RetryStrategy(); 
 
 		/// <summary>
 		/// Initializes a new instance of the RetryStrategy class.
@@ -39,7 +42,7 @@ namespace Insight.Database.Reliable
 		/// <summary>
 		/// Gets the default retry strategy to use for a ReliableConnection if none is specified.
 		/// </summary>
-		public static RetryStrategy Default { get; private set; }
+		public static RetryStrategy Default { get { return _default; } }
 
 		/// <summary>
 		/// Gets or sets an event handler that is called before an operation is retried.
@@ -124,6 +127,24 @@ namespace Insight.Database.Reliable
 		}
 
 		/// <summary>
+		/// Asynchronously executes a function and retries the action if a transient error is detected.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the result of the function.</typeparam>
+		/// <param name="commandContext">The IDbCommand that is expected to be executed within the function, 
+		/// or null if the operation is being performed directly on a connection.</param>
+		/// <param name="func">The function to execute.</param>
+		/// <returns>The result of the function.</returns>
+		public Task<TResult> ExecuteWithRetryAsync<TResult>(IDbCommand commandContext, Func<Task<TResult>> func)
+		{
+			TaskCompletionSource<TResult> tcs = new TaskCompletionSource<TResult>();
+
+			// when that task finishes, handle the results
+			CheckAsyncResult(commandContext, tcs, func, 0, MinBackOff);
+
+			return tcs.Task;
+		}
+
+		/// <summary>
 		/// Determines if an exception is a transient error.
 		/// </summary>
 		/// <param name="exception">The exception to test.</param>
@@ -151,6 +172,78 @@ namespace Insight.Database.Reliable
 			}
 
 			return false;
+		}
+
+		/// <summary>
+		/// Checks the result of an async operation and continues the retry operation.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the result returned from the operation.</typeparam>
+		/// <param name="commandContext">The IDbCommand that is currently being executed.</param>
+		/// <param name="tcs">The TaskCompletionSource for the completion of the operation.</param>
+		/// <param name="func">The function to execute.</param>
+		/// <param name="attempt">The number of the previous attempt. 0 is the first attempt.</param>
+		/// <param name="delay">The current delay in between retry attempts.</param>
+		private void CheckAsyncResult<TResult>(IDbCommand commandContext, TaskCompletionSource<TResult> tcs, Func<Task<TResult>> func, int attempt, TimeSpan delay)
+		{
+			func().ContinueWith(t =>
+			{
+				switch (t.Status)
+				{
+					case TaskStatus.Canceled:
+						tcs.SetCanceled();
+						return;
+					case TaskStatus.RanToCompletion:
+						tcs.SetResult(t.Result);
+						return;
+				}
+
+				// if it's not a transient error, then let it go
+				Exception ex = t.Exception;
+				if (!IsTransientException(ex))
+				{
+					tcs.SetException(ex);
+					return;
+				}
+
+				// if the number of retries has been exceeded then throw
+				if (attempt >= MaxRetryCount)
+				{
+					tcs.SetException(ex);
+					return;
+				}
+
+				// first off the event to tell someone that we are going to retry this
+				if (OnRetrying(commandContext, ex, attempt))
+				{
+					tcs.SetException(ex);
+					return;
+				}
+
+				// if this is the first attempt and a fastretry, then just execute it
+				if (attempt == 0 && FastFirstRetry)
+				{
+					CheckAsyncResult(commandContext, tcs, func, attempt + 1, delay);
+					return;
+				}
+
+				// update the increment
+				TimeSpan nextDelay = delay + IncrementalBackOff;
+				if (nextDelay > MaxBackOff)
+					nextDelay = MaxBackOff;
+
+				// create a timer for the retry
+				// note that we need to put the timer into a closure so we can dispose it
+				// but we have to wait for the local variable to be assigned before we can start the timer
+				Timer timer = null;
+				timer = new Timer(_ =>
+				{
+					CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
+					timer.Dispose();
+				});
+
+				// start the timer
+				timer.Change(delay, NoRepeat);
+			});
 		}
 
 		/// <summary>

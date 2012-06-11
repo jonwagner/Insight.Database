@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace Insight.Database.Reliable
 {
@@ -38,6 +39,23 @@ namespace Insight.Database.Reliable
 		{
 			_retryStrategy = retryStrategy;
 			InnerCommand = innerCommand;
+		}
+		#endregion
+
+		#region Async Methods
+		/// <summary>
+		/// Executes the command asynchronously with retry.
+		/// </summary>
+		/// <param name="commandBehavior">The commandBehavior to execute with.</param>
+		/// <returns>A task that provides an IDataReader of the results when complete.</returns>
+		public Task<IDataReader> GetReaderAsync(CommandBehavior commandBehavior)
+		{
+			// start the sql command executing
+			SqlCommand sqlCommand = InnerCommand as SqlCommand;
+			if (sqlCommand == null)
+				throw new InvalidOperationException("Cannot perform an async query on a command that is not a SqlCommand");
+
+			return _retryStrategy.ExecuteWithRetryAsync(this, () => sqlCommand.GetReaderAsync(commandBehavior));
 		}
 		#endregion
 

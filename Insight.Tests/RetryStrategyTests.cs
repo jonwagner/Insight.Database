@@ -127,7 +127,56 @@ namespace Insight.Tests
 		}
 		#endregion
 
-		// TODO: async retries
-		// TODO: test cancelling retries
+		#region Async Retry Tests
+		[Test]
+		public void AsyncBadOpenPerformsRetry()
+		{
+			// try a bad connection
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			b.InitialCatalog = "bad";
+			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
+
+			try
+			{
+				retry.QueryAsync("SELECT 1").Wait();
+			}
+			catch
+			{
+			}
+
+			Assert.IsTrue(Retries > 0);
+		}
+
+		[Test]
+		public void AsyncBadQueryPerformsRetry()
+		{
+			// try a bad connection
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
+
+			RetryStrategy.MaxRetryCount = 5;
+			try
+			{
+				retry.QuerySqlAsync("INVALID SQL").Wait();
+			}
+			catch
+			{
+			}
+
+			Assert.IsTrue(Retries > 0);
+		}
+
+		[Test]
+		public void AsyncWorksWithReliableConnection()
+		{
+			// try a bad connection
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
+
+			int result = retry.QuerySqlAsync<int>("SELECT 10").Result.First();
+
+			Assert.AreEqual(10, result);
+		}
+		#endregion
 	}
 }

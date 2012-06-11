@@ -6,6 +6,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database.Reliable;
 
 namespace Insight.Database
 {
@@ -27,7 +28,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<int> ExecuteAsync(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -84,7 +85,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<int> ExecuteSqlAsync(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			bool closeConnection = false,
@@ -109,7 +110,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<FastExpando>> QueryAsync(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -135,7 +136,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QueryAsync<TResult>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -162,7 +163,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QueryAsync<TResult, TSub1>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -190,7 +191,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -219,7 +220,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2, TSub3>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -249,7 +250,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2, TSub3, TSub4>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -280,7 +281,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QueryAsync<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -304,7 +305,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<FastExpando>> QuerySqlAsync(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -328,7 +329,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QuerySqlAsync<TResult>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -353,7 +354,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -379,7 +380,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -406,7 +407,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2, TSub3>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -434,7 +435,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2, TSub3, TSub4>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -463,7 +464,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QuerySqlAsync<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
-			this SqlConnection connection, 
+			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -605,7 +606,7 @@ namespace Insight.Database
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task QueryAsync(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			object parameters,
 			Action<IDataReader> read,
@@ -632,7 +633,7 @@ namespace Insight.Database
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task QuerySqlAsync(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			object parameters,
 			Action<IDataReader> read,
@@ -660,7 +661,7 @@ namespace Insight.Database
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task<T> QueryAsync<T>(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			object parameters,
 			Func<IDataReader, T> read,
@@ -688,7 +689,7 @@ namespace Insight.Database
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task<T> QuerySqlAsync<T>(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			object parameters,
 			Func<IDataReader, T> read,
@@ -823,7 +824,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A task whose completion is the object after merging the results.</returns>
 		public static Task<TResult> InsertAsync<TResult>(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			TResult inserted,
 			object parameters = null,
@@ -856,7 +857,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A task whose completion is the object after merging the results.</returns>
 		public static Task<TResult> InsertSqlAsync<TResult>(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			TResult inserted,
 			object parameters = null,
@@ -889,7 +890,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A task whose completion is the list of objects after merging the results.</returns>
 		public static Task<IEnumerable<TResult>> InsertListAsync<TResult>(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			IEnumerable<TResult> inserted,
 			object parameters = null,
@@ -922,7 +923,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A task whose completion is the list of objects after merging the results.</returns>
 		public static Task<IEnumerable<TResult>> InsertListSqlAsync<TResult>(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			IEnumerable<TResult> inserted,
 			object parameters = null,
@@ -939,6 +940,27 @@ namespace Insight.Database
 
 		#region GetReader Methods
 		/// <summary>
+		/// Executes a command and returns a task that generates a SqlDataReader. This method does not support auto-open.
+		/// </summary>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="commandBehavior">The behavior for the command.</param>
+		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
+		internal static Task<IDataReader> GetReaderAsync(this IDbCommand command, CommandBehavior commandBehavior = CommandBehavior.Default)
+		{
+			// run sql commands directly
+			SqlCommand sqlCommand = command as SqlCommand;
+			if (sqlCommand != null)
+				return Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
+
+			// allow reliable commands to handle the icky task logic
+			ReliableCommand reliableCommand = command as ReliableCommand;
+			if (reliableCommand != null)
+				return reliableCommand.GetReaderAsync(commandBehavior);
+
+			throw new InvalidOperationException("Cannot perform an async query on a command that is not a SqlCommand.");
+		}
+
+		/// <summary>
 		/// Create a command and execute it. This method does not support auto-open.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
@@ -950,7 +972,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		private static Task<IDataReader> GetReaderAsync(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -958,20 +980,9 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			SqlCommand cmd = (SqlCommand)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
+			IDbCommand cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
 
 			return cmd.GetReaderAsync(commandBehavior);
-		}
-
-		/// <summary>
-		/// Executes a command and returns a task that generates a SqlDataReader. This method does not support auto-open.
-		/// </summary>
-		/// <param name="command">The command to execute.</param>
-		/// <param name="commandBehavior">The behavior for the command.</param>
-		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		private static Task<IDataReader> GetReaderAsync(this SqlCommand command, CommandBehavior commandBehavior = CommandBehavior.Default)
-		{
-			return Task<IDataReader>.Factory.FromAsync(command.BeginExecuteReader(commandBehavior), ar => command.EndExecuteReader(ar));
 		}
 		#endregion
 
@@ -984,7 +995,7 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="commandBehavior">The commandbehavior of the command.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlConnection connection, Func<SqlConnection, Task<T>> action, CommandBehavior commandBehavior)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, Task<T>> action, CommandBehavior commandBehavior)
 		{
 			return connection.ExecuteAsyncAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
 		}
@@ -997,7 +1008,7 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlConnection connection, Func<SqlConnection, Task<T>> action, bool closeConnection)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, Task<T>> action, bool closeConnection)
 		{
 			DBConnectionExtensions.DetectAutoOpen(connection, ref closeConnection);
 

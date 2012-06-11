@@ -117,44 +117,6 @@
       <Namespaces>
        <Namespace Name="Insight.Database">
         <Types>
-         <Type Name="AsyncExtensions">
-          <Members>
-           <Member Name="#ExecuteAsync(System.Data.SqlClient.SqlConnection,System.String,System.Object,System.Data.CommandType,System.Boolean,System.Nullable`1&lt;System.Int32&gt;,System.Data.IDbTransaction)">
-            <Messages>
-             <Message TypeName="ConsiderPassingBaseTypesAsParameters" Category="Microsoft.Design" CheckId="CA1011" Status="Excluded" Created="2011-08-23 00:17:28Z">
-              <Issue>
-               <Item>'connection'</Item>
-               <Item>'AsyncExtensions.ExecuteAsync(this SqlConnection, string, object, CommandType, bool, int?, IDbTransaction)'</Item>
-               <Item>'SqlConnection'</Item>
-               <Item>'IDbConnection'</Item>
-              </Issue>
-              <Notes>
-               <User Name="jonw">
-                <Note Id="0" />
-               </User>
-              </Notes>
-             </Message>
-            </Messages>
-           </Member>
-           <Member Name="#GetReaderAsync(System.Data.SqlClient.SqlConnection,System.String,System.Object,System.Data.CommandType,System.Data.CommandBehavior,System.Nullable`1&lt;System.Int32&gt;,System.Data.IDbTransaction)">
-            <Messages>
-             <Message TypeName="ConsiderPassingBaseTypesAsParameters" Category="Microsoft.Design" CheckId="CA1011" Status="Excluded" Created="2011-08-23 00:17:28Z">
-              <Issue>
-               <Item>'connection'</Item>
-               <Item>'AsyncExtensions.GetReaderAsync(this SqlConnection, string, object, CommandType, CommandBehavior, int?, IDbTransaction)'</Item>
-               <Item>'SqlConnection'</Item>
-               <Item>'IDbConnection'</Item>
-              </Issue>
-              <Notes>
-               <User Name="jonw">
-                <Note Id="0" />
-               </User>
-              </Notes>
-             </Message>
-            </Messages>
-           </Member>
-          </Members>
-         </Type>
          <Type Name="FastExpando">
           <Messages>
            <Message TypeName="IdentifiersShouldHaveCorrectSuffix" Category="Microsoft.Naming" CheckId="CA1710" Status="Excluded" Created="2011-08-24 20:41:40Z">
@@ -208,9 +170,6 @@
   <Rules>
    <Rule TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210">
     <Resolution Name="NoStrongName">Sign {0} with a strong name key.</Resolution>
-   </Rule>
-   <Rule TypeName="ConsiderPassingBaseTypesAsParameters" Category="Microsoft.Design" CheckId="CA1011">
-    <Resolution Name="Default">Consider changing the type of parameter {0} in {1} from {2} to its base type {3}. This method appears to only require base class members in its implementation. Suppress this violation if there is a compelling reason to require the more derived type in the method signature.</Resolution>
    </Rule>
    <Rule TypeName="IdentifiersShouldHaveCorrectSuffix" Category="Microsoft.Naming" CheckId="CA1710">
     <Resolution Name="Default">Rename {0} to end in '{1}'.</Resolution>
