@@ -49,6 +49,7 @@
     <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
     <Compile Include="CodeGenerator\DbReaderDeserializer.cs" />
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
+    <Compile Include="Reliable\ReliableConnectionExtensions.cs" />
     <Compile Include="Reliable\RetryStrategy.cs" />
     <Compile Include="Reliable\IRetryStrategy.cs" />
     <Compile Include="Reliable\ReliableCommand.cs" />
