@@ -8,6 +8,8 @@
 - It's **fast**.
 - It supports structured, production quality coding.
 - It supports ad-hoc, one-off, typeless, get-it-done coding.
+- Async queries are first-class operations.
+- ReliableConnection fully supports cloud providers such as SQL Azure.
 
 # Documentation #
 
