@@ -1,1 +1,1 @@
-\windows\Microsoft.NET\Framework\v4.0.30319\msbuild autobuild.proj /t:Build
+\windows\Microsoft.NET\Framework\v4.0.30319\msbuild autobuild.proj /t:TestBuild

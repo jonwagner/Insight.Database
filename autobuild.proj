@@ -5,31 +5,45 @@
   <PropertyGroup>
     <Configuration>Release</Configuration>
   </PropertyGroup>
+
   <!-- These are the solutions to build -->
   <ItemGroup>
     <SolutionFiles Include="**\*.sln" />
   </ItemGroup>
+
   <!-- This is the list of assemblyinfo files that we need to insert version information into -->
   <ItemGroup>
     <AssemblyInfoFiles Include="**\AssemblyInfo.cs" />
   </ItemGroup>
+
   <!-- This is the list of nuget package files that we need to insert version information into -->
   <ItemGroup>
     <NuGetFiles Include="**\*.nuspec" />
   </ItemGroup>
+
   <!-- This is the list of nuget package files that we need to delete when we build -->
   <ItemGroup>
     <NuPackFiles Include="**\*.nupkg" Exclude="packages\**\*.nupkg" />
   </ItemGroup>
+
   <!-- ********************************************************************** -->
   <!-- END OF CONFIGURATION DATA -->
   <!-- ********************************************************************** -->
   <PropertyGroup>
     <VersionFile>version.txt</VersionFile>
   </PropertyGroup>
+
   <!-- Standard autobuild. -->
-  <Target Name="AutoBuild" DependsOnTargets="IncrementVersion;Build">
+  <Target Name="AutoBuild" DependsOnTargets="IncrementVersion;TestBuild">
   </Target>
+
+  <!-- Test Build without increment version. -->
+  <Target Name="TestBuild" DependsOnTargets="AssemblyInfo;BuildNet40;Build">
+    <!-- Make sure that we revert the assembly info -->
+    <CallTarget Targets="RevertAssemblyInfo" />
+    <OnError ExecuteTargets="RevertAssemblyInfo" />
+  </Target>
+
   <!-- IncrementVersion - Increments the version number. $(Revision) will be the new revision. -->
   <Target Name="IncrementVersion">
     <!-- Update the build number from the version file -->
@@ -41,6 +55,7 @@
     <Exec Command="git commit -a -m &quot;Version $(Major).$(Minor).$(Build)&quot;" />
     <Exec Command="git tag -a -m &quot;Version $(Major).$(Minor).$(Build)&quot; Version_$(Major).$(Minor).$(Build)" />
   </Target>
+  
   <!-- GetLocalVersion - Gets the version information for the local repository -->
   <Target Name="GetLocalVersion">
     <!-- Get the major/minor/build number from the version file -->
@@ -51,6 +66,7 @@
     </Version>
     <Message Text="Current Version: $(Major).$(Minor).$(Build)" />
   </Target>
+  
   <!-- Generate the assembly info with the revision -->
   <Target Name="AssemblyInfo" DependsOnTargets="GetLocalVersion">
     <Message Text="Building Version: $(Major).$(Minor).$(Build)" />
@@ -60,21 +76,30 @@
     <Message Text="Updating NuGet Package Versions" />
     <XmlUpdate XmlFileName="%(NuGetFiles.Identity)" XPath="//package/metadata/version" Value="$(Major).$(Minor).$(Build)" />
   </Target>
+
+  <!-- Build the .NET 4.0 assembly -->
+  <Target Name="BuildNet40">
+    <MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration);TargetFrameworkVersion=v4.0" StopOnFirstFailure="true" />
+    <MakeDir Directories="Insight.Database\bin\NET40"/>
+    <Copy SourceFiles="@(Net40Outputs)" DestinationFolder="Insight.Database\bin\NET40"/>
+  </Target>
+  <ItemGroup>
+    <Net40Outputs Include="Insight.Database\bin\Release\Insight.Database.*"></Net40Outputs>
+  </ItemGroup>
+  
   <!-- Build the program -->
-  <Target Name="Build" DependsOnTargets="AssemblyInfo">
+  <Target Name="Build">
     <Message Text="Building Version: $(Major).$(Minor).$(Build)" />
     <Delete Files="%(NuPackFiles.Identity)" />
     <!-- Build the solution -->
     <MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration)" StopOnFirstFailure="true" />
     <!-- Test Before Packaging -->
-    <Exec Command="packages\NUnit.2.5.10.11092\tools\\nunit-console .\Insight.Tests\bin\$(Configuration)\Insight.Tests.dll"/>
+    <Exec Command="packages\NUnit.2.5.10.11092\tools\nunit-console .\Insight.Tests\bin\$(Configuration)\Insight.Tests.dll"/>
     <!-- Build the NuGet Packages -->
     <MakeDir Directories="Build\Output" />
     <Exec Command="nuget.exe pack %(NuGetFiles.Identity) /OutputDirectory Build\Output" />
-    <!-- Make sure that we revert the assembly info -->
-    <CallTarget Targets="RevertAssemblyInfo" />
-    <OnError ExecuteTargets="RevertAssemblyInfo" />
   </Target>
+  
   <Target Name="RevertAssemblyInfo">
     <!-- Revert the Assembly Info files when complete -->
     <Exec Command="git checkout %(AssemblyInfoFiles.Identity)" Condition="Exists(%(AssemblyInfoFiles.Identity))" />
