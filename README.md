@@ -2,6 +2,8 @@
 
 **Insight.Database** is a lightweight micro-ORM for .NET.
 
+Now with the power of .NET 4.5 async database calls! For free. No changes on your part.
+
 # Why You Want This #
 - It just works. 
 - Without a lot of effort or configuration. 
