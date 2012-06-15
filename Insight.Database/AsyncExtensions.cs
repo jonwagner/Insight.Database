@@ -36,44 +36,11 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.ExecuteAsyncAndAutoClose(
-				c =>
-				{
-					SqlCommand command = (SqlCommand)c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
+			SqlCommand command = (SqlCommand)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
 
-					return Task<int>.Factory.FromAsync(command.BeginExecuteNonQuery(), ar => command.EndExecuteNonQuery(ar));
-				}, 
-				closeConnection);
+			return command.ExecuteAsync(closeConnection);
 		}
 	
-		/// <summary>
-		/// Executes a command and returns the result. This method supports auto-open.
-		/// </summary>
-		/// <param name="command">The command to execute.</param>
-		/// <param name="closeConnection">True to close the connection after the operation is complete.</param>
-		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		public static Task<int> ExecuteAsync(this SqlCommand command, bool closeConnection = false)
-		{
-			DBConnectionExtensions.DetectAutoOpen(command.Connection, ref closeConnection);
-
-			return Task<int>.Factory.FromAsync(
-				command.BeginExecuteNonQuery(),
-				ar =>
-				{
-					try
-					{
-						// return the number of records affected
-						return command.EndExecuteNonQuery(ar);
-					}
-					finally
-					{
-						// close the connection if required
-						if (closeConnection)
-							command.Connection.Close();
-					}
-				});
-		}
-
 		/// <summary>
 		/// Create a command and execute it. This method supports auto-open.
 		/// </summary>
@@ -93,6 +60,26 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAsync(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction);
+		}
+
+		/// <summary>
+		/// Executes a command and returns the result. This method supports auto-open.
+		/// </summary>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="closeConnection">True to close the connection after the operation is complete.</param>
+		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
+		public static Task<int> ExecuteAsync(this SqlCommand command, bool closeConnection = false)
+		{
+			return command.Connection.ExecuteAsyncAndAutoClose(
+				c =>
+				{
+#if NODBASYNC
+					return Task<int>.Factory.FromAsync(command.BeginExecuteNonQuery(), ar => command.EndExecuteNonQuery(ar));
+#else
+					return command.ExecuteNonQueryAsync();
+#endif
+				},
+				closeConnection);
 		}
 		#endregion
 
@@ -485,7 +472,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<FastExpando>> QueryAsync(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<FastExpando>> QueryAsync(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(commandBehavior).ToList(),
@@ -499,7 +486,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> QueryAsync<T>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T>(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(commandBehavior).ToList<T>(),
@@ -514,7 +501,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> QueryAsync<T, TSub1>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1>(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1>(),
@@ -530,7 +517,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2>(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2>(),
@@ -547,7 +534,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3>(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2, TSub3>(),
@@ -565,7 +552,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3, TSub4>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3, TSub4>(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4>(),
@@ -584,7 +571,7 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this SqlCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(commandBehavior).ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(),
@@ -950,7 +937,13 @@ namespace Insight.Database
 			// run sql commands directly
 			SqlCommand sqlCommand = command as SqlCommand;
 			if (sqlCommand != null)
+			{
+#if NODBASYNC
 				return Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
+#else
+				return sqlCommand.ExecuteReaderAsync(commandBehavior).ContinueWith(t => (IDataReader)t.Result);
+#endif
+			}
 
 			// allow reliable commands to handle the icky task logic
 			ReliableCommand reliableCommand = command as ReliableCommand;
@@ -993,6 +986,32 @@ namespace Insight.Database
 		/// <typeparam name="T">The return type of the task.</typeparam>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="action">The action to perform.</param>
+		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
+		/// <returns>A task that returns the result of the command after closing the connection.</returns>
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, Task<T>> action, bool closeConnection)
+		{
+			return AutoOpenAsync(connection)
+				.ContinueWith(t =>
+				{
+					closeConnection |= t.Result;
+					return action(connection);
+				})
+				.Unwrap()
+				.ContinueWith(t =>
+				{
+					if (closeConnection)
+						connection.Close();
+
+					return t.Result;
+				});
+		}
+
+		/// <summary>
+		/// Execute an asynchronous action, ensuring that the connection is auto-closed.
+		/// </summary>
+		/// <typeparam name="T">The return type of the task.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="action">The action to perform.</param>
 		/// <param name="commandBehavior">The commandbehavior of the command.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
 		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, Task<T>> action, CommandBehavior commandBehavior)
@@ -1004,36 +1023,11 @@ namespace Insight.Database
 		/// Execute an asynchronous action, ensuring that the connection is auto-closed.
 		/// </summary>
 		/// <typeparam name="T">The return type of the task.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="action">The action to perform.</param>
-		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
-		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, Task<T>> action, bool closeConnection)
-		{
-			DBConnectionExtensions.DetectAutoOpen(connection, ref closeConnection);
-
-			Task<T> task = action(connection);
-
-			if (!closeConnection)
-				return task;
-
-			return task.ContinueWith(
-					t =>
-					{
-						connection.Close();
-						return t.Result;
-					});
-		}
-
-		/// <summary>
-		/// Execute an asynchronous action, ensuring that the connection is auto-closed.
-		/// </summary>
-		/// <typeparam name="T">The return type of the task.</typeparam>
 		/// <param name="command">The command to use.</param>
 		/// <param name="action">The action to perform.</param>
 		/// <param name="commandBehavior">The commandbehavior of the command.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlCommand command, Func<SqlCommand, Task<T>> action, CommandBehavior commandBehavior)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbCommand command, Func<IDbCommand, Task<T>> action, CommandBehavior commandBehavior)
 		{
 			return command.ExecuteAsyncAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
 		}
@@ -1046,21 +1040,43 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> ExecuteAsyncAndAutoClose<T>(this SqlCommand command, Func<SqlCommand, Task<T>> action, bool closeConnection)
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbCommand command, Func<IDbCommand, Task<T>> action, bool closeConnection)
 		{
-			DBConnectionExtensions.DetectAutoOpen(command.Connection, ref closeConnection);
+			return command.Connection.ExecuteAsyncAndAutoClose(_ => action(command), closeConnection);
+		}
 
-			Task<T> task = action(command);
+		/// <summary>
+		/// Detect if a connection needs to be automatically opened and closed.
+		/// </summary>
+		/// <param name="connection">The connection to test.</param>
+		/// <returns>
+		/// A task representing the completion of the open operation
+		/// and a flag indicating whether the connection should be closed at the end of the operation.
+		/// </returns>
+		private static Task<bool> AutoOpenAsync(IDbConnection connection)
+		{
+			// if the connection is already open, then it doesn't need to be opened or closed.
+			if (connection.State == ConnectionState.Open)
+			{
+				return Task<bool>.Factory.StartNew(() => false);
+			}
+			else
+			{
+				// handle reliable connections
+				// note that we don't want to unwrap the reliable connection or we lose our retry support
+				ReliableConnection c = connection as ReliableConnection;
+				if (c != null)
+					return c.OpenAsync().ContinueWith(t => true);
 
-			if (!closeConnection)
-				return task;
+#if !NODBASYNC
+				// open the connection and plan to close it
+				SqlConnection sqlConnection = connection.UnwrapSqlConnection();
+				if (sqlConnection != null)
+					return sqlConnection.UnwrapSqlConnection().OpenAsync().ContinueWith(t => { t.Wait(); return true; });
+#endif
 
-			return task.ContinueWith(
-					t =>
-					{
-						command.Connection.Close();
-						return t.Result;
-					});
+				return Task<bool>.Factory.StartNew(() => { connection.Open(); return true; });
+			}
 		}
 		#endregion
 	}

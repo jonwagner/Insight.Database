@@ -10,6 +10,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Reliable;
 
 namespace Insight.Database
 {
@@ -1128,6 +1129,36 @@ namespace Insight.Database
 				c => c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction).Merge(inserted),
 				commandBehavior);
 		}		
+		#endregion
+
+		#region Unwrap Methods
+		/// <summary>
+		/// Unwraps an IDbConnection to determine its inner SqlConnection to use with advanced features.
+		/// </summary>
+		/// <param name="connection">The connection to unwrap.</param>
+		/// <returns>The inner SqlConnection.</returns>
+		internal static SqlConnection UnwrapSqlConnection(this IDbConnection connection)
+		{
+			// if we have a SqlConnection, use it
+			SqlConnection sqlConnection = connection as SqlConnection;
+			if (sqlConnection != null)
+				return sqlConnection;
+
+			// if we have a reliable command, break it down
+			ReliableConnection reliable = connection as ReliableConnection;
+			if (reliable != null)
+				return reliable.InnerConnection.UnwrapSqlConnection();
+
+			// if the command is not a SqlConnection, then maybe it is wrapped by something like MiniProfiler
+			if (connection.GetType().Name == "ProfiledDbConnection")
+			{
+				dynamic dynamicConnection = connection;
+				return UnwrapSqlConnection(dynamicConnection.InnerConnection);
+			}
+
+			// there is no inner sql connection
+			return null;
+		}
 		#endregion
 
 		#region Helper Methods

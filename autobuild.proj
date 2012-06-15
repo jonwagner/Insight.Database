@@ -79,7 +79,9 @@
 
   <!-- Build the .NET 4.0 assembly -->
   <Target Name="BuildNet40">
-    <MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration);TargetFrameworkVersion=v4.0" StopOnFirstFailure="true" />
+    <MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration);TargetFrameworkVersion=v4.0;DefineConstants=NODBASYNC" StopOnFirstFailure="true" />
+    <!-- Test Before Packaging -->
+    <Exec Command="packages\NUnit.2.5.10.11092\tools\nunit-console .\Insight.Tests\bin\$(Configuration)\Insight.Tests.dll"/>
     <MakeDir Directories="Insight.Database\bin\NET40"/>
     <Copy SourceFiles="@(Net40Outputs)" DestinationFolder="Insight.Database\bin\NET40"/>
   </Target>
