@@ -332,7 +332,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -358,7 +364,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -385,7 +397,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1>();
+					}
+				},
 				commandBehavior); 
 		}
 
@@ -413,7 +431,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -442,7 +466,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2, TSub3>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -472,7 +502,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -503,7 +539,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -526,7 +568,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -550,7 +598,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -575,7 +629,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -601,7 +661,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -628,7 +694,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2, TSub3>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -656,7 +728,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4>();
+					}
+				},
 				commandBehavior);
 		}
 
@@ -685,7 +763,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>();
+					}
+				},
 				commandBehavior);
 		}
 		#endregion
@@ -961,7 +1045,9 @@ namespace Insight.Database
 					t =>
 					{
 						using (IDataReader sqlReader = connection.GetReaderSql(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0}", tableName), null, CommandBehavior.SchemaOnly))
+						{
 							return sqlReader.GetSchemaTable();
+						}
 					});
 
 				// create a reader for the list
@@ -1031,7 +1117,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction).Merge(inserted),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.Merge(inserted);
+					}
+				},
 				commandBehavior);
 
 			return inserted;
@@ -1095,7 +1187,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction).Merge(inserted),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.Merge(inserted);
+					}
+				},
 				commandBehavior);
 		}
 
@@ -1126,7 +1224,13 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction).Merge(inserted),
+				c =>
+				{
+					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					{
+						return reader.Merge(inserted);
+					}
+				},
 				commandBehavior);
 		}		
 		#endregion

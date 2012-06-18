@@ -17,6 +17,30 @@ namespace Insight.Tests
 	{
 		#region Synchronous Queries
 		[Test]
+		public void ExecuteShouldAutoClose()
+		{
+			_connection.Close();
+
+			_connection.Execute("sp_who");
+
+			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+		}
+
+		[Test]
+		public void QueryWithActionShouldAutoClose()
+		{
+			_connection.Close();
+
+			try
+			{
+				_connection.Query("sp_who", Parameters.Empty, (IDataReader reader) => { reader.Read(); throw new ApplicationException(); });
+			}
+			catch { }
+
+			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+		}
+
+		[Test]
 		public void ExecuteSqlShouldAutoClose ()
 		{
 			_connection.Close ();
