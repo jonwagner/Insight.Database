@@ -134,6 +134,8 @@ namespace Insight.Database.CodeGenerator
 						return GetXDocumentDeserializer();
 					else if (typeof(T).IsValueType || typeof(T) == typeof(string))
 						return GetValueDeserializer();
+					else if (typeof(T) == typeof(byte[]))
+						return GetByteArrayDeserializer();
 					else
 						return (Func<IDataReader, T>)GetClassDeserializer(reader, createNewObject: true);
 				});
@@ -484,6 +486,22 @@ namespace Insight.Database.CodeGenerator
 			if (typeof(T) == typeof(char?))
 				return (Func<IDataReader, T>)(object)new Func<IDataReader, char?>(r => HelperMethods.ReadNullableChar(r.GetValue(0)));
 
+			return r =>
+			{
+				object value = r.GetValue(0);
+				if (value == DBNull.Value)
+					value = null;
+
+				return (T)value;
+			};
+		}
+
+		/// <summary>
+		/// Get a deserializer that returns a single byte array value from the return result.
+		/// </summary>
+		/// <returns>The deserializer to use.</returns>
+		private static Func<IDataReader, T> GetByteArrayDeserializer()
+		{
 			return r =>
 			{
 				object value = r.GetValue(0);

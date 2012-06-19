@@ -139,6 +139,21 @@ namespace Insight.Tests
 		class TestData { public int P; }
 		#endregion
 
+		#region Single Column Tests
+		[Test]
+		public void TestVarBinaryMaxAsSingleColumn()
+		{
+			// this used to fail because we couldn't find the constructor for byte[]
+			var results = _connection.QuerySql<byte[]>("SELECT CONVERT(varbinary(MAX), '1234')");
+		}
+
+		[Test]
+		public void TestIntAsSingleColumn()
+		{
+			var results = _connection.QuerySql<int>("SELECT 1234");
+		}
+		#endregion
+
 		#region Class/Struct Field Deserialization Tests
 		#region Class By Constructor
 		class FooID
