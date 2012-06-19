@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Insight.Database.Reliable
@@ -15,7 +17,7 @@ namespace Insight.Database.Reliable
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "The implementation of IDbConnection is generated code")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the implementation of IDbConnection would be redundant without adding additional information.")]
-	public class ReliableConnection : IDbConnection
+	public class ReliableConnection : DbConnection
 	{
 		#region Private Members
 		/// <summary>
@@ -26,7 +28,7 @@ namespace Insight.Database.Reliable
 		/// <summary>
 		/// Gets the inner connection to use to execute the database commands.
 		/// </summary>
-		internal IDbConnection InnerConnection { get; private set; }
+		internal DbConnection InnerConnection { get; private set; }
 		#endregion
 
 		#region Constructors
@@ -35,7 +37,7 @@ namespace Insight.Database.Reliable
 		/// A default retry strategy is used.
 		/// </summary>
 		/// <param name="innerConnection">The inner connection to wrap.</param>
-		public ReliableConnection(IDbConnection innerConnection)
+		public ReliableConnection(DbConnection innerConnection)
 		{
 			// use the default retry strategy by default
 			RetryStrategy = Insight.Database.Reliable.RetryStrategy.Default;
@@ -47,57 +49,69 @@ namespace Insight.Database.Reliable
 		/// </summary>
 		/// <param name="innerConnection">The inner connection to wrap.</param>
 		/// <param name="retryStrategy">The retry strategy to use.</param>
-		public ReliableConnection(IDbConnection innerConnection, IRetryStrategy retryStrategy)
+		public ReliableConnection(DbConnection innerConnection, IRetryStrategy retryStrategy)
 		{
 			RetryStrategy = retryStrategy;
 			InnerConnection = innerConnection;
 		}
 		#endregion
 
+		#region Core Implementation Methods
+		/// <summary>
+		/// Opens the database connection with retry.
+		/// </summary>
+		public override void Open()
+		{
+			RetryStrategy.ExecuteWithRetry(null, () => { InnerConnection.Open(); return true; });
+		}
+
+		/// <summary>
+		/// Creates a DbCommand for calls to the database.
+		/// </summary>
+		/// <returns>A ReliableCommand.</returns>
+		protected override DbCommand CreateDbCommand()
+		{
+			return new ReliableCommand(RetryStrategy, InnerConnection.CreateCommand());
+		}
+
+#if !NODBASYNC
 		/// <summary>
 		/// Asynchronously opens a ReliableConnection.
 		/// </summary>
+		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>A task representing the completion of the open operation.</returns>
-		public Task OpenAsync()
+		public override Task OpenAsync(CancellationToken cancellationToken)
 		{
-			return RetryStrategy.ExecuteWithRetryAsync(
-				null, 
-				() => 
-				{ 
-#if !NODBASYNC
-					// if we have an inner SqlConnection, we can open that asynchronously
-					SqlConnection sqlConnection = InnerConnection.UnwrapSqlConnection();
-					if (sqlConnection != null)
-						return sqlConnection.OpenAsync().ContinueWith((t => { t.Wait(); return true; }));
-#endif
-
-					// fallback strategy. We don't have a database connection that can open asynchronously, so create a task that does a blocking open.	
-					return Task<bool>.Factory.StartNew(() => { InnerConnection.Open(); return true; });
-				});
+			return RetryStrategy.ExecuteWithRetryAsync(null, () => InnerConnection.OpenAsync().ContinueWith(t => { t.Wait(); return true; }));
 		}
+#endif
+		#endregion
 
 		#region IDbConnection Implementation
-		public IDbTransaction BeginTransaction(IsolationLevel il)
+		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
 		{
-			return InnerConnection.BeginTransaction(il);
+			return InnerConnection.BeginTransaction(isolationLevel);
 		}
 
-		public IDbTransaction BeginTransaction()
+		protected override bool CanRaiseEvents
 		{
-			return InnerConnection.BeginTransaction();
+			get
+			{
+				return false;
+			}
 		}
 
-		public void ChangeDatabase(string databaseName)
+		public override void ChangeDatabase(string databaseName)
 		{
 			InnerConnection.ChangeDatabase(databaseName);
 		}
 
-		public void Close()
+		public override void Close()
 		{
 			InnerConnection.Close();
 		}
 
-		public string ConnectionString
+		public override string ConnectionString
 		{
 			get
 			{
@@ -110,40 +124,56 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-		public int ConnectionTimeout
+		public override string ServerVersion
+		{
+			get { return InnerConnection.ServerVersion; }
+		}
+
+		public override string DataSource
+		{
+			get { return InnerConnection.DataSource; }
+		}
+
+		public override int ConnectionTimeout
 		{
 			get { return InnerConnection.ConnectionTimeout; }
 		}
 
-		public IDbCommand CreateCommand()
-		{
-			return new ReliableCommand(RetryStrategy, InnerConnection.CreateCommand());
-		}
-
-		public string Database
+		public override string Database
 		{
 			get { return InnerConnection.Database; }
 		}
 
-		public void Open()
-		{
-			RetryStrategy.ExecuteWithRetry(null, () => { InnerConnection.Open(); return true; });
-		}
-
-		public ConnectionState State
+		public override ConnectionState State
 		{
 			get { return InnerConnection.State; }
 		}
 
-		public void Dispose()
+		public override DataTable GetSchema()
 		{
-			Dispose(true);
-			GC.SuppressFinalize(this);
+			return InnerConnection.GetSchema();
 		}
 
-		protected virtual void Dispose(bool disposing)
+		public override DataTable GetSchema(string collectionName)
 		{
-			InnerConnection.Dispose();
+			return InnerConnection.GetSchema(collectionName);
+		}
+
+		public override DataTable GetSchema(string collectionName, string[] restrictionValues)
+		{
+			return InnerConnection.GetSchema(collectionName, restrictionValues);
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			try
+			{
+				InnerConnection.Dispose();
+			}
+			finally
+			{
+				base.Dispose(disposing);
+			}
 		}
 		#endregion
 	}
@@ -153,7 +183,7 @@ namespace Insight.Database.Reliable
 	/// </summary>
 	/// <typeparam name="TConnection">The type of database connection to use to connect to the database.</typeparam>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
-	public class ReliableConnection<TConnection> : ReliableConnection where TConnection : IDbConnection, new()
+	public class ReliableConnection<TConnection> : ReliableConnection where TConnection : DbConnection, new()
 	{
 		/// <summary>
 		/// Initializes a new instance of the ReliableConnection class.
@@ -179,7 +209,7 @@ namespace Insight.Database.Reliable
 		public ReliableConnection(string connectionString)
 			: base(new TConnection())
 		{
-			ConnectionString = connectionString;
+			InnerConnection.ConnectionString = connectionString;
 		}
 
 		/// <summary>
@@ -190,7 +220,7 @@ namespace Insight.Database.Reliable
 		public ReliableConnection(string connectionString, IRetryStrategy retryStrategy)
 			: base(new TConnection(), retryStrategy)
 		{
-			ConnectionString = connectionString;
+			InnerConnection.ConnectionString = connectionString;
 		}
 	}
 }

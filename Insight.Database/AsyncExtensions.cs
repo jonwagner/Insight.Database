@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -36,7 +37,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			SqlCommand command = (SqlCommand)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
+			IDbCommand command = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
 
 			return command.ExecuteAsync(closeConnection);
 		}
@@ -68,15 +69,25 @@ namespace Insight.Database
 		/// <param name="command">The command to execute.</param>
 		/// <param name="closeConnection">True to close the connection after the operation is complete.</param>
 		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		public static Task<int> ExecuteAsync(this SqlCommand command, bool closeConnection = false)
+		public static Task<int> ExecuteAsync(this IDbCommand command, bool closeConnection = false)
 		{
 			return command.Connection.ExecuteAsyncAndAutoClose(
 				c =>
 				{
 #if NODBASYNC
-					return Task<int>.Factory.FromAsync(command.BeginExecuteNonQuery(), ar => command.EndExecuteNonQuery(ar));
+					// Only SqlCommand supports execute async
+					SqlCommand sqlCommand = command as SqlCommand;
+					if (sqlCommand != null)
+						return Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
+					else
+						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery());
 #else
-					return command.ExecuteNonQueryAsync();
+					// DbCommand now supports async execute
+					DbCommand dbCommand = command as DbCommand;
+					if (dbCommand != null)
+						return dbCommand.ExecuteNonQueryAsync();
+					else
+						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery());
 #endif
 				},
 				closeConnection);
@@ -934,23 +945,25 @@ namespace Insight.Database
 		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
 		internal static Task<IDataReader> GetReaderAsync(this IDbCommand command, CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
-			// run sql commands directly
+#if NODBASYNC
+			// Only SqlCommand supports async
 			SqlCommand sqlCommand = command as SqlCommand;
 			if (sqlCommand != null)
-			{
-#if NODBASYNC
 				return Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
-#else
-				return sqlCommand.ExecuteReaderAsync(commandBehavior).ContinueWith(t => (IDataReader)t.Result);
-#endif
-			}
 
 			// allow reliable commands to handle the icky task logic
 			ReliableCommand reliableCommand = command as ReliableCommand;
 			if (reliableCommand != null)
 				return reliableCommand.GetReaderAsync(commandBehavior);
+#else
+			// DbCommand now supports async
+			DbCommand dbCommand = command as DbCommand;
+			if (dbCommand != null)
+				return dbCommand.ExecuteReaderAsync(commandBehavior).ContinueWith(t => (IDataReader)t.Result);
+#endif
 
-			throw new InvalidOperationException("Cannot perform an async query on a command that is not a SqlCommand.");
+			// the command doesn't support async so stick it in a dumb task
+			return Task<IDataReader>.Factory.StartNew(() => command.ExecuteReader(commandBehavior));
 		}
 
 		/// <summary>
@@ -973,9 +986,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			IDbCommand cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
-
-			return cmd.GetReaderAsync(commandBehavior);
+			return connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).GetReaderAsync(commandBehavior);
 		}
 		#endregion
 
@@ -1062,17 +1073,11 @@ namespace Insight.Database
 			}
 			else
 			{
-				// handle reliable connections
-				// note that we don't want to unwrap the reliable connection or we lose our retry support
-				ReliableConnection c = connection as ReliableConnection;
-				if (c != null)
-					return c.OpenAsync().ContinueWith(t => true);
-
 #if !NODBASYNC
 				// open the connection and plan to close it
-				SqlConnection sqlConnection = connection.UnwrapSqlConnection();
-				if (sqlConnection != null)
-					return sqlConnection.UnwrapSqlConnection().OpenAsync().ContinueWith(t => { t.Wait(); return true; });
+				DbConnection dbConnection = connection.UnwrapDbConnection();
+				if (dbConnection != null)
+					return dbConnection.OpenAsync().ContinueWith(t => { t.Wait(); return true; });
 #endif
 
 				return Task<bool>.Factory.StartNew(() => { connection.Open(); return true; });

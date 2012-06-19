@@ -136,6 +136,7 @@ namespace Insight.Tests
 			b.InitialCatalog = "bad";
 			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
 
+			RetryStrategy.MaxRetryCount = 5;
 			try
 			{
 				retry.QueryAsync("SELECT 1").Wait();
@@ -144,7 +145,7 @@ namespace Insight.Tests
 			{
 			}
 
-			Assert.IsTrue(Retries > 0);
+			Assert.AreEqual(5, Retries);
 		}
 
 		[Test]
@@ -163,7 +164,7 @@ namespace Insight.Tests
 			{
 			}
 
-			Assert.IsTrue(Retries > 0);
+			Assert.AreEqual(5, Retries);
 		}
 
 		[Test]

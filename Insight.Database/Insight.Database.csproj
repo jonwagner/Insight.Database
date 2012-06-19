@@ -55,7 +55,9 @@
     <Compile Include="Reliable\ReliableConnectionExtensions.cs" />
     <Compile Include="Reliable\RetryStrategy.cs" />
     <Compile Include="Reliable\IRetryStrategy.cs" />
-    <Compile Include="Reliable\ReliableCommand.cs" />
+    <Compile Include="Reliable\ReliableCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="DynamicConnection.cs" />
     <Compile Include="ExpandoExtensions.cs" />
     <Compile Include="FastExpando.cs" />
@@ -68,7 +70,9 @@
     <Compile Include="DBCommandExtensions.cs" />
     <Compile Include="DBConnectionExtensions.cs" />
     <Compile Include="ColumnAttribute.cs" />
-    <Compile Include="Reliable\ReliableConnection.cs" />
+    <Compile Include="Reliable\ReliableConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Reliable\RetryEventArgs.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DBReaderExtensions.cs" />

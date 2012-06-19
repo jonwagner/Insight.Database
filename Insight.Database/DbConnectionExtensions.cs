@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Globalization;
 using System.Linq;
@@ -1237,27 +1238,27 @@ namespace Insight.Database
 
 		#region Unwrap Methods
 		/// <summary>
-		/// Unwraps an IDbConnection to determine its inner SqlConnection to use with advanced features.
+		/// Unwraps an IDbConnection to determine its inner DbConnection to use with advanced features.
 		/// </summary>
 		/// <param name="connection">The connection to unwrap.</param>
 		/// <returns>The inner SqlConnection.</returns>
-		internal static SqlConnection UnwrapSqlConnection(this IDbConnection connection)
+		internal static DbConnection UnwrapDbConnection(this IDbConnection connection)
 		{
-			// if we have a SqlConnection, use it
-			SqlConnection sqlConnection = connection as SqlConnection;
-			if (sqlConnection != null)
-				return sqlConnection;
+			// if we have a DbConnection, use it
+			DbConnection dbConnection = connection as DbConnection;
+			if (dbConnection != null)
+				return dbConnection;
 
 			// if we have a reliable command, break it down
 			ReliableConnection reliable = connection as ReliableConnection;
 			if (reliable != null)
-				return reliable.InnerConnection.UnwrapSqlConnection();
+				return reliable.InnerConnection.UnwrapDbConnection();
 
 			// if the command is not a SqlConnection, then maybe it is wrapped by something like MiniProfiler
 			if (connection.GetType().Name == "ProfiledDbConnection")
 			{
 				dynamic dynamicConnection = connection;
-				return UnwrapSqlConnection(dynamicConnection.InnerConnection);
+				return UnwrapDbConnection(dynamicConnection.InnerConnection);
 			}
 
 			// there is no inner sql connection

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
@@ -15,7 +16,7 @@ namespace Insight.Database.Reliable
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "The implementation of IDbCommand is generated code")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the implementation of IDbCommand would be redundant without adding additional information.")]
-	public sealed class ReliableCommand : IDbCommand
+	public sealed class ReliableCommand : DbCommand
 	{
 		#region Private Members
 		/// <summary>
@@ -26,7 +27,7 @@ namespace Insight.Database.Reliable
 		/// <summary>
 		/// Gets the inner command to use to execute the command.
 		/// </summary>
-		internal IDbCommand InnerCommand { get; private set; }
+		internal DbCommand InnerCommand { get; private set; }
 		#endregion
 
 		#region Constructors
@@ -35,14 +36,32 @@ namespace Insight.Database.Reliable
 		/// </summary>
 		/// <param name="retryStrategy">The retry strategy to use for the command.</param>
 		/// <param name="innerCommand">The innerCommand to bind to.</param>
-		public ReliableCommand(IRetryStrategy retryStrategy, IDbCommand innerCommand)
+		public ReliableCommand(IRetryStrategy retryStrategy, DbCommand innerCommand)
 		{
 			_retryStrategy = retryStrategy;
 			InnerCommand = innerCommand;
 		}
 		#endregion
 
+		#region Synchronous DbCommand Implementation
+		public override int ExecuteNonQuery()
+		{
+			return ExecuteWithRetry(() => InnerCommand.ExecuteNonQuery());
+		}
+
+		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
+		{
+			return ExecuteWithRetry(() => InnerCommand.ExecuteReader(behavior));
+		}
+
+		public override object ExecuteScalar()
+		{
+			return ExecuteWithRetry(() => InnerCommand.ExecuteScalar());
+		}
+		#endregion
+
 		#region Async Methods
+#if NODBASYNC
 		/// <summary>
 		/// Executes the command asynchronously with retry.
 		/// </summary>
@@ -55,17 +74,55 @@ namespace Insight.Database.Reliable
 			if (sqlCommand == null)
 				throw new InvalidOperationException("Cannot perform an async query on a command that is not a SqlCommand");
 
-			return _retryStrategy.ExecuteWithRetryAsync(this, () => sqlCommand.GetReaderAsync(commandBehavior));
+			// fallback to calling execute reader in a blocking task
+			return ExecuteWithRetryAsync(() => Task<IDataReader>.Factory.StartNew(() => InnerCommand.ExecuteReader(commandBehavior)));
+		}
+#endif
+
+#if !NODBASYNC
+		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
+		{
+			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteReaderAsync(behavior, cancellationToken));
+		}
+
+		public override Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken)
+		{
+			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteNonQueryAsync(cancellationToken));
+		}
+
+		public override Task<object> ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken)
+		{
+			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteScalarAsync(cancellationToken));
+		}
+#endif
+		#endregion
+
+		#region Support Methods
+		public override void Prepare()
+		{
+			ExecuteWithRetry(() => { InnerCommand.Prepare(); return true; });
+		}
+
+		protected override void Dispose(bool disposing)
+		{
+			try
+			{
+				InnerCommand.Dispose();
+			}
+			finally
+			{
+				base.Dispose(disposing);
+			}
 		}
 		#endregion
 
 		#region IDbCommand Implementation
-		public void Cancel()
+		public override void Cancel()
 		{
 			InnerCommand.Cancel();
 		}
 
-		public string CommandText
+		public override string CommandText
 		{
 			get
 			{
@@ -78,7 +135,7 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-		public int CommandTimeout
+		public override int CommandTimeout
 		{
 			get
 			{
@@ -91,7 +148,7 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-		public CommandType CommandType
+		public override CommandType CommandType
 		{
 			get
 			{
@@ -104,7 +161,7 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-		public IDbConnection Connection
+		protected override DbConnection DbConnection
 		{
 			get
 			{
@@ -117,42 +174,17 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-		public IDbDataParameter CreateParameter()
+		protected override DbParameter CreateDbParameter()
 		{
 			return InnerCommand.CreateParameter();
 		}
 
-		public int ExecuteNonQuery()
-		{
-			return ExecuteWithRetry(() => InnerCommand.ExecuteNonQuery());
-		}
-
-		public IDataReader ExecuteReader(CommandBehavior behavior)
-		{
-			return ExecuteWithRetry(() => InnerCommand.ExecuteReader(behavior));
-		}
-
-		public IDataReader ExecuteReader()
-		{
-			return ExecuteWithRetry(() => InnerCommand.ExecuteReader());
-		}
-
-		public object ExecuteScalar()
-		{
-			return ExecuteWithRetry(() => InnerCommand.ExecuteScalar());
-		}
-
-		public IDataParameterCollection Parameters
+		protected override DbParameterCollection DbParameterCollection
 		{
 			get { return InnerCommand.Parameters; }
 		}
 
-		public void Prepare()
-		{
-			ExecuteWithRetry(() => { InnerCommand.Prepare(); return true; });
-		}
-
-		public IDbTransaction Transaction
+		protected override DbTransaction DbTransaction
 		{
 			get
 			{
@@ -165,7 +197,7 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-		public UpdateRowSource UpdatedRowSource
+		public override UpdateRowSource UpdatedRowSource
 		{
 			get
 			{
@@ -178,9 +210,17 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-		public void Dispose()
+		public override bool DesignTimeVisible
 		{
-			InnerCommand.Dispose();
+			get
+			{
+				return InnerCommand.DesignTimeVisible;
+			}
+
+			set
+			{
+				InnerCommand.DesignTimeVisible = value;
+			}
 		}
 		#endregion
 
@@ -194,6 +234,17 @@ namespace Insight.Database.Reliable
 		private TResult ExecuteWithRetry<TResult>(Func<TResult> function)
 		{
 			return _retryStrategy.ExecuteWithRetry(this, function);
+		}
+
+		/// <summary>
+		/// Executes a function with the retry logic specified on the ReliableConnection.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the result of the function.</typeparam>
+		/// <param name="function">The function to execute and return.</param>
+		/// <returns>The return value of the function.</returns>
+		private Task<TResult> ExecuteWithRetryAsync<TResult>(Func<Task<TResult>> function)
+		{
+			return _retryStrategy.ExecuteWithRetryAsync(this, function);
 		}
 		#endregion
 	}

@@ -177,6 +177,7 @@ namespace Insight.Database.CodeGenerator
 					return DeriveParameters(reliable.InnerCommand);
 
 				// if the command is not a SqlCommand, then maybe it is wrapped by something like MiniProfiler
+				// this is dynamic so we don't have to have a reference to miniprofiler
 				if (sqlCommand == null && command.GetType().Name == "ProfiledDbCommand")
 				{
 					dynamic dynamicCommand = command;
