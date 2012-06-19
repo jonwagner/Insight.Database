@@ -167,22 +167,9 @@ namespace Insight.Database.CodeGenerator
 			if (command.CommandType == CommandType.StoredProcedure)
 			{
 				// if we have a SqlCommand, use it
-				SqlCommand sqlCommand = command as SqlCommand;
+				SqlCommand sqlCommand = command.UnwrapSqlCommand();
 				if (sqlCommand != null)
 					return DeriveParametersFromSqlProcedure(sqlCommand);
-
-				// if we have a reliable command, break it down
-				ReliableCommand reliable = command as ReliableCommand;
-				if (reliable != null)
-					return DeriveParameters(reliable.InnerCommand);
-
-				// if the command is not a SqlCommand, then maybe it is wrapped by something like MiniProfiler
-				// this is dynamic so we don't have to have a reference to miniprofiler
-				if (sqlCommand == null && command.GetType().Name == "ProfiledDbCommand")
-				{
-					dynamic dynamicCommand = command;
-					return DeriveParameters(dynamicCommand.InternalCommand);
-				}
 			}
 
 			// otherwise we have to look at the text

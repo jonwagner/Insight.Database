@@ -34,7 +34,7 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="command">The command to unwrap.</param>
 		/// <returns>The inner SqlCommand.</returns>
-		private static SqlCommand UnwrapSqlCommand(this IDbCommand command)
+		internal static SqlCommand UnwrapSqlCommand(this IDbCommand command)
 		{
 			// if we have a SqlCommand, use it
 			SqlCommand sqlCommand = command as SqlCommand;

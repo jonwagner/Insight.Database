@@ -1045,7 +1045,8 @@ namespace Insight.Database
 					tableName, 
 					t =>
 					{
-						using (IDataReader sqlReader = connection.GetReaderSql(String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0}", tableName), null, CommandBehavior.SchemaOnly))
+						// select a 0 row result set so we can determine the schema of the table
+						using (IDataReader sqlReader = connection.GetReaderSql(String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName), null, CommandBehavior.SchemaOnly))
 						{
 							return sqlReader.GetSchemaTable();
 						}
