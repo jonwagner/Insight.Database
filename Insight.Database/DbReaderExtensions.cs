@@ -267,6 +267,113 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region First Methods
+		/// <summary>
+		/// Converts an IDataReader to a single object.
+		/// </summary>
+		/// <param name="reader">The data reader.</param>
+		/// <returns>A list of objects.</returns>
+		public static FastExpando Single(this IDataReader reader)
+		{
+			FastExpando t = reader.AsEnumerable().FirstOrDefault();
+			reader.Advance();
+			return t;
+		}
+
+		/// <summary>
+		/// Converts an IDataReader to a single object.
+		/// </summary>
+		/// <typeparam name="T">The expected type of the object.</typeparam>
+		/// <param name="reader">The data reader.</param>
+		/// <returns>A list of objects.</returns>
+		public static T Single<T>(this IDataReader reader)
+		{
+			T t = reader.AsEnumerable<T>().FirstOrDefault();
+			reader.Advance();
+			return t;
+		}
+
+		/// <summary>
+		/// Converts an IDataReader to a single object.
+		/// </summary>
+		/// <typeparam name="T">The expected type of the object.</typeparam>
+		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
+		/// <param name="reader">The data reader.</param>
+		/// <returns>A list of objects.</returns>
+		public static T Single<T, TSub1>(this IDataReader reader)
+		{
+			T t = reader.AsEnumerable<T, TSub1>().FirstOrDefault();
+			reader.Advance();
+			return t;
+		}
+
+		/// <summary>
+		/// Converts an IDataReader to a single object.
+		/// </summary>
+		/// <typeparam name="T">The expected type of the object.</typeparam>
+		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
+		/// <typeparam name="TSub2">The expected type of sub object 2.</typeparam>
+		/// <param name="reader">The data reader.</param>
+		/// <returns>A list of objects.</returns>
+		public static T Single<T, TSub1, TSub2>(this IDataReader reader)
+		{
+			T t = reader.AsEnumerable<T, TSub1, TSub2>().FirstOrDefault();
+			reader.Advance();
+			return t;
+		}
+
+		/// <summary>
+		/// Converts an IDataReader to a single object.
+		/// </summary>
+		/// <typeparam name="T">The expected type of the object.</typeparam>
+		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
+		/// <typeparam name="TSub2">The expected type of sub object 2.</typeparam>
+		/// <typeparam name="TSub3">The expected type of sub object 3.</typeparam>
+		/// <param name="reader">The data reader.</param>
+		/// <returns>A list of objects.</returns>
+		public static T Single<T, TSub1, TSub2, TSub3>(this IDataReader reader)
+		{
+			T t = reader.AsEnumerable<T, TSub1, TSub2, TSub3>().FirstOrDefault();
+			reader.Advance();
+			return t;
+		}
+
+		/// <summary>
+		/// Converts an IDataReader to a single object.
+		/// </summary>
+		/// <typeparam name="T">The expected type of the object.</typeparam>
+		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
+		/// <typeparam name="TSub2">The expected type of sub object 2.</typeparam>
+		/// <typeparam name="TSub3">The expected type of sub object 3.</typeparam>
+		/// <typeparam name="TSub4">The expected type of sub object 4.</typeparam>
+		/// <param name="reader">The data reader.</param>
+		/// <returns>A list of objects.</returns>
+		public static T Single<T, TSub1, TSub2, TSub3, TSub4>(this IDataReader reader)
+		{
+			T t = reader.AsEnumerable<T, TSub1, TSub2, TSub3, TSub4>().FirstOrDefault();
+			reader.Advance();
+			return t;
+		}
+
+		/// <summary>
+		/// Converts an IDataReader to a single object.
+		/// </summary>
+		/// <typeparam name="T">The expected type of the object.</typeparam>
+		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
+		/// <typeparam name="TSub2">The expected type of sub object 2.</typeparam>
+		/// <typeparam name="TSub3">The expected type of sub object 3.</typeparam>
+		/// <typeparam name="TSub4">The expected type of sub object 4.</typeparam>
+		/// <typeparam name="TSub5">The expected type of sub object 5.</typeparam>
+		/// <param name="reader">The data reader.</param>
+		/// <returns>A list of objects.</returns>
+		public static T Single<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this IDataReader reader)
+		{
+			T t = reader.AsEnumerable<T, TSub1, TSub2, TSub3, TSub4, TSub5>().FirstOrDefault();
+			reader.Advance();
+			return t;
+		}
+		#endregion
+
 		#region Merge Methods
 		/// <summary>
 		/// Merges the results of a recordset into an existing object.
@@ -335,6 +442,12 @@ namespace Insight.Database
 			while (reader.Read())
 				yield return mapper(reader);
 
+			// advance to the next recordset
+			reader.Advance();
+		}
+
+		private static void Advance(this IDataReader reader)
+		{
 			// if there are no results left, then clean up the reader
 			if (!reader.NextResult())
 				reader.Dispose();

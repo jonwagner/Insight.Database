@@ -99,5 +99,18 @@ namespace Insight.Tests
 				var next = reader.AsEnumerable<int>().ToList();
 			}
 		}
+
+		[Test]
+		public void ReaderShouldAdvanceWhenSingleIsCalled()
+		{
+			string sql = "SELECT p=1 SELECT p=2";
+
+			using (var reader = _connection.GetReaderSql(sql, Parameters.Empty))
+			{
+				var first = reader.Single<int>();
+				var next = reader.Single<int>();
+				Assert.Throws<InvalidOperationException>(() => reader.NextResult());
+			}
+		}
 	}
 }
