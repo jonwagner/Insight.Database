@@ -446,6 +446,10 @@ namespace Insight.Database
 			reader.Advance();
 		}
 
+		/// <summary>
+		/// Advance an IDataReader to the next result set or close it if there are no more result sets.
+		/// </summary>
+		/// <param name="reader">The reader to read.</param>
 		private static void Advance(this IDataReader reader)
 		{
 			// if there are no results left, then clean up the reader

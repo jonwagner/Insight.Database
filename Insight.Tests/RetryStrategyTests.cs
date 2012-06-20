@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System.Data.SqlClient;
 using System.Data;
 using Moq;
+using System.Threading.Tasks;
 
 namespace Insight.Tests
 {
@@ -38,6 +39,42 @@ namespace Insight.Tests
 			// by default only retry once or tests will take long
 			RetryStrategy.MaxRetryCount = 1;
 		}
+
+		#region Pure RetryStrategy Tests
+		[Test]
+		public void RetryStrategyShouldCompleteWhenFuncReturnsNullTask()
+		{
+			RetryStrategy s = new RetryStrategy();
+
+			Assert.Throws<AggregateException>(() => s.ExecuteWithRetryAsync<int>(null, () => null).Wait());
+		}
+
+		[Test]
+		public void RetryStrategyShouldCompleteWhenFuncThrows()
+		{
+			RetryStrategy s = new RetryStrategy();
+
+			Assert.Throws<AggregateException>(() => s.ExecuteWithRetryAsync<int>(null, () => { throw new ApplicationException(); }).Wait());
+		}
+
+		class TestRetryStrategy : RetryStrategy
+		{
+			public override bool IsTransientException(Exception exception)
+			{
+				return true;
+			}
+		}
+
+		[Test]
+		public void RetryStrategyShouldCompleteWhenHandlerThrows()
+		{
+			RetryStrategy s = new RetryStrategy();
+
+			s.Retrying += (sender, re) => { throw new ApplicationException(); };
+
+			Assert.Throws<AggregateException>(() => s.ExecuteWithRetryAsync<int>(null, () => Task<int>.Factory.StartNew(() => { throw new ApplicationException(); })).Wait());
+		}
+		#endregion
 
 		#region IsTransientException Tests
 		[Test]

@@ -156,6 +156,33 @@
          </Type>
         </Types>
        </Namespace>
+       <Namespace Name="Insight.Database.Reliable">
+        <Types>
+         <Type Name="RetryStrategy">
+          <Members>
+           <Member Name="#CheckAsyncResult`1(System.Data.IDbCommand,System.Threading.Tasks.TaskCompletionSource`1&lt;!!0&gt;,System.Func`1&lt;System.Threading.Tasks.Task`1&lt;!!0&gt;&gt;,System.Int32,System.TimeSpan)">
+            <Messages>
+             <Message TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031" Status="Excluded" Created="2012-06-20 20:42:24Z">
+              <Issue>
+               <Item>'RetryStrategy.CheckAsyncResult&lt;TResult&gt;(IDbCommand, TaskCompletionSource&lt;TResult&gt;, Func&lt;Task&lt;TResult&gt;&gt;, int, TimeSpan)'</Item>
+               <Item>'Exception'</Item>
+              </Issue>
+              <Issue>
+               <Item>'RetryStrategy.CheckAsyncResult&lt;TResult&gt;(IDbCommand, TaskCompletionSource&lt;TResult&gt;, Func&lt;Task&lt;TResult&gt;&gt;, int, TimeSpan)'</Item>
+               <Item>'Exception'</Item>
+              </Issue>
+              <Notes>
+               <User Name="jonw">
+                <Note Id="1" />
+               </User>
+              </Notes>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
+        </Types>
+       </Namespace>
       </Namespaces>
      </Module>
     </Modules>
@@ -164,12 +191,16 @@
   <Notes>
    <User Name="jonw">
     <Note Id="0" Modified="2011-08-23 00:17:40Z">Code review completed</Note>
+    <Note Id="1" Modified="2012-06-20 20:45:12Z">This method propagates the exception to the TaskCompletionSource so the exception can be handled by the code that has started the asynchronous workflow.</Note>
     <Note Id="3" Modified="2011-08-24 20:42:17Z">The internal implementation of FastExpando is not relevant to the name of the class.</Note>
    </User>
   </Notes>
   <Rules>
    <Rule TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210">
     <Resolution Name="NoStrongName">Sign {0} with a strong name key.</Resolution>
+   </Rule>
+   <Rule TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031">
+    <Resolution Name="Default">Modify {0} to catch a more specific exception than {1} or rethrow the exception.</Resolution>
    </Rule>
    <Rule TypeName="IdentifiersShouldHaveCorrectSuffix" Category="Microsoft.Naming" CheckId="CA1710">
     <Resolution Name="Default">Rename {0} to end in '{1}'.</Resolution>

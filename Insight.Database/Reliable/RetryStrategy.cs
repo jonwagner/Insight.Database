@@ -185,65 +185,83 @@ namespace Insight.Database.Reliable
 		/// <param name="delay">The current delay in between retry attempts.</param>
 		private void CheckAsyncResult<TResult>(IDbCommand commandContext, TaskCompletionSource<TResult> tcs, Func<Task<TResult>> func, int attempt, TimeSpan delay)
 		{
-			func().ContinueWith(t =>
+			try
 			{
-				switch (t.Status)
+				func().ContinueWith(t =>
 				{
-					case TaskStatus.Canceled:
-						tcs.SetCanceled();
-						return;
-					case TaskStatus.RanToCompletion:
-						tcs.SetResult(t.Result);
-						return;
-				}
+					try
+					{
+						switch (t.Status)
+						{
+							case TaskStatus.Canceled:
+								tcs.SetCanceled();
+								return;
+							case TaskStatus.RanToCompletion:
+								tcs.SetResult(t.Result);
+								return;
+						}
 
-				// if it's not a transient error, then let it go
-				Exception ex = t.Exception;
-				if (!IsTransientException(ex))
-				{
-					tcs.SetException(ex);
-					return;
-				}
+						// if it's not a transient error, then let it go
+						Exception ex = t.Exception;
+						if (!IsTransientException(ex))
+						{
+							tcs.SetException(ex);
+							return;
+						}
 
-				// if the number of retries has been exceeded then throw
-				if (attempt >= MaxRetryCount)
-				{
-					tcs.SetException(ex);
-					return;
-				}
+						// if the number of retries has been exceeded then throw
+						if (attempt >= MaxRetryCount)
+						{
+							tcs.SetException(ex);
+							return;
+						}
 
-				// first off the event to tell someone that we are going to retry this
-				if (OnRetrying(commandContext, ex, attempt))
-				{
-					tcs.SetException(ex);
-					return;
-				}
+						// first off the event to tell someone that we are going to retry this
+						if (OnRetrying(commandContext, ex, attempt))
+						{
+							tcs.SetException(ex);
+							return;
+						}
 
-				// if this is the first attempt and a fastretry, then just execute it
-				if (attempt == 0 && FastFirstRetry)
-				{
-					CheckAsyncResult(commandContext, tcs, func, attempt + 1, delay);
-					return;
-				}
+						// if this is the first attempt and a fastretry, then just execute it
+						if (attempt == 0 && FastFirstRetry)
+						{
+							CheckAsyncResult(commandContext, tcs, func, attempt + 1, delay);
+							return;
+						}
 
-				// update the increment
-				TimeSpan nextDelay = delay + IncrementalBackOff;
-				if (nextDelay > MaxBackOff)
-					nextDelay = MaxBackOff;
+						// update the increment
+						TimeSpan nextDelay = delay + IncrementalBackOff;
+						if (nextDelay > MaxBackOff)
+							nextDelay = MaxBackOff;
 
-				// create a timer for the retry
-				// note that we need to put the timer into a closure so we can dispose it
-				// but we have to wait for the local variable to be assigned before we can start the timer
-				Timer timer = null;
-				timer = new Timer(_ =>
-				{
-					CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
-					timer.Dispose();
+						// create a timer for the retry
+						// note that we need to put the timer into a closure so we can dispose it
+						// but we have to wait for the local variable to be assigned before we can start the timer
+						Timer timer = null;
+						timer = new Timer(_ =>
+						{
+							CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
+							timer.Dispose();
+						});
+
+						// start the timer
+						timer.Change(delay, NoRepeat);
+					}
+					catch (Exception ex)
+					{
+						// Something went horribly wrong. Perhaps the OnRetrying event threw an exception.
+						// Pass the exception downstream so we don't get a task hang.
+						tcs.SetException(ex);
+					}
 				});
-
-				// start the timer
-				timer.Change(delay, NoRepeat);
-			});
+			}
+			catch (Exception ex)
+			{
+				// func failed or returned a null task.
+				// Pass the exception downstream so we don't get a task hang.
+				tcs.SetException(ex);
+			}
 		}
 
 		/// <summary>
