@@ -103,22 +103,10 @@ namespace Insight.Database.Sample
 			ForEach();
 			AsEnumerable();
 			#endregion
-		}
 
-		class Beer
-		{
-			public string Name { get; internal set; }
-			public string Flavor { get; internal set; }
-			public decimal? OriginalGravity { get; internal set; }
-
-			public Beer()
-			{
-			}
-
-			public Beer(string name)
-			{
-				Name = name;
-			}
+			#region Repository Pattern
+			Repository();
+			#endregion
 		}
 
 		class Glass
@@ -193,7 +181,7 @@ namespace Insight.Database.Sample
 			Database.Connection().Execute("InsertBeer", beer);
 
 			// map an anonymous object to the stored procedure parameters
-			Database.Connection().Execute("DeleteBeer", new { Name = "IPA" });
+			Database.Connection().Execute("DeleteBeer", beer);
 		}
 
 		static void ExecuteSql()
@@ -407,10 +395,10 @@ namespace Insight.Database.Sample
 		static void List_ClassStoredProcedure()
 		{
 			List<Beer> beer = new List<Beer>();
-			beer.Add(new Beer() { Name = "Sly Fox IPA", Flavor = "yummy", OriginalGravity = 4.2m });
-			beer.Add(new Beer() { Name = "Hoppopotamus", Flavor = "hoppy", OriginalGravity = 3.0m });
+			beer.Add(new Beer() { Id = 1, Name = "Sly Fox IPA", Flavor = "yummy", OriginalGravity = 4.2m });
+			beer.Add(new Beer() { Id = 2, Name = "Hoppopotamus", Flavor = "hoppy", OriginalGravity = 3.0m });
 
-			Database.Connection().Execute("UpdateBeer", new { Beer = beer });
+			Database.Connection().Execute("UpdateMultipleBeer", new { Beer = beer });
 		}
 
 		static void List_ClassSql()
@@ -419,7 +407,7 @@ namespace Insight.Database.Sample
 			beer.Add(new Beer() { Name = "Sly Fox IPA", Flavor = "yummy", OriginalGravity = 4.2m });
 			beer.Add(new Beer() { Name = "Hoppopotamus", Flavor = "hoppy", OriginalGravity = 3.0m });
 
-			Database.Connection().ExecuteSql("INSERT INTO Beer SELECT * FROM @Beer", new { Beer = beer });
+			Database.Connection().ExecuteSql("INSERT INTO Beer (Name, Flavor) SELECT Name, Flavor FROM @Beer", new { Beer = beer });
 		}
 		#endregion
 
@@ -474,7 +462,7 @@ namespace Insight.Database.Sample
 		#region Object Hierarchies
 		static void ObjectHierarchy()
 		{
-			Database.Connection().ExecuteSql("INSERT INTO Beer VALUES ('Sly Fox IPA', 'yummy', 4.2)");
+			Database.Connection().ExecuteSql("INSERT INTO Beer (Name, Flavor, OriginalGravity) VALUES ('Sly Fox IPA', 'yummy', 4.2)");
 			Database.Connection().ExecuteSql("INSERT INTO Glasses VALUES ('Pilsner', 16)");
 			Database.Connection().ExecuteSql("INSERT INTO Servings VALUES ('1/1/2012', 'Sly Fox IPA', 'Pilsner')");
 
@@ -564,6 +552,19 @@ namespace Insight.Database.Sample
 		static void Drink (Beer b)
 		{
 			Console.WriteLine("YUM");
+		}
+		#endregion
+
+		#region Repository Pattern
+		private static void Repository()
+		{
+			IBeerRepository repo = new BeerRepository(() => Database.Connection());
+
+			Beer b = new Beer() { Name = "Double IPA" };
+			repo.InsertBeer(b);
+			b.Name = "Tripel IPA";
+			repo.UpdateBeer(b);
+			repo.DeleteBeer(b.Id);
 		}
 		#endregion
 	}

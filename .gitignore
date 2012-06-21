@@ -7,7 +7,5 @@ obj
 *.orig
 *.rej
 StyleCop.Cache
-<<<<<<< HEAD
-=======
+Output
 TestResult.xml
->>>>>>> b8fac201f56506eef

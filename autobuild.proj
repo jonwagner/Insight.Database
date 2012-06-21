@@ -38,7 +38,7 @@
   </Target>
 
   <!-- Test Build without increment version. -->
-  <Target Name="TestBuild" DependsOnTargets="AssemblyInfo;BuildNet40;Build">
+  <Target Name="TestBuild" DependsOnTargets="AssemblyInfo;BuildNet40;Build;Package">
     <!-- Make sure that we revert the assembly info -->
     <CallTarget Targets="RevertAssemblyInfo" />
     <OnError ExecuteTargets="RevertAssemblyInfo" />
@@ -97,11 +97,23 @@
     <MSBuild Projects="%(SolutionFiles.Identity)" Properties="Configuration=$(Configuration)" StopOnFirstFailure="true" />
     <!-- Test Before Packaging -->
     <Exec Command="packages\NUnit.2.5.10.11092\tools\nunit-console .\Insight.Tests\bin\$(Configuration)\Insight.Tests.dll"/>
-    <!-- Build the NuGet Packages -->
+  </Target>
+
+  <!-- Build the code snippet installer -->
+  <Target Name="PackageCodeSnippets">
+    <Message Text="Packaging Code Snippets" />
+    <MakeDir Directories="Build\Output" />
+    <Delete Files="Build\Output\InsightCodeSnippets.vsi" />
+    <Exec Command="Build\zip.exe Build\Output\InsightCodeSnippets.vsi Insight.Database\CodeSnippets\*.*"/>
+  </Target>
+
+  <!-- Build the NuGet Package -->
+  <Target Name="Package" DependsOnTargets="PackageCodeSnippets">
+    <Message Text="Packaging NuGet" />
     <MakeDir Directories="Build\Output" />
     <Exec Command="nuget.exe pack %(NuGetFiles.Identity) /OutputDirectory Build\Output" />
   </Target>
-  
+
   <Target Name="RevertAssemblyInfo">
     <!-- Revert the Assembly Info files when complete -->
     <Exec Command="git checkout %(AssemblyInfoFiles.Identity)" Condition="Exists(%(AssemblyInfoFiles.Identity))" />

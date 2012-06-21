@@ -1,0 +1,12 @@
+﻿<VSContent xmlns="http://schemas.microsoft.com/developer/vscontent/2005">
+    <Content>
+        <FileName>InsightRepository.snippet</FileName>
+        <DisplayName>InsightRepository Code Snippet</DisplayName>
+        <Description>Creates a repository interface and implementation to work with standard Insight.Database and Insight.Database.Schema AutoProcs.</Description>
+        <FileContentType>Code Snippet</FileContentType>
+        <ContentVersion>2.0</ContentVersion>
+        <Attributes>
+            <Attribute name="lang" value="csharp"/>
+        </Attributes>
+    </Content>
+</VSContent>
