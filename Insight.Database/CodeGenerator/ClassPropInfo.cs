@@ -33,15 +33,15 @@ namespace Insight.Database.CodeGenerator
 			else
 			{
 				// get the property
-				PropertyInfo p = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+				PropertyInfo p = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
 				if (p == null)
 					throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Field/Property {0} does not exist on type {1}", propertyName, type));
 
 				// get the getter or setter
 				if (getMethod)
-					MethodInfo = (p.DeclaringType == type) ? p.GetGetMethod(true) : p.DeclaringType.GetProperty(p.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).GetGetMethod(true);
+					MethodInfo = (p.DeclaringType == type) ? p.GetGetMethod(true) : p.DeclaringType.GetProperty(p.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase).GetGetMethod(true);
 				else
-					MethodInfo = (p.DeclaringType == type) ? p.GetSetMethod(true) : p.DeclaringType.GetProperty(p.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).GetSetMethod(true);
+					MethodInfo = (p.DeclaringType == type) ? p.GetSetMethod(true) : p.DeclaringType.GetProperty(p.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase).GetSetMethod(true);
 
 				MemberType = p.PropertyType;
 			}
