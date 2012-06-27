@@ -255,6 +255,11 @@ namespace Insight.Database.CodeGenerator
 			// look for the parameter that is a Structured object and pass the array to the TVP
 			if (typeof(IEnumerable).IsAssignableFrom(type))
 			{
+				// If this is an IEnumerable<T>, then grab the contents type from the type argument
+				Type[] typeArgs = type.GenericTypeArguments;
+				if (typeArgs != null && typeArgs.Length == 1)
+					typeOwner = typeArgs[0];
+
 				SqlParameter sqlParameter = parameters.Find(p => p.SqlDbType == SqlDbType.Structured);
 				string parameterName = sqlParameter.ParameterName;
 				string tableTypeName = sqlParameter.TypeName;

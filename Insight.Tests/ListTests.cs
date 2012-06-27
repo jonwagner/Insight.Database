@@ -164,6 +164,46 @@ namespace Insight.Tests
 		}
 
 		/// <summary>
+		/// This method name COULD be longer.
+		/// We want: connection.Query("PROC", list, Parameters.Empty) to send list to a single TVP
+		/// </summary>
+		[Test]
+		public void ArrayOfValuesPassedDirectlyToProcWithOneTVPParameterShouldMapListToParameter()
+		{
+			// build test data
+			int[] array = new int[3];
+			for (int j = 0; j < 3; j++)
+				array[j] = j;
+
+			// run the query
+			var items = _connection.Query<int>("Int32TestProc", array);
+			Assert.IsNotNull(items);
+			Assert.AreEqual(3, items.Count);
+			for (int j = 0; j < 3; j++)
+				Assert.AreEqual(j, items[j]);
+		}
+
+		/// <summary>
+		/// This method name COULD be longer.
+		/// We want: connection.Query("PROC", list, Parameters.Empty) to send list to a single TVP
+		/// </summary>
+		[Test]
+		public void EnumerableOfValuesPassedDirectlyToProcWithOneTVPParameterShouldMapListToParameter()
+		{
+			// build test data
+			IList<int> ids = new List<int>();
+			for (int j = 0; j < 3; j++)
+				ids.Add(j);
+
+			// run the query
+			var items = _connection.Query<int>("Int32TestProc", ids);
+			Assert.IsNotNull(items);
+			Assert.AreEqual(3, items.Count);
+			for (int j = 0; j < 3; j++)
+				Assert.AreEqual(j, items[j]);
+		}
+
+		/// <summary>
 		/// Test support for enumerable parameters of classes sent as table value parameters.
 		/// </summary>
 		[Test]

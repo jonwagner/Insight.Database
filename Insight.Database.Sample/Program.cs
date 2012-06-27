@@ -45,7 +45,6 @@ namespace Insight.Database.Sample
 			#endregion
 
 			#region Dynamic Database Calls
-			DynamicCall_Simple();
 			DynamicCall_Named();
 			DynamicCall_Transaction();
 			#endregion
@@ -111,13 +110,17 @@ namespace Insight.Database.Sample
 
 		class Glass
 		{
+			public int Id;
+			public string Name;
 			public int Ounces;
 		}
 
 		class Serving
 		{
 			public DateTime When;
+			public int BeerID { get { return Beer.Id; } }
 			public Beer Beer;
+			public int GlassesID { get { return Glass.Id; } }
 			public Glass Glass;
 		}
 
@@ -208,7 +211,7 @@ namespace Insight.Database.Sample
 		{
 			using (SqlConnection connection = Database.Open())
 			{
-				IDbCommand command = connection.CreateCommand("FindBeer", new { Name = "IPA" });
+				IDbCommand command = connection.CreateCommand("FindBeers", new { Name = "IPA" });
 			}
 		}
 
@@ -239,7 +242,7 @@ namespace Insight.Database.Sample
 		static void ManualTransform()
 		{
 			List<Beer> beer = Database.Connection().Query(
-				"FindBeer",
+				"FindBeers",
 				new { Name = "IPA" },
 				reader =>
 				{
@@ -257,7 +260,7 @@ namespace Insight.Database.Sample
 		static void ManualTransform_Sum()
 		{
 			int totalNameLength = Database.Connection().Query(
-				"FindBeer", 
+				"FindBeers", 
 				new { Name = "IPA" }, 
 				reader => 
 					{
@@ -275,7 +278,7 @@ namespace Insight.Database.Sample
 		static void ManualTransform_GetReader()
 		{
 			using (SqlConnection connection = Database.Open())
-			using (IDataReader reader = connection.GetReader("FindBeer", new { Name = "IPA" }))
+			using (IDataReader reader = connection.GetReader("FindBeers", new { Name = "IPA" }))
 			{
 				while (reader.Read())
 				{
@@ -288,7 +291,7 @@ namespace Insight.Database.Sample
 		#region Querying for Objects
 		static void Query_Query()
 		{
-			IList<Beer> beer = Database.Connection().Query<Beer>("FindBeer", new { Name = "IPA" });
+			IList<Beer> beer = Database.Connection().Query<Beer>("FindBeers", new { Name = "IPA" });
 		}
 
 		static void Query_QuerySql()
@@ -299,7 +302,7 @@ namespace Insight.Database.Sample
 		static void Query_ToList()
 		{
 			using (SqlConnection connection = Database.Open())
-			using (IDataReader reader = connection.GetReader("FindBeer", new { Name = "IPA" }))
+			using (IDataReader reader = connection.GetReader("FindBeers", new { Name = "IPA" }))
 			{
 				IList<Beer> beer = reader.ToList<Beer>();
 			}
@@ -308,7 +311,7 @@ namespace Insight.Database.Sample
 		static void Query_AsEnumerable()
 		{
 			using (SqlConnection connection = Database.Open())
-			using (IDataReader reader = connection.GetReader("FindBeer", new { Name = "IPA" }))
+			using (IDataReader reader = connection.GetReader("FindBeers", new { Name = "IPA" }))
 			{
 				foreach (Beer beer in reader.AsEnumerable<Beer>())
 				{
@@ -356,14 +359,9 @@ namespace Insight.Database.Sample
 		#endregion
 
 		#region Dynamic Database Calls
-		static void DynamicCall_Simple()
-		{
-			IList<Beer> beer = Database.Dynamic<Beer>().FindBeer("IPA");
-		}
-
 		static void DynamicCall_Named()
 		{
-			IList<Beer> beer = Database.Dynamic<Beer>().FindBeer(name: "IPA");
+			IList<Beer> beer = Database.Dynamic<Beer>().FindBeers(name: "IPA");
 		}
 
 		static void DynamicCall_Transaction()
@@ -371,7 +369,7 @@ namespace Insight.Database.Sample
 			using (SqlConnection connection = Database.Open())
 			using (SqlTransaction t = connection.BeginTransaction())
 			{
-				IList<Beer> beer = connection.Dynamic<Beer>().FindBeer(name: "IPA", transaction: t);
+				IList<Beer> beer = connection.Dynamic<Beer>().FindBeers(name: "IPA", transaction: t);
 			}
 		}
 		#endregion
@@ -388,8 +386,8 @@ namespace Insight.Database.Sample
 
 		static void List_ValueTypeStoredProcedure()
 		{
-			IEnumerable<String> names = new List<String>() { "Sly Fox IPA", "Hoppapotamus" };
-			var beer = Database.Connection().Query("GetBeer", new { Name = names });
+			IEnumerable<int> ids = new List<int>() { 1, 2 };
+			var beer = Database.Connection().Query("SelectBeers", ids);
 		}
 
 		static void List_ClassStoredProcedure()
@@ -398,7 +396,7 @@ namespace Insight.Database.Sample
 			beer.Add(new Beer() { Id = 1, Name = "Sly Fox IPA", Flavor = "yummy", OriginalGravity = 4.2m });
 			beer.Add(new Beer() { Id = 2, Name = "Hoppopotamus", Flavor = "hoppy", OriginalGravity = 3.0m });
 
-			Database.Connection().Execute("UpdateMultipleBeer", new { Beer = beer });
+			Database.Connection().Execute("UpdateBeers", new { Beer = beer });
 		}
 
 		static void List_ClassSql()
@@ -425,7 +423,7 @@ namespace Insight.Database.Sample
 
 		static void Async_Query()
 		{
-			Task<IList<Beer>> task = Database.Connection().QueryAsync<Beer>("FindBeer", new { Name = "IPA" });
+			Task<IList<Beer>> task = Database.Connection().QueryAsync<Beer>("FindBeers", new { Name = "IPA" });
 
 			// do stuff
 
@@ -462,13 +460,20 @@ namespace Insight.Database.Sample
 		#region Object Hierarchies
 		static void ObjectHierarchy()
 		{
-			Database.Connection().ExecuteSql("INSERT INTO Beer (Name, Flavor, OriginalGravity) VALUES ('Sly Fox IPA', 'yummy', 4.2)");
-			Database.Connection().ExecuteSql("INSERT INTO Glasses VALUES ('Pilsner', 16)");
-			Database.Connection().ExecuteSql("INSERT INTO Servings VALUES ('1/1/2012', 'Sly Fox IPA', 'Pilsner')");
+			Beer beer = new Beer() { Name = "Sly Fox IPA", Flavor = "yummy", OriginalGravity = 4.2m };
+			Glass glass = new Glass() { Name = "Pilsner", Ounces = 16 };
 
-			var servings = Database.Connection().Query<Serving, Beer, Glass>("GetServings", Parameters.Empty);
-			foreach (var serving in servings)
-				Console.WriteLine("{0} {1} {2}", serving.When, serving.Beer.Name, serving.Glass.Ounces);
+			Database.Connection().Insert("InsertBeer", beer);
+			Database.Connection().Insert("InsertGlass", glass);
+
+			Serving serving = new Serving() { When = DateTime.Parse("1/1/2012") };
+			serving.Beer = beer;
+			serving.Glass = glass;
+			Database.Connection().Insert("InsertServing", serving);
+
+			var servings = Database.Connection().QuerySql<Serving, Beer, Glass>("SELECT s.*, b.*, g.* FROM Servings s JOIN Beer b ON (s.BeerID = b.ID) JOIN Glasses g ON (s.GlassesID = g.ID)", Parameters.Empty);
+			foreach (var s in servings)
+				Console.WriteLine("{0} {1} {2}", s.When, s.Beer.Name, s.Glass.Ounces);
 		}
 		#endregion
 
@@ -484,8 +489,8 @@ namespace Insight.Database.Sample
 
 			// look! a dynamic object
 			dynamic d = x;
-			Console.WriteLine(d.Name);
-			Console.WriteLine(d.Ounces);
+			Console.WriteLine("{0}", d.Name);
+			Console.WriteLine("{0}", d.Ounces);
 		}
 		#endregion
 
@@ -532,7 +537,7 @@ namespace Insight.Database.Sample
 		static void ForEach()
 		{
 			Database.Connection().ForEach<Beer>(
-				"FindBeer", 
+				"FindBeers", 
 				new { Name = "IPA" },
 				beer => Drink(beer));
 		}
