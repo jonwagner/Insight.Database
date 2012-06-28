@@ -256,7 +256,7 @@ namespace Insight.Database.CodeGenerator
 			if (typeof(IEnumerable).IsAssignableFrom(type))
 			{
 				// If this is an IEnumerable<T>, then grab the contents type from the type argument
-				Type[] typeArgs = type.GenericTypeArguments;
+				Type[] typeArgs = type.GetGenericArguments();
 				if (typeArgs != null && typeArgs.Length == 1)
 					typeOwner = typeArgs[0];
 
