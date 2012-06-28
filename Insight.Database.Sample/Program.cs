@@ -565,11 +565,28 @@ namespace Insight.Database.Sample
 		{
 			IBeerRepository repo = new BeerRepository(() => Database.Connection());
 
+			// single object operations
 			Beer b = new Beer() { Name = "Double IPA" };
 			repo.InsertBeer(b);
 			b.Name = "Tripel IPA";
 			repo.UpdateBeer(b);
+			repo.UpsertBeer(b);
 			repo.DeleteBeer(b.Id);
+
+			// multiple object operations
+			Beer b2 = new Beer() { Name = "Tripel IPA" };
+			Beer b3 = new Beer() { Name = "Quad IPA (eek!)" };
+			List<Beer> beers = new List<Beer>() { b, b2 };
+			repo.InsertBeers(beers);
+			beers.Add(b3);
+			repo.UpsertBeers(beers);
+
+			// wildcard find
+			IList<Beer> ipas = repo.FindBeers(new { Name = "%IPA%", NameOperator = "LIKE" });
+			Console.WriteLine("There are {0} IPAs in the database", ipas.Count);
+
+			// clean up
+			repo.DeleteBeers(beers.Select(beer => beer.Id));
 		}
 		#endregion
 	}

@@ -81,7 +81,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CodeSnippets\InsightCodeSnippets.vscontent" />
-    <None Include="CodeSnippets\InsightRepository.snippet" />
+    <None Include="CodeSnippets\InsightRepository.snippet">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="FxCop.FxCop" />
     <None Include="Insight.Database.nuspec" />
     <None Include="packages.config" />
