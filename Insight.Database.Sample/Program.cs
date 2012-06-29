@@ -587,6 +587,11 @@ namespace Insight.Database.Sample
 
 			// clean up
 			repo.DeleteBeers(beers.Select(beer => beer.Id));
+
+			// create a receipt
+			Receipt r = new Receipt() { Id = 1, Name = "John Smith" };
+			repo.UpsertReceipt(r);
+			repo.DeleteReceipt(r.Id);
 		}
 		#endregion
 	}
