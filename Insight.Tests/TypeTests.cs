@@ -107,24 +107,24 @@ namespace Insight.Tests
 		{
 			// value types
 			// NOTE: unsigned types are not supported by sql so we won't test them here
-			NullableData<byte>.Test (1, _connection);
-			NullableData<short>.Test (-2, _connection);
-			NullableData<int>.Test (-120, _connection);
-			NullableData<long>.Test (-120000000, _connection);
-			NullableData<float>.Test (123.456f, _connection);
-			NullableData<double>.Test (567.134567, _connection);
-			NullableData<decimal>.Test (890.12345m, _connection);
-			NullableData<bool>.Test (false, _connection);
-			NullableData<bool>.Test (true, _connection);
-			NullableData<char>.Test ('c', _connection);
-			NullableData<Guid>.Test (Guid.NewGuid(), _connection);
-			NullableData<DateTime>.Test (DateTime.Now.Date, _connection);				// SQL will round the time, so need to knock off some milliseconds 
-			NullableData<DateTimeOffset>.Test (DateTimeOffset.Now, _connection);
+			NullableData<byte>.Test(1, _connection);
+			NullableData<short>.Test(-2, _connection);
+			NullableData<int>.Test(-120, _connection);
+			NullableData<long>.Test(-120000000, _connection);
+			NullableData<float>.Test(123.456f, _connection);
+			NullableData<double>.Test(567.134567, _connection);
+			NullableData<decimal>.Test(890.12345m, _connection);
+			NullableData<bool>.Test(false, _connection);
+			NullableData<bool>.Test(true, _connection);
+			NullableData<char>.Test('c', _connection);
+			NullableData<Guid>.Test(Guid.NewGuid(), _connection);
+			NullableData<DateTime>.Test(DateTime.Now.Date, _connection);				// SQL will round the time, so need to knock off some milliseconds 
+			NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection);
 
 			// class types
-			Data<string>.Test ("foo", _connection);
-			Data<byte[]>.Test (new byte[] { 1, 2, 3, 4}, _connection);
-			Data<System.Data.Linq.Binary>.Test (new System.Data.Linq.Binary (new byte[] { 1, 2, 3, 4 }), _connection);
+			Data<string>.Test("foo", _connection);
+			Data<byte[]>.Test(new byte[] { 1, 2, 3, 4 }, _connection);
+			Data<System.Data.Linq.Binary>.Test(new System.Data.Linq.Binary(new byte[] { 1, 2, 3, 4 }), _connection);
 
 			// enums
 			NullableData<TestEnum>.Test (TestEnum.One, _connection);
@@ -152,6 +152,47 @@ namespace Insight.Tests
 		{
 			var results = _connection.QuerySql<int>("SELECT 1234");
 		}
+		#endregion
+
+		#region Enum Conversion Tests
+		[Test]
+		public void TestTinyEnumStringConversion()
+		{
+			var results = _connection.QuerySql<TinyEnumData>("SELECT Tiny='One', Big='One'");
+		}
+		[Test]
+		public void TestTinyEnumConversion()
+		{
+			var results = _connection.QuerySql<TinyEnumData>("SELECT Tiny=CONVERT(tinyint, 1)");
+		}
+		enum TinyEnum
+		{
+			One = 1
+		}
+		class TinyEnumData
+		{
+			public TinyEnum Tiny;
+		}
+
+
+		[Test]
+		public void TestBigEnumStringConversion()
+		{
+			var results = _connection.QuerySql<BigEnumData>("SELECT Big='One'");
+		}
+		[Test]
+		public void TestBigEnumConversion()
+		{
+			var results = _connection.QuerySql<BigEnumData>("SELECT Big=CONVERT(tinyint, 1)");
+		}
+		class BigEnumData
+		{
+			public BigEnum Big;
+		}		
+		enum BigEnum : long
+		{
+			One = 1
+		}		
 		#endregion
 
 		#region Class/Struct Field Deserialization Tests

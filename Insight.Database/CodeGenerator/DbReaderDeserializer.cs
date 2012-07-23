@@ -268,34 +268,51 @@ namespace Insight.Database.CodeGenerator
 					var nullUnderlyingType = Nullable.GetUnderlyingType(memberType);
 					var unboxType = (nullUnderlyingType != null && nullUnderlyingType.IsEnum) ? nullUnderlyingType : memberType;
 
+					// conversion to an enum
 					if (unboxType.IsEnum)
 					{
-						Label isNotString = il.DefineLabel();
+						// if we are converting a string to an enum, then parse it.
+						if (schemaTable.Rows[index]["DataTypeName"].ToString().ToUpperInvariant().Contains("CHAR"))
+						{
+							// see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
+							il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][string]
+							il.Emit(OpCodes.Stloc_2);							// pop loc.2 (enum), stack => [target]
 
-						// see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
-						il.Emit(OpCodes.Dup);								// dup value, stack => [target][value][value]
-						il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][value-as-object][string or null]
-						il.Emit(OpCodes.Dup);								// dup string, stack => [target][value-as-object][string or null][string or null]
-						il.Emit(OpCodes.Stloc_2);							// pop loc.2 (enum), stack => [target][value-as-object][string or null]
-						il.Emit(OpCodes.Brfalse_S, isNotString);			// brfalse, stack => [target][value-as-object]
+							// call enum.parse (type, value, true)
+							il.Emit(OpCodes.Ldtoken, unboxType);				// push type-token, stack => [target][enum-type-token]
+							il.EmitCall(OpCodes.Call, _typeGetTypeFromHandle, null);
 
-						// no longer need value-as-object, we need a string
-						il.Emit(OpCodes.Pop);								// pop [value], stack => [target]
+							// call GetType, stack => [target][enum-type]
+							il.Emit(OpCodes.Ldloc_2);							// push enum, stack => [target][enum-type][string]
+							il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
+							il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
 
-						// call enum.parse (type, value, true)
-						il.Emit(OpCodes.Ldtoken, unboxType);				// push type-token, stack => [target][enum-type-token]
-						il.EmitCall(OpCodes.Call, _typeGetTypeFromHandle, null);
+							// Enum.Parse returns an object, which we need to unbox to the enum value
+							il.Emit(OpCodes.Unbox_Any, unboxType);
+						}
+						else
+						{
+							// unbox the type that we got from the database - NOT necessarily the expected type
+							Type dataType = (Type)schemaTable.Rows[index]["DataType"];
+							il.Emit(OpCodes.Unbox_Any, dataType);
 
-						// call GetType, stack => [target][enum-type]
-						il.Emit(OpCodes.Ldloc_2);							// push enum, stack => [target][enum-type][string]
-						il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
-						il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
+							// if the enum is based on a different type of integer than returned, then do the conversion
+							Type enumType = Enum.GetUnderlyingType(unboxType);
+							if (enumType == typeof(Int32) && dataType != typeof(Int32)) il.Emit(OpCodes.Conv_I4);
+							else if (enumType == typeof(Int64) && dataType != typeof(Int64)) il.Emit(OpCodes.Conv_I8);
+							else if (enumType == typeof(Int16) && dataType != typeof(Int16)) il.Emit(OpCodes.Conv_I2);
+							else if (enumType == typeof(char) && dataType != typeof(char)) il.Emit(OpCodes.Conv_I1);
+							else if (enumType == typeof(UInt32) && dataType != typeof(UInt32)) il.Emit(OpCodes.Conv_U4);
+							else if (enumType == typeof(UInt64) && dataType != typeof(UInt64)) il.Emit(OpCodes.Conv_U8);
+							else if (enumType == typeof(UInt16) && dataType != typeof(UInt16)) il.Emit(OpCodes.Conv_U2);
+							else if (enumType == typeof(byte) && dataType != typeof(byte)) il.Emit(OpCodes.Conv_U1);
 
-						il.MarkLabel(isNotString);
+							// if the enum was nullable, then construct the nullable
+							if (nullUnderlyingType != null)
+								il.Emit(OpCodes.Newobj, memberType.GetConstructor(new[] { nullUnderlyingType }));
+						}
 					}
-
-					// unbox the value into the right type
-					if (memberType == typeof(System.Data.Linq.Binary))
+					else if (memberType == typeof(System.Data.Linq.Binary))
 					{
 						// unbox sql byte arrays to Linq.Binary
 
@@ -305,15 +322,6 @@ namespace Insight.Database.CodeGenerator
 						// before: stack => [target][byte-array-value]
 						// after: stack => [target][Linq.Binary-value]
 						il.Emit(OpCodes.Newobj, _linqBinaryCtor);
-					}
-					else if (nullUnderlyingType != null && nullUnderlyingType.IsEnum)
-					{
-						// if this is a nullable enum, then convert the enum to a nullable enum
-
-						// before: stack => [target][typed-value]
-						// after: stack => [target][enum?-value]
-						il.Emit(OpCodes.Unbox_Any, unboxType);
-						il.Emit(OpCodes.Newobj, memberType.GetConstructor(new[] { nullUnderlyingType }));
 					}
 					else if (TypeHelper.IsSystemType(memberType))
 					{
