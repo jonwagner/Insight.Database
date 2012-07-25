@@ -302,6 +302,7 @@ namespace Insight.Database.CodeGenerator
 							else if (enumType == typeof(Int64) && dataType != typeof(Int64)) il.Emit(OpCodes.Conv_I8);
 							else if (enumType == typeof(Int16) && dataType != typeof(Int16)) il.Emit(OpCodes.Conv_I2);
 							else if (enumType == typeof(char) && dataType != typeof(char)) il.Emit(OpCodes.Conv_I1);
+							else if (enumType == typeof(sbyte) && dataType != typeof(sbyte)) il.Emit(OpCodes.Conv_I1);
 							else if (enumType == typeof(UInt32) && dataType != typeof(UInt32)) il.Emit(OpCodes.Conv_U4);
 							else if (enumType == typeof(UInt64) && dataType != typeof(UInt64)) il.Emit(OpCodes.Conv_U8);
 							else if (enumType == typeof(UInt16) && dataType != typeof(UInt16)) il.Emit(OpCodes.Conv_U2);

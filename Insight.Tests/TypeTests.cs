@@ -156,43 +156,78 @@ namespace Insight.Tests
 
 		#region Enum Conversion Tests
 		[Test]
-		public void TestTinyEnumStringConversion()
+		public void EnumConversions()
 		{
-			var results = _connection.QuerySql<TinyEnumData>("SELECT Tiny='One', Big='One'");
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
 		}
-		[Test]
-		public void TestTinyEnumConversion()
+
+		class EnumContainer<T>
 		{
-			var results = _connection.QuerySql<TinyEnumData>("SELECT Tiny=CONVERT(tinyint, 1)");
+			public T Value;
 		}
-		enum TinyEnum
+		enum Int64Enum : long
 		{
 			One = 1
 		}
-		class TinyEnumData
-		{
-			public TinyEnum Tiny;
-		}
-
-
-		[Test]
-		public void TestBigEnumStringConversion()
-		{
-			var results = _connection.QuerySql<BigEnumData>("SELECT Big='One'");
-		}
-		[Test]
-		public void TestBigEnumConversion()
-		{
-			var results = _connection.QuerySql<BigEnumData>("SELECT Big=CONVERT(tinyint, 1)");
-		}
-		class BigEnumData
-		{
-			public BigEnum Big;
-		}		
-		enum BigEnum : long
+		enum UInt64Enum : ulong
 		{
 			One = 1
-		}		
+		}
+		enum Int32Enum : int
+		{
+			One = 1
+		}
+		enum UInt32Enum : uint
+		{
+			One = 1
+		}
+		enum Int16Enum : short
+		{
+			One = 1
+		}
+		enum UInt16Enum : ushort
+		{
+			One = 1
+		}
+		enum Int8Enum : sbyte
+		{
+			One = 1
+		}
+		enum UInt8Enum : byte
+		{
+			One = 1
+		}	
 		#endregion
 
 		#region Class/Struct Field Deserialization Tests
