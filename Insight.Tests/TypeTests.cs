@@ -38,10 +38,10 @@ namespace Insight.Tests
 			private T? FieldNull;
 			private T? PropertyNull { get; set; }
 
-			public static void Test (T value, SqlConnection connection)
+			public static void Test (T value, SqlConnection connection, string sqlType)
 			{
 				// make sure we can read the values
-				var data = connection.QuerySql<NullableData<T>> ("SELECT Field=@p, Property=@p, FieldNullable=@p, PropertyNullable=@p, FieldNull=NULL, PropertyNull=NULL", new { p = value }).First ();
+				var data = connection.QuerySql<NullableData<T>> (String.Format("SELECT Field=@p, Property=@p, FieldNullable=@p, PropertyNullable=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First ();
 				Assert.AreEqual (value, data.Field);
 				Assert.AreEqual (value, data.Property);
 				Assert.AreEqual (value, data.FieldNullable);
@@ -50,7 +50,7 @@ namespace Insight.Tests
 				Assert.IsNull (data.PropertyNull);
 
 				// make sure we can query with a null parameter
-				data = connection.QuerySql<NullableData<T>> ("SELECT Field=@p, Property=@p, FieldNull=NULL, PropertyNull=NULL", new { p = (T?)null }).First ();
+				data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = (T?)null }).First();
 				Assert.AreEqual (default (T), data.Field);
 				Assert.AreEqual (default (T), data.Property);
 				Assert.IsNull (data.FieldNullable);
@@ -79,17 +79,17 @@ namespace Insight.Tests
 			private T FieldNull;
 			private T PropertyNull { get; set; }
 
-			public static void Test (T value, SqlConnection connection)
+			public static void Test (T value, SqlConnection connection, string sqlType)
 			{
 				// make sure we can read the values
-				var data = connection.QuerySql<Data<T>> ("SELECT Field=@p, Property=@p, FieldNull=NULL, PropertyNull=NULL", new { p = value }).First ();
+				var data = connection.QuerySql<Data<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
 				Assert.AreEqual (value, data.Field);
 				Assert.AreEqual (value, data.Property);
 				Assert.IsNull (data.FieldNull);
 				Assert.IsNull (data.PropertyNull);
 
 				// make sure we can query with a null parameter
-				data = connection.QuerySql<Data<T>> ("SELECT Field=@p, Property=@p, FieldNull=NULL, PropertyNull=NULL", new { p = (T)null }).First ();
+				data = connection.QuerySql<Data<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = (T)null }).First();
 				Assert.IsNull (data.Field);
 				Assert.IsNull (data.Property);
 				Assert.IsNull (data.FieldNull);
@@ -107,27 +107,27 @@ namespace Insight.Tests
 		{
 			// value types
 			// NOTE: unsigned types are not supported by sql so we won't test them here
-			NullableData<byte>.Test(1, _connection);
-			NullableData<short>.Test(-2, _connection);
-			NullableData<int>.Test(-120, _connection);
-			NullableData<long>.Test(-120000000, _connection);
-			NullableData<float>.Test(123.456f, _connection);
-			NullableData<double>.Test(567.134567, _connection);
-			NullableData<decimal>.Test(890.12345m, _connection);
-			NullableData<bool>.Test(false, _connection);
-			NullableData<bool>.Test(true, _connection);
-			NullableData<char>.Test('c', _connection);
-			NullableData<Guid>.Test(Guid.NewGuid(), _connection);
-			NullableData<DateTime>.Test(DateTime.Now.Date, _connection);				// SQL will round the time, so need to knock off some milliseconds 
-			NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection);
+			NullableData<byte>.Test(1, _connection, "tinyint");
+			NullableData<short>.Test(-2, _connection, "smallint");
+			NullableData<int>.Test(-120, _connection, "int");
+			NullableData<long>.Test(-120000000, _connection, "bigint");
+			NullableData<float>.Test(123.456f, _connection, "float");
+			NullableData<double>.Test(567.134567, _connection, "real");
+			NullableData<decimal>.Test(890.12345m, _connection, "decimal(18,5)");
+			NullableData<bool>.Test(false, _connection, "bit");
+			NullableData<bool>.Test(true, _connection, "bit");
+			NullableData<char>.Test('c', _connection, "char");
+			NullableData<Guid>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
+			NullableData<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
+			NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
 
 			// class types
-			Data<string>.Test("foo", _connection);
-			Data<byte[]>.Test(new byte[] { 1, 2, 3, 4 }, _connection);
-			Data<System.Data.Linq.Binary>.Test(new System.Data.Linq.Binary(new byte[] { 1, 2, 3, 4 }), _connection);
+			Data<string>.Test("foo", _connection, "varchar(128)");
+			Data<byte[]>.Test(new byte[] { 1, 2, 3, 4 }, _connection, "varbinary(MAX)");
+			Data<System.Data.Linq.Binary>.Test(new System.Data.Linq.Binary(new byte[] { 1, 2, 3, 4 }), _connection, "varbinary(MAX)");
 
 			// enums
-			NullableData<TestEnum>.Test (TestEnum.One, _connection);
+			NullableData<TestEnum>.Test (TestEnum.One, _connection, "int");
 
 			// make sure that we can return a list of strings
 			var data2 = _connection.QuerySql<string>("SELECT @p UNION ALL SELECT @p", new { p = "foo" });
@@ -154,45 +154,140 @@ namespace Insight.Tests
 		}
 		#endregion
 
-		#region Enum Conversion Tests
+		#region Type Coersion Tests
 		[Test]
-		public void EnumConversions()
+		public void TypeCoersions()
 		{
-			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<EnumContainer<Int64Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<EnumContainer<UInt64Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<EnumContainer<Int32Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<EnumContainer<UInt32Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<EnumContainer<Int16Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<EnumContainer<UInt16Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<EnumContainer<Int8Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
-			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<EnumContainer<UInt8Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<TypeContainer<UInt64Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<TypeContainer<UInt64Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<TypeContainer<UInt64Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<TypeContainer<UInt64Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<TypeContainer<UInt64Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<TypeContainer<UInt64Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt64Enum.One, _connection.QuerySql<TypeContainer<UInt64Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<TypeContainer<Int32Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<TypeContainer<Int32Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<TypeContainer<Int32Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<TypeContainer<Int32Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<TypeContainer<Int32Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<TypeContainer<Int32Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int32Enum.One, _connection.QuerySql<TypeContainer<Int32Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<TypeContainer<UInt32Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<TypeContainer<UInt32Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<TypeContainer<UInt32Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<TypeContainer<UInt32Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<TypeContainer<UInt32Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<TypeContainer<UInt32Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt32Enum.One, _connection.QuerySql<TypeContainer<UInt32Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<TypeContainer<Int16Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<TypeContainer<Int16Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<TypeContainer<Int16Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<TypeContainer<Int16Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<TypeContainer<Int16Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<TypeContainer<Int16Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int16Enum.One, _connection.QuerySql<TypeContainer<Int16Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<TypeContainer<UInt16Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<TypeContainer<UInt16Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<TypeContainer<UInt16Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<TypeContainer<UInt16Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<TypeContainer<UInt16Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<TypeContainer<UInt16Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt16Enum.One, _connection.QuerySql<TypeContainer<UInt16Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<TypeContainer<Int8Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<TypeContainer<Int8Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<TypeContainer<Int8Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<TypeContainer<Int8Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<TypeContainer<Int8Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<TypeContainer<Int8Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(Int8Enum.One, _connection.QuerySql<TypeContainer<Int8Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<TypeContainer<UInt8Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<TypeContainer<UInt8Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<TypeContainer<UInt8Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<TypeContainer<UInt8Enum>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<TypeContainer<UInt8Enum>>("SELECT Value=CONVERT(varchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<TypeContainer<UInt8Enum>>("SELECT Value=CONVERT(nvarchar(100), 'One')").FirstOrDefault().Value);
+			Assert.AreEqual(UInt8Enum.One, _connection.QuerySql<TypeContainer<UInt8Enum>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int64>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int64>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int64>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int64>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int64>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int64>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int64>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt64>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt64>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt64>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt64>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt64>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt64>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt64>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int32>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int32>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int32>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int32>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int32>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int32>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int32>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt32>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt32>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt32>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt32>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt32>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt32>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt32>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int16>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int16>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int16>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int16>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int16>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int16>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<Int16>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt16>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt16>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt16>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt16>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt16>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt16>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<UInt16>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<sbyte>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<sbyte>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<sbyte>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<sbyte>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<sbyte>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<sbyte>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<sbyte>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<byte>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<byte>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<byte>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<byte>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<byte>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<byte>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1, _connection.QuerySql<TypeContainer<byte>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0, _connection.QuerySql<TypeContainer<double>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0, _connection.QuerySql<TypeContainer<double>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0, _connection.QuerySql<TypeContainer<double>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0, _connection.QuerySql<TypeContainer<double>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0, _connection.QuerySql<TypeContainer<double>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0, _connection.QuerySql<TypeContainer<double>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0, _connection.QuerySql<TypeContainer<double>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0f, _connection.QuerySql<TypeContainer<float>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0f, _connection.QuerySql<TypeContainer<float>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0f, _connection.QuerySql<TypeContainer<float>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0f, _connection.QuerySql<TypeContainer<float>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0f, _connection.QuerySql<TypeContainer<float>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0f, _connection.QuerySql<TypeContainer<float>>("SELECT Value=CONVERT(float, 1)").FirstOrDefault().Value);
+			Assert.AreEqual(1.0f, _connection.QuerySql<TypeContainer<float>>("SELECT Value=CONVERT(real, 1)").FirstOrDefault().Value);
 		}
 
-		class EnumContainer<T>
+		class TypeContainer<T>
 		{
 			public T Value;
 		}

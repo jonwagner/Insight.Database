@@ -39,6 +39,10 @@ namespace Insight.Database.Sample
 			Query_AsEnumerable();
 			#endregion
 
+			#region Insert
+			Insert_Sql();
+			#endregion
+
 			#region Dynamic Objects
 			Dynamic_Query();
 			Dynamic_ForEach();
@@ -318,6 +322,20 @@ namespace Insight.Database.Sample
 					// drink?
 				}
 			}
+		}
+		#endregion
+
+		#region Insert
+		static void Insert_Sql()
+		{
+			Beer beer = new Beer()
+			{
+				Name = "HopDevil",
+				Flavor = "Hoppy",
+				OriginalGravity = 0.62m
+			};
+
+			var insertedBeer = Database.Connection().InsertSql("INSERT INTO Beer (Name, Details) VALUES (@Name, @Details) SELECT SCOPE_IDENTITY() AS [Id]", beer);
 		}
 		#endregion
 

@@ -235,7 +235,16 @@ namespace Insight.Database.CodeGenerator
 				if (method == null)
 					continue;
 
-				Type memberType = method.MemberType;
+				// targetType - the target type we need to convert to
+				// underlyingTargetType - if the target type is nullable, we need to look at the underlying target type
+				// rawTargetType - if the underlying target type is enum, we need to look at the underlying target type for that
+				// sourceType - this is the type of the data in the data set
+				Type targetType = method.MemberType;
+				Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+				Type rawTargetType = underlyingTargetType.IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
+				Type sourceType = (Type)schemaTable.Rows[index]["DataType"];
+
+				// some labels that we need
 				Label isDbNullLabel = il.DefineLabel();
 				Label finishLabel = il.DefineLabel();
 
@@ -256,148 +265,120 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Isinst, typeof(DBNull));			// isinst DBNull:value, stack => [target][value-as-object][DBNull or null]
 				il.Emit(OpCodes.Brtrue_S, isDbNullLabel);			// br.true isDBNull, stack => [target][value-as-object]
 
-				// now we get to convert the value to the desired type, then store it into the object's setter
-				if (memberType == typeof(char))
+				// handle the special target types first
+				if (targetType == typeof(char))
+				{
+					// char
 					il.EmitCall(OpCodes.Call, _readChar, null);
-				else if (memberType == typeof(char?))
+				}
+				else if (targetType == typeof(char?))
+				{
+					// char?
 					il.EmitCall(OpCodes.Call, _readNullableChar, null);
+				}
+				else if (targetType == typeof(System.Data.Linq.Binary))
+				{
+					// unbox sql byte arrays to Linq.Binary
+
+					// before: stack => [target][object-value]
+					// after: stack => [target][byte-array-value]
+					il.Emit(OpCodes.Unbox_Any, typeof(byte[])); // stack is now [target][byte-array]
+					// before: stack => [target][byte-array-value]
+					// after: stack => [target][Linq.Binary-value]
+					il.Emit(OpCodes.Newobj, _linqBinaryCtor);
+				}
+				else if (targetType == typeof(XmlDocument))
+				{
+					// special handler for XmlDocuments
+
+					// before: stack => [target][object-value]
+					il.Emit(OpCodes.Call, _readXmlDocument);
+
+					// after: stack => [target][xmlDocument]
+				}
+				else if (targetType == typeof(XDocument))
+				{
+					// special handler for XDocuments
+
+					// before: stack => [target][object-value]
+					il.Emit(OpCodes.Call, _readXDocument);
+
+					// after: stack => [target][xDocument]
+				}
+				else if ((string)schemaTable.Rows[index]["DataTypeName"] == "xml" && targetType != typeof(string) && !targetType.IsValueType)
+				{
+					// the column is an xml data type and the member is not a string
+
+					// before: stack => [target][object-value]
+					il.Emit(OpCodes.Ldtoken, targetType);
+					il.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+
+					// after: stack => [target][object-value][memberType]
+					il.Emit(OpCodes.Call, _deserializeXml);
+					il.Emit(OpCodes.Unbox_Any, targetType);
+				}
+				else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
+				{
+					// if we are converting a string to an enum, then parse it.
+					// see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
+					il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][string]
+					il.Emit(OpCodes.Stloc_2);							// pop loc.2 (enum), stack => [target]
+
+					// call enum.parse (type, value, true)
+					il.Emit(OpCodes.Ldtoken, underlyingTargetType);				// push type-token, stack => [target][enum-type-token]
+					il.EmitCall(OpCodes.Call, _typeGetTypeFromHandle, null);
+
+					// call GetType, stack => [target][enum-type]
+					il.Emit(OpCodes.Ldloc_2);							// push enum, stack => [target][enum-type][string]
+					il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
+					il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
+
+					// Enum.Parse returns an object, which we need to unbox to the enum value
+					il.Emit(OpCodes.Unbox_Any, underlyingTargetType);
+				}
 				else
 				{
-					// determine the type that we want to unbox to.
-					// unbox nullable enums as the primitive, i.e. byte etc
-					var nullUnderlyingType = Nullable.GetUnderlyingType(memberType);
-					var unboxType = (nullUnderlyingType != null && nullUnderlyingType.IsEnum) ? nullUnderlyingType : memberType;
+					// this isn't a system value type, so unbox to the type the reader is giving us (this is a system type, hopefully)
+					// now we have an unboxed sourceType
+					il.Emit(OpCodes.Unbox_Any, sourceType);
 
-					// conversion to an enum
-					if (unboxType.IsEnum)
+					// look for a constructor that takes the type as a parameter
+					Type[] sourceTypes = new Type[] { sourceType };
+					ConstructorInfo ci = targetType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, sourceTypes, null);
+					if (ci != null)
 					{
-						// if we are converting a string to an enum, then parse it.
-						if (schemaTable.Rows[index]["DataTypeName"].ToString().ToUpperInvariant().Contains("CHAR"))
-						{
-							// see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
-							il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][string]
-							il.Emit(OpCodes.Stloc_2);							// pop loc.2 (enum), stack => [target]
+						// if the constructor only takes nullable types, warn the programmer
+						if (Nullable.GetUnderlyingType(ci.GetParameters()[0].ParameterType) != null)
+							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Class {0} must provide a constructor taking a parameter of type {1}. Nullable parameters are not supported.", targetType, sourceType));
 
-							// call enum.parse (type, value, true)
-							il.Emit(OpCodes.Ldtoken, unboxType);				// push type-token, stack => [target][enum-type-token]
-							il.EmitCall(OpCodes.Call, _typeGetTypeFromHandle, null);
-
-							// call GetType, stack => [target][enum-type]
-							il.Emit(OpCodes.Ldloc_2);							// push enum, stack => [target][enum-type][string]
-							il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
-							il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
-
-							// Enum.Parse returns an object, which we need to unbox to the enum value
-							il.Emit(OpCodes.Unbox_Any, unboxType);
-						}
-						else
-						{
-							// unbox the type that we got from the database - NOT necessarily the expected type
-							Type dataType = (Type)schemaTable.Rows[index]["DataType"];
-							il.Emit(OpCodes.Unbox_Any, dataType);
-
-							// if the enum is based on a different type of integer than returned, then do the conversion
-							Type enumType = Enum.GetUnderlyingType(unboxType);
-							if (enumType == typeof(Int32) && dataType != typeof(Int32)) il.Emit(OpCodes.Conv_I4);
-							else if (enumType == typeof(Int64) && dataType != typeof(Int64)) il.Emit(OpCodes.Conv_I8);
-							else if (enumType == typeof(Int16) && dataType != typeof(Int16)) il.Emit(OpCodes.Conv_I2);
-							else if (enumType == typeof(char) && dataType != typeof(char)) il.Emit(OpCodes.Conv_I1);
-							else if (enumType == typeof(sbyte) && dataType != typeof(sbyte)) il.Emit(OpCodes.Conv_I1);
-							else if (enumType == typeof(UInt32) && dataType != typeof(UInt32)) il.Emit(OpCodes.Conv_U4);
-							else if (enumType == typeof(UInt64) && dataType != typeof(UInt64)) il.Emit(OpCodes.Conv_U8);
-							else if (enumType == typeof(UInt16) && dataType != typeof(UInt16)) il.Emit(OpCodes.Conv_U2);
-							else if (enumType == typeof(byte) && dataType != typeof(byte)) il.Emit(OpCodes.Conv_U1);
-
-							// if the enum was nullable, then construct the nullable
-							if (nullUnderlyingType != null)
-								il.Emit(OpCodes.Newobj, memberType.GetConstructor(new[] { nullUnderlyingType }));
-						}
-					}
-					else if (memberType == typeof(System.Data.Linq.Binary))
-					{
-						// unbox sql byte arrays to Linq.Binary
-
-						// before: stack => [target][object-value]
-						// after: stack => [target][byte-array-value]
-						il.Emit(OpCodes.Unbox_Any, typeof(byte[])); // stack is now [target][byte-array]
-						// before: stack => [target][byte-array-value]
-						// after: stack => [target][Linq.Binary-value]
-						il.Emit(OpCodes.Newobj, _linqBinaryCtor);
-					}
-					else if (TypeHelper.IsSystemType(memberType))
-					{
-						// if the member type is a low-level system type, then we can just unbox the value to that type before setting it.
-
-						// unbox the object into the type the reader is sending us
-						// before: stack => [target][object-value]
-						// after: stack => [target][typed-value]
-						il.Emit(OpCodes.Unbox_Any, unboxType);
-					}
-					else if (memberType == typeof(XmlDocument))
-					{
-						// special handler for XmlDocuments
-
-						// before: stack => [target][object-value]
-						il.Emit(OpCodes.Call, _readXmlDocument);
-
-						// after: stack => [target][xmlDocument]
-					}
-					else if (memberType == typeof(XDocument))
-					{
-						// special handler for XDocuments
-
-						// before: stack => [target][object-value]
-						il.Emit(OpCodes.Call, _readXDocument);
-
-						// after: stack => [target][xDocument]
-					}
-					else if ((string)schemaTable.Rows[index]["DataTypeName"] == "xml" && memberType != typeof(string) && !memberType.IsValueType)
-					{
-						// the column is an xml data type and the member is not a string
-
-						// before: stack => [target][object-value]
-						il.Emit(OpCodes.Ldtoken, memberType);
-						il.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
-
-						// after: stack => [target][object-value][memberType]
-						il.Emit(OpCodes.Call, _deserializeXml);
-						il.Emit(OpCodes.Unbox_Any, memberType);
+						il.Emit(OpCodes.Newobj, ci);
 					}
 					else
 					{
-						// this isn't a system value type, so unbox to the type the reader is giving us (this is a system type, hopefully)
-						Type readerType = reader.GetFieldType(index);
-						il.Emit(OpCodes.Unbox_Any, readerType);
+						// see if there is an conversion operator on either the source or target types
+						MethodInfo mi = FindConversionMethod(sourceType, targetType);
 
-						// look for a constructor that takes the type as a parameter
-						Type[] readerTypes = new Type[] { readerType };
-						ConstructorInfo ci = memberType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, readerTypes, null);
-						if (ci != null)
+						// either emit the call to the conversion operator or try another strategy
+						if (mi != null)
 						{
-							// if the constructor only takes nullable types, warn the programmer
-							if (Nullable.GetUnderlyingType(ci.GetParameters()[0].ParameterType) != null)
-								throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Class {0} must provide a constructor taking a parameter of type {1}. Nullable parameters are not supported.", memberType, readerType));
-
-							il.Emit(OpCodes.Newobj, ci);
+							il.Emit(OpCodes.Call, mi);
 						}
-						else
+						else if (!EmitCoersion(il, sourceType, rawTargetType))
 						{
-							// see if there is an implicit conversion operator
-							MethodInfo mi = memberType.GetMethod("op_Explicit", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, readerTypes, null);
-							if (mi == null)
-								mi = memberType.GetMethod("op_Implicit", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic, null, readerTypes, null);
-							if (mi != null)
-								il.Emit(OpCodes.Call, mi);
-							else
+							if (sourceType != targetType)
 							{
 								throw new InvalidOperationException(String.Format(
 									CultureInfo.InvariantCulture,
 									"Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
 									reader.GetName(index),
-									readerType,
-									memberType));
+									sourceType,
+									targetType));
 							}
 						}
+
+						// if the target is nullable, then construct the nullable from the data
+						if (Nullable.GetUnderlyingType(targetType) != null)
+							il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
 					}
 				}
 
@@ -586,6 +567,93 @@ namespace Insight.Database.CodeGenerator
 			{
 				return (T)(object)XDocument.Parse(reader.GetString(0));
 			};
+		}
+		#endregion
+
+		#region Code Generation Helpers
+		/// <summary>
+		/// Attempt to find a valid conversion method.
+		/// </summary>
+		/// <param name="sourceType">The source type for the conversion.</param>
+		/// <param name="targetType">The target type for the conversion.</param>
+		/// <returns>A conversion method or null if none could be found.</returns>
+		private static MethodInfo FindConversionMethod(Type sourceType, Type targetType)
+		{
+			MethodInfo mi = null;
+			if (mi == null)
+				mi = FindConversionMethod("op_Explicit", targetType, sourceType, targetType);
+			if (mi == null)
+				mi = FindConversionMethod("op_Implicit", targetType, sourceType, targetType);
+			if (mi == null)
+				mi = FindConversionMethod("op_Explicit", sourceType, sourceType, targetType);
+			if (mi == null)
+				mi = FindConversionMethod("op_Implicit", sourceType, sourceType, targetType);
+
+			// if the target type is an enum or nullable, try converting to that
+			if (mi == null && Nullable.GetUnderlyingType(targetType) != null)
+				mi = FindConversionMethod(sourceType, Nullable.GetUnderlyingType(targetType));
+			if (mi == null && targetType.IsEnum)
+				return FindConversionMethod(sourceType, Enum.GetUnderlyingType(targetType));
+
+			return mi;
+		}
+
+		/// <summary>
+		/// Look up a conversion method from a type.
+		/// </summary>
+		/// <param name="methodName">The name of the method to find.</param>
+		/// <param name="searchType">The type to search through.</param>
+		/// <param name="sourceType">The source type for the conversion.</param>
+		/// <param name="targetType">The target type for the conversion.</param>
+		/// <returns>A conversion method or null if none could be found.</returns>
+		private static MethodInfo FindConversionMethod(string methodName, Type searchType, Type sourceType, Type targetType)
+		{
+			var members = searchType.FindMembers(
+				MemberTypes.Method, 
+				BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
+				new MemberFilter(
+				(_m, filter) =>
+				{
+					MethodInfo m = _m as MethodInfo;
+					if (m.Name != methodName) return false;
+					if (m.ReturnType != targetType) return false;
+					ParameterInfo[] pi = m.GetParameters();
+					if (pi.Length != 1) return false;
+					if (pi[0].ParameterType != sourceType) return false;
+					return true;
+				}),
+				null);
+
+			return (MethodInfo)members.FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Assuming the source and target types are primitives, coerce the types and handle nullable conversions.
+		/// </summary>
+		/// <param name="il">The il generator.</param>
+		/// <param name="sourceType">The source type of data.</param>
+		/// <param name="targetType">The type to coerce to.</param>
+		/// <returns>True if a coersion was emitted, false otherwise.</returns>
+		private static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
+		{
+			if (!sourceType.IsPrimitive) return false;
+			if (!targetType.IsPrimitive) return false;
+
+			// if the enum is based on a different type of integer than returned, then do the conversion
+			if (targetType == typeof(Int32) && sourceType != typeof(Int32)) il.Emit(OpCodes.Conv_I4);
+			else if (targetType == typeof(Int64) && sourceType != typeof(Int64)) il.Emit(OpCodes.Conv_I8);
+			else if (targetType == typeof(Int16) && sourceType != typeof(Int16)) il.Emit(OpCodes.Conv_I2);
+			else if (targetType == typeof(char) && sourceType != typeof(char)) il.Emit(OpCodes.Conv_I1);
+			else if (targetType == typeof(sbyte) && sourceType != typeof(sbyte)) il.Emit(OpCodes.Conv_I1);
+			else if (targetType == typeof(UInt32) && sourceType != typeof(UInt32)) il.Emit(OpCodes.Conv_U4);
+			else if (targetType == typeof(UInt64) && sourceType != typeof(UInt64)) il.Emit(OpCodes.Conv_U8);
+			else if (targetType == typeof(UInt16) && sourceType != typeof(UInt16)) il.Emit(OpCodes.Conv_U2);
+			else if (targetType == typeof(byte) && sourceType != typeof(byte)) il.Emit(OpCodes.Conv_U1);
+			else if (targetType == typeof(bool) && sourceType != typeof(bool)) il.Emit(OpCodes.Conv_U1);
+			else if (targetType == typeof(double) && sourceType != typeof(double)) il.Emit(OpCodes.Conv_R8);
+			else if (targetType == typeof(float) && sourceType != typeof(float)) il.Emit(OpCodes.Conv_R4);
+
+			return true;
 		}
 		#endregion
 
