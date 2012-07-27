@@ -81,6 +81,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CodeSnippets\InsightCodeSnippets.vscontent" />
+    <None Include="CodeSnippets\InsightForEach.snippet" />
+    <None Include="CodeSnippets\InsightMultiResults.snippet" />
     <None Include="CodeSnippets\InsightRepository.snippet">
       <SubType>Designer</SubType>
     </None>

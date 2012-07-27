@@ -1,0 +1,55 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<CodeSnippets xmlns="http://schemas.microsoft.com/VisualStudio/2005/CodeSnippet">
+  <CodeSnippet Format="1.0.0">
+    <Header>
+      <SnippetTypes>
+        <SnippetType>Expansion</SnippetType>
+      </SnippetTypes>
+      <Title>SnippetFile1</Title>
+      <Author>jonw</Author>
+      <Description>Implements a ForEach loop on the results of a procedure</Description>
+      <HelpUrl>
+      </HelpUrl>
+      <Shortcut>insightforeach</Shortcut>
+    </Header>
+    <Snippet>
+      <Declarations>
+        <Literal Editable="true">
+          <ID>connection</ID>
+          <ToolTip>The database connection to use</ToolTip>
+          <Default>connection</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>procedure</ID>
+          <ToolTip>The stored procedure to call</ToolTip>
+          <Default>procedure</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>class</ID>
+          <ToolTip>The type of class to operate upon</ToolTip>
+          <Default>class</Default>
+          <Function>
+          </Function>
+        </Literal>
+        <Literal Editable="true">
+          <ID>parameters</ID>
+          <ToolTip>The parameters to pass to the stored procedure</ToolTip>
+          <Default>parameters</Default>
+          <Function>
+          </Function>
+        </Literal>
+      </Declarations>
+      <Code Language="csharp"><![CDATA[$connection$.Connection().ForEach("$procedure$", 
+    $parameters$,
+    ($class$ o) =>
+    {
+        // insert your foreach code here
+    });
+]]></Code>
+    </Snippet>
+  </CodeSnippet>
+</CodeSnippets>

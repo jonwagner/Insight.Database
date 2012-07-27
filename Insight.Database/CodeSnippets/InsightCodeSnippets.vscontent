@@ -9,4 +9,24 @@
             <Attribute name="lang" value="csharp"/>
         </Attributes>
     </Content>
+  <Content>
+    <FileName>InsightForEach.snippet</FileName>
+    <DisplayName>InsightForEach Code Snippet</DisplayName>
+    <Description>Creates a ForEach loop for processing streaming result sets.</Description>
+    <FileContentType>Code Snippet</FileContentType>
+    <ContentVersion>2.0</ContentVersion>
+    <Attributes>
+      <Attribute name="lang" value="csharp"/>
+    </Attributes>
+  </Content>
+  <Content>
+    <FileName>InsightMultiResults.snippet</FileName>
+    <DisplayName>InsightMultiResults Code Snippet</DisplayName>
+    <Description>Creates a GetReader statement for processing multiple result sets.</Description>
+    <FileContentType>Code Snippet</FileContentType>
+    <ContentVersion>2.0</ContentVersion>
+    <Attributes>
+      <Attribute name="lang" value="csharp"/>
+    </Attributes>
+  </Content>
 </VSContent>
