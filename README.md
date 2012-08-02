@@ -170,13 +170,17 @@ It's a bit ugly having two database connections, particularly if you are using t
 ## Sending Lists of Values to a SQL Statement ##
 If you are using SQL statements, rather than stored procedures, you can send lists of values as parameters. This works with any IEnumerable&lt;ValueType&gt;.
 
-	int[] ids = new int[] { 1, 6, 8 };
-	Database.ExecuteSql("DELETE FROM Beer WHERE ID in @ids", new { ids = ids });
+```csharp
+int[] ids = new int[] { 1, 6, 8 };
+Database.ExecuteSql("DELETE FROM Beer WHERE ID in (@ids)", new { ids = ids });
+```
 
 In this case, Insight will **rewrite** your SQL and expand the parameters:
 
-	DELETE FROM Beer WHERE ID in (@ids1, @ids2, @ids3)
-	
+```sql
+DELETE FROM Beer WHERE ID in (@ids1, @ids2, @ids3)
+```
+
 We keep the parameters to avoid SQL injection attacks and to allow the query engine to cache the query plan.
 
 ## Sending Lists of Objects to a SQL Statement ##
