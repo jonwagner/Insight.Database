@@ -14,47 +14,77 @@ namespace Insight.Tests
 	/// Tests asynchronous SQL features. Requires a local database with a trusted connection.
 	/// </summary>
 	[TestFixture]
-	public class AsyncExtensionTests
+	public class AsyncExtensionTests : BaseDbTest
 	{
-		#region Setup/TearDown
-		/// <summary>
-		/// We open the connection for each of these because we want to test that it gets closed properly.
-		/// </summary>
-		[SetUp]
-		public void SetUp()
+		#region SetUp and TearDown
+		[TestFixtureSetUp]
+		public override void SetUpFixture()
 		{
-			// set up the connection and allow it to run asynchronously
-			SqlConnectionStringBuilder sb = new SqlConnectionStringBuilder ();
-			sb.IntegratedSecurity = true;
-			sb.AsynchronousProcessing = true;
+			base.SetUpFixture();
 
-			_connection = new SqlConnection (sb.ConnectionString);
-			_connection.Open ();
+			// clean up old stuff first
+			CleanupObjects();
+
+			_connection.ExecuteSql("CREATE PROCEDURE [InsightAsyncTestProc] @p [int] AS SELECT @p");
+			_connection.ExecuteSql("CREATE PROCEDURE [InsightAsyncTestProc2] @p [int] AS SELECT @p");
 		}
 
-		[TearDown]
-		public void TearDown()
+		[TestFixtureTearDown]
+		public override void TearDownFixture()
 		{
-			_connection.Close ();
+			CleanupObjects();
+
+			base.TearDownFixture();
+		}
+
+		private void CleanupObjects()
+		{
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightAsyncTestProc') DROP PROCEDURE [InsightAsyncTestProc]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightAsyncTestProc2') DROP PROCEDURE [InsightAsyncTestProc2]");
 		}
 		#endregion
-
-		/// <summary>
-		/// The connection for the test
-		/// </summary>
-		private SqlConnection _connection;
 
 		#region Tests
 		/// <summary>
 		/// Asynchronously run a command that is not a query
 		/// </summary>
 		[Test]
-		public void TestNonQuery ()
+		public void TestNonQuery()
 		{
-			var task = _connection.ExecuteSqlAsync ("DECLARE @i int", Parameters.Empty, closeConnection: true);
-			task.Wait ();
+			var task = _connection.ExecuteSqlAsync("DECLARE @i int", Parameters.Empty, closeConnection: true);
+			task.Wait();
 
-			Assert.IsTrue (_connection.State == ConnectionState.Closed);
+			Assert.IsTrue(_connection.State == ConnectionState.Closed);
+		}
+
+		/// <summary>
+		/// Asynchronously run a stored procedure with parameter detection
+		/// </summary>
+		[Test]
+		public void TestAsyncQueryStoredProcedure()
+		{
+			// make sure the connection is closed so we can test parameter detection with a closed async connection
+			_connection.Close();
+
+			var task = _connection.QueryAsync<int>("InsightAsyncTestProc", new { p = 5 });
+			var results = task.Result;
+
+			Assert.AreEqual(5, results.First());
+		}
+
+		/// <summary>
+		/// Asynchronously run a stored procedure with parameter detection
+		/// </summary>
+		[Test]
+		public void TestAsyncExecuteStoredProcedure()
+		{
+			// make sure the connection is closed so we can test parameter detection with a closed async connection
+			_connection.Close();
+
+			var task = _connection.ExecuteAsync("InsightAsyncTestProc2", new { p = 5 });
+			task.Wait();
+
+			_connection.Close();
 		}
 
 		/// <summary>

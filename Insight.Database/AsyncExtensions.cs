@@ -37,9 +37,30 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			IDbCommand command = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
+			return connection.ExecuteAsyncAndAutoClose(
+				c =>
+				{
+					// NOTE: we open the connection before creating the command because we may need to use the retry logic
+					// when deriving the stored procedure parameters
+					IDbCommand command = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
 
-			return command.ExecuteAsync(closeConnection);
+#if NODBASYNC
+					// Only SqlCommand supports execute async
+					SqlCommand sqlCommand = command as SqlCommand;
+					if (sqlCommand != null)
+						return Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
+					else
+						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery());
+#else
+					// DbCommand now supports async execute
+					DbCommand dbCommand = command as DbCommand;
+					if (dbCommand != null)
+						return dbCommand.ExecuteNonQueryAsync();
+					else
+						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery());
+#endif
+				},
+				closeConnection);
 		}
 	
 		/// <summary>
@@ -61,36 +82,6 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAsync(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction);
-		}
-
-		/// <summary>
-		/// Executes a command and returns the result. This method supports auto-open.
-		/// </summary>
-		/// <param name="command">The command to execute.</param>
-		/// <param name="closeConnection">True to close the connection after the operation is complete.</param>
-		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		public static Task<int> ExecuteAsync(this IDbCommand command, bool closeConnection = false)
-		{
-			return command.Connection.ExecuteAsyncAndAutoClose(
-				c =>
-				{
-#if NODBASYNC
-					// Only SqlCommand supports execute async
-					SqlCommand sqlCommand = command as SqlCommand;
-					if (sqlCommand != null)
-						return Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
-					else
-						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery());
-#else
-					// DbCommand now supports async execute
-					DbCommand dbCommand = command as DbCommand;
-					if (dbCommand != null)
-						return dbCommand.ExecuteNonQueryAsync();
-					else
-						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery());
-#endif
-				},
-				closeConnection);
 		}
 		#endregion
 
@@ -1077,7 +1068,7 @@ namespace Insight.Database
 				// open the connection and plan to close it
 				DbConnection dbConnection = connection.UnwrapDbConnection();
 				if (dbConnection != null)
-					return dbConnection.OpenAsync().ContinueWith(t => { t.Wait(); return true; });
+					return dbConnection.OpenAsync().ContinueWith(t => { t.Wait(); return dbConnection.State == ConnectionState.Open; });
 #endif
 
 				return Task<bool>.Factory.StartNew(() => { connection.Open(); return true; });
