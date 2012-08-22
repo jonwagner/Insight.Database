@@ -751,7 +751,7 @@ namespace Insight.Database.CodeGenerator
 			private static void AddEnumerableClassParameters(IDbCommand command, string parameterName, string tableTypeName, Type listType, IEnumerable list)
 			{
 				// table-valued parameters only work with sql
-				SqlCommand cmd = (SqlCommand)command;
+				SqlCommand cmd = command.UnwrapSqlCommand();
 
 				// convert any nullable types to their underlying type
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;

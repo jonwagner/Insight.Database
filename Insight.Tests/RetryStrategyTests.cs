@@ -162,6 +162,29 @@ namespace Insight.Tests
 				Assert.AreEqual(1, result);
 			}
 		}
+
+		[Test]
+		public void ExecuteStoredProcWithTVPThroughReliableConnection()
+		{
+			ReliableConnection retry = new ReliableConnection(_connection, RetryStrategy);
+
+			try
+			{
+				retry.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
+				retry.ExecuteSql("CREATE PROC InsightTestProc (@Value Int32Table READONLY) AS SELECT * FROM @Value");
+
+				// the ListParameterHelper.AddEnumerableClassParameters code looks specifically for SqlCommand. 
+				// This test ensures that reliable connections work with this.
+				var result = retry.Query<int>("InsightTestProc", new int[] { 1, 2, 3, 4, 5 });
+
+				Assert.AreEqual(5, result.Count());
+			}
+			finally
+			{
+				Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestProc') DROP PROCEDURE [InsightTestProc]");
+				Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
+			}
+		}
 		#endregion
 
 		#region Async Retry Tests
