@@ -18,6 +18,7 @@ namespace Insight.Tests
 		{
 			public int Int;
 			public string String;
+			public TimeSpan TimeSpan;
 		}
 		#endregion
 
@@ -112,5 +113,19 @@ namespace Insight.Tests
 				Assert.Throws<InvalidOperationException>(() => reader.NextResult());
 			}
 		}
+
+		#region Specific Type Tests
+		[Test]
+		public void ReaderShouldTranslateTimeColumnsToTimestamp()
+		{
+			var list = _connection.QuerySql<Data>("SELECT TimeSpan=CONVERT(time, '00:01:01')", new { });
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(1, list.Count);
+			var item = list[0];
+			Assert.IsNotNull(item);
+			Assert.AreEqual(TimeSpan.Parse("00:01:01"), item.TimeSpan);
+		}
+		#endregion
 	}
 }

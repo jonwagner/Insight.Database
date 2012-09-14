@@ -103,15 +103,10 @@
     <Modules>
      <Module Name="insight.database.dll">
       <Messages>
-       <Message TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210" Status="Excluded" Created="2011-08-23 00:17:28Z">
+       <Message TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210" Status="Excluded" Created="2012-09-14 19:27:22Z">
         <Issue Name="NoStrongName">
          <Item>'Insight.Database.dll'</Item>
         </Issue>
-        <Notes>
-         <User Name="jonw">
-          <Note Id="0" />
-         </User>
-        </Notes>
        </Message>
       </Messages>
       <Namespaces>
@@ -119,16 +114,11 @@
         <Types>
          <Type Name="FastExpando">
           <Messages>
-           <Message TypeName="IdentifiersShouldHaveCorrectSuffix" Category="Microsoft.Naming" CheckId="CA1710" Status="Excluded" Created="2011-08-24 20:41:40Z">
+           <Message TypeName="IdentifiersShouldHaveCorrectSuffix" Category="Microsoft.Naming" CheckId="CA1710" Status="Excluded" Created="2012-09-14 19:28:38Z">
             <Issue>
              <Item>'FastExpando'</Item>
              <Item>Dictionary</Item>
             </Issue>
-            <Notes>
-             <User Name="jonw">
-              <Note Id="3" />
-             </User>
-            </Notes>
            </Message>
           </Messages>
          </Type>
@@ -136,19 +126,27 @@
        </Namespace>
        <Namespace Name="Insight.Database.CodeGenerator">
         <Types>
+         <Type Name="DbParameterGenerator">
+          <Members>
+           <Member Name="#.cctor()">
+            <Messages>
+             <Message TypeName="InitializeReferenceTypeStaticFieldsInline" Category="Microsoft.Performance" CheckId="CA1810" Status="Excluded" Created="2012-09-14 19:27:22Z">
+              <Issue>
+               <Item>'DbParameterGenerator'</Item>
+              </Issue>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
          <Type Name="DbReaderDeserializer`1">
           <Members>
            <Member Name="#.cctor()">
             <Messages>
-             <Message TypeName="InitializeReferenceTypeStaticFieldsInline" Category="Microsoft.Performance" CheckId="CA1810" Status="Excluded" Created="2011-08-23 00:17:28Z">
+             <Message TypeName="InitializeReferenceTypeStaticFieldsInline" Category="Microsoft.Performance" CheckId="CA1810" Status="Excluded" Created="2012-09-14 19:27:22Z">
               <Issue>
                <Item>'DbReaderDeserializer&lt;T&gt;'</Item>
               </Issue>
-              <Notes>
-               <User Name="jonw">
-                <Note Id="0" />
-               </User>
-              </Notes>
              </Message>
             </Messages>
            </Member>
@@ -162,7 +160,7 @@
           <Members>
            <Member Name="#CheckAsyncResult`1(System.Data.IDbCommand,System.Threading.Tasks.TaskCompletionSource`1&lt;!!0&gt;,System.Func`1&lt;System.Threading.Tasks.Task`1&lt;!!0&gt;&gt;,System.Int32,System.TimeSpan)">
             <Messages>
-             <Message TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031" Status="Excluded" Created="2012-06-20 20:42:24Z">
+             <Message TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031" Status="Excluded" Created="2012-09-14 19:27:22Z">
               <Issue>
                <Item>'RetryStrategy.CheckAsyncResult&lt;TResult&gt;(IDbCommand, TaskCompletionSource&lt;TResult&gt;, Func&lt;Task&lt;TResult&gt;&gt;, int, TimeSpan)'</Item>
                <Item>'Exception'</Item>
@@ -171,11 +169,6 @@
                <Item>'RetryStrategy.CheckAsyncResult&lt;TResult&gt;(IDbCommand, TaskCompletionSource&lt;TResult&gt;, Func&lt;Task&lt;TResult&gt;&gt;, int, TimeSpan)'</Item>
                <Item>'Exception'</Item>
               </Issue>
-              <Notes>
-               <User Name="jonw">
-                <Note Id="1" />
-               </User>
-              </Notes>
              </Message>
             </Messages>
            </Member>
@@ -188,13 +181,6 @@
     </Modules>
    </Target>
   </Targets>
-  <Notes>
-   <User Name="jonw">
-    <Note Id="0" Modified="2011-08-23 00:17:40Z">Code review completed</Note>
-    <Note Id="1" Modified="2012-06-20 20:45:12Z">This method propagates the exception to the TaskCompletionSource so the exception can be handled by the code that has started the asynchronous workflow.</Note>
-    <Note Id="3" Modified="2011-08-24 20:42:17Z">The internal implementation of FastExpando is not relevant to the name of the class.</Note>
-   </User>
-  </Notes>
   <Rules>
    <Rule TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210">
     <Resolution Name="NoStrongName">Sign {0} with a strong name key.</Resolution>

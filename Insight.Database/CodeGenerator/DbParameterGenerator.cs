@@ -72,6 +72,7 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(Guid), DbType.Guid },
 			{ typeof(DateTime), DbType.DateTime },
 			{ typeof(DateTimeOffset), DbType.DateTimeOffset },
+			{ typeof(TimeSpan), DbType.Time },
 			{ typeof(byte[]), DbType.Binary },
 			{ typeof(byte?), DbType.Byte }, 
 			{ typeof(sbyte?), DbType.SByte },
@@ -89,6 +90,7 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(Guid?), DbType.Guid },
 			{ typeof(DateTime?), DbType.DateTime },
 			{ typeof(DateTimeOffset?), DbType.DateTimeOffset },
+			{ typeof(TimeSpan?), DbType.Time },
 			{ typeof(System.Data.Linq.Binary), DbType.Binary },
 		};
 
@@ -114,6 +116,7 @@ namespace Insight.Database.CodeGenerator
 			{ DbType.Guid, typeof(Guid) },
 			{ DbType.DateTime, typeof(DateTime) },
 			{ DbType.DateTimeOffset, typeof(DateTimeOffset) },
+			{ DbType.Time, typeof(TimeSpan) },
 			{ DbType.Binary, typeof(byte[]) },
 		};
 
@@ -132,6 +135,23 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		private static Regex _parameterRegex = new Regex("[?@:]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+		/// <summary>
+		/// Some versions of .NET do not properly set DbType to Time, they set it to DateTime.
+		/// </summary>
+		private static bool _sqlClientTimeIsBroken;
+
+		/// <summary>
+		/// Initializes static members of the DbParameterGenerator class.
+		/// </summary>
+		static DbParameterGenerator()
+		{
+			// check to see whether setting DbType to Time is broken. In .NET 4.5, it gets set to DateTime when you set it to Time.
+			SqlParameter p = new SqlParameter("p", new TimeSpan());
+			p.DbType = DbType.Time;
+			if (p.DbType != DbType.Time)
+				_sqlClientTimeIsBroken = true;
+		}
 		#endregion
 
 		#region Code Cache Members
@@ -220,7 +240,12 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A list of the detected parameters.</returns>
 		private static List<SqlParameter> DeriveParametersFromSqlText(string sql)
 		{
-			return _parameterRegex.Matches(sql).Cast<Match>().Select(m => new SqlParameter(m.Groups[1].Value.ToUpperInvariant(), null)).ToList();
+			return _parameterRegex.Matches(sql)
+				.Cast<Match>()
+				.Select(m => m.Groups[1].Value.ToUpperInvariant())
+				.Distinct()
+				.Select(p => new SqlParameter(p, null))
+				.ToList();
 		}
 		#endregion
 
@@ -540,9 +565,12 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// p.DbType = DbType
 				///////////////////////////////////////////////////////////////
-				il.Emit(OpCodes.Dup);													// dup parameter
-				IlHelper.EmitLdInt32(il, (int)sqlType);									// push dbtype
-				il.EmitCall(OpCodes.Callvirt, _iDataParameterSetDbType, null);			// call settype
+				if (!_sqlClientTimeIsBroken || sqlType != DbType.Time)
+				{
+					il.Emit(OpCodes.Dup);													// dup parameter
+					IlHelper.EmitLdInt32(il, (int)sqlType);									// push dbtype
+					il.EmitCall(OpCodes.Callvirt, _iDataParameterSetDbType, null);			// call settype
+				}
 
 				///////////////////////////////////////////////////////////////
 				// parameters.Add (p)

@@ -636,6 +636,26 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if a coersion was emitted, false otherwise.</returns>
 		private static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
 		{
+			// support auto-converting strings to other types
+			if (sourceType == typeof(string))
+			{
+				if (targetType == typeof(TimeSpan))
+				{
+					il.Emit(OpCodes.Call, typeof(TimeSpan).GetMethod("Parse", new Type[] { typeof(string) }));
+					return true;
+				}
+				else if (targetType == typeof(DateTime))
+				{
+					il.Emit(OpCodes.Call, typeof(DateTime).GetMethod("Parse", new Type[] { typeof(string) }));
+					return true;
+				}
+				else if (targetType == typeof(DateTimeOffset))
+				{
+					il.Emit(OpCodes.Call, typeof(DateTimeOffset).GetMethod("Parse", new Type[] { typeof(string) }));
+					return true;
+				}
+			}
+
 			if (!sourceType.IsPrimitive) return false;
 			if (!targetType.IsPrimitive) return false;
 

@@ -120,6 +120,7 @@ namespace Insight.Tests
 			NullableData<Guid>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
 			NullableData<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
 			NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
+			NullableData<TimeSpan>.Test(TimeSpan.Parse("00:00:00"), _connection, "time");
 
 			// class types
 			Data<string>.Test("foo", _connection, "varchar(128)");
