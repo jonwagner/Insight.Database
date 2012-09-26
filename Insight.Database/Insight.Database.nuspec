@@ -16,5 +16,6 @@
     <file src="\bin\Release\Insight.Database.pdb" target="lib\NET45" />
     <file src="\bin\NET40\Insight.Database.dll" target="lib\NET40" />
     <file src="\bin\NET40\Insight.Database.pdb" target="lib\NET40" />
+    <file src="..\Build\Output\InsightCodeSnippets.vsi" target="tools"/>
   </files>
 </package>
