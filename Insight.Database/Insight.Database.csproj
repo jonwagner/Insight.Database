@@ -52,6 +52,7 @@
     <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
     <Compile Include="CodeGenerator\DbReaderDeserializer.cs" />
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
+    <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="Reliable\ReliableConnectionExtensions.cs" />
     <Compile Include="Reliable\RetryStrategy.cs" />
     <Compile Include="Reliable\IRetryStrategy.cs" />
@@ -87,7 +88,9 @@
       <SubType>Designer</SubType>
     </None>
     <None Include="FxCop.FxCop" />
-    <None Include="Insight.Database.nuspec" />
+    <None Include="Insight.Database.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Settings.StyleCop" />
   </ItemGroup>

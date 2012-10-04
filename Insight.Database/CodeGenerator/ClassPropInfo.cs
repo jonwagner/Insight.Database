@@ -19,13 +19,13 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="type">The type to analyze.</param>
 		/// <param name="propertyName">The name of the field.</param>
-		/// <param name="getMethod">True to bind to a get method, false to bind to a set method.</param>
-		public ClassPropInfo(Type type, string propertyName, bool getMethod = true)
+		public ClassPropInfo(Type type, string propertyName)
 		{
+			Type = type;
 			Name = propertyName;
 
 			// try to look up a field with the name
-			FieldInfo = type.GetField(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+			FieldInfo = type.GetField(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
 			if (FieldInfo != null)
 			{
 				MemberType = FieldInfo.FieldType;
@@ -36,12 +36,14 @@ namespace Insight.Database.CodeGenerator
 				PropertyInfo p = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
 				if (p == null)
 					throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "Field/Property {0} does not exist on type {1}", propertyName, type));
+				
+				// if p was on a base class, then switch to that type
+				if (p.DeclaringType != type)
+					p = p.DeclaringType.GetProperty(p.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase);
 
-				// get the getter or setter
-				if (getMethod)
-					MethodInfo = (p.DeclaringType == type) ? p.GetGetMethod(true) : p.DeclaringType.GetProperty(p.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase).GetGetMethod(true);
-				else
-					MethodInfo = (p.DeclaringType == type) ? p.GetSetMethod(true) : p.DeclaringType.GetProperty(p.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.IgnoreCase).GetSetMethod(true);
+				// get the getter and setter
+				GetMethodInfo = p.GetGetMethod(true);
+				SetMethodInfo = p.GetSetMethod(true);
 
 				MemberType = p.PropertyType;
 			}
@@ -64,13 +66,24 @@ namespace Insight.Database.CodeGenerator
 		/// Gets the MethodInfo this is bound to, if a property.
 		/// </summary>
 		/// <value>The MethodInfo this is bound to.</value>
-		public MethodInfo MethodInfo { get; private set; }
+		public MethodInfo GetMethodInfo { get; private set; }
+
+		/// <summary>
+		/// Gets the SetMethodInfo this is bound to, if a property.
+		/// </summary>
+		/// <value>The MethodInfo this is bound to.</value>
+		public MethodInfo SetMethodInfo { get; private set; }
 
 		/// <summary>
 		/// Gets the FieldInfo this is bound to, if a field.
 		/// </summary>
 		/// <value>The FieldInfo this is bound to.</value>
 		public FieldInfo FieldInfo { get; private set; }
+
+		/// <summary>
+		/// Gets or sets the type that this is bound to.
+		/// </summary>
+		private Type Type { get; set; }
 		#endregion
 
 		/// <summary>
@@ -81,8 +94,10 @@ namespace Insight.Database.CodeGenerator
 		{
 			if (FieldInfo != null)
 				il.Emit(OpCodes.Ldfld, FieldInfo);
+			else if (GetMethodInfo != null)
+				il.Emit(OpCodes.Callvirt, GetMethodInfo);
 			else
-				il.Emit(OpCodes.Callvirt, MethodInfo);
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a GetProperty method for {1} on class {0}.", Type.FullName, Name));
 		}
 
 		/// <summary>
@@ -93,8 +108,10 @@ namespace Insight.Database.CodeGenerator
 		{
 			if (FieldInfo != null)
 				il.Emit(OpCodes.Stfld, FieldInfo);
+			else if (SetMethodInfo != null)
+				il.Emit(OpCodes.Callvirt, SetMethodInfo);
 			else
-				il.Emit(OpCodes.Callvirt, MethodInfo);
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.FullName, Name));
 		}
 
 		/// <summary>

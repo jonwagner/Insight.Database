@@ -53,11 +53,11 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>An IDbCommand that can be executed on the connection.</returns>
 		public static IDbCommand CreateCommand(
-			this IDbConnection connection, 
-			string sql, 
-			object parameters = null, 
-			CommandType commandType = CommandType.StoredProcedure, 
-			int? commandTimeout = null, 
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
 			// create a db command
@@ -84,10 +84,10 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>An IDbCommand that can be executed on the connection.</returns>
 		public static IDbCommand CreateCommandSql(
-			this IDbConnection connection, 
-			string sql, 
-			object parameters = null, 
-			int? commandTimeout = null, 
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
 			return connection.CreateCommand(sql, parameters, CommandType.Text, commandTimeout, transaction);
@@ -107,8 +107,8 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static int Execute(
-			this IDbConnection connection, 
-			string sql, 
+			this IDbConnection connection,
+			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			bool closeConnection = false,
@@ -116,7 +116,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteNonQuery(), 
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteNonQuery(),
 				closeConnection);
 		}
 
@@ -131,7 +131,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static int ExecuteSql(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			bool closeConnection = false,
@@ -156,8 +156,8 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static T ExecuteScalar<T>(
-			this IDbConnection connection, 
-			string sql, 
+			this IDbConnection connection,
+			string sql,
 			object parameters,
 			CommandType commandType = CommandType.StoredProcedure,
 			bool closeConnection = false,
@@ -181,8 +181,8 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static T ExecuteScalarSql<T>(
-			this IDbConnection connection, 
-			string sql, 
+			this IDbConnection connection,
+			string sql,
 			object parameters = null,
 			bool closeConnection = false,
 			int? commandTimeout = null,
@@ -205,7 +205,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IDataReader GetReader(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -228,7 +228,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>		
 		public static IDataReader GetReaderSql(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -356,7 +356,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -389,7 +389,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult, TSub1>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -405,7 +405,7 @@ namespace Insight.Database
 						return reader.ToList<TResult, TSub1>();
 					}
 				},
-				commandBehavior); 
+				commandBehavior);
 		}
 
 		/// <summary>
@@ -423,7 +423,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult, TSub1, TSub2>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -458,7 +458,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -494,7 +494,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -531,7 +531,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandType commandType = CommandType.StoredProcedure,
@@ -561,7 +561,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<FastExpando> QuerySql(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -591,7 +591,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> QuerySql<TResult>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -622,7 +622,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> QuerySql<TResult, TSub1>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -654,7 +654,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> QuerySql<TResult, TSub1, TSub2>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -687,7 +687,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -721,7 +721,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -756,7 +756,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
-			this IDbConnection connection, 
+			this IDbConnection connection,
 			string sql,
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
@@ -798,7 +798,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c => 
+				c =>
 				{
 					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
 					{
@@ -1022,8 +1022,8 @@ namespace Insight.Database
 		/// <param name="options">The options to use for the bulk copy.</param>
 		/// <param name="transaction">An optional external transaction.</param>
 		public static void BulkCopy<T>(
-			this SqlConnection connection, 
-			string tableName, 
+			this SqlConnection connection,
+			string tableName,
 			IEnumerable<T> list,
 			int? batchSize = null,
 			bool closeConnection = false,
@@ -1042,7 +1042,7 @@ namespace Insight.Database
 
 				// ask Sql Server for the schema table
 				DataTable schemaTable = _tableSchemas.GetOrAdd(
-					tableName, 
+					tableName,
 					t =>
 					{
 						// select a 0 row result set so we can determine the schema of the table
@@ -1234,7 +1234,7 @@ namespace Insight.Database
 					}
 				},
 				commandBehavior);
-		}		
+		}
 		#endregion
 
 		#region Unwrap Methods

@@ -101,11 +101,11 @@ namespace Insight.Database.CodeGenerator
 			// get the get properties for the types that we pass in
 			// get all fields in the class
             foreach (var f in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                getMethods.Add(new ClassPropInfo(type, f.Name, getMethod: true));
+                getMethods.Add(new ClassPropInfo(type, f.Name));
 
 			// get all properties in the class
             foreach (var p in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                getMethods.Add(new ClassPropInfo(type, p.Name, getMethod: true));
+                getMethods.Add(new ClassPropInfo(type, p.Name));
 
 			return getMethods;
 		}

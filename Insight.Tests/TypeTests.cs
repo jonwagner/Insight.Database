@@ -128,7 +128,7 @@ namespace Insight.Tests
 			Data<System.Data.Linq.Binary>.Test(new System.Data.Linq.Binary(new byte[] { 1, 2, 3, 4 }), _connection, "varbinary(MAX)");
 
 			// enums
-			NullableData<TestEnum>.Test (TestEnum.One, _connection, "int");
+			NullableData<TestEnum>.Test (TestEnum.Two, _connection, "int");
 
 			// make sure that we can return a list of strings
 			var data2 = _connection.QuerySql<string>("SELECT @p UNION ALL SELECT @p", new { p = "foo" });

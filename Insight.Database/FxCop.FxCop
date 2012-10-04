@@ -152,6 +152,19 @@
            </Member>
           </Members>
          </Type>
+         <Type Name="TypeConverterGenerator">
+          <Members>
+           <Member Name="#.cctor()">
+            <Messages>
+             <Message TypeName="InitializeReferenceTypeStaticFieldsInline" Category="Microsoft.Performance" CheckId="CA1810" Status="Excluded" Created="2012-10-04 01:05:40Z">
+              <Issue>
+               <Item>'TypeConverterGenerator'</Item>
+              </Issue>
+             </Message>
+            </Messages>
+           </Member>
+          </Members>
+         </Type>
         </Types>
        </Namespace>
        <Namespace Name="Insight.Database.Reliable">
