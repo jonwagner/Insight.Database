@@ -52,15 +52,28 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Takes the output parameters of a result set and inserts them into a new object of type T.
+		/// </summary>
+		/// <typeparam name="T">The type of object to return.</typeparam>
+		/// <param name="command">The command to evaluate.</param>
+		/// <returns>An object of type T containing the output parameters.</returns>
+		public static T OutputParameters<T>(this IDbCommand command) where T : new()
+		{
+			return command.OutputParameters(new T());
+		}
+
+		/// <summary>
 		/// Takes the output parameters of a result set and inserts them into the result object.
 		/// </summary>
+		/// <typeparam name="T">The type of object to return.</typeparam>
 		/// <param name="command">The command to evaluate.</param>
 		/// <param name="result">The result to insert into.</param>
-		public static void OutputParameters(this IDbCommand command, object result)
+		/// <returns>The object that was filled in.</returns>
+		public static T OutputParameters<T>(this IDbCommand command, T result)
 		{
 			// if there is no output object, don't attempt to fill it in
 			if (result == null)
-				return;
+				return result;
 
 			if (result is DynamicObject)
 			{
@@ -77,6 +90,8 @@ namespace Insight.Database
 			}
 			else
 				DbParameterGenerator.GetOutputParameterConverter(command, result.GetType())(command, result);
+
+			return result;
 		}
 		#endregion
 
