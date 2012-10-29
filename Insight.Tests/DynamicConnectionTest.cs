@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Insight.Database;
+using NUnit.Framework;
+using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using NUnit.Framework;
-using Insight.Database;
-using System.Data.SqlClient;
 
 #pragma warning disable 0649
 
@@ -17,6 +18,35 @@ namespace Insight.Tests
 		{
 			public int Value;
 		}
+
+        /// <summary>
+        /// Make sure that using dynamic on an unopened connection properly auto-opens the connection when getting the procedure.
+        /// </summary>
+        [Test]
+        public void TestUnopenedConnection()
+        {
+            // make sure the connection is closed first
+            _connection.Close();
+            Assert.AreEqual(ConnectionState.Closed, _connection.State);
+
+            // call a proc that we know exists and make sure we get data back
+            var result = _connection.Dynamic().sp_Who();
+            Assert.IsTrue(result.Count > 0);
+            Assert.AreEqual(ConnectionState.Closed, _connection.State);
+
+            // call a proc with no results
+            var result2 = _connection.Dynamic().sp_validname("foo");
+            Assert.AreEqual(ConnectionState.Closed, _connection.State);
+
+            // call a proc that we know exists and make sure we get data back
+            var result3 = _connection.Dynamic().sp_WhoAsync().Result;
+            Assert.IsTrue(result3.Count > 0);
+            Assert.AreEqual(ConnectionState.Closed, _connection.State);
+
+            // call a proc async with no results
+            var result4 = _connection.Dynamic().sp_validnameAsync("foo").Result;
+            Assert.AreEqual(ConnectionState.Closed, _connection.State);
+        }
 
 		[Test]
 		public void Test()
