@@ -111,4 +111,55 @@ namespace Insight.Tests
 			}
 		}
 	}
+
+		/// <summary>
+	/// Tests asynchronous SQL features. Requires a local database with a trusted connection.
+	/// </summary>
+	[TestFixture]
+	public class DynamicConnectionProcTests : BaseDbTest
+	{
+		#region SetUp and TearDown
+		[TestFixtureSetUp]
+		public override void SetUpFixture()
+		{
+			base.SetUpFixture();
+
+			// clean up old stuff first
+			CleanupObjects();
+
+			_connection.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
+			_connection.ExecuteSql("CREATE PROCEDURE [Int32TestProc] @p [Int32Table] READONLY AS SELECT * FROM @p");
+		}
+
+		[TestFixtureTearDown]
+		public override void TearDownFixture()
+		{
+			CleanupObjects();
+
+			base.TearDownFixture();
+		}
+
+		private void CleanupObjects()
+		{
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'Int32TestProc') DROP PROCEDURE [Int32TestProc]");
+			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
+		}
+		#endregion
+
+		/// <summary>
+		/// Make sure that using dynamic on an unopened connection properly auto-opens the connection when getting the procedure.
+		/// </summary>
+		[Test]
+		public void TestUnopenedConnection()
+		{
+			// make sure the connection is closed first
+			_connection.Close();
+			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+
+			// call a proc that requires input parameters from a list
+			var result5 = _connection.Dynamic().Int32TestProc(new List<int>() { 5, 7 });
+			Assert.IsTrue(result5.Count == 2);
+			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+		}
+	}
 }

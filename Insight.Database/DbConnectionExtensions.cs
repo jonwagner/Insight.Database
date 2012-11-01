@@ -1290,7 +1290,7 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <returns>The result of the action.</returns>
-		private static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, CommandBehavior commandBehavior)
+		internal static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
 			return connection.ExecuteAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
 		}
@@ -1303,7 +1303,7 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>The result of the action.</returns>
-		private static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, bool closeConnection)
+		internal static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, bool closeConnection)
 		{
 			try
 			{

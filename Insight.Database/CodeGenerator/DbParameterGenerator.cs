@@ -212,24 +212,8 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The list of stored procedures.</returns>
 		private static List<SqlParameter> DeriveParametersFromSqlProcedure(SqlCommand command)
 		{
-			// if we don't have an open connection, then open it
-			bool closeConnection = false;
-			if (command.Connection.State != ConnectionState.Open)
-			{
-				command.Connection.Open();
-				closeConnection = true;
-			}
-
-			try
-			{
-				// call the server to get the parameters
-				SqlCommandBuilder.DeriveParameters(command);
-			}
-			finally
-			{
-				if (closeConnection)
-					command.Connection.Close();
-			}
+			// call the server to get the parameters
+			command.Connection.ExecuteAndAutoClose(_ => { SqlCommandBuilder.DeriveParameters(command); return true; });
 
 			// make the list of parameters
 			List<SqlParameter> parameters = command.Parameters.Cast<SqlParameter>().ToList();
@@ -910,14 +894,15 @@ namespace Insight.Database.CodeGenerator
 				// let's see if we can get the schema table from the server
 				DataTable schema = _tvpSchemas.GetOrAdd(
 					listType,
-					type =>
-					{
-						SqlCommand schemaCommand = new SqlCommand(String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName));
-						schemaCommand.Connection = cmd.Connection;
-						schemaCommand.Transaction = cmd.Transaction;
-						using (var reader = schemaCommand.ExecuteReader())
-							return reader.GetSchemaTable();
-					});
+					type => cmd.Connection.ExecuteAndAutoClose(
+						_ =>
+						{
+							SqlCommand schemaCommand = new SqlCommand(String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName));
+							schemaCommand.Connection = cmd.Connection;
+							schemaCommand.Transaction = cmd.Transaction;
+							using (var reader = schemaCommand.ExecuteReader())
+								return reader.GetSchemaTable();
+						}));
 
 				// create the structured parameter
 				SqlParameter p = new SqlParameter();
