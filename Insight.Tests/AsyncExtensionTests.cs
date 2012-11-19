@@ -57,7 +57,20 @@ namespace Insight.Tests
 			Assert.IsTrue(_connection.State == ConnectionState.Closed);
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Asynchronously run a command that is not a query
+        /// </summary>
+        [Test]
+        public void TestScalar()
+        {
+            var task = _connection.ExecuteScalarSqlAsync<int>("SELECT 5", Parameters.Empty, closeConnection: true);
+            task.Wait();
+
+            Assert.IsTrue(_connection.State == ConnectionState.Closed);
+            Assert.AreEqual(5, task.Result);
+        }
+
+        /// <summary>
 		/// Asynchronously run a stored procedure with parameter detection
 		/// </summary>
 		[Test]

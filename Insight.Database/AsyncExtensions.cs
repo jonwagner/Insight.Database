@@ -85,6 +85,73 @@ namespace Insight.Database
 		}
 		#endregion
 
+        #region ExecuteScalar Members
+        /// <summary>
+        /// Create a command and execute it, returning the first column of the first row. This method supports auto-open.
+        /// </summary>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandType">The type of command to execute.</param>
+        /// <param name="closeConnection">True to close the connection after the query.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in it.</param>
+        /// <returns>A data reader with the results.</returns>
+        /// <typeparam name="T">The type of the data to be returned.</typeparam>
+        public static Task<T> ExecuteScalarAsync<T>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandType commandType = CommandType.StoredProcedure,
+            bool closeConnection = false,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.ExecuteAsyncAndAutoClose(
+                c =>
+                {
+                    // NOTE: we open the connection before creating the command because we may need to use the retry logic
+                    // when deriving the stored procedure parameters
+                    IDbCommand command = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
+
+#if NODBASYNC
+					// not supported in .NET 4.0
+					return Task<T>.Factory.StartNew(() => (T)command.ExecuteScalar());
+#else
+                    // DbCommand now supports async execute
+                    DbCommand dbCommand = command as DbCommand;
+                    if (dbCommand != null)
+                        return dbCommand.ExecuteScalarAsync().ContinueWith(t => (T)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+                    else
+                        return Task<T>.Factory.StartNew(() => (T)command.ExecuteScalar());
+#endif
+                },
+                closeConnection);
+        }
+
+        /// <summary>
+        /// Create a command and execute it, returning the first column of the first row. This method supports auto-open.
+        /// </summary>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="closeConnection">True to close the connection after the query.</param>
+        /// <param name="commandTimeout">The timeout for the command.</param>
+        /// <param name="transaction">The transaction to participate in it.</param>
+        /// <returns>A data reader with the results.</returns>
+        /// <typeparam name="T">The type of the data to be returned.</typeparam>
+        public static Task<T> ExecuteScalarSqlAsync<T>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            bool closeConnection = false,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.ExecuteScalarAsync<T>(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction);
+        }
+        #endregion
+
 		#region Query Connection Methods
 		/// <summary>
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
