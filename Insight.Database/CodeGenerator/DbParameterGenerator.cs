@@ -213,7 +213,13 @@ namespace Insight.Database.CodeGenerator
 		private static List<SqlParameter> DeriveParametersFromSqlProcedure(SqlCommand command)
 		{
 			// call the server to get the parameters
-			command.Connection.ExecuteAndAutoClose(_ => { SqlCommandBuilder.DeriveParameters(command); return true; });
+			command.Connection.ExecuteAndAutoClose(_ => 
+            { 
+                SqlCommandBuilder.DeriveParameters(command);
+                CheckForMissingParameters(command);
+
+                return true; 
+            });
 
 			// make the list of parameters
 			List<SqlParameter> parameters = command.Parameters.Cast<SqlParameter>().ToList();
@@ -221,9 +227,38 @@ namespace Insight.Database.CodeGenerator
 
 			// clear the list so we can re-add them
 			command.Parameters.Clear();
-
+            
 			return parameters;
 		}
+
+        /// <summary>
+        /// Verify that DeriveParameters returned the correct parameters.
+        /// </summary>
+        /// <remarks>
+        /// If the current user doesn't have execute permissions the type of a parameter,
+        /// DeriveParameters won't return the parameter. This is very difficult to debug,
+        /// so we are going to check to make sure that we got all of the parameters.
+        /// </remarks>
+        /// <param name="command">The command to analyze.</param>
+        private static void CheckForMissingParameters(SqlCommand command)
+        {
+            // if the current user doesn't have execute permissions on the database
+            // DeriveParameters will just skip the parameter
+            // so we are going to check the list ourselves for anything missing
+            var parameterNames = command.Connection.QuerySql<string>(
+                "SELECT p.Name FROM sys.parameters p WHERE p.object_id = OBJECT_ID(@Name)",
+                new { Name = command.CommandText },
+                transaction: command.Transaction);
+
+            var parameters = command.Parameters.OfType<SqlParameter>();
+            string missingParameter = parameterNames.FirstOrDefault(n => !parameters.Any(p => String.Compare(p.ParameterName, n, ignoreCase: true) == 0));
+            if (missingParameter != null)
+                throw new InvalidOperationException(String.Format(
+                    CultureInfo.InvariantCulture,
+                    "{0} is missing parameter {1}. Check to see if the parameter is using a type that the current user does not have EXECUTE access to.",
+                    command.CommandText, 
+                    missingParameter));
+        }
 
 		/// <summary>
 		/// Get a list of parameters from Sql text.
