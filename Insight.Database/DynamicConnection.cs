@@ -322,7 +322,7 @@ namespace Insight.Database
 	/// </summary>
 	/// <typeparam name="TResult">The type of object to return from queries.</typeparam>
 	/// <typeparam name="TSub1">The type of the first sub-object to return from queries.</typeparam>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintenanceRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+    [SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public sealed class DynamicConnection<TResult, TSub1> : DynamicConnection
 	{
 		/// <summary>

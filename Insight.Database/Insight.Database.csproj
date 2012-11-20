@@ -48,11 +48,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncExtensions.cs" />
+    <Compile Include="CodeGenerator\ClassDeserializerGenerator.cs" />
     <Compile Include="CodeGenerator\ClassPropInfo.cs" />
     <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
     <Compile Include="CodeGenerator\DbReaderDeserializer.cs" />
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
+    <Compile Include="DefaultGraphAttribute.cs" />
+    <Compile Include="Graph.cs" />
     <Compile Include="Reliable\ReliableConnectionExtensions.cs" />
     <Compile Include="Reliable\RetryStrategy.cs" />
     <Compile Include="Reliable\IRetryStrategy.cs" />
@@ -65,7 +68,7 @@
     <Compile Include="CodeGenerator\IlHelper.cs" />
     <Compile Include="CodeGenerator\ObjectListDbDataReader.cs" />
     <Compile Include="CodeGenerator\QueryIdentity.cs" />
-    <Compile Include="CodeGenerator\SchemaIdentity.cs" />
+    <Compile Include="CodeGenerator\SchemaMappingIdentity.cs" />
     <Compile Include="CodeGenerator\TypeHelper.cs" />
     <Compile Include="ConnectionStringSettingsExtensions.cs" />
     <Compile Include="DBCommandExtensions.cs" />

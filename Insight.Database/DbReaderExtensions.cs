@@ -140,6 +140,37 @@ namespace Insight.Database
 			return reader.AsEnumerable(mapper);
 		}
 
+        /// <summary>
+        /// Converts an IDataReader to an enumerable. The reader is closed after all records are read.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the object.</typeparam>
+        /// <param name="reader">The data reader.</param>
+        /// <param name="withGraph">An optional type to specify the types of objects in the returned graph.</param>
+        /// <param name="callback">An optional callback that allows you to assemble the object graph.</param>
+        /// <param name="idColumns">An optional dictionary of the names of the ID fields of the types in the graph.</param>
+        /// <returns>An enumerable over the return results.</returns>
+        /// <remarks>
+        /// If you use this method and are relying on CommandBehavior.CloseConnection to close the connection, note that if all of the records are not read
+        /// (due to an exception or otherwise), then the connection will leak until GC is run. Your code is responsible for closing the connection.
+        /// </remarks>
+        public static IEnumerable<T> AsEnumerable<T>(
+            this IDataReader reader,
+            Type withGraph = null,
+            Action<object[]> callback = null,
+            Dictionary<Type, string> idColumns = null)
+        {
+            if (callback != null)
+            {
+                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: withGraph, idColumns: idColumns);
+                return reader.AsEnumerable(r => mapper(r, (object[] objects) => callback(objects)));
+            }
+            else
+            {
+                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: withGraph, idColumns: idColumns);
+                return reader.AsEnumerable(mapper);
+            }
+        }
+
 		/// <summary>
 		/// Converts an IDataReader to an enumerable. The reader is closed after all records are read.
 		/// </summary>
@@ -158,10 +189,30 @@ namespace Insight.Database
 			Action<T, TSub1> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
-			// get the class deserializer
-			var mapper = DbReaderDeserializer<T, TSub1, NoClass, NoClass, NoClass, NoClass>.GetDeserializer(reader, callback != null, idColumns);
-			return reader.AsEnumerable(r => mapper(r, (t, t1, t2, t3, t4, t5) => callback(t, t1)));
-		}
+            if (callback != null)
+            {
+                // get the class deserializer
+                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
+
+                Action<object[]> action = (object[] objects) =>
+                {
+                    T t = default(T);
+                    TSub1 t1 = default(TSub1);
+
+                    if (objects.Length > 0) t = (T)objects[0];
+                    if (objects.Length > 1) t1 = (TSub1)objects[1];
+
+                    callback(t, t1);
+                };
+
+                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
+            }
+            else
+            {
+                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
+                return reader.AsEnumerable(mapper);
+            }
+        }
 
 		/// <summary>
 		/// Converts an IDataReader to an enumerable. The reader is closed after all records are read.
@@ -179,13 +230,35 @@ namespace Insight.Database
 		/// </remarks>
 		public static IEnumerable<T> AsEnumerable<T, TSub1, TSub2>(
 			this IDataReader reader,
-			Action<T, TSub1, TSub2> callback = null,
+            Action<T, TSub1, TSub2> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
-			// get the class deserializer
-			var mapper = DbReaderDeserializer<T, TSub1, TSub2, NoClass, NoClass, NoClass>.GetDeserializer(reader, callback != null, idColumns);
-			return reader.AsEnumerable(r => mapper(r, (t, t1, t2, t3, t4, t5) => callback(t, t1, t2)));
-		}
+            if (callback != null)
+            {
+                // get the class deserializer
+                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
+
+                Action<object[]> action = (object[] objects) =>
+                {
+                    T t = default(T);
+                    TSub1 t1 = default(TSub1);
+                    TSub2 t2 = default(TSub2);
+
+                    if (objects.Length > 0) t = (T)objects[0];
+                    if (objects.Length > 1) t1 = (TSub1)objects[1];
+                    if (objects.Length > 2) t2 = (TSub2)objects[2];
+
+                    callback(t, t1, t2);
+                };
+
+                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
+            }
+            else
+            {
+                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
+                return reader.AsEnumerable(mapper);
+            }
+        }
 
 		/// <summary>
 		/// Converts an IDataReader to an enumerable. The reader is closed after all records are read.
@@ -204,13 +277,37 @@ namespace Insight.Database
 		/// </remarks>
 		public static IEnumerable<T> AsEnumerable<T, TSub1, TSub2, TSub3>(
 			this IDataReader reader,
-			Action<T, TSub1, TSub2, TSub3> callback = null,
+            Action<T, TSub1, TSub2, TSub3> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
-			// get the class deserializer
-			var mapper = DbReaderDeserializer<T, TSub1, TSub2, TSub3, NoClass, NoClass>.GetDeserializer(reader, callback != null, idColumns);
-			return reader.AsEnumerable(r => mapper(r, (t, t1, t2, t3, t4, t5) => callback(t, t1, t2, t3)));
-		}
+            if (callback != null)
+            {
+                // get the class deserializer
+                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
+
+                Action<object[]> action = (object[] objects) =>
+                {
+                    T t = default(T);
+                    TSub1 t1 = default(TSub1);
+                    TSub2 t2 = default(TSub2);
+                    TSub3 t3 = default(TSub3);
+
+                    if (objects.Length > 0) t = (T)objects[0];
+                    if (objects.Length > 1) t1 = (TSub1)objects[1];
+                    if (objects.Length > 2) t2 = (TSub2)objects[2];
+                    if (objects.Length > 3) t3 = (TSub3)objects[3];
+
+                    callback(t, t1, t2, t3);
+                };
+
+                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
+            }
+            else
+            {
+                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
+                return reader.AsEnumerable(mapper);
+            }
+        }
 
 		/// <summary>
 		/// Converts an IDataReader to an enumerable. The reader is closed after all records are read.
@@ -230,13 +327,39 @@ namespace Insight.Database
 		/// </remarks>
 		public static IEnumerable<T> AsEnumerable<T, TSub1, TSub2, TSub3, TSub4>(
 			this IDataReader reader,
-			Action<T, TSub1, TSub2, TSub3, TSub4> callback = null,
+            Action<T, TSub1, TSub2, TSub3, TSub4> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
-			// get the class deserializer
-			var mapper = DbReaderDeserializer<T, TSub1, TSub2, TSub3, TSub4, NoClass>.GetDeserializer(reader, callback != null, idColumns);
-			return reader.AsEnumerable(r => mapper(r, (t, t1, t2, t3, t4, t5) => callback(t, t1, t2, t3, t4)));
-		}
+            if (callback != null)
+            {
+                // get the class deserializer
+                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
+
+                Action<object[]> action = (object[] objects) =>
+                {
+                    T t = default(T);
+                    TSub1 t1 = default(TSub1);
+                    TSub2 t2 = default(TSub2);
+                    TSub3 t3 = default(TSub3);
+                    TSub4 t4 = default(TSub4);
+
+                    if (objects.Length > 0) t = (T)objects[0];
+                    if (objects.Length > 1) t1 = (TSub1)objects[1];
+                    if (objects.Length > 2) t2 = (TSub2)objects[2];
+                    if (objects.Length > 3) t3 = (TSub3)objects[3];
+                    if (objects.Length > 4) t4 = (TSub4)objects[4];
+
+                    callback(t, t1, t2, t3, t4);
+                };
+
+                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
+            }
+            else
+            {
+                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
+                return reader.AsEnumerable(mapper);
+            }
+        }
 
 		/// <summary>
 		/// Converts an IDataReader to an enumerable. The reader is closed after all records are read.
@@ -260,11 +383,38 @@ namespace Insight.Database
 			Action<T, TSub1, TSub2, TSub3, TSub4, TSub5> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
-			// get the class deserializer
-			var mapper = DbReaderDeserializer<T, TSub1, TSub2, TSub3, TSub4, TSub5>.GetDeserializer(reader, callback != null, idColumns);
+            if (callback != null)
+            {
+                // get the class deserializer
+                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
 
-			return reader.AsEnumerable(r => mapper(r, callback));
-		}
+                Action<object[]> action = (object[] objects) =>
+                {
+                     T t = default(T);
+                     TSub1 t1 = default(TSub1);
+                     TSub2 t2 = default(TSub2);
+                     TSub3 t3 = default(TSub3);
+                     TSub4 t4 = default(TSub4);
+                     TSub5 t5 = default(TSub5);
+
+                     if (objects.Length > 0) t = (T)objects[0];
+                     if (objects.Length > 1) t1 = (TSub1)objects[1];
+                     if (objects.Length > 2) t2 = (TSub2)objects[2];
+                     if (objects.Length > 3) t3 = (TSub3)objects[3];
+                     if (objects.Length > 4) t4 = (TSub4)objects[4];
+                     if (objects.Length > 5) t5 = (TSub5)objects[5];
+
+                     callback(t, t1, t2, t3, t4, t5);
+                 };
+
+                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
+            }
+            else
+            {
+                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
+                return reader.AsEnumerable(mapper);
+            }
+        }
 		#endregion
 
 		#region First Methods

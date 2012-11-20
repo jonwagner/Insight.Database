@@ -137,11 +137,6 @@ namespace Insight.Database.CodeGenerator
 		private static ConcurrentDictionary<QueryIdentity, Action<IDbCommand, object>> _deserializers = new ConcurrentDictionary<QueryIdentity, Action<IDbCommand, object>>();
 
 		/// <summary>
-		/// The cache for reflection.
-		/// </summary>
-		private static ConcurrentDictionary<Type, Dictionary<string, ClassPropInfo>> _getMethods = new ConcurrentDictionary<Type, Dictionary<string, ClassPropInfo>>();
-
-		/// <summary>
 		/// Regex to detect parameters in sql text.
 		/// </summary>
 		private static Regex _parameterRegex = new Regex("[?@:]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
@@ -276,34 +271,6 @@ namespace Insight.Database.CodeGenerator
 		}
 		#endregion
 
-		#region Property Detection Members
-		/// <summary>
-		/// Get the gettable fields and properties of the type.
-		/// </summary>
-		/// <param name="type">The type that we are working on.</param>
-		/// <returns>The list of gettable properties.</returns>
-		private static Dictionary<string, ClassPropInfo> GetProperties(Type type)
-		{
-			return _getMethods.GetOrAdd(
-				type,
-				key =>
-				{
-					Dictionary<string, ClassPropInfo> methods = new Dictionary<string, ClassPropInfo>();
-
-					// get the get properties for the types that we pass in
-					// get all fields in the class
-					foreach (var f in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-						methods.Add(f.Name.ToUpperInvariant(), new ClassPropInfo(type, f.Name));
-
-					// get all properties in the class
-					foreach (var p in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-						methods.Add(p.Name.ToUpperInvariant(), new ClassPropInfo(type, p.Name));
-
-					return methods;
-				});
-		}
-		#endregion
-
 		#region Input Parameter Code Generation Members
 		/// <summary>
 		/// Create the Parameter generator method.
@@ -347,7 +314,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
 
 			// get the properties for the type
-			var properties = GetProperties(type);
+            var properties = ClassPropInfo.GetMappingForType(type);
 
 			// go through all of the parameters
 			foreach (SqlParameter sqlParameter in parameters)
@@ -741,8 +708,11 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Isinst, type);
 			il.Emit(OpCodes.Stloc_1);
 
-			foreach (var prop in GetProperties(type))
+			foreach (var prop in ClassPropInfo.GetMappingForType(type))
 			{
+                if (!prop.Value.CanSetMember)
+                    continue;
+
 				// if there is no parameter for this property, then skip it
 				// if the parameter is not output, then skip it
 				IDataParameter parameter = parameters.Find(p => p.ParameterName == prop.Key);

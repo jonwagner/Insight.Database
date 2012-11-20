@@ -122,6 +122,110 @@
            </Message>
           </Messages>
          </Type>
+         <Type Name="Graph`1">
+          <Messages>
+           <Message TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message Id="I" TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715" Status="Excluded" Created="2012-11-20 20:53:12Z" FixCategory="Breaking">
+            <Issue Name="Interface">
+             <Item>'Graph&lt;T&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Graph`2">
+          <Messages>
+           <Message TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message Id="I" TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715" Status="Excluded" Created="2012-11-20 20:53:12Z" FixCategory="Breaking">
+            <Issue Name="Interface">
+             <Item>'Graph&lt;T, TSub1&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Graph`3">
+          <Messages>
+           <Message TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message Id="I" TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715" Status="Excluded" Created="2012-11-20 20:53:12Z" FixCategory="Breaking">
+            <Issue Name="Interface">
+             <Item>'Graph&lt;T, TSub1, TSub2&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Graph`4">
+          <Messages>
+           <Message TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message Id="I" TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715" Status="Excluded" Created="2012-11-20 20:53:12Z" FixCategory="Breaking">
+            <Issue Name="Interface">
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Graph`5">
+          <Messages>
+           <Message TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message Id="I" TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715" Status="Excluded" Created="2012-11-20 20:53:12Z" FixCategory="Breaking">
+            <Issue Name="Interface">
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Graph`6">
+          <Messages>
+           <Message TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4, TSub5&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-20 20:53:12Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4, TSub5&gt;'</Item>
+            </Issue>
+           </Message>
+           <Message Id="I" TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715" Status="Excluded" Created="2012-11-20 20:53:12Z" FixCategory="Breaking">
+            <Issue Name="Interface">
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4, TSub5&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
         </Types>
        </Namespace>
        <Namespace Name="Insight.Database.CodeGenerator">
@@ -198,8 +302,17 @@
    <Rule TypeName="AssembliesShouldHaveValidStrongNames" Category="Microsoft.Design" CheckId="CA2210">
     <Resolution Name="NoStrongName">Sign {0} with a strong name key.</Resolution>
    </Rule>
+   <Rule TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040">
+    <Resolution Name="Default">Define a custom attribute to replace {0}.</Resolution>
+   </Rule>
+   <Rule TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005">
+    <Resolution Name="Default">Consider a design where {0} has no more than 2 type parameters.</Resolution>
+   </Rule>
    <Rule TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031">
     <Resolution Name="Default">Modify {0} to catch a more specific exception than {1} or rethrow the exception.</Resolution>
+   </Rule>
+   <Rule TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715">
+    <Resolution Name="Interface">Prefix interface name {0} with 'I'.</Resolution>
    </Rule>
    <Rule TypeName="IdentifiersShouldHaveCorrectSuffix" Category="Microsoft.Naming" CheckId="CA1710">
     <Resolution Name="Default">Rename {0} to end in '{1}'.</Resolution>

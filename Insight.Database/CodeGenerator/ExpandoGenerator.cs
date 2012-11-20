@@ -65,7 +65,7 @@ namespace Insight.Database.CodeGenerator
             il.Emit(OpCodes.Newobj, _constructor);
 
             // for each public field or method, get the value
-            foreach (ClassPropInfo accessor in GetAccessors(type))
+            foreach (ClassPropInfo accessor in ClassPropInfo.GetMembersForType(type).Where(m => m.CanGetMember))
             {
                 il.Emit(OpCodes.Dup);										// push expando - so we can call set value
                 il.Emit(OpCodes.Ldstr, accessor.Name);						// push name
@@ -88,26 +88,5 @@ namespace Insight.Database.CodeGenerator
 
             return (Func<object, FastExpando>)dm.CreateDelegate(typeof(Func<object, FastExpando>));
         }
-
-		/// <summary>
-		/// Gets the public accessors on type T.
-		/// </summary>
-        /// <param name="type">The type of object to be able to convert.</param>
-		/// <returns>A list of the public accessors.</returns>
-		private static List<ClassPropInfo> GetAccessors(Type type)
-		{
-			List<ClassPropInfo> getMethods = new List<ClassPropInfo>();
-
-			// get the get properties for the types that we pass in
-			// get all fields in the class
-            foreach (var f in type.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                getMethods.Add(new ClassPropInfo(type, f.Name));
-
-			// get all properties in the class
-            foreach (var p in type.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
-                getMethods.Add(new ClassPropInfo(type, p.Name));
-
-			return getMethods;
-		}
 	}
 }

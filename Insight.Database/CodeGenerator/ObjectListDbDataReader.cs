@@ -76,7 +76,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Global cache of accessors.
 		/// </summary>
-		private static ConcurrentDictionary<Tuple<Type, SchemaIdentity>, FieldReaderData> _readerDataCache = new ConcurrentDictionary<Tuple<Type, SchemaIdentity>, FieldReaderData>();
+		private static ConcurrentDictionary<Tuple<Type, SchemaMappingIdentity>, FieldReaderData> _readerDataCache = new ConcurrentDictionary<Tuple<Type, SchemaMappingIdentity>, FieldReaderData>();
 		#endregion
 
 		#region Constructors
@@ -113,8 +113,8 @@ namespace Insight.Database.CodeGenerator
 			if (!_isValueType)
 			{
 				// generate an identity for the schema and a key for our accessors
-				SchemaIdentity identity = new SchemaIdentity(schemaTable);
-				Tuple<Type, SchemaIdentity> key = new Tuple<Type, SchemaIdentity>(listType, identity);
+				SchemaMappingIdentity identity = new SchemaMappingIdentity(schemaTable, withGraph: listType, useCallback: false);
+				Tuple<Type, SchemaMappingIdentity> key = new Tuple<Type, SchemaMappingIdentity>(listType, identity);
 
 				_readerData = _readerDataCache.GetOrAdd(key, k => CreateFieldReaderData(k.Item1, k.Item2));
 			}
@@ -128,17 +128,19 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="type">The type to analyze.</param>
 		/// <param name="identity">The schema identity to analyze.</param>
 		/// <returns>A list of accessor functions to get values from the type.</returns>
-		private FieldReaderData CreateFieldReaderData(Type type, SchemaIdentity identity)
+		private FieldReaderData CreateFieldReaderData(Type type, SchemaMappingIdentity identity)
 		{
 			FieldReaderData readerData = new FieldReaderData();
 
 			readerData.Accessors = new List<Func<object, object>>();
 			readerData.MemberTypes = new List<Type>();
 
+            var mapping = ClassPropInfo.GetMappingForType(type);
+
 			for (int i = 0; i < identity.SchemaTable.Rows.Count; i++)
 			{
 				// get the name of the column
-				string name = _schemaTable.Rows[i]["ColumnName"].ToString();
+				string name = _schemaTable.Rows[i]["ColumnName"].ToString().ToUpperInvariant();
 
 				// create a new anonymous method that takes an object and returns the value
 				var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
@@ -148,7 +150,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Isinst, type);					// cast object -> type
 
 				// get the value from the object
-				ClassPropInfo propInfo = new ClassPropInfo(type, name);
+                ClassPropInfo propInfo = mapping[name];
 				propInfo.EmitGetValue(il);
 				propInfo.EmitBox(il);
 

@@ -141,10 +141,14 @@ namespace Insight.Tests
 
 			var results = reader.AsEnumerable<TestData, TestOtherData, TestSubData> 
 			(
-				// test custom callback function
-				(t, t1, t2) => { t.OtherData = t1; t.OtherData.SubData = t2; }, 
-				// test custom ID mapper
-				new Dictionary<Type,string> () { { typeof (TestOtherData), "OtherID"} }
+                // test custom callback function
+                callback: (t, t1, t2) =>
+                {
+                    t.OtherData = t1;
+                    t.OtherData.SubData = t2;
+                },				
+                // test custom ID mapper
+				idColumns: new Dictionary<Type,string> () { { typeof (TestOtherData), "OtherID"} }
 			).ToList ();
 
 			Assert.IsNotNull (results);
@@ -159,6 +163,40 @@ namespace Insight.Tests
 			Assert.AreEqual (3, testData.OtherData.SubData.ID);
 			Assert.AreEqual (4, testData.OtherData.SubData.SubInt);
 		}
+
+        [Test]
+        public void SelectSubSubObjectNew()
+        {
+            var reader = _connection.GetReaderSql(@"
+				SELECT ID=1, OtherID=2, ID=3, SubInt=4
+			");
+
+            var results = reader.AsEnumerable<TestData>
+            (
+                // test custom callback function
+                callback: (object[] objects) => 
+                {
+                    TestData t = (TestData)objects[0];
+                    t.OtherData = (TestOtherData)objects[1]; 
+                    t.OtherData.SubData = (TestSubData)objects[2]; 
+                },
+                // test custom ID mapper
+                idColumns: new Dictionary<Type, string>() { { typeof(TestOtherData), "OtherID" } },
+                withGraph: typeof(Graph<TestData, TestOtherData, TestSubData>)
+            ).ToList();
+
+            Assert.IsNotNull(results);
+            Assert.AreEqual(1, results.Count);
+
+            // test that we got data back
+            var testData = results[0];
+            Assert.AreEqual(1, testData.ID, "ID should not be overwritten by sub-object id");
+            Assert.IsNotNull(testData.OtherData);
+            Assert.AreEqual(2, testData.OtherData.OtherID);
+            Assert.IsNotNull(testData.OtherData.SubData);
+            Assert.AreEqual(3, testData.OtherData.SubData.ID);
+            Assert.AreEqual(4, testData.OtherData.SubData.SubInt);
+        }
 
 		[Test]
 		public void ShouldAutomaticallyDetectSplitBoundariesWhenNoKeysSpecified ()
@@ -204,5 +242,27 @@ namespace Insight.Tests
 			Assert.IsNotNull (testData.SubData);
 			Assert.AreEqual (2, testData.SubData.ID);
 		}
-	}
+
+        #region DefaultGraph Test Case
+        [DefaultGraph(typeof(Graph<DefaultGraphTestData, TestSubData>))]
+        class DefaultGraphTestData
+        {
+            public TestSubData SubData;
+        }
+
+        [Test]
+        public void TestObjectWithDefaultraphDefinition()
+        {
+            var results = _connection.QuerySql<DefaultGraphTestData>(@"SELECT ID=2");
+
+            Assert.IsNotNull(results);
+            Assert.AreEqual(1, results.Count);
+
+            // test that we got data back
+            var testData = results[0];
+            Assert.IsNotNull(testData.SubData);
+            Assert.AreEqual(2, testData.SubData.ID);
+        }
+        #endregion
+    }
 }

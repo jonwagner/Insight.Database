@@ -263,7 +263,7 @@ namespace Insight.Database.CodeGenerator
 			string name = "n/a";
 			string value = "n/a";
 
-			if (reader != null && index >= 0 && index < reader.FieldCount)
+			if (reader != null && !reader.IsClosed && index >= 0 && index < reader.FieldCount)
 			{
 				name = reader.GetName(index);
 				object val = reader.GetValue(index);
