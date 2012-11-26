@@ -26,12 +26,12 @@ namespace Insight.Database.CodeGenerator
         /// <summary>
         /// The cache of mappings.
         /// </summary>
-        private static ConcurrentDictionary<Type, ReadOnlyDictionary<string, ClassPropInfo>> _mappingCache = new ConcurrentDictionary<Type, ReadOnlyDictionary<string, ClassPropInfo>>();
+        private static ConcurrentDictionary<Type, Dictionary<string, ClassPropInfo>> _mappingCache = new ConcurrentDictionary<Type, Dictionary<string, ClassPropInfo>>();
 
         /// <summary>
         /// The cache of members.
         /// </summary>
-        private static ConcurrentDictionary<Type, IReadOnlyCollection<ClassPropInfo>> _memberCache = new ConcurrentDictionary<Type, IReadOnlyCollection<ClassPropInfo>>();
+        private static ConcurrentDictionary<Type, ReadOnlyCollection<ClassPropInfo>> _memberCache = new ConcurrentDictionary<Type, ReadOnlyCollection<ClassPropInfo>>();
         #endregion
 
         #region Constructors
@@ -128,12 +128,13 @@ namespace Insight.Database.CodeGenerator
         /// </remarks>
         /// <param name="type">The type to analyze.</param>
         /// <returns>A dictionary of set methods for a type.</returns>
-        public static ReadOnlyDictionary<string, ClassPropInfo> GetMappingForType(Type type)
+        public static Dictionary<string, ClassPropInfo> GetMappingForType(Type type)
         {
             // always return a clone so nobody can modify this
-            return _mappingCache.GetOrAdd(
-                type, 
-                t => new ReadOnlyDictionary<string, ClassPropInfo>(GetMembersForType(type).ToDictionary(p => p.ColumnName)));
+            // NOTE: you could switch this to ReadOnlyDictionary, but that isn't supported in .NET4.0
+            return new Dictionary<string, ClassPropInfo>(_mappingCache.GetOrAdd(
+                type,
+                t => GetMembersForType(type).ToDictionary(p => p.ColumnName)));
         }
 
         /// <summary>
@@ -144,7 +145,7 @@ namespace Insight.Database.CodeGenerator
         /// </remarks>
         /// <param name="type">The type to analyze.</param>
         /// <returns>A ReadOnlyCollection of set methods for a type.</returns>
-        public static IReadOnlyCollection<ClassPropInfo> GetMembersForType(Type type)
+        public static ReadOnlyCollection<ClassPropInfo> GetMembersForType(Type type)
         {
             return _memberCache.GetOrAdd(
                 type, 

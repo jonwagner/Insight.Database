@@ -43,7 +43,7 @@ namespace Insight.Database.CodeGenerator
             // if the graph isn't specified, look for a defaultgraphattribute, or just do a one-level graph
             if (withGraph == null)
             {
-                DefaultGraphAttribute defaultGraph = (DefaultGraphAttribute)typeof(T).GetCustomAttribute(typeof(DefaultGraphAttribute), true);
+                DefaultGraphAttribute defaultGraph = typeof(T).GetCustomAttributes(typeof(DefaultGraphAttribute), true).OfType<DefaultGraphAttribute>().FirstOrDefault();
                 if (defaultGraph != null)
                     withGraph = defaultGraph.GraphType;
                 else
