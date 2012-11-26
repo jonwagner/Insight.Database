@@ -226,6 +226,33 @@
            </Message>
           </Messages>
          </Type>
+         <Type Name="Results`3">
+          <Messages>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-26 20:47:13Z">
+            <Issue>
+             <Item>'Results&lt;T1, T2, T3&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Results`4">
+          <Messages>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-26 20:47:13Z">
+            <Issue>
+             <Item>'Results&lt;T1, T2, T3, T4&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Results`5">
+          <Messages>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-26 20:47:13Z">
+            <Issue>
+             <Item>'Results&lt;T1, T2, T3, T4, T5&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
         </Types>
        </Namespace>
        <Namespace Name="Insight.Database.CodeGenerator">

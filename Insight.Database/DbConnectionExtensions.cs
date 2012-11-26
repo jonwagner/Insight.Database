@@ -777,7 +777,7 @@ namespace Insight.Database
 
 		#region Query Reader Methods
 		/// <summary>
-		/// Asynchronously executes a query and performs a callback to read the data in the IDataReader.
+		/// Executes a query and performs a callback to read the data in the IDataReader.
 		/// </summary>
 		/// <param name="connection">The connection to execute on.</param>
 		/// <param name="sql">The sql to execute.</param>
@@ -811,7 +811,7 @@ namespace Insight.Database
 		}
 
 		/// <summary>
-		/// Asynchronously executes a query and performs a callback to read the data in the IDataReader.
+        /// Executes a query and performs a callback to read the data in the IDataReader.
 		/// </summary>
 		/// <param name="connection">The connection to execute on.</param>
 		/// <param name="sql">The sql to execute.</param>
@@ -891,8 +891,269 @@ namespace Insight.Database
 		}
 		#endregion
 
-		#region ForEach Methods
-		/// <summary>
+        #region QueryResults Methods
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandType">The type of the command.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static T QueryResults<T>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandType commandType = CommandType.StoredProcedure,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null) where T : Results, new()
+        {
+            return connection.ExecuteAndAutoClose(c =>
+            {
+                using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+                {
+                    T results = new T();
+                    results.Read(reader);
+
+                    return results;
+                }
+            });
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static T QueryResultsSql<T>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null) where T : Results, new()
+        {
+            return connection.QueryResults<T>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandType">The type of the command.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2> QueryResults<T1, T2>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandType commandType = CommandType.StoredProcedure,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2> QueryResultsSql<T1, T2>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandType">The type of the command.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2, T3> QueryResults<T1, T2, T3>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandType commandType = CommandType.StoredProcedure,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2, T3> QueryResultsSql<T1, T2, T3>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandType">The type of the command.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2, T3, T4> QueryResults<T1, T2, T3, T4>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandType commandType = CommandType.StoredProcedure,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2, T3, T4> QueryResultsSql<T1, T2, T3, T4>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+        /// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandType">The type of the command.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2, T3, T4, T5> QueryResults<T1, T2, T3, T4, T5>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandType commandType = CommandType.StoredProcedure,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+        }
+
+        /// <summary>
+        /// Executes a query that returns multiple result sets and reads the results.
+        /// </summary>
+        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+        /// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="sql">The sql to execute.</param>
+        /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="commandTimeout">The timeout of the command.</param>
+        /// <param name="transaction">The transaction to participate in.</param>
+        /// <returns>The results object filled with the data.</returns>
+        public static Results<T1, T2, T3, T4, T5> QueryResultsSql<T1, T2, T3, T4, T5>(
+            this IDbConnection connection,
+            string sql,
+            object parameters = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
+            int? commandTimeout = null,
+            IDbTransaction transaction = null)
+        {
+            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+        }
+        #endregion
+
+        #region ForEach Methods
+        /// <summary>
 		/// Executes a query and performs an action for each item in the result.
 		/// </summary>
 		/// <param name="connection">The connection to execute on.</param>

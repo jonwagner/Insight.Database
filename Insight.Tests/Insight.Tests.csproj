@@ -71,6 +71,7 @@
     <Compile Include="FastExpandoTests.cs" />
     <Compile Include="InsertTests.cs" />
     <Compile Include="MiniProfilerTests.cs" />
+    <Compile Include="MultipleResultsTests.cs" />
     <Compile Include="RetryStrategyTests.cs" />
     <Compile Include="XmlTests.cs" />
     <Compile Include="DbReaderTests.cs" />
