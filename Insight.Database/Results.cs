@@ -9,10 +9,24 @@ using System.Threading.Tasks;
 namespace Insight.Database
 {
     /// <summary>
+    /// Defines the read operation that is required to be able to read multiple recordsets from the database.
+    /// </summary>
+    /// <remarks>This interface is used just to allow DynamicConnection to call into the Read method.</remarks>
+    [SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+    interface IDatabaseResults
+    {
+        /// <summary>
+        /// Reads the contents from an IDataReader. Multiple recordsets are consumed from the reader.
+        /// </summary>
+        /// <param name="reader">The reader to read from.</param>
+        void Read(IDataReader reader);
+    }
+
+    /// <summary>
     /// Encapsulates multiple sets of data returned from the database.
     /// </summary>
     [SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
-    public class Results
+    public class Results : IDatabaseResults
     {
         /// <summary>
         /// Reads the contents from an IDataReader.
@@ -20,6 +34,15 @@ namespace Insight.Database
         /// <param name="reader">The reader to read from.</param>
         public virtual void Read(IDataReader reader)
         {
+        }
+
+        /// <summary>
+        /// Implements the IDatabaseResult.Read operation.
+        /// </summary>
+        /// <param name="reader">The reader to read from.</param>
+        void IDatabaseResults.Read(IDataReader reader)
+        {
+            Read(reader);
         }
     }
 

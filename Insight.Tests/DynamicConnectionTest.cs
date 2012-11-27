@@ -110,10 +110,26 @@ namespace Insight.Tests
 				Assert.AreEqual(value, result);
 			}
 		}
+
+        [Test]
+        public void TestDynamicWithMultipleResultSets()
+        {
+            using (SqlTransaction t = _connection.BeginTransaction())
+            {
+                _connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128), @Value2 varchar(128)) AS SELECT Value=@Value SELECT Value=@Value2", transaction: t);
+
+                string value = "foo";
+                string value2 = "foo2";
+                Results<string, string> results = _connection.Dynamic<Results<string, string>>().InsightTestProc(value, value2, transaction: t);
+
+                Assert.AreEqual(value, results.Set1.First());
+                Assert.AreEqual(value2, results.Set2.First());
+            }
+        }
 	}
 
-		/// <summary>
-	/// Tests asynchronous SQL features. Requires a local database with a trusted connection.
+	/// <summary>
+	/// Tests dynamic connection.
 	/// </summary>
 	[TestFixture]
 	public class DynamicConnectionProcTests : BaseDbTest

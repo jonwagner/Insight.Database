@@ -893,6 +893,33 @@ namespace Insight.Database
 
         #region QueryResults Methods
         /// <summary>
+        /// Execute an existing command, and translate the result set. This method supports auto-open.
+        /// </summary>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <typeparam name="T">The type of result object to return. This must derive from Results.</typeparam>
+        /// <returns>A data reader with the results.</returns>
+        public static T QueryResults<T>(
+            this IDbConnection connection,
+            IDbCommand command,
+            CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
+        {
+            return connection.ExecuteAndAutoClose(
+                c =>
+                {
+                    using (IDataReader reader = command.ExecuteReader())
+                    {
+                        T results = new T();
+                        results.Read(reader);
+
+                        return results;
+                    }
+                },
+                commandBehavior);
+        }
+
+        /// <summary>
         /// Executes a query that returns multiple result sets and reads the results.
         /// </summary>
         /// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>

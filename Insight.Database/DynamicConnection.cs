@@ -306,15 +306,43 @@ namespace Insight.Database
 				args,
 				(cmd, doAsync) =>
 				{
-					// execute the command
-					if (doAsync)
-						return ((SqlCommand)cmd).QueryAsync<T>();
-					else
-						return cmd.Connection.Query<T>(cmd);
+                    if (typeof(T).IsSubclassOf(typeof(Results)))
+                    {
+                        return DynamicQueryResults(cmd);
+                    }
+                    else
+                    {
+                        // execute the command
+                        if (doAsync)
+                            return ((SqlCommand)cmd).QueryAsync<T>();
+                        else
+                            return cmd.Connection.Query<T>(cmd);
+                    }
 				});
 
 			return true;
 		}
+
+        /// <summary>
+        /// Execute an existing command, and translate the result set. This method supports auto-open.
+        /// NOTE: Since this uses System.Activator to create the object, it should only be used for dynamic connections.
+        /// </summary>
+        /// <param name="command">The command to execute.</param>
+        /// <returns>A data reader with the results.</returns>
+        private static T DynamicQueryResults(IDbCommand command)
+        {
+            return command.Connection.ExecuteAndAutoClose(
+                c =>
+                {
+                    using (IDataReader reader = command.ExecuteReader())
+                    {
+                        T results = System.Activator.CreateInstance<T>();
+                        ((IDatabaseResults)results).Read(reader);
+
+                        return results;
+                    }
+                });
+        }
 	}
 
 	/// <summary>
