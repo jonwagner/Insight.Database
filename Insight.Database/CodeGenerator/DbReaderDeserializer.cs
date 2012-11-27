@@ -81,7 +81,7 @@ namespace Insight.Database.CodeGenerator
 				key =>
 				{
                     // TODO: it would be nice to be able to deserialize sub-objects
-                    return (Func<IDataReader, T, T>)ClassDeserializerGenerator.CreateDeserializer<T>(reader, null, createNewObject: false, withGraph: null, useCallback: false);
+                    return (Func<IDataReader, T, T>)ClassDeserializerGenerator.CreateDeserializer(reader, typeof(T), null, createNewObject: false, withGraph: null, useCallback: false);
 				});
 		}
 
@@ -116,7 +116,7 @@ namespace Insight.Database.CodeGenerator
                     else if (typeof(T) == typeof(byte[]))
                         return GetByteArrayDeserializer();
                     else
-                        return ClassDeserializerGenerator.CreateDeserializer<T>(reader, idColumns, createNewObject: true, withGraph: withGraph, useCallback: useCallback);
+                        return ClassDeserializerGenerator.CreateDeserializer(reader, typeof(T), idColumns, createNewObject: true, withGraph: withGraph, useCallback: useCallback);
                 });
         }
 		#endregion

@@ -38,40 +38,41 @@ namespace Insight.Database.CodeGenerator
         /// If createNewObject is true, the next parameter will be of type T.
         /// If useCallback is true, the next parameter will be an Action&lt;object[]&gt;.
         /// </returns>
-        public static Delegate CreateDeserializer<T>(IDataReader reader, Dictionary<Type, string> idColumns, bool createNewObject, Type withGraph, bool useCallback)
+        public static Delegate CreateDeserializer(IDataReader reader, Type type, Dictionary<Type, string> idColumns, bool createNewObject, Type withGraph, bool useCallback)
         {
             // if the graph isn't specified, look for a defaultgraphattribute, or just do a one-level graph
             if (withGraph == null)
             {
-                DefaultGraphAttribute defaultGraph = typeof(T).GetCustomAttributes(typeof(DefaultGraphAttribute), true).OfType<DefaultGraphAttribute>().FirstOrDefault();
+                DefaultGraphAttribute defaultGraph = type.GetCustomAttributes(typeof(DefaultGraphAttribute), true).OfType<DefaultGraphAttribute>().FirstOrDefault();
                 if (defaultGraph != null)
                     withGraph = defaultGraph.GraphType;
                 else
-                    withGraph = typeof(Graph<T>);
+                    withGraph = typeof(Graph<>).MakeGenericType(type);
             }
 
-            // make sure that the graph is the right type
-            if (withGraph != typeof(Graph<T>) && typeof(Graph<T>).IsSubclassOf(withGraph))
-                throw new ArgumentException("withGraph passed in must be of type T or Graph<T>", "withGraph");
-
-            // if the graph type is not a graph, or just the object, and we don't want a callback function
-            // then just return a one-level graph.
-            if (withGraph == typeof(Graph<T>) && !useCallback)
-                return CreateClassDeserializer(typeof(T), reader, 0, reader.FieldCount, createNewObject);
+            // make sure that withGraph is a graph
+            if (!withGraph.IsSubclassOf(typeof(Graph)))
+                throw new ArgumentException("withGraph passed in must be of Graph<T>", "withGraph");
 
             // process the object graph types
             Type[] subTypes = withGraph.GetGenericArguments();
-            if (subTypes[0] != typeof(T))
-                throw new InvalidOperationException("The top-level type of the object graph must match the return type of the object.");
+            if (subTypes[0] != type)
+                throw new ArgumentException("The top-level type of the object graph must match the return type of the object.", "withGraph");
+
+            // if the graph type is not a graph, or just the object, and we don't want a callback function
+            // then just return a one-level graph.
+            if (subTypes.Length == 1 && !useCallback)
+                return CreateClassDeserializer(type, reader, 0, reader.FieldCount, createNewObject);
 
             // TODO: it would be nice to be able to deserialize a graph of objects in an Insert callback
             if (!createNewObject)
                 throw new ArgumentException("createNewObject must be true when deserializing an object graph", "createNewObject");
 
+            // create the graph deserializer
             if (useCallback)
-                return CreateGraphDeserializerWithCallback<T>(subTypes, reader, idColumns);
+                return CreateGraphDeserializerWithCallback(subTypes, reader, idColumns);
             else
-                return CreateGraphDeserializer<T>(subTypes, reader, idColumns);
+                return CreateGraphDeserializer(subTypes, reader, idColumns);
         }
 
         #region Single Class Deserialization
@@ -85,6 +86,30 @@ namespace Insight.Database.CodeGenerator
         /// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
         /// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
         private static Delegate CreateClassDeserializer(Type type, IDataReader reader, int startBound, int endBound, bool createNewObject)
+        {
+            var method = CreateClassDeserializerDynamicMethod(type, reader, startBound, endBound, createNewObject);
+
+            // create a generic type for the delegate we are returning
+            Type delegateType;
+            if (createNewObject)
+                delegateType = typeof(Func<,>).MakeGenericType(typeof(IDataReader), type);
+            else
+                delegateType = typeof(Func<,,>).MakeGenericType(typeof(IDataReader), type, type);
+
+            return method.CreateDelegate(delegateType);
+        }
+
+        /// <summary>
+        /// Compiles and returns a method that deserializes class type from the startBound to endBound fields of an IDataReader record.
+        /// </summary>
+        /// <param name="type">The type of object to deserialize.</param>
+        /// <param name="reader">The reader to analyze.</param>
+        /// <param name="startBound">The index of the first column to read.</param>
+        /// <param name="endBound">The index of the last column to read.</param>
+        /// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
+        /// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
+        /// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
+        private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startBound, int endBound, bool createNewObject)
         {
             // get the schema table in case we need it
             DataTable schemaTable = reader.GetSchemaTable();
@@ -203,15 +228,8 @@ namespace Insight.Database.CodeGenerator
             il.Emit(OpCodes.Ldloc_1);									// ld loc.1 (target), stack => [target]
             il.Emit(OpCodes.Ret);
 
-            // create a generic type for the delegate we are returning
-            Type delegateType;
-            if (createNewObject)
-                delegateType = typeof(Func<,>).MakeGenericType(typeof(IDataReader), type);
-            else
-                delegateType = typeof(Func<,,>).MakeGenericType(typeof(IDataReader), type, type);
-
             // create the function
-            return dm.CreateDelegate(delegateType);
+            return dm;
         }
         #endregion
 
@@ -224,19 +242,21 @@ namespace Insight.Database.CodeGenerator
         /// <param name="reader">The reader to analyze.</param>
         /// <param name="idColumns">An optional mapping of type to Id columns used for splitting.</param>
         /// <returns>A function that takes an IDataReader and deserializes an object of type T.</returns>
-        private static Func<IDataReader, T> CreateGraphDeserializer<T>(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
+        private static Delegate CreateGraphDeserializer(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
         {
+            Type type = subTypes[0];
+
             // we need the list of set methods for the object
-            var setMethods = ClassPropInfo.GetMembersForType(subTypes[0]).Where(m => m.CanSetMember);
+            var setMethods = ClassPropInfo.GetMembersForType(type).Where(m => m.CanSetMember);
 
             // go through each of the subtypes
-            Delegate[] deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
+            var deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
 
             // create a new anonymous method that takes an IDataReader and returns T
             var dm = new DynamicMethod(
-                String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", typeof(T).FullName, Guid.NewGuid()),
-                typeof(T),
-                new[] { typeof(IDataReader), typeof(Delegate[]) },
+                String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+                type,
+                new[] { typeof(IDataReader) },
                 true);
             var il = dm.GetILGenerator();
 
@@ -249,7 +269,9 @@ namespace Insight.Database.CodeGenerator
                 if (i > 0)                                                                  
                     il.Emit(OpCodes.Dup);
 
-                EmitSubObjectReader(il, i, deserializers);
+                // call the deserializer for the subobject
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, deserializers[i]);
 
                 // if we don't have a callback, then we are going to store the value directly into the field on T
                 // TODO: does this handle selecting subobjects onto subobjects? should it? the wiki says we do, but I think that doesn't actually work. there are no test cases to show this.
@@ -267,11 +289,9 @@ namespace Insight.Database.CodeGenerator
             // the value should be on the stack because of the dup above
             il.Emit(OpCodes.Ret);
 
-            // convert the dynamic method to a delegate we can call
-            var del = (Func<IDataReader, Delegate[], T>)dm.CreateDelegate(typeof(Func<IDataReader, Delegate[], T>));
-
-            // when it is time to call the deserializer method, pass in the subobject deserializers
-            return (r) => del(r, deserializers);
+            // convert the dynamic method to a delegate
+            var delegateType = typeof(Func<,>).MakeGenericType(typeof(IDataReader), type);
+            return dm.CreateDelegate(delegateType);
         }
         #endregion
 
@@ -284,26 +304,25 @@ namespace Insight.Database.CodeGenerator
         /// <param name="reader">The reader to analyze.</param>
         /// <param name="idColumns">An optional mapping of type to Id columns used for splitting.</param>
         /// <returns>A function that takes an IDataReader and deserializes an object of type T.</returns>
-        private static Func<IDataReader, Action<object[]>, T> CreateGraphDeserializerWithCallback<T>(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
+        private static Delegate CreateGraphDeserializerWithCallback(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
         {
-            // we need the list of set methods for the object
-            var setMethods = ClassPropInfo.GetMembersForType(subTypes[0]).Where(m => m.CanSetMember);
+            Type type = subTypes[0];
 
             // go through each of the subtypes
-            Delegate[] deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
+            var deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
 
             // create a new anonymous method that takes an IDataReader and returns T
             var dm = new DynamicMethod(
-                String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", typeof(T).FullName, Guid.NewGuid()),
-                typeof(T),
-                new[] { typeof(IDataReader), typeof(Delegate[]), typeof(Action<object[]>) },
+                String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+                type,
+                new[] { typeof(IDataReader), typeof(Action<object[]>) },
                 true);
             var il = dm.GetILGenerator();
 
             // we have a callback function to call with our objects, so set up the delegate and the array
-            il.DeclareLocal(typeof(T));                                            // store the result
-            il.Emit(OpCodes.Ldarg_2);                                                   // push the delegate
-            il.Emit(OpCodes.Ldc_I4, deserializers.Length);                              // create a new array
+            il.DeclareLocal(type);                                          // store the result
+            il.Emit(OpCodes.Ldarg_1);                                       // push the delegate
+            il.Emit(OpCodes.Ldc_I4, deserializers.Length);                  // create a new array
             il.Emit(OpCodes.Newarr, typeof(object));
 
             ///////////////////////////////////////////////////
@@ -314,8 +333,9 @@ namespace Insight.Database.CodeGenerator
                 il.Emit(OpCodes.Dup);                                       // duplicate the array 
                 il.Emit(OpCodes.Ldc_I4, i);                                 // the index to store to
 
-                // read the object
-                EmitSubObjectReader(il, i, deserializers);
+                // call the deserializer for the subobject
+                il.Emit(OpCodes.Ldarg_0);
+                il.Emit(OpCodes.Call, deserializers[i]);
 
                 // for the root object, store it in our local variable
                 if (i == 0)
@@ -334,45 +354,25 @@ namespace Insight.Database.CodeGenerator
             il.Emit(OpCodes.Ldloc_0);                                                   // put the root object back in for return
             il.Emit(OpCodes.Ret);
 
-            // convert the dynamic method to a delegate we can call
-            var del = (Func<IDataReader, Delegate[], Action<object[]>, T>)dm.CreateDelegate(typeof(Func<IDataReader, Delegate[], Action<object[]>, T>));
-
-            // when it is time to call the deserializer method, pass in the subobject deserializers
-            return (r, callback) => del(r, deserializers, callback);
+            // convert the dynamic method to a delegate
+            var delegateType = typeof(Func<,,>).MakeGenericType(typeof(IDataReader), typeof(Action<object[]>), type);
+            return dm.CreateDelegate(delegateType);
         }
         #endregion
 
         #region Object Graph Helper Functions
-        /// <summary>
-        /// Emits the code required to select and invoke a delegate from an array of delegates.
-        /// </summary>
-        /// <param name="il">The IL emitter.</param>
-        /// <param name="index">The index of the delegate to emit.</param>
-        /// <param name="delegates">The array of delegates.</param>
-        private static void EmitSubObjectReader(ILGenerator il, int index, Delegate[] delegates)
-        {
-            Type deserializerType = delegates[index].GetType();
-
-            il.Emit(OpCodes.Ldarg_1);                                                   // push delegate array
-            il.Emit(OpCodes.Ldc_I4, index);                                             // load the index of the deserializer
-            il.Emit(OpCodes.Ldelem, typeof(Delegate));                                  // get the delegate at the given index
-            il.Emit(OpCodes.Castclass, deserializerType);                               // convert to our expected type of delegate
-            il.Emit(OpCodes.Ldarg_0);                                                   // push reader
-            il.Emit(OpCodes.Call, deserializerType.GetMethod("Invoke"));                // invoke the delegate
-        }
-
-        /// <summary>
+         /// <summary>
         /// Create the deserializers for all of the sub-object types in the graph.
         /// </summary>
         /// <param name="subTypes">The list of sub-object types to parse.</param>
         /// <param name="reader">The reader to analyze.</param>
         /// <param name="idColumns">A mapping from type to names of ID columns to be used for splitting.</param>
         /// <returns>An array of delegates.</returns>
-        private static Delegate[] CreateDeserializersForSubObjects(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
+        private static DynamicMethod[] CreateDeserializersForSubObjects(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
         {
             // take up to the first NoClass
             int subTypeCount = subTypes.Length;
-            Delegate[] deserializers = new Delegate[subTypeCount];
+            DynamicMethod[] deserializers = new DynamicMethod[subTypeCount];
 
             int column = 0;
             for (int i = 0; i < subTypeCount; i++)
@@ -385,7 +385,7 @@ namespace Insight.Database.CodeGenerator
                 int endColumn = DetectEndColumn(reader, idColumns, column, subType, nextType);
 
                 // generate a deserializer for the class
-                deserializers[i] = CreateClassDeserializer(subType, reader, column, endColumn, createNewObject: true);
+                deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, column, endColumn, createNewObject: true);
 
                 column = endColumn;
             }
