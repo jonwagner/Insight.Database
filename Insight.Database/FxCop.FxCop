@@ -270,19 +270,6 @@
            </Member>
           </Members>
          </Type>
-         <Type Name="DbReaderDeserializer`1">
-          <Members>
-           <Member Name="#.cctor()">
-            <Messages>
-             <Message TypeName="InitializeReferenceTypeStaticFieldsInline" Category="Microsoft.Performance" CheckId="CA1810" Status="Excluded" Created="2012-09-14 19:27:22Z">
-              <Issue>
-               <Item>'DbReaderDeserializer&lt;T&gt;'</Item>
-              </Issue>
-             </Message>
-            </Messages>
-           </Member>
-          </Members>
-         </Type>
          <Type Name="TypeConverterGenerator">
           <Members>
            <Member Name="#.cctor()">

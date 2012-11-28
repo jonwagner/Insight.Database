@@ -120,7 +120,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static IEnumerable<FastExpando> AsEnumerable(this IDataReader reader)
 		{
-			var mapper = DbReaderDeserializer<FastExpando>.GetDeserializer(reader);
+            var mapper = DbReaderDeserializer.GetDeserializer<FastExpando>(reader);
 			return reader.AsEnumerable(mapper);
 		}
 
@@ -136,7 +136,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static IEnumerable<T> AsEnumerable<T>(this IDataReader reader)
 		{
-			var mapper = DbReaderDeserializer<T>.GetDeserializer(reader);
+			var mapper = DbReaderDeserializer.GetDeserializer<T>(reader);
 			return reader.AsEnumerable(mapper);
 		}
 
@@ -161,12 +161,12 @@ namespace Insight.Database
         {
             if (callback != null)
             {
-                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: withGraph, idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: withGraph, idColumns: idColumns);
                 return reader.AsEnumerable(r => mapper(r, (object[] objects) => callback(objects)));
             }
             else
             {
-                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: withGraph, idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: withGraph, idColumns: idColumns);
                 return reader.AsEnumerable(mapper);
             }
         }
@@ -192,7 +192,7 @@ namespace Insight.Database
             if (callback != null)
             {
                 // get the class deserializer
-                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
 
                 Action<object[]> action = (object[] objects) =>
                 {
@@ -209,7 +209,7 @@ namespace Insight.Database
             }
             else
             {
-                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
                 return reader.AsEnumerable(mapper);
             }
         }
@@ -236,7 +236,7 @@ namespace Insight.Database
             if (callback != null)
             {
                 // get the class deserializer
-                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
 
                 Action<object[]> action = (object[] objects) =>
                 {
@@ -255,7 +255,7 @@ namespace Insight.Database
             }
             else
             {
-                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
                 return reader.AsEnumerable(mapper);
             }
         }
@@ -283,7 +283,7 @@ namespace Insight.Database
             if (callback != null)
             {
                 // get the class deserializer
-                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
 
                 Action<object[]> action = (object[] objects) =>
                 {
@@ -304,7 +304,7 @@ namespace Insight.Database
             }
             else
             {
-                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
                 return reader.AsEnumerable(mapper);
             }
         }
@@ -333,7 +333,7 @@ namespace Insight.Database
             if (callback != null)
             {
                 // get the class deserializer
-                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
 
                 Action<object[]> action = (object[] objects) =>
                 {
@@ -356,7 +356,7 @@ namespace Insight.Database
             }
             else
             {
-                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
                 return reader.AsEnumerable(mapper);
             }
         }
@@ -386,7 +386,7 @@ namespace Insight.Database
             if (callback != null)
             {
                 // get the class deserializer
-                var mapper = DbReaderDeserializer<T>.GetDeserializerWithCallback(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
 
                 Action<object[]> action = (object[] objects) =>
                 {
@@ -411,7 +411,7 @@ namespace Insight.Database
             }
             else
             {
-                var mapper = DbReaderDeserializer<T>.GetDeserializer(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
                 return reader.AsEnumerable(mapper);
             }
         }
@@ -539,7 +539,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static T Merge<T>(this IDataReader reader, T item)
 		{
-			var merger = DbReaderDeserializer<T>.GetMerger(reader);
+            var merger = DbReaderDeserializer.GetMerger<T>(reader);
 
 			// read the identities from the recordset and merge it into the object
 			reader.Read();
@@ -561,7 +561,7 @@ namespace Insight.Database
 		/// <returns>The list of merged objects.</returns>
 		public static IEnumerable<T> Merge<T>(this IDataReader reader, IEnumerable<T> items)
 		{
-			var merger = DbReaderDeserializer<T>.GetMerger(reader);
+            var merger = DbReaderDeserializer.GetMerger<T>(reader);
 
 			// read the identities of each item from the recordset and merge them into the objects
 			foreach (T item in items)

@@ -58,6 +58,10 @@ namespace Insight.Database.CodeGenerator
         /// <param name="useCallback">True if a callback was used in this mapping.</param>
         public SchemaMappingIdentity(DataTable schemaTable, Type withGraph, bool useCallback)
 		{
+            // we need the graph type to define the identity
+            if (withGraph == null)
+                throw new ArgumentNullException("withGraph");
+
 			// if there is no schema table, then we got an empty recordset. There are no columns to map, so create an empty schema.
 			if (schemaTable == null)
 			{

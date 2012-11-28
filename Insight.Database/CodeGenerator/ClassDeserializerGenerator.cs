@@ -28,6 +28,7 @@ namespace Insight.Database.CodeGenerator
         /// </summary>
         /// <typeparam name="T">The type of object to be returned from the function.</typeparam>
         /// <param name="reader">The reader to analyze.</param>
+        /// <param name="type">The type of object to deserialize from the IDataReader.</param>
         /// <param name="idColumns">An optional mapping of type to Id columns used for splitting and object graph.</param>
         /// <param name="createNewObject">True to create a function that creates a new object, false to create a function that maps an existing object.</param>
         /// <param name="withGraph">The type of the graph of object to be returned, or null/typeof(T) to deserialize just the top-level object.</param>

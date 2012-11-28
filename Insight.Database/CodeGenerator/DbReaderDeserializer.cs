@@ -23,9 +23,8 @@ namespace Insight.Database.CodeGenerator
 	/// <summary>
 	/// Class for deserializing different types objects from IDataReader.
 	/// </summary>
-	/// <typeparam name="T">The type to deserialize.</typeparam>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
-	static class DbReaderDeserializer<T>
+	static class DbReaderDeserializer
 	{
 		#region Private Properties
 		/// <summary>
@@ -36,7 +35,12 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// The cache for mergers that deserialize into existing objects.
 		/// </summary>
-		private static ConcurrentDictionary<SchemaMappingIdentity, Func<IDataReader, T, T>> _mergers = new ConcurrentDictionary<SchemaMappingIdentity, Func<IDataReader, T, T>>();
+		private static ConcurrentDictionary<SchemaMappingIdentity, Delegate> _mergers = new ConcurrentDictionary<SchemaMappingIdentity, Delegate>();
+
+        /// <summary>
+        /// The method to get values from an IDataRecord.
+        /// </summary>
+        private static MethodInfo _getValueMethod = typeof(IDataRecord).GetMethod("GetValue");
 		#endregion
 
 		#region Code Cache Members
@@ -46,10 +50,11 @@ namespace Insight.Database.CodeGenerator
         /// <param name="reader">The reader to read from.</param>
         /// <param name="withGraph">An optional type representing the object graph to deserialize.</param>
         /// <param name="idColumns">An optional dictionary of the ID columns of the types.</param>
+        /// <typeparam name="T">The type of object to deserialize.</typeparam>
         /// <returns>A function that can deserialize a T from the reader.</returns>
-        public static Func<IDataReader, T> GetDeserializer(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
+        public static Func<IDataReader, T> GetDeserializer<T>(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
         {
-            return (Func<IDataReader, T>)GetDeserializer(reader, withGraph, idColumns, useCallback: false);
+            return (Func<IDataReader, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, useCallback: false);
         }
 
         /// <summary>
@@ -58,10 +63,11 @@ namespace Insight.Database.CodeGenerator
         /// <param name="reader">The reader to read from.</param>
         /// <param name="withGraph">An optional type representing the object graph to deserialize.</param>
         /// <param name="idColumns">An optional dictionary of the ID columns of the types.</param>
+        /// <typeparam name="T">The type of object to deserialize.</typeparam>
         /// <returns>A function that can deserialize a T from the reader.</returns>
-        public static Func<IDataReader, Action<object[]>, T> GetDeserializerWithCallback(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
+        public static Func<IDataReader, Action<object[]>, T> GetDeserializerWithCallback<T>(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
         {
-            return (Func<IDataReader, Action<object[]>, T>)GetDeserializer(reader, withGraph, idColumns, useCallback: true);
+            return (Func<IDataReader, Action<object[]>, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, useCallback: true);
         }
 
         /// <summary>
@@ -69,19 +75,20 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
         /// <remarks>This is the same as a deserializer, except it is passed an existing object rather than creating a new object.</remarks>
 		/// <param name="reader">The reader to read from.</param>
-		/// <returns>A function that can deserialize a T from the reader.</returns>
-		public static Func<IDataReader, T, T> GetMerger(IDataReader reader)
+        /// <typeparam name="T">The type of object to deserialize.</typeparam>
+        /// <returns>A function that can deserialize a T from the reader.</returns>
+        public static Func<IDataReader, T, T> GetMerger<T>(IDataReader reader)
 		{
 			// get the class deserializer
-			SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph: typeof(T), useCallback: false);
+			SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph: typeof(Graph<T>), useCallback: false);
 
 			// try to get the deserializer. if not found, create one.
-			return _mergers.GetOrAdd(
+            return (Func<IDataReader, T, T>)_mergers.GetOrAdd(
 				identity,
 				key =>
 				{
                     // TODO: it would be nice to be able to deserialize sub-objects
-                    return (Func<IDataReader, T, T>)ClassDeserializerGenerator.CreateDeserializer(reader, typeof(T), null, createNewObject: false, withGraph: null, useCallback: false);
+                    return ClassDeserializerGenerator.CreateDeserializer(reader, typeof(T), null, createNewObject: false, withGraph: typeof(Graph<T>), useCallback: false);
 				});
 		}
 
@@ -89,34 +96,41 @@ namespace Insight.Database.CodeGenerator
         /// Get a deserializer to read class T from the given reader.
         /// </summary>
         /// <param name="reader">The reader to read from.</param>
+        /// <param name="type">The type of object to deserialize.</param>
         /// <param name="withGraph">An optional type representing the object graph to deserialize.</param>
         /// <param name="idColumns">An optional dictionary of the ID columns of the types.</param>
         /// <param name="useCallback">True to generate a delegate that can take an object callback.</param>
         /// <returns>A function that can deserialize a T from the reader.</returns>
-        private static Delegate GetDeserializer(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null, bool useCallback = false)
+        private static Delegate GetDeserializer(IDataReader reader, Type type, Type withGraph = null, Dictionary<Type, string> idColumns = null, bool useCallback = false)
         {
             // get the class deserializer
-            SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph, useCallback);
+            SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph ?? type, useCallback);
 
             // try to get the deserializer. if not found, create one.
             return _deserializers.GetOrAdd(
                 identity,
                 key =>
                 {
-                    if (typeof(T) == typeof(FastExpando))
-                        return GetDynamicDeserializer(reader, () => new FastExpando());
-                    else if (typeof(T) == typeof(ExpandoObject))
-                        return GetDynamicDeserializer(reader, () => new ExpandoObject());
-                    else if (typeof(T) == typeof(XmlDocument))
+                    if (type == typeof(FastExpando))
+                        return GetDynamicDeserializer<FastExpando>(reader);
+                    else if (type == typeof(ExpandoObject))
+                        return GetDynamicDeserializer<ExpandoObject>(reader);
+                    else if (type == typeof(XmlDocument))
                         return GetXmlDocumentDeserializer();
-                    else if (typeof(T) == typeof(XDocument))
+                    else if (type == typeof(XDocument))
                         return GetXDocumentDeserializer();
-                    else if (typeof(T).IsValueType || typeof(T) == typeof(string))
-                        return GetValueDeserializer();
-                    else if (typeof(T) == typeof(byte[]))
+                    else if (type == typeof(char))
+                        return new Func<IDataReader, char>(r => TypeConverterGenerator.ReadChar(r.GetValue(0)));
+                    else if (type == typeof(char?))
+                        return new Func<IDataReader, char?>(r => TypeConverterGenerator.ReadNullableChar(r.GetValue(0)));
+                    else if (type == typeof(string))
+                        return GetValueDeserializer(typeof(string));
+                    else if (type.IsValueType)
+                        return GetValueDeserializer(type);
+                    else if (type == typeof(byte[]))
                         return GetByteArrayDeserializer();
                     else
-                        return ClassDeserializerGenerator.CreateDeserializer(reader, typeof(T), idColumns, createNewObject: true, withGraph: withGraph, useCallback: useCallback);
+                        return ClassDeserializerGenerator.CreateDeserializer(reader, type, idColumns, createNewObject: true, withGraph: withGraph, useCallback: useCallback);
                 });
         }
 		#endregion
@@ -125,30 +139,70 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Get a deserializer that returns a single value from the return result.
 		/// </summary>
+        /// <param name="type">The type of object to deserialize.</param>
 		/// <returns>The deserializer to use.</returns>
-		private static Func<IDataReader, T> GetValueDeserializer()
+        private static Delegate GetValueDeserializer(Type type)
 		{
-			if (typeof(T) == typeof(char))
-				return (Func<IDataReader, T>)(object)new Func<IDataReader, char>(r => TypeConverterGenerator.ReadChar(r.GetValue(0)));
+            // This is equivalent to
+            //  object o = r.GetValue(0); return (o == DbNull.Value) ? default(T) : (T)o;
+            // Another way of doing this would be
+            //  if IDataReader.Get[thistype] exists, then this is equivalent to:
+            //      r.IsDbNull(0) ? default(T) : r.Get[thistype](0)
+            //  otherwise it's
+            //      r.IsDbNull(0) ? default(T) : (T)r.GetValue(0)
+            // But since IsDbNull isn't as trivial as you would think, performance tests show that there is a little bit of extra overhead making that extra call.
+            // NOTE: this also just used to be a lambda expression in a generic method, but getting rid of the generic lets us make more flexible code.
+            var dm = new DynamicMethod(
+                String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+                type,
+                new[] { typeof(IDataReader) },
+                true);
 
-			if (typeof(T) == typeof(char?))
-				return (Func<IDataReader, T>)(object)new Func<IDataReader, char?>(r => TypeConverterGenerator.ReadNullableChar(r.GetValue(0)));
+            var il = dm.GetILGenerator();
+            Label isNull = il.DefineLabel();
+            if (type.IsValueType)
+                il.DeclareLocal(type);
+            // get the value from the reader
+            il.Emit(OpCodes.Ldarg_0);
+            il.Emit(OpCodes.Ldc_I4_0);
+            il.Emit(OpCodes.Callvirt, _getValueMethod);
 
-			return r =>
-			{
-				object value = r.GetValue(0);
-				if (value == DBNull.Value)
-					value = null;
+            // see if it's null
+            il.Emit(OpCodes.Dup);
+            il.Emit(OpCodes.Ldsfld, typeof(DBNull).GetField("Value"));
+            il.Emit(OpCodes.Beq, isNull);
 
-				return (T)value;
-			};
+            // not null, so unbox it and return it
+            il.Emit(OpCodes.Unbox_Any, type);
+            il.Emit(OpCodes.Ret);
+
+            // is null, so return a default
+            il.MarkLabel(isNull);
+            il.Emit(OpCodes.Pop);
+            if (type.IsValueType)
+            {
+                // return default(T)
+                il.Emit(OpCodes.Ldloca_S, (byte)0);
+                il.Emit(OpCodes.Initobj, type);
+                il.Emit(OpCodes.Ldloc_0);
+            }
+            else
+            {
+                // return null
+                il.Emit(OpCodes.Ldnull);
+            }
+
+            il.Emit(OpCodes.Ret);
+
+            Type delegateType = typeof(Func<,>).MakeGenericType(typeof(IDataReader), type);
+            return dm.CreateDelegate(delegateType);
 		}
 
 		/// <summary>
 		/// Get a deserializer that returns a single byte array value from the return result.
 		/// </summary>
 		/// <returns>The deserializer to use.</returns>
-		private static Func<IDataReader, T> GetByteArrayDeserializer()
+        private static Func<IDataReader, byte[]> GetByteArrayDeserializer()
 		{
 			return r =>
 			{
@@ -156,7 +210,7 @@ namespace Insight.Database.CodeGenerator
 				if (value == DBNull.Value)
 					value = null;
 
-				return (T)value;
+				return (byte[])value;
 			};
 		}
 		#endregion
@@ -166,9 +220,9 @@ namespace Insight.Database.CodeGenerator
 		/// Get a deserializer for dynamic objects.
 		/// </summary>
 		/// <param name="reader">The reader to analyze.</param>
-		/// <param name="constructor">A constructor to use for new objects.</param>
+        /// <typeparam name="T">The type of object to deserialize.</typeparam>
 		/// <returns>A deserializer that returns dynamic objects.</returns>
-		private static Func<IDataReader, T> GetDynamicDeserializer(IDataReader reader, Func<object> constructor)
+        private static Func<IDataReader, T> GetDynamicDeserializer<T>(IDataReader reader) where T : IDictionary<String, Object>, new()
 		{
 			// create a dictionary for the fields and names
 			// this will be stored in a closure on the method so it will be reused
@@ -180,9 +234,8 @@ namespace Insight.Database.CodeGenerator
 			return r =>
 			{
 				// we need it to implement IDictionary so we can set the properties
-				IDictionary<String, Object> o = constructor() as IDictionary<String, Object>;
-				if (o == null)
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Type {0} must implement IDictionary<String, Object>,", typeof(T).FullName));
+                T t = new T();
+				IDictionary<String, Object> o = (IDictionary<String, Object>)t;
 
 				foreach (var field in fields)
 				{
@@ -195,7 +248,7 @@ namespace Insight.Database.CodeGenerator
 					o.Add(field.Value, value);
 				}
 
-				return (T)o;
+				return t;
 			};
 		}
 		#endregion
@@ -205,13 +258,13 @@ namespace Insight.Database.CodeGenerator
 		/// Returns a deserializer for an XmlDocument.
 		/// </summary>
 		/// <returns>A deserializer for an XmlDocument.</returns>
-		private static Func<IDataReader, T> GetXmlDocumentDeserializer()
+        private static Func<IDataReader, XmlDocument> GetXmlDocumentDeserializer()
 		{
 			return reader =>
 			{
 				XmlDocument doc = new XmlDocument();
 				doc.LoadXml(reader.GetString(0));
-				return (T)(object)doc;
+				return doc;
 			};
 		}
 
@@ -219,11 +272,11 @@ namespace Insight.Database.CodeGenerator
 		/// Returns a deserializer for an XDocument.
 		/// </summary>
 		/// <returns>A deserializer for an XDocument.</returns>
-		private static Func<IDataReader, T> GetXDocumentDeserializer()
+        private static Func<IDataReader, XDocument> GetXDocumentDeserializer()
 		{
 			return reader =>
 			{
-				return (T)(object)XDocument.Parse(reader.GetString(0));
+				return XDocument.Parse(reader.GetString(0));
 			};
 		}
 		#endregion

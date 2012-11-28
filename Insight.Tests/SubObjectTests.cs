@@ -251,7 +251,7 @@ namespace Insight.Tests
         }
 
         [Test]
-        public void TestObjectWithDefaultraphDefinition()
+        public void TestObjectWithDefaultGraphDefinition()
         {
             var results = _connection.QuerySql<DefaultGraphTestData>(@"SELECT ID=2");
 
