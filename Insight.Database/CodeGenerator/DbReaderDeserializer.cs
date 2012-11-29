@@ -38,6 +38,11 @@ namespace Insight.Database.CodeGenerator
 		private static ConcurrentDictionary<SchemaMappingIdentity, Delegate> _mergers = new ConcurrentDictionary<SchemaMappingIdentity, Delegate>();
 
         /// <summary>
+        /// The cache for deserializers that return a type from a single column.
+        /// </summary>
+        private static ConcurrentDictionary<Type, Delegate> _valueDeserializers = new ConcurrentDictionary<Type, Delegate>();
+
+        /// <summary>
         /// The method to get values from an IDataRecord.
         /// </summary>
         private static MethodInfo _getValueMethod = typeof(IDataRecord).GetMethod("GetValue");
@@ -143,6 +148,16 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The deserializer to use.</returns>
         private static Delegate GetValueDeserializer(Type type)
 		{
+            return _valueDeserializers.GetOrAdd(type, t => CreateValueDeserializer(t));
+        }
+
+        /// <summary>
+        /// Creates a deserializer that returns a single value from the return result.
+        /// </summary>
+        /// <param name="type">The type of object to deserialize.</param>
+        /// <returns>The deserializer to use.</returns>
+        private static Delegate CreateValueDeserializer(Type type)
+        {
             // This is equivalent to
             //  object o = r.GetValue(0); return (o == DbNull.Value) ? default(T) : (T)o;
             // Another way of doing this would be
@@ -162,7 +177,8 @@ namespace Insight.Database.CodeGenerator
             Label isNull = il.DefineLabel();
             if (type.IsValueType)
                 il.DeclareLocal(type);
-            // get the value from the reader
+
+            // get the value from the reader
             il.Emit(OpCodes.Ldarg_0);
             il.Emit(OpCodes.Ldc_I4_0);
             il.Emit(OpCodes.Callvirt, _getValueMethod);
