@@ -32,20 +32,56 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
         private static ConcurrentDictionary<SchemaMappingIdentity, Delegate> _deserializers = new ConcurrentDictionary<SchemaMappingIdentity, Delegate>();
 
-		/// <summary>
-		/// The cache for mergers that deserialize into existing objects.
-		/// </summary>
-		private static ConcurrentDictionary<SchemaMappingIdentity, Delegate> _mergers = new ConcurrentDictionary<SchemaMappingIdentity, Delegate>();
-
         /// <summary>
-        /// The cache for deserializers that return a type from a single column.
+        /// The cache for the simple deserializers that deserialize into new objects.
         /// </summary>
-        private static ConcurrentDictionary<Type, Delegate> _valueDeserializers = new ConcurrentDictionary<Type, Delegate>();
+        private static ConcurrentDictionary<Type, Delegate> _simpleDeserializers = new ConcurrentDictionary<Type, Delegate>();
 
         /// <summary>
         /// The method to get values from an IDataRecord.
         /// </summary>
         private static MethodInfo _getValueMethod = typeof(IDataRecord).GetMethod("GetValue");
+
+        /// <summary>
+        /// The DBNull.Value field.
+        /// </summary>
+        private static FieldInfo _dbNullField = typeof(DBNull).GetField("Value");
+
+        /// <summary>
+        /// Initializes static members of the DbReaderDeserializer class.
+        /// </summary>
+        static DbReaderDeserializer()
+        {
+            // pre-initialize all of the simple serializers for known types so they can be quickly returned.
+            _simpleDeserializers.TryAdd(typeof(XmlDocument), GetXmlDocumentDeserializer());
+            _simpleDeserializers.TryAdd(typeof(XDocument), GetXDocumentDeserializer());
+            _simpleDeserializers.TryAdd(typeof(byte[]), GetByteArrayDeserializer());
+            _simpleDeserializers.TryAdd(typeof(char), new Func<IDataReader, char>(r => TypeConverterGenerator.ReadChar(r.GetValue(0))));
+            _simpleDeserializers.TryAdd(typeof(char?), new Func<IDataReader, char?>(r => TypeConverterGenerator.ReadNullableChar(r.GetValue(0))));
+            _simpleDeserializers.TryAdd(typeof(string), GetValueDeserializer<string>());
+
+            _simpleDeserializers.TryAdd(typeof(byte), GetValueDeserializer<byte>());
+            _simpleDeserializers.TryAdd(typeof(short), GetValueDeserializer<short>());
+            _simpleDeserializers.TryAdd(typeof(int), GetValueDeserializer<int>());
+            _simpleDeserializers.TryAdd(typeof(long), GetValueDeserializer<long>());
+            _simpleDeserializers.TryAdd(typeof(decimal), GetValueDeserializer<decimal>());
+            _simpleDeserializers.TryAdd(typeof(float), GetValueDeserializer<float>());
+            _simpleDeserializers.TryAdd(typeof(double), GetValueDeserializer<double>());
+            _simpleDeserializers.TryAdd(typeof(DateTime), GetValueDeserializer<DateTime>());
+            _simpleDeserializers.TryAdd(typeof(DateTimeOffset), GetValueDeserializer<DateTimeOffset>());
+            _simpleDeserializers.TryAdd(typeof(TimeSpan), GetValueDeserializer<TimeSpan>());
+
+            _simpleDeserializers.TryAdd(typeof(byte?), GetValueDeserializer<byte?>());
+            _simpleDeserializers.TryAdd(typeof(short?), GetValueDeserializer<short?>());
+            _simpleDeserializers.TryAdd(typeof(int?), GetValueDeserializer<int?>());
+            _simpleDeserializers.TryAdd(typeof(long?), GetValueDeserializer<long?>());
+            _simpleDeserializers.TryAdd(typeof(decimal?), GetValueDeserializer<decimal?>());
+            _simpleDeserializers.TryAdd(typeof(float?), GetValueDeserializer<float?>());
+            _simpleDeserializers.TryAdd(typeof(double?), GetValueDeserializer<double?>());
+            _simpleDeserializers.TryAdd(typeof(DateTime?), GetValueDeserializer<DateTime?>());
+            _simpleDeserializers.TryAdd(typeof(DateTimeOffset?), GetValueDeserializer<DateTimeOffset?>());
+            _simpleDeserializers.TryAdd(typeof(TimeSpan?), GetValueDeserializer<TimeSpan?>());
+        }
 		#endregion
 
 		#region Code Cache Members
@@ -59,7 +95,7 @@ namespace Insight.Database.CodeGenerator
         /// <returns>A function that can deserialize a T from the reader.</returns>
         public static Func<IDataReader, T> GetDeserializer<T>(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
         {
-            return (Func<IDataReader, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, useCallback: false);
+            return (Func<IDataReader, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, SchemaMappingType.NewObject);
         }
 
         /// <summary>
@@ -72,7 +108,7 @@ namespace Insight.Database.CodeGenerator
         /// <returns>A function that can deserialize a T from the reader.</returns>
         public static Func<IDataReader, Action<object[]>, T> GetDeserializerWithCallback<T>(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
         {
-            return (Func<IDataReader, Action<object[]>, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, useCallback: true);
+            return (Func<IDataReader, Action<object[]>, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, SchemaMappingType.NewObjectWithCallback);
         }
 
         /// <summary>
@@ -84,18 +120,8 @@ namespace Insight.Database.CodeGenerator
         /// <returns>A function that can deserialize a T from the reader.</returns>
         public static Func<IDataReader, T, T> GetMerger<T>(IDataReader reader)
 		{
-			// get the class deserializer
-			SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph: typeof(Graph<T>), useCallback: false);
-
-			// try to get the deserializer. if not found, create one.
-            return (Func<IDataReader, T, T>)_mergers.GetOrAdd(
-				identity,
-				key =>
-				{
-                    // TODO: it would be nice to be able to deserialize sub-objects
-                    return ClassDeserializerGenerator.CreateDeserializer(reader, typeof(T), null, createNewObject: false, withGraph: typeof(Graph<T>), useCallback: false);
-				});
-		}
+            return (Func<IDataReader, T, T>)GetDeserializer(reader, typeof(T), null, null, SchemaMappingType.ExistingObject);
+ 		}
 
         /// <summary>
         /// Get a deserializer to read class T from the given reader.
@@ -104,12 +130,31 @@ namespace Insight.Database.CodeGenerator
         /// <param name="type">The type of object to deserialize.</param>
         /// <param name="withGraph">An optional type representing the object graph to deserialize.</param>
         /// <param name="idColumns">An optional dictionary of the ID columns of the types.</param>
-        /// <param name="useCallback">True to generate a delegate that can take an object callback.</param>
+        /// <param name="mappingType">The type of mapping to return.</param>
         /// <returns>A function that can deserialize a T from the reader.</returns>
-        private static Delegate GetDeserializer(IDataReader reader, Type type, Type withGraph = null, Dictionary<Type, string> idColumns = null, bool useCallback = false)
+        private static Delegate GetDeserializer(IDataReader reader, Type type, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
         {
-            // get the class deserializer
-            SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph ?? type, useCallback);
+            // This method should try to return the deserializer with as little work as possible.
+            // Calculating the SchemaMappingIdentity is relatively expensive, so we will take care of the simple cases first,
+            // Where we can just look up a type in a dictionary.
+            // since these types are single column types, deserializing these types do not depend on the schema that comes back from the database
+            // we don't need to keep a schema identity for these
+            Delegate deserializer = null;
+            if (!_simpleDeserializers.TryGetValue(type, out deserializer) && type.IsValueType)
+                deserializer = GetValueDeserializer(type);
+
+            // we have a simple deserializer
+            if (deserializer != null)
+            {
+                if (withGraph != null)
+                    throw new ArgumentException("withGraph must be null for single column deserialization", "withGraph");
+                return deserializer;
+            }
+            
+            // at this point, we know that we aren't returning a value type or simple object that doesn't depend on the schema.
+            // so we need to calculate a mapping identity and then create or return a deserializer.
+            // TODO: idcolumns should be part of the identity
+            SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph ?? type, mappingType);
 
             // try to get the deserializer. if not found, create one.
             return _deserializers.GetOrAdd(
@@ -120,27 +165,30 @@ namespace Insight.Database.CodeGenerator
                         return GetDynamicDeserializer<FastExpando>(reader);
                     else if (type == typeof(ExpandoObject))
                         return GetDynamicDeserializer<ExpandoObject>(reader);
-                    else if (type == typeof(XmlDocument))
-                        return GetXmlDocumentDeserializer();
-                    else if (type == typeof(XDocument))
-                        return GetXDocumentDeserializer();
-                    else if (type == typeof(char))
-                        return new Func<IDataReader, char>(r => TypeConverterGenerator.ReadChar(r.GetValue(0)));
-                    else if (type == typeof(char?))
-                        return new Func<IDataReader, char?>(r => TypeConverterGenerator.ReadNullableChar(r.GetValue(0)));
-                    else if (type == typeof(string))
-                        return GetValueDeserializer(typeof(string));
-                    else if (type.IsValueType)
-                        return GetValueDeserializer(type);
-                    else if (type == typeof(byte[]))
-                        return GetByteArrayDeserializer();
                     else
-                        return ClassDeserializerGenerator.CreateDeserializer(reader, type, idColumns, createNewObject: true, withGraph: withGraph, useCallback: useCallback);
+                        return ClassDeserializerGenerator.CreateDeserializer(reader, type, withGraph, idColumns, mappingType);
                 });
         }
 		#endregion
 
 		#region Value Methods
+        /// <summary>
+        /// Get a deserializer that returns a single value from the return result.
+        /// </summary>
+        /// <typeparam name="T">The type of object to deserialize.</typeparam>
+        /// <returns>The deserializer to use.</returns>
+        private static Func<IDataReader, T> GetValueDeserializer<T>()
+        {
+            return r =>
+            {
+                object o = r.GetValue(0);
+                if (o == DBNull.Value)
+                    return default(T);
+                else
+                    return (T)o;
+            };
+        }
+
 		/// <summary>
 		/// Get a deserializer that returns a single value from the return result.
 		/// </summary>
@@ -148,7 +196,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The deserializer to use.</returns>
         private static Delegate GetValueDeserializer(Type type)
 		{
-            return _valueDeserializers.GetOrAdd(type, t => CreateValueDeserializer(t));
+            return _simpleDeserializers.GetOrAdd(type, t => CreateValueDeserializer(t));
         }
 
         /// <summary>
@@ -185,7 +233,7 @@ namespace Insight.Database.CodeGenerator
 
             // see if it's null
             il.Emit(OpCodes.Dup);
-            il.Emit(OpCodes.Ldsfld, typeof(DBNull).GetField("Value"));
+            il.Emit(OpCodes.Ldsfld, _dbNullField);
             il.Emit(OpCodes.Beq, isNull);
 
             // not null, so unbox it and return it

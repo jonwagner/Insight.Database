@@ -7,7 +7,7 @@ using System.Text;
 
 namespace Insight.Database.CodeGenerator
 {
-    // TODO: optimize this by only calculating hash code and column lisst when needed.
+    // TODO: optimize this by only calculating hash code and column list when needed.
 
 	/// <summary>
 	/// An identity for the schema of a reader being mapped to a graph type.
@@ -33,9 +33,9 @@ namespace Insight.Database.CodeGenerator
         private Type _graph;
 
         /// <summary>
-        /// Whether the assembly of the object graph is performed dynamically by a callback.
+        /// The type of mapping operation.
         /// </summary>
-        private bool _useCallback;
+        private SchemaMappingType _mappingType;
 		#endregion
 
 		#region Constructors
@@ -44,9 +44,9 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="reader">The reader to construct from.</param>
         /// <param name="withGraph">The type of the object graph used in this mapping.</param>
-        /// <param name="useCallback">True if a callback was used in this mapping.</param>
-		public SchemaMappingIdentity(IDataReader reader, Type withGraph, bool useCallback)
-			: this(reader.GetSchemaTable(), withGraph, useCallback)
+        /// <param name="mappingType">The type of mapping operation.</param>
+		public SchemaMappingIdentity(IDataReader reader, Type withGraph, SchemaMappingType mappingType)
+			: this(reader.GetSchemaTable(), withGraph, mappingType)
 		{
 		}
 
@@ -55,8 +55,8 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="schemaTable">The schema table to analyze.</param>
         /// <param name="withGraph">The type of the object graph used in this mapping.</param>
-        /// <param name="useCallback">True if a callback was used in this mapping.</param>
-        public SchemaMappingIdentity(DataTable schemaTable, Type withGraph, bool useCallback)
+        /// <param name="mappingType">The type of mapping operation.</param>
+        public SchemaMappingIdentity(DataTable schemaTable, Type withGraph, SchemaMappingType mappingType)
 		{
             // we need the graph type to define the identity
             if (withGraph == null)
@@ -74,17 +74,15 @@ namespace Insight.Database.CodeGenerator
             // save the values away for later
 			SchemaTable = schemaTable;
             _graph = withGraph;
-            _useCallback = useCallback;
+            _mappingType = mappingType;
 
             // we know that we are going to store this in a hashtable, so pre-calculate the hashcode
 			unchecked
 			{
-                // base the hashcode first on the target graph
-                _hashCode = 0;
+                // base the hashcode on the mapping type, target graph, and schema contents
+                _hashCode = (int)_mappingType;
                 if (_graph != null)
                     _hashCode = _graph.GetHashCode();
-                if (_useCallback)
-                    _hashCode++;
 
 				int length = schemaTable.Rows.Count;
 				for (int i = 0; i < length; i++)
@@ -143,7 +141,7 @@ namespace Insight.Database.CodeGenerator
 			if (other == null)
 				return false;
 
-            if (_useCallback != other._useCallback)
+            if (_mappingType != other._mappingType)
                 return false;
 
             if (_graph != other._graph)

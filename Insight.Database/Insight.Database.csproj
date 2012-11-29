@@ -53,6 +53,7 @@
     <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
     <Compile Include="CodeGenerator\DbReaderDeserializer.cs" />
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
+    <Compile Include="CodeGenerator\SchemaMappingType.cs" />
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="DefaultGraphAttribute.cs" />
     <Compile Include="Graph.cs" />

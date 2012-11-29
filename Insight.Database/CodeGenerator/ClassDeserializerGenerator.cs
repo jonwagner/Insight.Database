@@ -29,17 +29,16 @@ namespace Insight.Database.CodeGenerator
         /// <typeparam name="T">The type of object to be returned from the function.</typeparam>
         /// <param name="reader">The reader to analyze.</param>
         /// <param name="type">The type of object to deserialize from the IDataReader.</param>
-        /// <param name="idColumns">An optional mapping of type to Id columns used for splitting and object graph.</param>
-        /// <param name="createNewObject">True to create a function that creates a new object, false to create a function that maps an existing object.</param>
         /// <param name="withGraph">The type of the graph of object to be returned, or null/typeof(T) to deserialize just the top-level object.</param>
-        /// <param name="useCallback">True to create a function that takes a custom assembly method.</param>
+        /// <param name="idColumns">An optional mapping of type to Id columns used for splitting and object graph.</param>
+        /// <param name="mappingType">The type of mapping to create.</param>
         /// <returns>
         /// A function that takes an IDataReader and deserializes an object of type T.
         /// The first parameter will be an IDataReader.
         /// If createNewObject is true, the next parameter will be of type T.
         /// If useCallback is true, the next parameter will be an Action&lt;object[]&gt;.
         /// </returns>
-        public static Delegate CreateDeserializer(IDataReader reader, Type type, Dictionary<Type, string> idColumns, bool createNewObject, Type withGraph, bool useCallback)
+        public static Delegate CreateDeserializer(IDataReader reader, Type type, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
         {
             // if the graph isn't specified, look for a defaultgraphattribute, or just do a one-level graph
             if (withGraph == null)
@@ -62,15 +61,15 @@ namespace Insight.Database.CodeGenerator
 
             // if the graph type is not a graph, or just the object, and we don't want a callback function
             // then just return a one-level graph.
-            if (subTypes.Length == 1 && !useCallback)
-                return CreateClassDeserializer(type, reader, 0, reader.FieldCount, createNewObject);
+            if (subTypes.Length == 1 && !mappingType.HasFlag(SchemaMappingType.WithCallback))
+                return CreateClassDeserializer(type, reader, 0, reader.FieldCount, mappingType.HasFlag(SchemaMappingType.NewObject));
 
             // TODO: it would be nice to be able to deserialize a graph of objects in an Insert callback
-            if (!createNewObject)
-                throw new ArgumentException("createNewObject must be true when deserializing an object graph", "createNewObject");
+            if (!mappingType.HasFlag(SchemaMappingType.NewObject))
+                throw new ArgumentException("mappingType must be set to NewObject when deserializing an object graph.", "mappingType");
 
             // create the graph deserializer
-            if (useCallback)
+            if (mappingType.HasFlag(SchemaMappingType.WithCallback))
                 return CreateGraphDeserializerWithCallback(subTypes, reader, idColumns);
             else
                 return CreateGraphDeserializer(subTypes, reader, idColumns);
