@@ -53,6 +53,8 @@ namespace Insight.Database.CodeGenerator
         static DbReaderDeserializer()
         {
             // pre-initialize all of the simple serializers for known types so they can be quickly returned.
+            _simpleDeserializers.TryAdd(typeof(FastExpando), GetDynamicDeserializer<FastExpando>());
+            _simpleDeserializers.TryAdd(typeof(ExpandoObject), GetDynamicDeserializer<ExpandoObject>());
             _simpleDeserializers.TryAdd(typeof(XmlDocument), GetXmlDocumentDeserializer());
             _simpleDeserializers.TryAdd(typeof(XDocument), GetXDocumentDeserializer());
             _simpleDeserializers.TryAdd(typeof(byte[]), GetByteArrayDeserializer());
@@ -159,15 +161,7 @@ namespace Insight.Database.CodeGenerator
             // try to get the deserializer. if not found, create one.
             return _deserializers.GetOrAdd(
                 identity,
-                key =>
-                {
-                    if (type == typeof(FastExpando))
-                        return GetDynamicDeserializer<FastExpando>(reader);
-                    else if (type == typeof(ExpandoObject))
-                        return GetDynamicDeserializer<ExpandoObject>(reader);
-                    else
-                        return ClassDeserializerGenerator.CreateDeserializer(reader, type, withGraph, idColumns, mappingType);
-                });
+                key => ClassDeserializerGenerator.CreateDeserializer(reader, type, withGraph, idColumns, mappingType));
         }
 		#endregion
 
@@ -283,36 +277,35 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Get a deserializer for dynamic objects.
 		/// </summary>
-		/// <param name="reader">The reader to analyze.</param>
         /// <typeparam name="T">The type of object to deserialize.</typeparam>
 		/// <returns>A deserializer that returns dynamic objects.</returns>
-        private static Func<IDataReader, T> GetDynamicDeserializer<T>(IDataReader reader) where T : IDictionary<String, Object>, new()
+        private static Func<IDataReader, T> GetDynamicDeserializer<T>() where T : IDictionary<String, Object>, new()
 		{
-			// create a dictionary for the fields and names
-			// this will be stored in a closure on the method so it will be reused
-			Dictionary<int, string> fields = new Dictionary<int, string>();
-			int length = reader.FieldCount;
-			for (int i = 0; i < length; i++)
-				fields[i] = reader.GetName(i);
-
 			return r =>
 			{
-				// we need it to implement IDictionary so we can set the properties
+                // we need it to implement IDictionary so we can set the properties
                 T t = new T();
-				IDictionary<String, Object> o = (IDictionary<String, Object>)t;
+                IDictionary<String, Object> o = (IDictionary<String, Object>)t;
 
-				foreach (var field in fields)
-				{
-					object value = r.GetValue(field.Key);
+                // get all of the values at once to avoid overhead
+                int fieldCount = r.FieldCount;
+                object[] values = new object[fieldCount];
+                r.GetValues(values);
 
-					// handle null translation
-					if (value == DBNull.Value)
-						value = null;
+                // stick the values into the array
+                for (int i = 0; i < fieldCount; i++)
+                {
+                    // handle dbnull conversion
+                    object value = values[i];
+                    if (value == DBNull.Value)
+                        value = null;
 
-					o.Add(field.Value, value);
-				}
+                    // set the value on the dictionary
+                    // GetName is pretty efficient
+                    o.Add(r.GetName(i), value);
+                }
 
-				return t;
+                return t;
 			};
 		}
 		#endregion
