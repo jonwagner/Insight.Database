@@ -40,6 +40,18 @@ namespace Insight.Database
 		/// Converts an IDataReader to a list of objects.
 		/// </summary>
 		/// <typeparam name="T">The expected type of the object.</typeparam>
+        /// <param name="reader">The data reader.</param>
+        /// <param name="withGraph">The graph to use to deserialize the object.</param>
+        /// <returns>A list of objects.</returns>
+        public static IList<T> ToList<T>(this IDataReader reader, Type withGraph)
+        {
+            return reader.AsEnumerable<T>(withGraph).ToList();
+        }
+
+        /// <summary>
+        /// Converts an IDataReader to a list of objects.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the object.</typeparam>
 		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>
@@ -161,12 +173,12 @@ namespace Insight.Database
         {
             if (callback != null)
             {
-                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: withGraph, idColumns: idColumns);
-                return reader.AsEnumerable(r => mapper(r, (object[] objects) => callback(objects)));
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph, idColumns);
+                return reader.AsEnumerable(r => mapper(r, callback));
             }
             else
             {
-                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: withGraph, idColumns: idColumns);
+                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph, idColumns);
                 return reader.AsEnumerable(mapper);
             }
         }
@@ -189,29 +201,19 @@ namespace Insight.Database
 			Action<T, TSub1> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
+            Action<object[]> action = null;
+
             if (callback != null)
             {
-                // get the class deserializer
-                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
-
-                Action<object[]> action = (object[] objects) =>
+                action = (object[] objects) =>
                 {
-                    T t = default(T);
-                    TSub1 t1 = default(TSub1);
-
-                    if (objects.Length > 0) t = (T)objects[0];
-                    if (objects.Length > 1) t1 = (TSub1)objects[1];
-
-                    callback(t, t1);
+                    callback(
+                        (T)objects[0],
+                        (TSub1)objects[1]);
                 };
+            }
 
-                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
-            }
-            else
-            {
-                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1>), idColumns: idColumns);
-                return reader.AsEnumerable(mapper);
-            }
+            return reader.AsEnumerable<T>(typeof(Graph<T, TSub1>), action, idColumns);
         }
 
 		/// <summary>
@@ -233,31 +235,20 @@ namespace Insight.Database
             Action<T, TSub1, TSub2> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
+            Action<object[]> action = null;
+
             if (callback != null)
             {
-                // get the class deserializer
-                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
-
-                Action<object[]> action = (object[] objects) =>
+                action = (object[] objects) =>
                 {
-                    T t = default(T);
-                    TSub1 t1 = default(TSub1);
-                    TSub2 t2 = default(TSub2);
-
-                    if (objects.Length > 0) t = (T)objects[0];
-                    if (objects.Length > 1) t1 = (TSub1)objects[1];
-                    if (objects.Length > 2) t2 = (TSub2)objects[2];
-
-                    callback(t, t1, t2);
+                    callback(
+                        (T)objects[0],
+                        (TSub1)objects[1],
+                        (TSub2)objects[2]);
                 };
+            }
 
-                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
-            }
-            else
-            {
-                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2>), idColumns: idColumns);
-                return reader.AsEnumerable(mapper);
-            }
+            return reader.AsEnumerable<T>(typeof(Graph<T, TSub1, TSub2>), action, idColumns);
         }
 
 		/// <summary>
@@ -280,33 +271,21 @@ namespace Insight.Database
             Action<T, TSub1, TSub2, TSub3> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
+            Action<object[]> action = null;
+
             if (callback != null)
             {
-                // get the class deserializer
-                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
-
-                Action<object[]> action = (object[] objects) =>
+                action = (object[] objects) =>
                 {
-                    T t = default(T);
-                    TSub1 t1 = default(TSub1);
-                    TSub2 t2 = default(TSub2);
-                    TSub3 t3 = default(TSub3);
-
-                    if (objects.Length > 0) t = (T)objects[0];
-                    if (objects.Length > 1) t1 = (TSub1)objects[1];
-                    if (objects.Length > 2) t2 = (TSub2)objects[2];
-                    if (objects.Length > 3) t3 = (TSub3)objects[3];
-
-                    callback(t, t1, t2, t3);
+                    callback(
+                        (T)objects[0],
+                        (TSub1)objects[1],
+                        (TSub2)objects[2],
+                        (TSub3)objects[3]);
                 };
+            }
 
-                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
-            }
-            else
-            {
-                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3>), idColumns: idColumns);
-                return reader.AsEnumerable(mapper);
-            }
+            return reader.AsEnumerable<T>(typeof(Graph<T, TSub1, TSub2, TSub3>), action, idColumns);
         }
 
 		/// <summary>
@@ -330,35 +309,22 @@ namespace Insight.Database
             Action<T, TSub1, TSub2, TSub3, TSub4> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
+            Action<object[]> action = null;
+
             if (callback != null)
             {
-                // get the class deserializer
-                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
-
-                Action<object[]> action = (object[] objects) =>
+                action = (object[] objects) =>
                 {
-                    T t = default(T);
-                    TSub1 t1 = default(TSub1);
-                    TSub2 t2 = default(TSub2);
-                    TSub3 t3 = default(TSub3);
-                    TSub4 t4 = default(TSub4);
-
-                    if (objects.Length > 0) t = (T)objects[0];
-                    if (objects.Length > 1) t1 = (TSub1)objects[1];
-                    if (objects.Length > 2) t2 = (TSub2)objects[2];
-                    if (objects.Length > 3) t3 = (TSub3)objects[3];
-                    if (objects.Length > 4) t4 = (TSub4)objects[4];
-
-                    callback(t, t1, t2, t3, t4);
+                    callback(
+                        (T)objects[0],
+                        (TSub1)objects[1],
+                        (TSub2)objects[2],
+                        (TSub3)objects[3],
+                        (TSub4)objects[4]);
                 };
+            }
 
-                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
-            }
-            else
-            {
-                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), idColumns: idColumns);
-                return reader.AsEnumerable(mapper);
-            }
+            return reader.AsEnumerable<T>(typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>), action, idColumns);
         }
 
 		/// <summary>
@@ -383,37 +349,23 @@ namespace Insight.Database
 			Action<T, TSub1, TSub2, TSub3, TSub4, TSub5> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
+            Action<object[]> action = null;
+
             if (callback != null)
             {
-                // get the class deserializer
-                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
-
-                Action<object[]> action = (object[] objects) =>
+                action = (object[] objects) =>
                 {
-                     T t = default(T);
-                     TSub1 t1 = default(TSub1);
-                     TSub2 t2 = default(TSub2);
-                     TSub3 t3 = default(TSub3);
-                     TSub4 t4 = default(TSub4);
-                     TSub5 t5 = default(TSub5);
-
-                     if (objects.Length > 0) t = (T)objects[0];
-                     if (objects.Length > 1) t1 = (TSub1)objects[1];
-                     if (objects.Length > 2) t2 = (TSub2)objects[2];
-                     if (objects.Length > 3) t3 = (TSub3)objects[3];
-                     if (objects.Length > 4) t4 = (TSub4)objects[4];
-                     if (objects.Length > 5) t5 = (TSub5)objects[5];
-
-                     callback(t, t1, t2, t3, t4, t5);
+                    callback(
+                        (T)objects[0],
+                        (TSub1)objects[1],
+                        (TSub2)objects[2],
+                        (TSub3)objects[3],
+                        (TSub4)objects[4],
+                        (TSub5)objects[5]);
                  };
+            }
 
-                return reader.AsEnumerable(r => mapper(r, (object[] objects) => action(objects)));
-            }
-            else
-            {
-                var mapper = DbReaderDeserializer.GetDeserializer<T>(reader, withGraph: typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), idColumns: idColumns);
-                return reader.AsEnumerable(mapper);
-            }
+            return reader.AsEnumerable<T>(typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>), action, idColumns);
         }
 		#endregion
 
@@ -447,6 +399,20 @@ namespace Insight.Database
 		/// Converts an IDataReader to a single object.
 		/// </summary>
 		/// <typeparam name="T">The expected type of the object.</typeparam>
+        /// <param name="reader">The data reader.</param>
+        /// <param name="withGraph">The type of object graph to use to deserialize the object.</param>
+        /// <returns>A list of objects.</returns>
+        public static T Single<T>(this IDataReader reader, Type withGraph)
+        {
+            T t = reader.AsEnumerable<T>(withGraph).FirstOrDefault();
+            reader.Advance();
+            return t;
+        }
+
+        /// <summary>
+        /// Converts an IDataReader to a single object.
+        /// </summary>
+        /// <typeparam name="T">The expected type of the object.</typeparam>
 		/// <typeparam name="TSub1">The expected type of sub object 1.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>A list of objects.</returns>

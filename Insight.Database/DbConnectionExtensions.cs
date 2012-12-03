@@ -268,12 +268,14 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="command">The command to execute.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult>(
 			this IDbConnection connection,
 			IDbCommand command,
+            Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
 			return connection.ExecuteAndAutoClose(
@@ -281,7 +283,7 @@ namespace Insight.Database
 				{
 					using (IDataReader reader = command.ExecuteReader())
 					{
-						return reader.ToList<TResult>();
+                        return reader.ToList<TResult>(withGraph);
 					}
 				},
 				commandBehavior);
@@ -350,6 +352,7 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
@@ -359,6 +362,7 @@ namespace Insight.Database
 			this IDbConnection connection,
 			string sql,
 			object parameters = null,
+            Type withGraph = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
@@ -369,7 +373,7 @@ namespace Insight.Database
 				{
 					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
 					{
-						return reader.ToList<TResult>();
+                        return reader.ToList<TResult>(withGraph);
 					}
 				},
 				commandBehavior);
@@ -586,6 +590,7 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
@@ -594,6 +599,7 @@ namespace Insight.Database
 			this IDbConnection connection,
 			string sql,
 			object parameters = null,
+            Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
@@ -603,7 +609,7 @@ namespace Insight.Database
 				{
 					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
 					{
-						return reader.ToList<TResult>();
+                        return reader.ToList<TResult>(withGraph);
 					}
 				},
 				commandBehavior);
@@ -775,7 +781,7 @@ namespace Insight.Database
 		}
 		#endregion
 
-		#region Query Reader Methods
+        #region Query With Read Callback Methods
 		/// <summary>
 		/// Executes a query and performs a callback to read the data in the IDataReader.
 		/// </summary>
@@ -897,12 +903,14 @@ namespace Insight.Database
         /// </summary>
         /// <param name="connection">The connection to use.</param>
         /// <param name="command">The command to execute.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <typeparam name="T">The type of result object to return. This must derive from Results.</typeparam>
         /// <returns>A data reader with the results.</returns>
         public static T QueryResults<T>(
             this IDbConnection connection,
             IDbCommand command,
+            Type[] withGraphs = null,
             CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
         {
             return connection.ExecuteAndAutoClose(
@@ -911,7 +919,7 @@ namespace Insight.Database
                     using (IDataReader reader = command.ExecuteReader())
                     {
                         T results = new T();
-                        results.Read(reader);
+                        results.Read(reader, withGraphs);
 
                         return results;
                     }
@@ -926,6 +934,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandType">The type of the command.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
@@ -935,6 +944,7 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandType commandType = CommandType.StoredProcedure,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
@@ -945,7 +955,7 @@ namespace Insight.Database
                 using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
                 {
                     T results = new T();
-                    results.Read(reader);
+                    results.Read(reader, withGraphs);
 
                     return results;
                 }
@@ -959,6 +969,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
         /// <param name="transaction">The transaction to participate in.</param>
@@ -967,11 +978,12 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null) where T : Results, new()
         {
-            return connection.QueryResults<T>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -982,6 +994,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandType">The type of the command.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
@@ -991,12 +1004,13 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandType commandType = CommandType.StoredProcedure,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1007,6 +1021,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
         /// <param name="transaction">The transaction to participate in.</param>
@@ -1015,11 +1030,12 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1031,6 +1047,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandType">The type of the command.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
@@ -1040,12 +1057,13 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandType commandType = CommandType.StoredProcedure,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1057,6 +1075,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
         /// <param name="transaction">The transaction to participate in.</param>
@@ -1065,11 +1084,12 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1082,6 +1102,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandType">The type of the command.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
@@ -1091,12 +1112,13 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandType commandType = CommandType.StoredProcedure,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1109,6 +1131,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
         /// <param name="transaction">The transaction to participate in.</param>
@@ -1117,11 +1140,12 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1135,6 +1159,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandType">The type of the command.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
@@ -1144,12 +1169,13 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandType commandType = CommandType.StoredProcedure,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, commandType, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1163,6 +1189,7 @@ namespace Insight.Database
         /// <param name="connection">The connection to use.</param>
         /// <param name="sql">The sql to execute.</param>
         /// <param name="parameters">The parameter to pass.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
         /// <param name="commandBehavior">The behavior of the command when executed.</param>
         /// <param name="commandTimeout">The timeout of the command.</param>
         /// <param name="transaction">The transaction to participate in.</param>
@@ -1171,11 +1198,12 @@ namespace Insight.Database
             this IDbConnection connection,
             string sql,
             object parameters = null,
+            Type[] withGraphs = null,
             CommandBehavior commandBehavior = CommandBehavior.Default,
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
         }
         #endregion
 
@@ -1187,6 +1215,7 @@ namespace Insight.Database
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the objects.</param>
 		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
@@ -1196,11 +1225,16 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<dynamic> action,
+            Type withGraph = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
+            // we don't use this parameter, but it is necessary to have so the compiler can infer the proper method signature to use
+            if (withGraph == null)
+                throw new ArgumentException("withGraph should be null for returning dynamic objects.", "withGraph");
+
 			connection.ExecuteAndAutoClose(
 				c =>
 				{
@@ -1222,6 +1256,7 @@ namespace Insight.Database
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the objects.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
@@ -1230,11 +1265,12 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<dynamic> action,
+            Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			connection.ForEach(sql, parameters, action, CommandType.Text, commandBehavior, commandTimeout, transaction);
+            connection.ForEach(sql, parameters, action, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
 		}
 
 		/// <summary>
@@ -1245,6 +1281,7 @@ namespace Insight.Database
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
+        /// <param name="withGraph">The type of graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
@@ -1254,6 +1291,7 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<T> action,
+            Type withGraph = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
@@ -1264,7 +1302,7 @@ namespace Insight.Database
 				{
 					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
 					{
-						foreach (T t in reader.AsEnumerable<T>())
+                        foreach (T t in reader.AsEnumerable<T>(withGraph))
 							action(t);
 					}
 
@@ -1281,6 +1319,7 @@ namespace Insight.Database
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
+        /// <param name="withGraph">The type of graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
@@ -1289,11 +1328,12 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<T> action,
+            Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			connection.ForEach(sql, parameters, action, CommandType.Text, commandBehavior, commandTimeout, transaction);
+            connection.ForEach<T>(sql, parameters, action, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
 		}
 		#endregion
 

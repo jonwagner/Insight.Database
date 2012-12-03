@@ -165,7 +165,7 @@ namespace Insight.Tests
 		}
 
         [Test]
-        public void SelectSubSubObjectNew()
+        public void SelectSubSubObjectWithObjectArray()
         {
             var reader = _connection.GetReaderSql(@"
 				SELECT ID=1, OtherID=2, ID=3, SubInt=4
@@ -240,10 +240,10 @@ namespace Insight.Tests
 			// test that we got data back
 			var testData = results[0];
 			Assert.IsNotNull (testData.SubData);
-			Assert.AreEqual (2, testData.SubData.ID);
-		}
+            Assert.AreEqual(2, testData.SubData.ID);
+        }
 
-        #region DefaultGraph Test Case
+        #region DefaultGraph Test Cases
         [DefaultGraph(typeof(Graph<DefaultGraphTestData, TestSubData>))]
         class DefaultGraphTestData
         {
@@ -262,6 +262,64 @@ namespace Insight.Tests
             var testData = results[0];
             Assert.IsNotNull(testData.SubData);
             Assert.AreEqual(2, testData.SubData.ID);
+        }
+        #endregion
+
+        #region ToList WithGraph Cases
+        [Test]
+        public void SelectSubObjectToListWithGraph()
+        {
+            var reader = _connection.GetReaderSql(@"SELECT ID=1, SubDataID=2, ID=2, SubInt=3");
+            var results = reader.ToList<TestData>(typeof(Graph<TestData, TestSubData>));
+
+            Assert.IsNotNull(results);
+            Assert.AreEqual(1, results.Count);
+
+            // test that we got data back
+            var testData = results[0];
+            Assert.AreEqual(1, testData.ID, "ID should not be overwritten by sub-object id");
+            Assert.AreEqual(2, testData.SubDataID);
+
+            // test that we got a sub object back in object 1
+            Assert.IsNotNull(testData.SubData);
+            Assert.AreEqual(2, testData.SubData.ID);
+            Assert.AreEqual(3, testData.SubData.SubInt);
+        }
+
+        [Test]
+        public void SelectSubObjectSingleWithGraph()
+        {
+            var reader = _connection.GetReaderSql(@"SELECT ID=1, SubDataID=2, ID=2, SubInt=3");
+            var testData = reader.Single<TestData>(typeof(Graph<TestData, TestSubData>));
+
+            // test that we got data back
+            Assert.AreEqual(1, testData.ID, "ID should not be overwritten by sub-object id");
+            Assert.AreEqual(2, testData.SubDataID);
+
+            // test that we got a sub object back in object 1
+            Assert.IsNotNull(testData.SubData);
+            Assert.AreEqual(2, testData.SubData.ID);
+            Assert.AreEqual(3, testData.SubData.SubInt);
+        }
+
+        [Test]
+        public void ForEachSubObjectSingleWithGraph()
+        {
+            _connection.ForEachSql<TestData>(
+                @"SELECT ID=1, SubDataID=2, ID=2, SubInt=3",
+                Parameters.Empty,
+                testData =>
+                {
+                    // test that we got data back
+                    Assert.AreEqual(1, testData.ID, "ID should not be overwritten by sub-object id");
+                    Assert.AreEqual(2, testData.SubDataID);
+
+                    // test that we got a sub object back in object 1
+                    Assert.IsNotNull(testData.SubData);
+                    Assert.AreEqual(2, testData.SubData.ID);
+                    Assert.AreEqual(3, testData.SubData.SubInt);
+                },
+                withGraph: typeof(Graph<TestData, TestSubData>));
         }
         #endregion
     }

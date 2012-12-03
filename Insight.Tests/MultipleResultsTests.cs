@@ -29,6 +29,11 @@ namespace Insight.Tests
         {
             public TestData TestData;
         }
+
+        class SuperTestDataWithoutDefault
+        {
+            public TestData TestData;
+        }
         #endregion
 
         #region Multiple Recordset Tests
@@ -51,7 +56,24 @@ namespace Insight.Tests
         [Test]
         public void RecordsetWithDefaultGraphIsReturned()
         {
-            var results = _connection.QueryResults<SuperTestData, TestData2>(@"SELECT X=5 SELECT Y=7", commandType: System.Data.CommandType.Text);
+            var results = _connection.QueryResultsSql<SuperTestData, TestData2>(@"SELECT X=5 SELECT Y=7");
+
+            Assert.IsNotNull(results);
+            Assert.IsNotNull(results.Set1);
+            Assert.AreEqual(1, results.Set1.Count);
+            Assert.IsNotNull(results.Set1[0].TestData);
+            Assert.AreEqual(5, results.Set1[0].TestData.X);
+            Assert.IsNotNull(results.Set2);
+            Assert.AreEqual(1, results.Set2.Count);
+            Assert.AreEqual(7, results.Set2[0].Y);
+        }
+
+        [Test]
+        public void RecordsetWithGraphIsReturned()
+        {
+            var results = _connection.QueryResultsSql<SuperTestDataWithoutDefault, TestData2>(
+                @"SELECT X=5 SELECT Y=7",
+                withGraphs: new[] { typeof(Graph<SuperTestDataWithoutDefault, TestData>) });
 
             Assert.IsNotNull(results);
             Assert.IsNotNull(results.Set1);

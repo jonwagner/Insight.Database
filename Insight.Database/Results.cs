@@ -32,7 +32,8 @@ namespace Insight.Database
         /// Reads the contents from an IDataReader.
         /// </summary>
         /// <param name="reader">The reader to read from.</param>
-        public virtual void Read(IDataReader reader)
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+        public virtual void Read(IDataReader reader, Type[] withGraphs = null)
         {
         }
 
@@ -62,10 +63,13 @@ namespace Insight.Database
         /// Reads the contents from an IDataReader.
         /// </summary>
         /// <param name="reader">The reader to read from.</param>
-        public override void Read(IDataReader reader)
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+        public override void Read(IDataReader reader, Type[] withGraphs = null)
         {
-            base.Read(reader);
-            Set1 = reader.ToList<T1>();
+            base.Read(reader, withGraphs);
+
+            Type withGraph = (withGraphs != null && withGraphs.Length >= 1) ? withGraphs[0] : null;
+            Set1 = reader.ToList<T1>(withGraph);
         }
     }
 
@@ -86,10 +90,13 @@ namespace Insight.Database
         /// Reads the contents from an IDataReader.
         /// </summary>
         /// <param name="reader">The reader to read from.</param>
-        public override void Read(IDataReader reader)
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+        public override void Read(IDataReader reader, Type[] withGraphs = null)
         {
-            base.Read(reader);
-            Set2 = reader.ToList<T2>();
+            base.Read(reader, withGraphs);
+
+            Type withGraph = (withGraphs != null && withGraphs.Length >= 2) ? withGraphs[1] : null;
+            Set2 = reader.ToList<T2>(withGraph);
         }
     }
 
@@ -111,10 +118,13 @@ namespace Insight.Database
         /// Reads the contents from an IDataReader.
         /// </summary>
         /// <param name="reader">The reader to read from.</param>
-        public override void Read(IDataReader reader)
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+        public override void Read(IDataReader reader, Type[] withGraphs = null)
         {
-            base.Read(reader);
-            Set3 = reader.ToList<T3>();
+            base.Read(reader, withGraphs);
+
+            Type withGraph = (withGraphs != null && withGraphs.Length >= 3) ? withGraphs[2] : null;
+            Set3 = reader.ToList<T3>(withGraph);
         }
     }
 
@@ -137,10 +147,13 @@ namespace Insight.Database
         /// Reads the contents from an IDataReader.
         /// </summary>
         /// <param name="reader">The reader to read from.</param>
-        public override void Read(IDataReader reader)
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+        public override void Read(IDataReader reader, Type[] withGraphs = null)
         {
-            base.Read(reader);
-            Set4 = reader.ToList<T4>();
+            base.Read(reader, withGraphs);
+
+            Type withGraph = (withGraphs != null && withGraphs.Length >= 4) ? withGraphs[3] : null;
+            Set4 = reader.ToList<T4>(withGraph);
         }
     }
 
@@ -164,10 +177,13 @@ namespace Insight.Database
         /// Reads the contents from an IDataReader.
         /// </summary>
         /// <param name="reader">The reader to read from.</param>
-        public override void Read(IDataReader reader)
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+        public override void Read(IDataReader reader, Type[] withGraphs = null)
         {
-            base.Read(reader);
-            Set5 = reader.ToList<T5>();
+            base.Read(reader, withGraphs);
+
+            Type withGraph = (withGraphs != null && withGraphs.Length >= 5) ? withGraphs[4] : null;
+            Set5 = reader.ToList<T5>(withGraph);
         }
     }
 }
