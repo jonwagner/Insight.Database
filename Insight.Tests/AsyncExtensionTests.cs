@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Data;
 using Insight.Database;
+using Insight.Tests.TestDataClasses;
 
 namespace Insight.Tests
 {
@@ -85,7 +86,35 @@ namespace Insight.Tests
 			Assert.AreEqual(5, results.First());
 		}
 
-		/// <summary>
+        /// <summary>
+        /// Asynchronously run a stored procedure with parameter detection
+        /// </summary>
+        [Test]
+        public void TestAsyncQueryWithDefaultGraph()
+        {
+            // make sure the connection is closed so we can test parameter detection with a closed async connection
+            _connection.Close();
+
+            var results = _connection.QuerySqlAsync<TestDataWithDefaultGraph>(TestDataWithDefaultGraph.Sql).Result;
+
+            TestDataWithDefaultGraph.Verify(results);
+        }
+
+        /// <summary>
+        /// Asynchronously run a stored procedure with parameter detection
+        /// </summary>
+        [Test]
+        public void TestAsyncQueryWithGraph()
+        {
+            // make sure the connection is closed so we can test parameter detection with a closed async connection
+            _connection.Close();
+
+            var results = _connection.QuerySqlAsync<TestData>(TestData.Sql, withGraph: typeof(Graph<TestData, TestSubData>)).Result;
+
+            TestData.Verify(results);
+        }
+
+        /// <summary>
 		/// Asynchronously run a stored procedure with parameter detection
 		/// </summary>
 		[Test]
@@ -202,7 +231,7 @@ namespace Insight.Tests
 				Parameters.Empty,
 				reader =>
 				{
-					// note that ToList willo automatically advance to the next recordset
+					// note that ToList will automatically advance to the next recordset
 					foo = reader.ToList();
 					goo = reader.ToList();
 				},

@@ -73,6 +73,7 @@
     <Compile Include="MiniProfilerTests.cs" />
     <Compile Include="MultipleResultsTests.cs" />
     <Compile Include="RetryStrategyTests.cs" />
+    <Compile Include="TestDataClasses.cs" />
     <Compile Include="XmlTests.cs" />
     <Compile Include="DbReaderTests.cs" />
     <Compile Include="DynamicParameterTests.cs" />

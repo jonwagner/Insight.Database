@@ -186,7 +186,8 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
+        /// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
@@ -195,13 +196,14 @@ namespace Insight.Database
 			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
+            Type withGraph = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
+				c => c.GetReaderAsync(sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult>(withGraph),
 				commandBehavior);
 		}
 
@@ -380,7 +382,8 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <returns>A data reader with the results.</returns>
@@ -388,12 +391,13 @@ namespace Insight.Database
 			this IDbConnection connection, 
 			string sql, 
 			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
+            Type withGraph = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult>(),
+				c => c.GetReaderAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult>(withGraph),
 				commandBehavior);
 		}
 
@@ -553,12 +557,16 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The type of objects to return.</typeparam>
 		/// <param name="cmd">The command to execute.</param>
-		/// <param name="commandBehavior">The command behavior.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
+        /// <param name="commandBehavior">The command behavior.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
-		public static Task<IList<T>> QueryAsync<T>(this IDbCommand cmd, System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
+		public static Task<IList<T>> QueryAsync<T>(
+            this IDbCommand cmd,
+            Type withGraph = null,
+            System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default)
 		{
 			return cmd.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior).ToList<T>(),
+				c => c.GetReaderAsync(commandBehavior).ToList<T>(withGraph),
 				commandBehavior);
 		}
 
@@ -777,11 +785,12 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The type of object to return.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToList<T>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToList<T>(this Task<IDataReader> task, Type withGraph = null)
 		{
 			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
-			return task.ContinueWith(t => t.Result.ToList<T>(), TaskContinuationOptions.ExecuteSynchronously);
+            return task.ContinueWith(t => t.Result.ToList<T>(withGraph), TaskContinuationOptions.ExecuteSynchronously);
 		}
 
 		/// <summary>
