@@ -153,6 +153,27 @@ namespace Insight.Database
         #endregion
 
 		#region Query Connection Methods
+        /// <summary>
+        /// Execute an existing command, and translate the result set. This method supports auto-open.
+        /// </summary>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
+        /// <returns>A data reader with the results.</returns>
+        public static Task<IList<TResult>> QueryAsync<TResult>(
+            this IDbConnection connection,
+            IDbCommand command,
+            Type withGraph = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default)
+        {
+            command.Connection = connection;
+            return command.ExecuteAsyncAndAutoClose(
+				c => c.GetReaderAsync(commandBehavior).ToList<TResult>(withGraph),
+				commandBehavior);
+        }
+
 		/// <summary>
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
@@ -769,6 +790,35 @@ namespace Insight.Database
 		#endregion
 
         #region QueryResults Methods
+        /// <summary>
+        /// Asynchronously executes an existing command, and translate the result set. This method supports auto-open.
+        /// </summary>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="command">The command to execute.</param>
+        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+        /// <param name="commandBehavior">The behavior of the command when executed.</param>
+        /// <typeparam name="T">The type of object to return in the result set.</typeparam>
+        /// <returns>A data reader with the results.</returns>
+        public static Task<T> QueryResultsAsync<T>(
+            this IDbConnection connection,
+            IDbCommand command,
+            Type[] withGraphs = null,
+            CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
+        {
+            command.Connection = connection;
+            return command.ExecuteAsyncAndAutoClose(
+                c => c.GetReaderAsync(commandBehavior).ContinueWith(
+                        t =>
+                        {
+                            T results = new T();
+                            results.Read(t.Result, withGraphs);
+
+                            return results;
+                        },
+                        TaskContinuationOptions.ExecuteSynchronously),
+                commandBehavior);
+        }
+
         /// <summary>
         /// Asynchronously executes a query that returns multiple result sets and reads the results.
         /// </summary>

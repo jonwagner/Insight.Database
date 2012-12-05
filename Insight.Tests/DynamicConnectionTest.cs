@@ -1,4 +1,5 @@
 ﻿using Insight.Database;
+using Insight.Tests.TestDataClasses;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -126,7 +127,110 @@ namespace Insight.Tests
                 Assert.AreEqual(value2, results.Set2.First());
             }
         }
-	}
+
+        [Test]
+        public void TestReturnTypeOverride()
+        {
+            using (SqlTransaction t = _connection.BeginTransaction())
+            {
+                _connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value", transaction: t);
+
+                string value = "foo";
+
+                var dc = _connection.Dynamic();
+                
+                // going to infer the return type of the stored procedure rather than specifying it
+                IList<string> results = dc.InsightTestProc(value, returnType: typeof(string), transaction: t);
+
+                Assert.AreEqual(value, results.First());
+            }
+        }
+
+        [Test]
+        public void TestReturnTypeOverrideAsync()
+        {
+            using (SqlTransaction t = _connection.BeginTransaction())
+            {
+                _connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value", transaction: t);
+
+                string value = "foo";
+
+                var dc = _connection.Dynamic();
+
+                // going to infer the return type of the stored procedure rather than specifying it
+                Task<IList<string>> task = dc.InsightTestProcAsync(value, returnType: typeof(string), transaction: t);
+
+                var results = task.Result;
+
+                Assert.AreEqual(value, results.First());
+            }
+        }
+
+        [Test]
+        public void TestMultipleRecordsets()
+        {
+            using (SqlTransaction t = _connection.BeginTransaction())
+            {
+                _connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql, transaction: t);
+
+                string value = "foo";
+
+                var dc = _connection.Dynamic();
+
+                // going to infer the return type of the stored procedure rather than specifying it
+                Results<ParentTestDataWithDefaultGraph, TestData2> results = dc.InsightTestProc(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>), transaction: t);
+
+                Assert.IsNotNull(results);
+                ParentTestData.Verify(results.Set1, withGraph: true);
+                TestData2.Verify(results.Set2);
+            }
+        }
+
+        [Test]
+        public void TestMultipleRecordsetsAsync()
+        {
+            using (SqlTransaction t = _connection.BeginTransaction())
+            {
+                _connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql, transaction: t);
+
+                string value = "foo";
+
+                var dc = _connection.Dynamic();
+
+                // going to infer the return type of the stored procedure rather than specifying it
+                Task<Results<ParentTestDataWithDefaultGraph, TestData2>> task = dc.InsightTestProcAsync(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>), transaction: t);
+                var results = task.Result;
+
+                Assert.IsNotNull(results);
+                ParentTestData.Verify(results.Set1, withGraph: true);
+                TestData2.Verify(results.Set2);
+            }
+        }
+
+        [Test]
+        public void TestMultipleRecordsetsWithGraph()
+        {
+            using (SqlTransaction t = _connection.BeginTransaction())
+            {
+                _connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql, transaction: t);
+
+                string value = "foo";
+
+                var dc = _connection.Dynamic();
+
+                // going to infer the return type of the stored procedure rather than specifying it
+                Results<ParentTestData, TestData2> results = dc.InsightTestProc(
+                    value, 
+                    returnType: typeof(Results<ParentTestData, TestData2>), 
+                    withGraphs: new Type[] { typeof(Graph<ParentTestData, TestData>) }, 
+                        transaction: t);
+
+                Assert.IsNotNull(results);
+                ParentTestData.Verify(results.Set1, withGraph: true);
+                TestData2.Verify(results.Set2);
+            }
+        }
+    }
 
 	/// <summary>
 	/// Tests dynamic connection.

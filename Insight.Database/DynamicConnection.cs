@@ -20,6 +20,24 @@ namespace Insight.Database
 	public class DynamicConnection : DynamicObject, IDbConnection
 	{
 		#region Fields
+        /// <summary>
+        /// The types of parameters to pass to Query methods.
+        /// </summary>
+        private static Type[] _queryParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type), typeof(CommandBehavior) };
+
+        /// <summary>
+        /// The types of parameters to pass to QueryResults methods.
+        /// </summary>
+        private static Type[] _queryResultsParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior) };
+
+        /// <summary>
+        /// Caches for MethodInfo for query methods.
+        /// </summary>
+        private static ConcurrentDictionary<Type, MethodInfo> _queryResultsAsyncMethods = new ConcurrentDictionary<Type, MethodInfo>();
+        private static ConcurrentDictionary<Type, MethodInfo> _queryResultsMethods = new ConcurrentDictionary<Type, MethodInfo>();
+        private static ConcurrentDictionary<Type, MethodInfo> _queryAsyncMethods = new ConcurrentDictionary<Type, MethodInfo>();
+        private static ConcurrentDictionary<Type, MethodInfo> _queryMethods = new ConcurrentDictionary<Type, MethodInfo>();
+
 		/// <summary>
 		/// The internal cache for parameters to stored procedures.
 		/// </summary>
@@ -52,112 +70,154 @@ namespace Insight.Database
 		/// <returns>True if the operation is successful; otherwise, false.</returns>
 		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
 		{
-			result = DoInvokeMember(
-				binder,
-				args,
-				(cmd, doAsync) =>
-				{
-					// execute the command
-					if (doAsync)
-						return ((SqlCommand)cmd).QueryAsync();
-					else
-						return _connection.Query(cmd);
-				});
+			result = DoInvokeMember(binder, args, typeof(FastExpando));
 
 			return true;
 		}
 
-		/// <summary>
-		/// Implements the procedure invocation process.
-		/// </summary>
-		/// <param name="binder">The binder used on the method.</param>
-		/// <param name="args">The arguments to the method.</param>
-		/// <param name="queryMethod">A method used to execute the query and return the results.</param>
-		/// <returns>The results of the stored procedure call.</returns>
-		protected object DoInvokeMember(InvokeMemberBinder binder, object[] args, Func<IDbCommand, bool, object> queryMethod)
-		{
-			CallInfo callInfo = binder.CallInfo;
-			int unnamedParameterCount = callInfo.ArgumentCount - callInfo.ArgumentNames.Count;
+        /// <summary>
+        /// Implements the procedure invocation process.
+        /// </summary>
+        /// <param name="binder">The binder used on the method.</param>
+        /// <param name="args">The arguments to the method.</param>
+        /// <param name="type">The default type of object to return if no type parameter is specified.</param>
+        /// <returns>The results of the stored procedure call.</returns>
+        protected object DoInvokeMember(InvokeMemberBinder binder, object[] args, Type type)
+        {
+            bool doAsync = false;
+            IDbCommand cmd = null;
+            int specialParameters = 0;
+            int? timeout = null;
+            IDbTransaction transaction = null;
+            object withGraph = null; // could be withGraph:Type or withGraphs:Type[]
 
-			// check the proc name - if it ends with Async, then call it asynchronously and return the results
-			bool doAsync = false;
-			string procName = binder.Name;
-			if (procName.EndsWith("async", StringComparison.OrdinalIgnoreCase))
-			{
-				procName = procName.Substring(0, procName.Length - 5);
-				doAsync = true;
-			}
+            CallInfo callInfo = binder.CallInfo;
+            int unnamedParameterCount = callInfo.ArgumentCount - callInfo.ArgumentNames.Count;
 
-			int? timeout = null;
-			IDbTransaction transaction = null;
-			IDbCommand cmd = null;
-			int specialParameters = 0;
+            // check the proc name - if it ends with Async, then call it asynchronously and return the results
+            string procName = binder.Name;
+            if (procName.EndsWith("async", StringComparison.OrdinalIgnoreCase))
+            {
+                procName = procName.Substring(0, procName.Length - 5);
+                doAsync = true;
+            }
 
-			// check for a transaction
-			int txIndex = callInfo.ArgumentNames.IndexOf("transaction");
-			if (txIndex >= 0)
-			{
-				transaction = (IDbTransaction)args[txIndex + unnamedParameterCount];
-				specialParameters++;
-			}
+            // go through the arguments and look for our special arguments
+            // NOTE: this is intentionally case-sensitive so that you can use other cases if you need to pass a parameter by the same name.
+            var argumentNames = callInfo.ArgumentNames;
+            for (int i = 0; i < argumentNames.Count; i++)
+            {
+                switch (argumentNames[i])
+                {
+                    case "transaction":
+                        transaction = (IDbTransaction)args[i + unnamedParameterCount];
+                        specialParameters++;
+                        break;
 
-			// check for a timeout
-			int timeoutIndex = callInfo.ArgumentNames.IndexOf("timeout");
-			if (timeoutIndex >= 0)
-			{
-				timeout = (int)args[timeoutIndex + unnamedParameterCount];
-				specialParameters++;
-			}
+                    case "timeout":
+                        timeout = (int)args[i + unnamedParameterCount];
+                        specialParameters++;
+                        break;
 
-			// if there is exactly one unnamed parameter, and the named parameters are all special parameters, and it's a reference type (and not a string)
-			if (unnamedParameterCount == 1 &&
-				(callInfo.ArgumentNames.Count == specialParameters) && 
-				!args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
-			{
-				cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
-			}
-			else
-			{
-				// this isn't a single-object parameter, so we are going to map the parameters by position and by name
+                    case "returnType":
+                        type = (Type)args[i + unnamedParameterCount];
+                        specialParameters++;
+                        break;
 
-				// create a command
-				cmd = _connection.CreateCommand();
-				cmd.CommandType = CommandType.StoredProcedure;
-				cmd.CommandText = procName;
-				cmd.Connection = _connection;
-				cmd.Transaction = transaction;
+                    case "withGraph":
+                        withGraph = (Type)args[i + unnamedParameterCount];
+                        specialParameters++;
+                        break;
 
-				// fill in the parameters for the command object
-				// we will do the values next
-				DeriveParameters(cmd);
+                    case "withGraphs":
+                        withGraph = (Type[])args[i + unnamedParameterCount];
+                        specialParameters++;
+                        break;
+                }
+            }
 
-				// look at the unnamed parameters first. we will add them by position.
-				for (int i = 0; i < unnamedParameterCount; i++)
-				{
-					// add the unnamed parameters by index
-					IDbDataParameter p = (IDbDataParameter)cmd.Parameters[i];
-					p.Value = args[i];
-				}
+            // if there is exactly one unnamed parameter, and the named parameters are all special parameters, and it's a reference type (and not a string)
+            // then we will attempt to use the object's fields as the parameter values
+            // this is so you can send an entire object to an insert method
+            if (unnamedParameterCount == 1 &&
+                (callInfo.ArgumentNames.Count == specialParameters) &&
+                !args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
+            {
+                cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
+            }
+            else
+            {
+                // this isn't a single-object parameter, so we are going to map the parameters by position and by name
 
-				// go through all of the named arguments next. Note that they may overwrite indexed parameters.
-				for (int i = unnamedParameterCount; i < callInfo.ArgumentNames.Count; i++)
-				{
-					string parameterName = "@" + callInfo.ArgumentNames[i];
+                // create a command
+                cmd = _connection.CreateCommand();
+                cmd.CommandType = CommandType.StoredProcedure;
+                cmd.CommandText = procName;
+                cmd.Connection = _connection;
+                cmd.Transaction = transaction;
 
-					// ignore the transaction parameter
-					if (String.Equals(parameterName, "@transaction", StringComparison.OrdinalIgnoreCase))
-						continue;
+                // fill in the parameters for the command object
+                // we will do the values next
+                DeriveParameters(cmd);
 
-					IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
-					p.Value = args[i];
-				}
-			}
+                // look at the unnamed parameters first. we will add them by position.
+                for (int i = 0; i < unnamedParameterCount; i++)
+                {
+                    // add the unnamed parameters by index
+                    IDbDataParameter p = (IDbDataParameter)cmd.Parameters[i];
+                    p.Value = args[i];
+                }
 
-			// run the query and translate the results
-			return queryMethod(cmd, doAsync);
-		}
+                // go through all of the named arguments next. Note that they may overwrite indexed parameters.
+                for (int i = unnamedParameterCount; i < callInfo.ArgumentNames.Count; i++)
+                {
+                    string argumentName = callInfo.ArgumentNames[i];
 
-		/// <summary>
+                    // ignore out special parameters
+                    if (argumentName == "transaction" || argumentName == "timeout" || argumentName == "returnType" || argumentName == "withGraph" || argumentName == "withGraphs")
+                        continue;
+
+                    string parameterName = "@" + argumentName;
+                    IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
+                    p.Value = args[i];
+                }
+            }
+
+            // get the proper query method to call based on whether we are doing this async and whether there is a single or multiple result set
+            // the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
+            MethodInfo method = GetQueryMethod(type, doAsync);
+
+            return method.Invoke(null, new object[] { _connection, cmd, withGraph, CommandBehavior.Default });
+        }
+
+        /// <summary>
+        /// Returns a MethodInfo for a query method based on the type and whether the call should be async.
+        /// </summary>
+        /// <param name="type">The type of object to return.</param>
+        /// <param name="doAsync">True to return the asynchronous method.</param>
+        /// <returns>The MethodInfo for the query method.</returns>
+        private static MethodInfo GetQueryMethod(Type type, bool doAsync)
+        {
+            MethodInfo method;
+            if (type.IsSubclassOf(typeof(Results)))
+            {
+                if (doAsync)
+                    method = _queryResultsAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryResultsAsync", _queryResultsParameters).MakeGenericMethod(t));
+                else
+                    method = _queryResultsMethods.GetOrAdd(type, t => typeof(DBConnectionExtensions).GetMethod("QueryResults", _queryResultsParameters).MakeGenericMethod(t));
+            }
+            else
+            {
+                if (doAsync)
+                    method = _queryAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryAsync", _queryParameters).MakeGenericMethod(t));
+                else
+                    method = _queryMethods.GetOrAdd(type, t => typeof(DBConnectionExtensions).GetMethod("Query", _queryParameters).MakeGenericMethod(t));
+            }
+
+            return method;
+        }
+
+        /// <summary>
 		/// Derive the parameters that are needed to execute a given command.
 		/// </summary>
 		/// <param name="cmd">The command to execute.</param>
@@ -192,7 +252,7 @@ namespace Insight.Database
 					return parameters;
 				});
 
-			// copy the parameter
+			// copy the parameter list
 			foreach (IDbDataParameter parameter in parameterList)
 			{
 				IDbDataParameter p = cmd.CreateParameter();
@@ -276,10 +336,16 @@ namespace Insight.Database
 		#endregion
 	}
 
-	/// <summary>
+    #region DynamicConnection Generic Class
+    /// <summary>
 	/// A DbConnection that supports invoking stored procedures using a nice .ProcName syntax.
-	/// </summary>
-	/// <typeparam name="T">The type of object to return from queries.</typeparam>
+    /// You should usually use the non-generic version of DynamicConnection so you can return different types of objects.
+    /// e.g.
+    /// var dynamicConnection = _connection.Dynamic()
+    /// IList&lt;MyData&gt; results = dynamicConnection.MyProc(10, returnType: typeof(MyData));
+    /// This class generates methods that always return objects of type T.
+    /// </summary>
+	/// <typeparam name="T">The type of object to return from all queries from this connection.</typeparam>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
 	public sealed class DynamicConnection<T> : DynamicConnection
 	{
@@ -301,89 +367,10 @@ namespace Insight.Database
 		/// <returns>True if the operation is successful; otherwise, false.</returns>
 		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
 		{
-			result = DoInvokeMember(
-				binder,
-				args,
-				(cmd, doAsync) =>
-				{
-                    if (typeof(T).IsSubclassOf(typeof(Results)))
-                    {
-                        return DynamicQueryResults(cmd);
-                    }
-                    else
-                    {
-                        // execute the command
-                        if (doAsync)
-                            return ((SqlCommand)cmd).QueryAsync<T>();
-                        else
-                            return cmd.Connection.Query<T>(cmd);
-                    }
-				});
-
-			return true;
-		}
-
-        /// <summary>
-        /// Execute an existing command, and translate the result set. This method supports auto-open.
-        /// NOTE: Since this uses System.Activator to create the object, it should only be used for dynamic connections.
-        /// </summary>
-        /// <param name="command">The command to execute.</param>
-        /// <returns>A data reader with the results.</returns>
-        private static T DynamicQueryResults(IDbCommand command)
-        {
-            return command.Connection.ExecuteAndAutoClose(
-                c =>
-                {
-                    using (IDataReader reader = command.ExecuteReader())
-                    {
-                        T results = System.Activator.CreateInstance<T>();
-                        ((IDatabaseResults)results).Read(reader);
-
-                        return results;
-                    }
-                });
-        }
-	}
-
-	/// <summary>
-	/// A DbConnection that supports invoking stored procedures using a nice .ProcName syntax.
-	/// </summary>
-	/// <typeparam name="TResult">The type of object to return from queries.</typeparam>
-	/// <typeparam name="TSub1">The type of the first sub-object to return from queries.</typeparam>
-    [SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
-	public sealed class DynamicConnection<TResult, TSub1> : DynamicConnection
-	{
-		/// <summary>
-		/// Initializes a new instance of the DynamicConnection class.
-		/// </summary>
-		/// <param name="connection">The connection to use as the inner database connection.</param>
-		public DynamicConnection(IDbConnection connection)
-			: base(connection)
-		{
-		}
-
-		/// <summary>
-		/// Provides the implementation for operations that invoke a member. Classes derived from the DynamicObject class can override this method to specify dynamic behavior for operations such as calling a method.
-		/// </summary>
-		/// <param name="binder">Provides information about the dynamic operation.</param>
-		/// <param name="args">The arguments that are passed to the object member during the invoke operation.</param>
-		/// <param name="result">The result of the operation.</param>
-		/// <returns>True if the operation is successful; otherwise, false.</returns>
-		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
-		{
-			result = DoInvokeMember(
-				binder,
-				args,
-				(cmd, doAsync) =>
-				{
-					// execute the command
-					if (doAsync)
-						return ((SqlCommand)cmd).QueryAsync<TResult, TSub1>();
-					else
-						return cmd.Connection.Query<TResult, TSub1>(cmd);
-				});
+			result = DoInvokeMember(binder, args, typeof(T));
 
 			return true;
 		}
 	}
+    #endregion
 }
