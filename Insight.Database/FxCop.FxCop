@@ -226,6 +226,33 @@
            </Message>
           </Messages>
          </Type>
+         <Type Name="Graph`7">
+          <Messages>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-12-05 04:49:24Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4, TSub5, TSub6&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Graph`8">
+          <Messages>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-12-05 04:49:24Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4, TSub5, TSub6, TSub7&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="Graph`9">
+          <Messages>
+           <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-12-05 04:49:24Z">
+            <Issue>
+             <Item>'Graph&lt;T, TSub1, TSub2, TSub3, TSub4, TSub5, TSub6, TSub7, TSub8&gt;'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
          <Type Name="Results`3">
           <Messages>
            <Message TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005" Status="Excluded" Created="2012-11-26 20:47:13Z">
