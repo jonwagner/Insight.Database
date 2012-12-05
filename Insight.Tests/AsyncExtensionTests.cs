@@ -9,6 +9,8 @@ using System.Data;
 using Insight.Database;
 using Insight.Tests.TestDataClasses;
 
+#pragma warning disable 0649
+
 namespace Insight.Tests
 {
 	/// <summary>
@@ -95,9 +97,9 @@ namespace Insight.Tests
             // make sure the connection is closed so we can test parameter detection with a closed async connection
             _connection.Close();
 
-            var results = _connection.QuerySqlAsync<TestDataWithDefaultGraph>(TestDataWithDefaultGraph.Sql).Result;
+            var results = _connection.QuerySqlAsync<ParentTestDataWithDefaultGraph>(ParentTestData.Sql).Result;
 
-            TestDataWithDefaultGraph.Verify(results);
+            ParentTestData.Verify(results);
         }
 
         /// <summary>
@@ -109,9 +111,9 @@ namespace Insight.Tests
             // make sure the connection is closed so we can test parameter detection with a closed async connection
             _connection.Close();
 
-            var results = _connection.QuerySqlAsync<TestData>(TestData.Sql, withGraph: typeof(Graph<TestData, TestSubData>)).Result;
+            var results = _connection.QuerySqlAsync<ParentTestData>(ParentTestData.Sql, withGraph: typeof(Graph<ParentTestData, TestData>)).Result;
 
-            TestData.Verify(results);
+            ParentTestData.Verify(results);
         }
 
         /// <summary>
@@ -246,5 +248,67 @@ namespace Insight.Tests
 			Assert.AreEqual("Text", goo[0].Goo);
 		}
 		#endregion
+
+        #region Async With Multiple Recordsets Tests
+        #region Multiple Recordset Tests
+        [Test]
+        public void TwoRecordsetsAreReturned()
+        {
+            var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(ParentTestData.Sql + TestData2.Sql).Result;
+
+            Assert.IsNotNull(results);
+            ParentTestData.Verify(results.Set1, withGraph: false);
+            TestData2.Verify(results.Set2);
+        }
+        #endregion
+
+        #region Multiple Recordset WithGraph Tests
+        [Test]
+        public void RecordsetWithDefaultGraphIsReturned()
+        {
+            var results = _connection.QueryResultsSqlAsync<ParentTestDataWithDefaultGraph, TestData2>(ParentTestData.Sql + TestData2.Sql).Result;
+
+            Assert.IsNotNull(results);
+            ParentTestData.Verify(results.Set1, withGraph: true);
+            TestData2.Verify(results.Set2);
+        }
+
+        [Test]
+        public void RecordsetWithGraphIsReturned()
+        {
+            var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(
+                ParentTestData.Sql + TestData2.Sql,
+                withGraphs: new[] { typeof(Graph<ParentTestData, TestData>) }).Result;
+
+            Assert.IsNotNull(results);
+            ParentTestData.Verify(results.Set1, withGraph: true);
+            TestData2.Verify(results.Set2);
+        }
+        #endregion
+
+        #region Derived Recordsets Tests
+        class PageData
+        {
+            public int TotalCount;
+        }
+        class PageData<T> : Results<T, PageData>
+        {
+            public int TotalCount { get { return Set2.First().TotalCount; } }
+        }
+
+        [Test]
+        public void DerivedRecordsetsCanBeReturned()
+        {
+            var results = _connection.QueryResultsSqlAsync<PageData<ParentTestData>>(ParentTestData.Sql + "SELECT TotalCount=70").Result;
+
+            Assert.IsNotNull(results);
+            ParentTestData.Verify(results.Set1, withGraph: false);
+
+            Assert.IsNotNull(results.Set2);
+            Assert.AreEqual(1, results.Set2.Count);
+            Assert.AreEqual(70, results.TotalCount);
+        }
+        #endregion
+        #endregion
     }
 }

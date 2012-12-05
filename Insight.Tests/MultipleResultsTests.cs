@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
+using Insight.Tests.TestDataClasses;
 
 #pragma warning disable 0649
 
@@ -13,42 +14,15 @@ namespace Insight.Tests
     [TestFixture]
     public class MultipleResultsTests : BaseDbTest
     {
-        #region Test Classes
-        class TestData
-        {
-            public int X;
-        }
-
-        class TestData2
-        {
-            public int Y;
-        }
-
-        [DefaultGraph(typeof(Graph<SuperTestData, TestData>))]
-        class SuperTestData
-        {
-            public TestData TestData;
-        }
-
-        class SuperTestDataWithoutDefault
-        {
-            public TestData TestData;
-        }
-        #endregion
-
         #region Multiple Recordset Tests
         [Test]
         public void TwoRecordsetsAreReturned()
         {
-            var results = _connection.QueryResults<TestData, TestData2>(@"SELECT X=5 SELECT Y=7", commandType: System.Data.CommandType.Text);
+            var results = _connection.QueryResultsSql<ParentTestData, TestData2>(ParentTestData.Sql + TestData2.Sql);
 
             Assert.IsNotNull(results);
-            Assert.IsNotNull(results.Set1);
-            Assert.AreEqual(1, results.Set1.Count); 
-            Assert.AreEqual(5, results.Set1[0].X);
-            Assert.IsNotNull(results.Set2);
-            Assert.AreEqual(1, results.Set2.Count);
-            Assert.AreEqual(7, results.Set2[0].Y);
+            ParentTestData.Verify(results.Set1, withGraph: false);
+            TestData2.Verify(results.Set2);
         }
         #endregion
 
@@ -56,33 +30,23 @@ namespace Insight.Tests
         [Test]
         public void RecordsetWithDefaultGraphIsReturned()
         {
-            var results = _connection.QueryResultsSql<SuperTestData, TestData2>(@"SELECT X=5 SELECT Y=7");
+            var results = _connection.QueryResultsSql<ParentTestDataWithDefaultGraph, TestData2>(ParentTestData.Sql + TestData2.Sql);
 
             Assert.IsNotNull(results);
-            Assert.IsNotNull(results.Set1);
-            Assert.AreEqual(1, results.Set1.Count);
-            Assert.IsNotNull(results.Set1[0].TestData);
-            Assert.AreEqual(5, results.Set1[0].TestData.X);
-            Assert.IsNotNull(results.Set2);
-            Assert.AreEqual(1, results.Set2.Count);
-            Assert.AreEqual(7, results.Set2[0].Y);
+            ParentTestData.Verify(results.Set1, withGraph: true);
+            TestData2.Verify(results.Set2);
         }
 
         [Test]
         public void RecordsetWithGraphIsReturned()
         {
-            var results = _connection.QueryResultsSql<SuperTestDataWithoutDefault, TestData2>(
-                @"SELECT X=5 SELECT Y=7",
-                withGraphs: new[] { typeof(Graph<SuperTestDataWithoutDefault, TestData>) });
+            var results = _connection.QueryResultsSql<ParentTestData, TestData2>(
+                ParentTestData.Sql + TestData2.Sql,
+                withGraphs: new[] { typeof(Graph<ParentTestData, TestData>) });
 
             Assert.IsNotNull(results);
-            Assert.IsNotNull(results.Set1);
-            Assert.AreEqual(1, results.Set1.Count);
-            Assert.IsNotNull(results.Set1[0].TestData);
-            Assert.AreEqual(5, results.Set1[0].TestData.X);
-            Assert.IsNotNull(results.Set2);
-            Assert.AreEqual(1, results.Set2.Count);
-            Assert.AreEqual(7, results.Set2[0].Y);
+            ParentTestData.Verify(results.Set1, withGraph: true);
+            TestData2.Verify(results.Set2);
         }
         #endregion
 
@@ -99,13 +63,11 @@ namespace Insight.Tests
         [Test]
         public void DerivedRecordsetsCanBeReturned()
         {
-            var results = _connection.QueryResults<PageData<TestData>>(@"SELECT X=5 UNION SELECT X=7 SELECT TotalCount=70", commandType: System.Data.CommandType.Text);
+            var results = _connection.QueryResultsSql<PageData<ParentTestData>>(ParentTestData.Sql + "SELECT TotalCount=70");
 
             Assert.IsNotNull(results);
-            Assert.IsNotNull(results.Set1);
-            Assert.AreEqual(2, results.Set1.Count);
-            Assert.AreEqual(5, results.Set1[0].X);
-            Assert.AreEqual(7, results.Set1[1].X);
+            ParentTestData.Verify(results.Set1, withGraph: false);
+
             Assert.IsNotNull(results.Set2);
             Assert.AreEqual(1, results.Set2.Count);
             Assert.AreEqual(70, results.TotalCount);
