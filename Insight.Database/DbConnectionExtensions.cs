@@ -22,7 +22,7 @@ namespace Insight.Database
 	{
 		#region Private Fields
 		/// <summary>
-		/// A cache of the table schemas.
+		/// A cache of the table schemas used for bulk copy.
 		/// </summary>
 		private static ConcurrentDictionary<string, DataTable> _tableSchemas = new ConcurrentDictionary<string, DataTable>();
 		#endregion
@@ -278,37 +278,14 @@ namespace Insight.Database
             Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
+            command.Connection = connection;
+
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
 					using (IDataReader reader = command.ExecuteReader())
 					{
                         return reader.ToList<TResult>(withGraph);
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Execute an existing command, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="command">The command to execute.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> Query<TResult, TSub1>(
-			this IDbConnection connection,
-			IDbCommand command,
-			CommandBehavior commandBehavior = CommandBehavior.Default)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = command.ExecuteReader())
-					{
-						return reader.ToList<TResult, TSub1>();
 					}
 				},
 				commandBehavior);
