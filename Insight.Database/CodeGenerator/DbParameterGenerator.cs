@@ -792,7 +792,7 @@ namespace Insight.Database.CodeGenerator
 			/// <summary>
 			/// Cache for Table-Valued Parameter schemas.
 			/// </summary>
-			private static ConcurrentDictionary<Type, DataTable> _tvpSchemas = new ConcurrentDictionary<Type, DataTable>();
+            private static ConcurrentDictionary<Type, SchemaIdentity> _tvpSchemas = new ConcurrentDictionary<Type, SchemaIdentity>();
 
 			/// <summary>
 			/// The regex to detect parameters.
@@ -897,7 +897,7 @@ namespace Insight.Database.CodeGenerator
 					tableTypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
 
 				// let's see if we can get the schema table from the server
-				DataTable schema = _tvpSchemas.GetOrAdd(
+                SchemaIdentity schemaIdentity = _tvpSchemas.GetOrAdd(
 					listType,
 					type => cmd.Connection.ExecuteAndAutoClose(
 						_ =>
@@ -905,8 +905,8 @@ namespace Insight.Database.CodeGenerator
 							SqlCommand schemaCommand = new SqlCommand(String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName));
 							schemaCommand.Connection = cmd.Connection;
 							schemaCommand.Transaction = cmd.Transaction;
-							using (var reader = schemaCommand.ExecuteReader())
-								return reader.GetSchemaTable();
+                            using (var reader = schemaCommand.ExecuteReader())
+                                return new SchemaIdentity(reader, true);
 						}));
 
 				// create the structured parameter
@@ -914,7 +914,7 @@ namespace Insight.Database.CodeGenerator
 				p.ParameterName = parameterName;
 				p.SqlDbType = SqlDbType.Structured;
 				p.TypeName = tableTypeName;
-				p.Value = new ObjectListDbDataReader(schema, listType, list);
+                p.Value = new ObjectListDbDataReader(schemaIdentity, listType, list);
 				cmd.Parameters.Add(p);
 			}
 		}

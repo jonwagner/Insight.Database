@@ -72,6 +72,7 @@
     <Compile Include="InsertTests.cs" />
     <Compile Include="MiniProfilerTests.cs" />
     <Compile Include="MultipleResultsTests.cs" />
+    <Compile Include="PerformanceTests.cs" />
     <Compile Include="RetryStrategyTests.cs" />
     <Compile Include="TestDataClasses.cs" />
     <Compile Include="XmlTests.cs" />

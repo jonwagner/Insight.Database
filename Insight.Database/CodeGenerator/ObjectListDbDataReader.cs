@@ -76,47 +76,34 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Global cache of accessors.
 		/// </summary>
-		private static ConcurrentDictionary<Tuple<Type, SchemaMappingIdentity>, FieldReaderData> _readerDataCache = new ConcurrentDictionary<Tuple<Type, SchemaMappingIdentity>, FieldReaderData>();
+		private static ConcurrentDictionary<SchemaMappingIdentity, FieldReaderData> _readerDataCache = new ConcurrentDictionary<SchemaMappingIdentity, FieldReaderData>();
 		#endregion
 
 		#region Constructors
 		/// <summary>
 		/// Initializes a new instance of the ObjectListDbDataReader class.
 		/// </summary>
-		/// <param name="schemaTable">The IDbDataReader schema table to use (get it from Sql Server).</param>
+        /// <param name="schemaIdentity">The identity of the schema to map to.</param>
 		/// <param name="listType">The type of the list to bind to.</param>
 		/// <param name="list">The list of objects.</param>
-		public ObjectListDbDataReader(DataTable schemaTable, Type listType, IEnumerable list)
+		public ObjectListDbDataReader(SchemaIdentity schemaIdentity, Type listType, IEnumerable list)
 		{
-			_schemaTable = schemaTable;
+            // we need a schema table to use to send data to the server
+            _schemaTable = schemaIdentity.SchemaTable;
+
 			_listType = listType;
 			_list = list.GetEnumerator();
 
 			_isValueType = _listType.IsValueType || listType == typeof(string);
 
-			// SQL Server tells us the precision of the columns
-			// but the TDS parser doesn't like the ones set on money, smallmoney and date
-			// so we have to override them
-			_schemaTable.Columns["NumericScale"].ReadOnly = false;
-			foreach (DataRow row in _schemaTable.Rows)
-			{
-				string dataType = row["DataTypeName"].ToString();
-				if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
-					row["NumericScale"] = 4;
-				else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
-					row["NumericScale"] = 4;
-				else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
-					row["NumericScale"] = 0;
-			}
- 
 			// if this is not a value type, then we need to have methods to pull values out of the object
 			if (!_isValueType)
 			{
 				// generate an identity for the schema and a key for our accessors
-				SchemaMappingIdentity identity = new SchemaMappingIdentity(schemaTable, listType, null, SchemaMappingType.ExistingObject);
-				Tuple<Type, SchemaMappingIdentity> key = new Tuple<Type, SchemaMappingIdentity>(listType, identity);
+                SchemaMappingIdentity identity = new SchemaMappingIdentity(schemaIdentity, listType, null, SchemaMappingType.ExistingObject);
 
-				_readerData = _readerDataCache.GetOrAdd(key, k => CreateFieldReaderData(k.Item1, k.Item2));
+                // get the accessor methods from the cache or create them
+                _readerData = _readerDataCache.GetOrAdd(identity, i => CreateFieldReaderData(listType, i));
 			}
 		}
 		#endregion
@@ -128,7 +115,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="type">The type to analyze.</param>
 		/// <param name="identity">The schema identity to analyze.</param>
 		/// <returns>A list of accessor functions to get values from the type.</returns>
-		private FieldReaderData CreateFieldReaderData(Type type, SchemaMappingIdentity identity)
+		private static FieldReaderData CreateFieldReaderData(Type type, SchemaMappingIdentity identity)
 		{
 			FieldReaderData readerData = new FieldReaderData();
 
@@ -137,10 +124,10 @@ namespace Insight.Database.CodeGenerator
 
             var mapping = ClassPropInfo.GetMappingForType(type);
 
-			for (int i = 0; i < identity.SchemaTable.Rows.Count; i++)
+            foreach (var column in identity.Columns)
 			{
 				// get the name of the column
-				string name = _schemaTable.Rows[i]["ColumnName"].ToString().ToUpperInvariant();
+                string name = column.Item1.ToString().ToUpperInvariant();
 
 				// create a new anonymous method that takes an object and returns the value
 				var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);

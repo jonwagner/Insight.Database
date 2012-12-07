@@ -24,7 +24,7 @@ namespace Insight.Database
 		/// <summary>
 		/// A cache of the table schemas used for bulk copy.
 		/// </summary>
-		private static ConcurrentDictionary<string, DataTable> _tableSchemas = new ConcurrentDictionary<string, DataTable>();
+        private static ConcurrentDictionary<string, SchemaIdentity> _tableSchemas = new ConcurrentDictionary<string, SchemaIdentity>();
 		#endregion
 
 		#region Open Method
@@ -1346,19 +1346,19 @@ namespace Insight.Database
 					bulk.BatchSize = batchSize.Value;
 
 				// ask Sql Server for the schema table
-				DataTable schemaTable = _tableSchemas.GetOrAdd(
-					tableName,
-					t =>
-					{
-						// select a 0 row result set so we can determine the schema of the table
-						using (IDataReader sqlReader = connection.GetReaderSql(String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName), null, CommandBehavior.SchemaOnly))
-						{
-							return sqlReader.GetSchemaTable();
-						}
-					});
+                SchemaIdentity schemaIdentity = _tableSchemas.GetOrAdd(
+                    tableName,
+                    t =>
+                    {
+                        // select a 0 row result set so we can determine the schema of the table
+                        using (var sqlReader = connection.GetReaderSql(String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName), null, CommandBehavior.SchemaOnly))
+                        {
+                            return new SchemaIdentity(sqlReader, true);
+                        }
+                    });
 
 				// create a reader for the list
-				ObjectListDbDataReader reader = new ObjectListDbDataReader(schemaTable, typeof(T), list);
+                ObjectListDbDataReader reader = new ObjectListDbDataReader(schemaIdentity, typeof(T), list);
 
 				// write the data to the server
 				bulk.WriteToServer(reader);

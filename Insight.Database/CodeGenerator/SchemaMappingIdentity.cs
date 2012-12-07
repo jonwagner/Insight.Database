@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -15,15 +16,10 @@ namespace Insight.Database.CodeGenerator
 	class SchemaMappingIdentity : IEquatable<SchemaMappingIdentity>
 	{
 		#region Fields
-		/// <summary>
-		/// Information about the columns in the schema.
-		/// </summary>
-		private List<Tuple<string, Type>> _columns = new List<Tuple<string, Type>>();
-
-		/// <summary>
-		/// The hash code of this identity (precalculated).
-		/// </summary>
-		private int _hashCode;
+        /// <summary>
+        /// The identity of the schema that we are mapped to.
+        /// </summary>
+        private SchemaIdentity _schemaIdentity;
 
         /// <summary>
         /// The type of the object graph that the schema is mapped to.
@@ -39,7 +35,12 @@ namespace Insight.Database.CodeGenerator
         /// The id column override mapping.
         /// </summary>
         private Dictionary<Type, string> _idColumns;
-		#endregion
+
+        /// <summary>
+        /// The hash code of this identity (precalculated).
+        /// </summary>
+        private int _hashCode;
+        #endregion
 
 		#region Constructors
 		/// <summary>
@@ -47,38 +48,31 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="reader">The reader to construct from.</param>
         /// <param name="withGraph">The type of the object graph used in this mapping.</param>
+        /// <param name="idColumns">An optional override of the columns used to determine the boundary between objects.</param>
         /// <param name="mappingType">The type of mapping operation.</param>
-		public SchemaMappingIdentity(IDataReader reader, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
-			: this(reader.GetSchemaTable(), withGraph, idColumns, mappingType)
-		{
-		}
+        public SchemaMappingIdentity(IDataReader reader, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
+            : this(new SchemaIdentity(reader, false), withGraph, idColumns, mappingType)
+        {
+        }
 
 		/// <summary>
-        /// Initializes a new instance of the SchemaMappingIdentity class.
+		/// Initializes a new instance of the SchemaMappingIdentity class.
 		/// </summary>
-		/// <param name="schemaTable">The schema table to analyze.</param>
+        /// <param name="schemaIdentity">The identity of the schema to map to.</param>
         /// <param name="withGraph">The type of the object graph used in this mapping.</param>
+        /// <param name="idColumns">An optional override of the columns used to determine the boundary between objects.</param>
         /// <param name="mappingType">The type of mapping operation.</param>
-        public SchemaMappingIdentity(DataTable schemaTable, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
+		public SchemaMappingIdentity(SchemaIdentity schemaIdentity, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
 		{
             // we need the graph type to define the identity
             if (withGraph == null)
                 throw new ArgumentNullException("withGraph");
 
-			// if there is no schema table, then we got an empty recordset. There are no columns to map, so create an empty schema.
-			if (schemaTable == null)
-			{
-				schemaTable = new DataTable();
-				schemaTable.Locale = CultureInfo.InvariantCulture;
-				schemaTable.Columns.Add("ColumnName");
-				schemaTable.Columns.Add("DataType");
-			}
-
             // save the values away for later
-			SchemaTable = schemaTable;
             _graph = withGraph;
             _mappingType = mappingType;
             _idColumns = idColumns;
+            _schemaIdentity = schemaIdentity;
 
             // we know that we are going to store this in a hashtable, so pre-calculate the hashcode
 			unchecked
@@ -90,35 +84,20 @@ namespace Insight.Database.CodeGenerator
                 if (_idColumns != null)
                     _hashCode += _idColumns.GetHashCode();
 
-				int length = schemaTable.Rows.Count;
-				for (int i = 0; i < length; i++)
-				{
-					// get the name and type
-					string name = (string)schemaTable.Rows[i]["ColumnName"];
-					Type fieldType = (Type)schemaTable.Rows[i]["DataType"];
-
-					// update the hash code for the name and type
-					_hashCode *= 23;
-					_hashCode += name.GetHashCode();
-					_hashCode *= 23;
-					_hashCode += fieldType.GetHashCode();
-
-					// add the column information to the list
-					_columns.Add(new Tuple<string, Type>(name, fieldType));
-				}
-			}
+                _hashCode += schemaIdentity.GetHashCode();
+            }
 		}
 		#endregion
 
-		#region Properties
-		/// <summary>
-		///  Gets the underlying schema table for the identity.
-		/// </summary>
-		public DataTable SchemaTable { get; private set; }
-		#endregion
+        #region Properties
+        /// <summary>
+        /// Gets the columns in the schema as a list of Tuple of string + Type.
+        /// </summary>
+        internal ReadOnlyCollection<Tuple<string, Type>> Columns { get { return _schemaIdentity.Columns; } }
+        #endregion
 
-		#region Equality Members
-		/// <summary>
+        #region Equality Members
+        /// <summary>
 		/// Returns the hash code for the identity.
 		/// </summary>
 		/// <returns>The hash code for the identity.</returns>
@@ -143,7 +122,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="other">The object to test against.</param>
 		/// <returns>True if the objects are equal.</returns>
 		public bool Equals(SchemaMappingIdentity other)
-		{
+        {
 			if (other == null)
 				return false;
 
@@ -153,25 +132,35 @@ namespace Insight.Database.CodeGenerator
             if (_graph != other._graph)
                 return false;
 
-            if (_idColumns != other._idColumns)
+            if (!_schemaIdentity.Equals(other._schemaIdentity))
                 return false;
 
-            if (_columns.Count != other._columns.Count)
-				return false;
+            // validate that the columns are the same object
+            if (_idColumns != other._idColumns)
+            {
+                // different objects, so we have to check the contents.
+                // this is a performance hit, so you should pass in the same id mapping each time!
+                var otherIdColumns = other._idColumns;
 
-			int length = _columns.Count;
-			for (int i = 0; i < length; i++)
-			{
-				var thisColumn = _columns[i];
-				var thatColumn = other._columns[i];
+                // check the count first as a short-circuit
+                if (_idColumns.Count != otherIdColumns.Count)
+                    return false;
 
-				if (thisColumn.Item1 != thatColumn.Item1)
-					return false;
-				if (thisColumn.Item2 != thatColumn.Item2)
-					return false;
-			}
+                // check the id mappings individually
+                foreach (var pair in _idColumns)
+                {
+                    string otherID;
+                    if (!otherIdColumns.TryGetValue(pair.Key, out otherID))
+                        return false;
 
-			return true;
+                    if (pair.Value != otherID)
+                        return false;
+                }
+
+                return false;
+            }
+
+            return true;
 		}
 		#endregion
 	}
