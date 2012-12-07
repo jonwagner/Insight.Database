@@ -19,6 +19,14 @@ namespace Insight.Database.Sample
 
 		static void Main(string[] args)
 		{
+            #region Performance Tests
+            if (args.Length > 0 && args[0] == "perf")
+            {
+                PerfTest();
+                return;
+            }
+            #endregion
+
 			#region Opening Connections
 			IDBConnection_OpenConnection();
 			ConnectionStringSettings_Connection();
@@ -110,7 +118,7 @@ namespace Insight.Database.Sample
 			#region Repository Pattern
 			Repository();
 			#endregion
-		}
+        }
 
 		class Glass
 		{
@@ -612,5 +620,28 @@ namespace Insight.Database.Sample
 			repo.DeleteReceipt(r.Id);
 		}
 		#endregion
+
+        class PerfTestData
+        {
+            public int Int;
+            public string String;
+            public decimal Decimal;
+            public double Double;
+        }
+
+        private static void PerfTest()
+        {
+			SqlConnectionStringBuilder database = new SqlConnectionStringBuilder(connectionString);
+            using (var connection = database.Connection())
+            {
+                connection.Open();
+                var results = connection.QuerySql<PerfTestData>("SELECT Int=1, String='2', Decimal=3, [Double]=4");
+
+                PerformanceTest.WithDurationAndKeyWait(3, 1 * 1000, () =>
+                {
+                    results = connection.QuerySql<PerfTestData>("SELECT Int=1, String='2', Decimal=3, [Double]=4");
+                });
+            }
+        }
 	}
 }

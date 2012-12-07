@@ -50,6 +50,7 @@
     <Compile Include="Beer.cs" />
     <Compile Include="BeerRepository.cs" />
     <Compile Include="BeerRepository_Receipts.cs" />
+    <Compile Include="PerformanceTest.cs" />
     <Compile Include="Receipt.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

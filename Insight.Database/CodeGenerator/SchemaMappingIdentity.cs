@@ -93,7 +93,7 @@ namespace Insight.Database.CodeGenerator
         /// <summary>
         /// Gets the columns in the schema as a list of Tuple of string + Type.
         /// </summary>
-        internal ReadOnlyCollection<Tuple<string, Type>> Columns { get { return _schemaIdentity.Columns; } }
+        internal Tuple<string, Type>[] Columns { get { return _schemaIdentity.Columns; } }
         #endregion
 
         #region Equality Members

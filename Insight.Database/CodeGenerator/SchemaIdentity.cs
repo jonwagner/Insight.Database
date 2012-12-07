@@ -49,34 +49,29 @@ namespace Insight.Database.CodeGenerator
                 }
             }
 
-            List<Tuple<string, Type>> columns = new List<Tuple<string, Type>>();
+            int fieldCount = reader.FieldCount;
+            Columns = new Tuple<string, Type>[fieldCount];
 
             // we know that we are going to store this in a hashtable, so pre-calculate the hashcode
             unchecked
             {
-                // base the hashcode on the mapping type, target graph, and schema contents
-                _hashCode = 0;
+                // base the hashcode on the column names and types
+                _hashCode = 17;
 
-                if (reader != null)
+               for (int i = 0; i < fieldCount; i++)
                 {
-                    int fieldCount = reader.FieldCount;
-                    for (int i = 0; i < fieldCount; i++)
-                    {
-                        string name = reader.GetName(i);
-                        Type fieldType = reader.GetFieldType(i);
+                    string name = reader.GetName(i);
+                    Type fieldType = reader.GetFieldType(i);
 
-                        // update the hash code for the name and type
-                        _hashCode *= 23;
-                        _hashCode += name.GetHashCode();
-                        _hashCode *= 23;
-                        _hashCode += fieldType.GetHashCode();
+                    // update the hash code for the name and type
+                    _hashCode *= 23;
+                    _hashCode += name.GetHashCode();
+                    _hashCode *= 23;
+                    _hashCode += fieldType.GetHashCode();
 
-                        columns.Add(new Tuple<string, Type>(name, fieldType));
-                    }
+                    Columns[i] = new Tuple<string, Type>(name, fieldType);
                 }
             }
-
-            Columns = new ReadOnlyCollection<Tuple<string, Type>>(columns);
         }
         #endregion
 
@@ -89,7 +84,7 @@ namespace Insight.Database.CodeGenerator
         /// <summary>
         /// Gets the list of columns in the schema as a Tuple of string + Type.
         /// </summary>
-        internal ReadOnlyCollection<Tuple<string, Type>> Columns { get; private set; }
+        internal Tuple<string, Type>[] Columns { get; private set; }
         #endregion
 
         #region Equality Members
@@ -122,8 +117,8 @@ namespace Insight.Database.CodeGenerator
             if (other == null)
                 return false;
 
-            int columnCount = Columns.Count;
-            if (columnCount != other.Columns.Count)
+            int columnCount = Columns.Length;
+            if (columnCount != other.Columns.Length)
                 return false;
             for (int i = 0; i < columnCount; i++)
             {

@@ -155,10 +155,15 @@ namespace Insight.Database.CodeGenerator
 			QueryIdentity identity = new QueryIdentity(command, type);
 
 			// try to get the deserializer. if not found, create one.
-			if (type.IsSubclassOf(typeof(DynamicObject)))
-				return _serializers.GetOrAdd(identity, key => CreateDynamicInputParameterGenerator(command));
-			else
-				return _serializers.GetOrAdd(identity, key => CreateClassInputParameterGenerator(command, type));
+            return _serializers.GetOrAdd(
+                identity,
+                key =>
+                {
+			        if (type.IsSubclassOf(typeof(DynamicObject)))
+				        return CreateDynamicInputParameterGenerator(command);
+			        else
+				        return CreateClassInputParameterGenerator(command, type);
+                });
 		}
 
 		/// <summary>
