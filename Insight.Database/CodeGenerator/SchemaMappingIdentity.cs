@@ -7,8 +7,6 @@ using System.Text;
 
 namespace Insight.Database.CodeGenerator
 {
-    // TODO: optimize this by only calculating hash code and column list when needed.
-
 	/// <summary>
 	/// An identity for the schema of a reader being mapped to a graph type.
     /// This checks all of the column names and types, as well as the type of the graph.
@@ -36,6 +34,11 @@ namespace Insight.Database.CodeGenerator
         /// The type of mapping operation.
         /// </summary>
         private SchemaMappingType _mappingType;
+
+        /// <summary>
+        /// The id column override mapping.
+        /// </summary>
+        private Dictionary<Type, string> _idColumns;
 		#endregion
 
 		#region Constructors
@@ -45,8 +48,8 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="reader">The reader to construct from.</param>
         /// <param name="withGraph">The type of the object graph used in this mapping.</param>
         /// <param name="mappingType">The type of mapping operation.</param>
-		public SchemaMappingIdentity(IDataReader reader, Type withGraph, SchemaMappingType mappingType)
-			: this(reader.GetSchemaTable(), withGraph, mappingType)
+		public SchemaMappingIdentity(IDataReader reader, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
+			: this(reader.GetSchemaTable(), withGraph, idColumns, mappingType)
 		{
 		}
 
@@ -56,7 +59,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="schemaTable">The schema table to analyze.</param>
         /// <param name="withGraph">The type of the object graph used in this mapping.</param>
         /// <param name="mappingType">The type of mapping operation.</param>
-        public SchemaMappingIdentity(DataTable schemaTable, Type withGraph, SchemaMappingType mappingType)
+        public SchemaMappingIdentity(DataTable schemaTable, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
 		{
             // we need the graph type to define the identity
             if (withGraph == null)
@@ -75,6 +78,7 @@ namespace Insight.Database.CodeGenerator
 			SchemaTable = schemaTable;
             _graph = withGraph;
             _mappingType = mappingType;
+            _idColumns = idColumns;
 
             // we know that we are going to store this in a hashtable, so pre-calculate the hashcode
 			unchecked
@@ -82,7 +86,9 @@ namespace Insight.Database.CodeGenerator
                 // base the hashcode on the mapping type, target graph, and schema contents
                 _hashCode = (int)_mappingType;
                 if (_graph != null)
-                    _hashCode = _graph.GetHashCode();
+                    _hashCode += _graph.GetHashCode();
+                if (_idColumns != null)
+                    _hashCode += _idColumns.GetHashCode();
 
 				int length = schemaTable.Rows.Count;
 				for (int i = 0; i < length; i++)
@@ -145,6 +151,9 @@ namespace Insight.Database.CodeGenerator
                 return false;
 
             if (_graph != other._graph)
+                return false;
+
+            if (_idColumns != other._idColumns)
                 return false;
 
             if (_columns.Count != other._columns.Count)

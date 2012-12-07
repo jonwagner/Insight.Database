@@ -64,7 +64,7 @@ namespace Insight.Database.CodeGenerator
             if (subTypes.Length == 1 && !mappingType.HasFlag(SchemaMappingType.WithCallback))
                 return CreateClassDeserializer(type, reader, 0, reader.FieldCount, mappingType.HasFlag(SchemaMappingType.NewObject));
 
-            // TODO: it would be nice to be able to deserialize a graph of objects in an Insert callback
+            // we can't deserialize an object graph in an insert/merge because we don't know whether to create subobjects or leave them null.
             if (!mappingType.HasFlag(SchemaMappingType.NewObject))
                 throw new ArgumentException("mappingType must be set to NewObject when deserializing an object graph.", "mappingType");
 

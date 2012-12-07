@@ -113,7 +113,7 @@ namespace Insight.Database.CodeGenerator
 			if (!_isValueType)
 			{
 				// generate an identity for the schema and a key for our accessors
-				SchemaMappingIdentity identity = new SchemaMappingIdentity(schemaTable, listType, SchemaMappingType.ExistingObject);
+				SchemaMappingIdentity identity = new SchemaMappingIdentity(schemaTable, listType, null, SchemaMappingType.ExistingObject);
 				Tuple<Type, SchemaMappingIdentity> key = new Tuple<Type, SchemaMappingIdentity>(listType, identity);
 
 				_readerData = _readerDataCache.GetOrAdd(key, k => CreateFieldReaderData(k.Item1, k.Item2));

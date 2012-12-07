@@ -155,8 +155,7 @@ namespace Insight.Database.CodeGenerator
             
             // at this point, we know that we aren't returning a value type or simple object that doesn't depend on the schema.
             // so we need to calculate a mapping identity and then create or return a deserializer.
-            // TODO: idcolumns should be part of the identity
-            SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph ?? type, mappingType);
+            SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph ?? type, idColumns, mappingType);
 
             // try to get the deserializer. if not found, create one.
             return _deserializers.GetOrAdd(
