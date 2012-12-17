@@ -77,17 +77,17 @@ namespace Insight.Database.CodeGenerator
 
         #region Single Class Deserialization
         /// <summary>
-        /// Compiles and returns a method that deserializes class type from the startBound to endBound fields of an IDataReader record.
+        /// Compiles and returns a method that deserializes class type from the subset of fields of an IDataReader record.
         /// </summary>
         /// <param name="type">The type of object to deserialize.</param>
         /// <param name="reader">The reader to analyze.</param>
-        /// <param name="startBound">The index of the first column to read.</param>
-        /// <param name="endBound">The index of the last column to read.</param>
+        /// <param name="startColumn">The index of the first column to read.</param>
+        /// <param name="columnCount">The number of columns to read.</param>
         /// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
         /// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
-        private static Delegate CreateClassDeserializer(Type type, IDataReader reader, int startBound, int endBound, bool createNewObject)
+        private static Delegate CreateClassDeserializer(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject)
         {
-            var method = CreateClassDeserializerDynamicMethod(type, reader, startBound, endBound, createNewObject);
+            var method = CreateClassDeserializerDynamicMethod(type, reader, startColumn, columnCount, createNewObject);
 
             // create a generic type for the delegate we are returning
             Type delegateType;
@@ -100,42 +100,27 @@ namespace Insight.Database.CodeGenerator
         }
 
         /// <summary>
-        /// Compiles and returns a method that deserializes class type from the startBound to endBound fields of an IDataReader record.
+        /// Compiles and returns a method that deserializes class type from the subset of fields of an IDataReader record.
         /// </summary>
         /// <param name="type">The type of object to deserialize.</param>
         /// <param name="reader">The reader to analyze.</param>
-        /// <param name="startBound">The index of the first column to read.</param>
-        /// <param name="endBound">The index of the last column to read.</param>
+        /// <param name="startColumn">The index of the first column to read.</param>
+        /// <param name="columnCount">The number of columns to read.</param>
         /// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
         /// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
         /// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
-        private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startBound, int endBound, bool createNewObject)
+        private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject)
         {
             // get the schema table in case we need it
             DataTable schemaTable = reader.GetSchemaTable();
 
-            // get the names of all of the fields in the range
-            var names = Enumerable.Range(startBound, endBound - startBound).Select(i => reader.GetName(i).ToUpperInvariant()).ToList();
+            // get the mapping from the reader to the type
+            ClassPropInfo[] mapping = ColumnMapping.CreateMapping(type, reader, startColumn, columnCount, true);
 
             // need to know the constructor for the object
             ConstructorInfo constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
             if (constructor == null)
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}", type.FullName));
-
-            // convert the list of names into a list of set reflections
-            // clone the methods list, since we are only going to use each setter once (i.e. if you return two ID columns, we will only use the first one)
-            var setMethods = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(type));
-            var setters = new List<ClassPropInfo>();
-            foreach (string name in names)
-            {
-                if (setMethods.ContainsKey(name))
-                {
-                    setters.Add(setMethods[name]);
-                    setMethods.Remove(name);
-                }
-                else
-                    setters.Add(null);
-            }
 
             // the method can either be:
             // createNewObject => Func<IDataReader, T>
@@ -167,9 +152,9 @@ namespace Insight.Database.CodeGenerator
                 il.Emit(OpCodes.Ldarg_1);					// push arg.1 (T), stack => [target]
             il.Emit(OpCodes.Stloc_1);						// pop loc.1 (result), stack => [empty]
 
-            for (int index = startBound; index < endBound; index++)
+            for (int index = 0; index < columnCount; index++)
             {
-                var method = setters[index - startBound];
+                var method = mapping[index];
 
                 // if there is no matching property for this column, then continue
                 if (method == null)
@@ -180,7 +165,7 @@ namespace Insight.Database.CodeGenerator
 
                 // need to call IDataReader.GetItem to get the value of the field
                 il.Emit(OpCodes.Ldarg_0);							// push arg.0 (reader), stack => [target][reader]
-                IlHelper.EmitLdInt32(il, index);					// push index, stack => [target][reader][index]
+                IlHelper.EmitLdInt32(il, index + startColumn);		// push index, stack => [target][reader][index]
                 // before we call it, put the current index into the index local variable
                 il.Emit(OpCodes.Dup);								// dup index, stack => [target][reader][index][index]
                 il.Emit(OpCodes.Stloc_0);							// pop loc.0 (index), stack => [target][reader][index]
@@ -200,7 +185,7 @@ namespace Insight.Database.CodeGenerator
                 /////////////////////////////////////////////////////////////////////
                 // if this is the first column of a sub-object and the value is null, then return a null object
                 /////////////////////////////////////////////////////////////////////
-                if (startBound > 0 && index == startBound)
+                if (startColumn > 0 && index == 0)
                 {
                     il.Emit(OpCodes.Ldnull);							// push null
                     il.Emit(OpCodes.Stloc_1);							// store null => loc.1 (target)
@@ -385,7 +370,7 @@ namespace Insight.Database.CodeGenerator
                 int endColumn = DetectEndColumn(reader, idColumns, column, subType, nextType);
 
                 // generate a deserializer for the class
-                deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, column, endColumn, createNewObject: true);
+                deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, column, endColumn - column, createNewObject: true);
 
                 column = endColumn;
             }
@@ -418,23 +403,20 @@ namespace Insight.Database.CodeGenerator
             }
 
             // get the setters for the class and the next class
-            var otherSetters = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(tCurrent));
-            var nextSetters = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(tNext));
+            // for the current set, we want to simulate what we will actually use, so we only want to use unique matches
+            // for the next set, we want to find all applicable matches, so we can detect the transition to the next object
+            int columnsLeft = reader.FieldCount - index;
+            var currentSetters = ColumnMapping.CreateMapping(tCurrent, reader, index, columnsLeft, uniqueMatches: true);
+            var nextSetters = ColumnMapping.CreateMapping(tNext, reader, index, columnsLeft, uniqueMatches: false);
 
-            // go through the fields and find the next field NOT ALREADY used in other, and ready to use in next
-            for (; index < reader.FieldCount; index++)
-            {
-                string name = reader.GetName(index).ToUpperInvariant();
-
-                // if other still hasn't set the field, then mark it as used and go to the next column
-                // if other doesn't need it, but next does, then we found our split
-                if (otherSetters.ContainsKey(name))
-                    otherSetters.Remove(name);
-                else if (nextSetters.ContainsKey(name))
+            // if there is a column not defined on the current type, but is defined on the next type
+            // then it is time to switch types
+            int i = 0;
+            for (i = 0; i < columnsLeft; i++)
+                if (currentSetters[i] == null && nextSetters[i] != null)
                     break;
-            }
 
-            return index;
+            return index + i;
         }
         #endregion
     }

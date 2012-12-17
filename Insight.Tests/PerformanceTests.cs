@@ -19,7 +19,7 @@ namespace Insight.Tests
     [TestFixture]
     class PerformanceTests : BaseDbTest
     {
-        [Test, Ignore]
+        [Test, Explicit]
         public void PerfTestSchemaMappingIdentity()
         {
             var reader = _connection.GetReaderSql("SELECT 1, 'two', 3.0, 'four', 'five', 6, 7, 8");

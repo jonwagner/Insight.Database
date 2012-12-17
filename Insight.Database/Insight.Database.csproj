@@ -56,8 +56,12 @@
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
     <Compile Include="CodeGenerator\SchemaMappingType.cs" />
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
+    <Compile Include="ColumnMapping.cs" />
+    <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="IColumnMappingHandler.cs" />
     <Compile Include="DefaultGraphAttribute.cs" />
     <Compile Include="Graph.cs" />
+    <Compile Include="RegexReplaceMappingHandler.cs" />
     <Compile Include="Results.cs" />
     <Compile Include="Reliable\ReliableConnectionExtensions.cs" />
     <Compile Include="Reliable\RetryStrategy.cs" />

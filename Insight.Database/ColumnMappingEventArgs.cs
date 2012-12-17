@@ -1,0 +1,43 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace Insight.Database
+{
+    /// <summary>
+    /// An event that is generated when the ColumnMapper needs to map a column to a type for the first time.
+    /// </summary>
+    public class ColumnMappingEventArgs : EventArgs
+    {
+        /// <summary>
+        /// Gets the target type of the mapping operation.
+        /// </summary>
+        public Type TargetType { get; internal set; }
+
+        /// <summary>
+        /// Gets the source reader of the data set. At the time of the mapping, the reader will be open and the metadata will be available.
+        /// </summary>
+        public IDataReader Reader { get; internal set; }
+
+        /// <summary>
+        /// Gets the index of the field that is being mapped.
+        /// </summary>
+        public int FieldIndex { get; internal set; }
+
+        /// <summary>
+        /// Gets or sets the name of the target field. This will be pre-set to the field that the mapper believes is the correct field.
+        /// The default logic will use the name of the property or the ColumnNameAttribute on the property.
+        /// Set this value to the desired target column.
+        /// </summary>
+        public string TargetFieldName { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the mapping operation should be canceled for this column.
+        /// If set to true, then the mapper will not map the current column.
+        /// </summary>
+        public bool Canceled { get; set; }
+    }
+}
