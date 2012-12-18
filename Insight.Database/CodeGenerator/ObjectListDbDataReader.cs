@@ -29,11 +29,6 @@ namespace Insight.Database.CodeGenerator
 		private DataTable _schemaTable;
 
 		/// <summary>
-		/// The type of object in the list.
-		/// </summary>
-		private Type _listType;
-
-		/// <summary>
 		/// The list of objects to enumerate through.
 		/// </summary>
 		private IEnumerator _list;
@@ -64,90 +59,22 @@ namespace Insight.Database.CodeGenerator
 		private string _currentStringValue;
 
 		/// <summary>
-		/// True when we are processing a list of value types (or strings).
-		/// </summary>
-		private bool _isValueType;
-
-		/// <summary>
 		/// Information about how to serialize the object.
 		/// </summary>
-		private FieldReaderData _readerData;
-
-		/// <summary>
-		/// Global cache of accessors.
-		/// </summary>
-		private static ConcurrentDictionary<SchemaMappingIdentity, FieldReaderData> _readerDataCache = new ConcurrentDictionary<SchemaMappingIdentity, FieldReaderData>();
+		private ObjectReader _objectReader;
 		#endregion
 
 		#region Constructors
 		/// <summary>
 		/// Initializes a new instance of the ObjectListDbDataReader class.
 		/// </summary>
-        /// <param name="schemaIdentity">The identity of the schema to map to.</param>
-		/// <param name="listType">The type of the list to bind to.</param>
+        /// <param name="objectReader">The objectReader to use to read the values from an object in the list.</param>
 		/// <param name="list">The list of objects.</param>
-		public ObjectListDbDataReader(SchemaIdentity schemaIdentity, Type listType, IEnumerable list)
+        public ObjectListDbDataReader(ObjectReader objectReader, IEnumerable list)
 		{
-            // we need a schema table to use to send data to the server
-            _schemaTable = schemaIdentity.SchemaTable;
-
-			_listType = listType;
+            _objectReader = objectReader;
+            _schemaTable = objectReader.SchemaTable;
 			_list = list.GetEnumerator();
-
-			_isValueType = _listType.IsValueType || listType == typeof(string);
-
-			// if this is not a value type, then we need to have methods to pull values out of the object
-			if (!_isValueType)
-			{
-				// generate an identity for the schema and a key for our accessors
-                SchemaMappingIdentity identity = new SchemaMappingIdentity(schemaIdentity, listType, null, SchemaMappingType.ExistingObject);
-
-                // get the accessor methods from the cache or create them
-                _readerData = _readerDataCache.GetOrAdd(identity, i => CreateFieldReaderData(listType, i));
-			}
-		}
-		#endregion
-
-		#region Reflection Members
-		/// <summary>
-		/// Create accessors to pull data from the object of the given type for the given schema.
-		/// </summary>
-		/// <param name="type">The type to analyze.</param>
-		/// <param name="identity">The schema identity to analyze.</param>
-		/// <returns>A list of accessor functions to get values from the type.</returns>
-		private static FieldReaderData CreateFieldReaderData(Type type, SchemaMappingIdentity identity)
-		{
-			FieldReaderData readerData = new FieldReaderData();
-
-			readerData.Accessors = new List<Func<object, object>>();
-			readerData.MemberTypes = new List<Type>();
-
-            var mapping = ClassPropInfo.GetMappingForType(type);
-
-            foreach (var column in identity.Columns)
-			{
-				// get the name of the column
-                string name = column.Item1.ToString().ToUpperInvariant();
-
-				// create a new anonymous method that takes an object and returns the value
-				var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
-				var il = dm.GetILGenerator();
-
-				il.Emit(OpCodes.Ldarg_0);						// push object argument
-				il.Emit(OpCodes.Isinst, type);					// cast object -> type
-
-				// get the value from the object
-                ClassPropInfo propInfo = mapping[name];
-				propInfo.EmitGetValue(il);
-				propInfo.EmitBox(il);
-
-				il.Emit(OpCodes.Ret);
-
-				readerData.MemberTypes.Add(propInfo.MemberType);
-				readerData.Accessors.Add((Func<object, object>)dm.CreateDelegate(typeof(Func<object, object>)));
-			}
-
-			return readerData;
 		}
 		#endregion
 
@@ -180,7 +107,7 @@ namespace Insight.Database.CodeGenerator
 				_currentStringValue = null;
 
 				// not allowed to have nulls in the list
-				if (_current == null && !_isValueType)
+                if (_current == null && !_objectReader.IsValueType)
 					throw new InvalidOperationException("Cannot send a list of objects to a table-valued parameter when the list contains a null value");
 			}
 
@@ -201,7 +128,7 @@ namespace Insight.Database.CodeGenerator
 				_currentOrdinal = ordinal;
 
 				// if we are reading IEnumerable<ValueType>, then there is one column and the value just needs to be converted
-				if (_isValueType)
+				if (_objectReader.IsValueType)
 				{
 					if (ordinal == 0)
 						_currentValue = _current;
@@ -211,7 +138,12 @@ namespace Insight.Database.CodeGenerator
 				else
 				{
 					// we are reading IEnumerable<ObjectType>, so look up the accessor and call it
-					_currentValue = _readerData.Accessors[ordinal](_current);
+                    // if there is no accessor, that means the mapper could not find an appropriate column, so make it null
+                    var accessor = _objectReader.Accessors[ordinal];
+                    if (accessor != null)
+                        _currentValue = accessor(_current);
+                    else
+                        _currentValue = null;
 				}
 			}
 
@@ -243,7 +175,7 @@ namespace Insight.Database.CodeGenerator
 					if (value.GetType().IsValueType)
 						_currentStringValue = value.ToString();
 					else
-						_currentStringValue = TypeHelper.SerializeObjectToXml(value, _readerData.MemberTypes[ordinal]);
+						_currentStringValue = TypeHelper.SerializeObjectToXml(value, _objectReader.MemberTypes[ordinal]);
 				}
 			}
 
@@ -433,12 +365,5 @@ namespace Insight.Database.CodeGenerator
 			get { throw new NotImplementedException(); }
 		}
 		#endregion
-
-		private class FieldReaderData
-		{
-			public List<Func<object, object>> Accessors { get; set; }
-
-			public List<Type> MemberTypes { get; set; }
-		}
 	}
 }

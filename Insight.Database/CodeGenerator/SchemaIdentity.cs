@@ -25,30 +25,8 @@ namespace Insight.Database.CodeGenerator
         /// Initializes a new instance of the SchemaIdentity class.
         /// </summary>
         /// <param name="reader">The reader to construct from.</param>
-        /// <param name="saveSchemaTable">True to save the schema table for future use.</param>
-        public SchemaIdentity(IDataReader reader, bool saveSchemaTable)
+        public SchemaIdentity(IDataReader reader)
         {
-            // generating the schematable is expensive so only do it for bulk uploads that require it.
-            if (saveSchemaTable)
-            {
-                SchemaTable = reader.GetSchemaTable();
-
-                // SQL Server tells us the precision of the columns
-                // but the TDS parser doesn't like the ones set on money, smallmoney and date
-                // so we have to override them
-                SchemaTable.Columns["NumericScale"].ReadOnly = false;
-                foreach (DataRow row in SchemaTable.Rows)
-                {
-                    string dataType = row["DataTypeName"].ToString();
-                    if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
-                        row["NumericScale"] = 4;
-                    else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
-                        row["NumericScale"] = 4;
-                    else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
-                        row["NumericScale"] = 0;
-                }
-            }
-
             int fieldCount = reader.FieldCount;
             Columns = new Tuple<string, Type>[fieldCount];
 
@@ -76,11 +54,6 @@ namespace Insight.Database.CodeGenerator
         #endregion
 
         #region Properties
-        /// <summary>
-        /// Gets the SchemaTable associated with the identity.
-        /// </summary>
-        internal DataTable SchemaTable { get; private set; }
-
         /// <summary>
         /// Gets the list of columns in the schema as a Tuple of string + Type.
         /// </summary>

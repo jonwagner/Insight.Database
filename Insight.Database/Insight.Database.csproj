@@ -50,6 +50,7 @@
     <Compile Include="AsyncExtensions.cs" />
     <Compile Include="CodeGenerator\ClassDeserializerGenerator.cs" />
     <Compile Include="CodeGenerator\ClassPropInfo.cs" />
+    <Compile Include="CodeGenerator\ObjectReader.cs" />
     <Compile Include="CodeGenerator\SchemaIdentity.cs" />
     <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
     <Compile Include="CodeGenerator\DbReaderDeserializer.cs" />

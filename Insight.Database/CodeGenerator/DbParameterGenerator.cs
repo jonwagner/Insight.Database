@@ -797,7 +797,7 @@ namespace Insight.Database.CodeGenerator
 			/// <summary>
 			/// Cache for Table-Valued Parameter schemas.
 			/// </summary>
-            private static ConcurrentDictionary<Type, SchemaIdentity> _tvpSchemas = new ConcurrentDictionary<Type, SchemaIdentity>();
+            private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
 
 			/// <summary>
 			/// The regex to detect parameters.
@@ -901,17 +901,18 @@ namespace Insight.Database.CodeGenerator
 				if (String.IsNullOrWhiteSpace(tableTypeName))
 					tableTypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
 
-				// let's see if we can get the schema table from the server
-                SchemaIdentity schemaIdentity = _tvpSchemas.GetOrAdd(
-					listType,
-					type => cmd.Connection.ExecuteAndAutoClose(
+				// see if we already have a reader for the given type and table type name
+                // we can't use the schema cache because we don't have a schema yet
+                var key = Tuple.Create<string, Type>(tableTypeName, listType);
+                ObjectReader objectReader = _tvpReaders.GetOrAdd(
+                    key,
+					k => cmd.Connection.ExecuteAndAutoClose(
 						_ =>
 						{
-							SqlCommand schemaCommand = new SqlCommand(String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName));
-							schemaCommand.Connection = cmd.Connection;
-							schemaCommand.Transaction = cmd.Transaction;
-                            using (var reader = schemaCommand.ExecuteReader())
-                                return new SchemaIdentity(reader, true);
+                            // select a 0 row result set so we can determine the schema of the table
+                            string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
+                            using (var sqlReader = cmd.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: cmd.Transaction))
+                                return ObjectReader.GetObjectReader(sqlReader, listType);
 						}));
 
 				// create the structured parameter
@@ -919,7 +920,7 @@ namespace Insight.Database.CodeGenerator
 				p.ParameterName = parameterName;
 				p.SqlDbType = SqlDbType.Structured;
 				p.TypeName = tableTypeName;
-                p.Value = new ObjectListDbDataReader(schemaIdentity, listType, list);
+                p.Value = new ObjectListDbDataReader(objectReader, list);
 				cmd.Parameters.Add(p);
 			}
 		}

@@ -24,7 +24,7 @@ namespace Insight.Database
 		/// <summary>
 		/// A cache of the table schemas used for bulk copy.
 		/// </summary>
-        private static ConcurrentDictionary<string, SchemaIdentity> _tableSchemas = new ConcurrentDictionary<string, SchemaIdentity>();
+        private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tableReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
 		#endregion
 
 		#region Open Method
@@ -1345,20 +1345,21 @@ namespace Insight.Database
 				if (batchSize != null)
 					bulk.BatchSize = batchSize.Value;
 
-				// ask Sql Server for the schema table
-                SchemaIdentity schemaIdentity = _tableSchemas.GetOrAdd(
-                    tableName,
+				// see if we already have a mapping for the given table name and type
+                // we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
+                var key = Tuple.Create<string, Type>(tableName, typeof(T));
+                ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
+                    key,
                     t =>
                     {
                         // select a 0 row result set so we can determine the schema of the table
-                        using (var sqlReader = connection.GetReaderSql(String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName), null, CommandBehavior.SchemaOnly))
-                        {
-                            return new SchemaIdentity(sqlReader, true);
-                        }
+                        string sql = String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
+                        using (var sqlReader = connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly))
+                            return ObjectReader.GetObjectReader(sqlReader, typeof(T));
                     });
 
 				// create a reader for the list
-                ObjectListDbDataReader reader = new ObjectListDbDataReader(schemaIdentity, typeof(T), list);
+                ObjectListDbDataReader reader = new ObjectListDbDataReader(fieldReaderData, list);
 
 				// write the data to the server
 				bulk.WriteToServer(reader);

@@ -22,11 +22,6 @@ namespace Insight.Database.CodeGenerator
         private SchemaIdentity _schemaIdentity;
 
         /// <summary>
-        /// The type of the object graph that the schema is mapped to.
-        /// </summary>
-        private Type _graph;
-
-        /// <summary>
         /// The type of mapping operation.
         /// </summary>
         private SchemaMappingType _mappingType;
@@ -51,7 +46,7 @@ namespace Insight.Database.CodeGenerator
         /// <param name="idColumns">An optional override of the columns used to determine the boundary between objects.</param>
         /// <param name="mappingType">The type of mapping operation.</param>
         public SchemaMappingIdentity(IDataReader reader, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
-            : this(new SchemaIdentity(reader, false), withGraph, idColumns, mappingType)
+            : this(new SchemaIdentity(reader), withGraph, idColumns, mappingType)
         {
         }
 
@@ -69,7 +64,7 @@ namespace Insight.Database.CodeGenerator
                 throw new ArgumentNullException("withGraph");
 
             // save the values away for later
-            _graph = withGraph;
+            Graph = withGraph;
             _mappingType = mappingType;
             _idColumns = idColumns;
             _schemaIdentity = schemaIdentity;
@@ -79,8 +74,8 @@ namespace Insight.Database.CodeGenerator
 			{
                 // base the hashcode on the mapping type, target graph, and schema contents
                 _hashCode = (int)_mappingType;
-                if (_graph != null)
-                    _hashCode += _graph.GetHashCode();
+                if (Graph != null)
+                    _hashCode += Graph.GetHashCode();
                 if (_idColumns != null)
                     _hashCode += _idColumns.GetHashCode();
 
@@ -94,6 +89,11 @@ namespace Insight.Database.CodeGenerator
         /// Gets the columns in the schema as a list of Tuple of string + Type.
         /// </summary>
         internal Tuple<string, Type>[] Columns { get { return _schemaIdentity.Columns; } }
+
+        /// <summary>
+        /// Gets the type of the object graph that the schema is mapped to.
+        /// </summary>
+        internal Type Graph { get; private set; }
         #endregion
 
         #region Equality Members
@@ -129,7 +129,7 @@ namespace Insight.Database.CodeGenerator
             if (_mappingType != other._mappingType)
                 return false;
 
-            if (_graph != other._graph)
+            if (Graph != other.Graph)
                 return false;
 
             if (!_schemaIdentity.Equals(other._schemaIdentity))
