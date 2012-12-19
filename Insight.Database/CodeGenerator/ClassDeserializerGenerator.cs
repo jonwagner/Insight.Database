@@ -111,9 +111,6 @@ namespace Insight.Database.CodeGenerator
         /// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
         private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject)
         {
-            // get the schema table in case we need it
-            DataTable schemaTable = reader.GetSchemaTable();
-
             // get the mapping from the reader to the type
             ClassPropInfo[] mapping = ColumnMapping.CreateMapping(type, reader, startColumn, columnCount, true);
 
@@ -173,11 +170,7 @@ namespace Insight.Database.CodeGenerator
                 il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);		// call getItem, stack => [target][value-as-object]
 
                 // determine the type of the object in the recordset
-                Type sourceType;
-                if ((string)schemaTable.Rows[index]["DataTypeName"] == "xml")
-                    sourceType = typeof(XmlDocument);
-                else
-                    sourceType = (Type)schemaTable.Rows[index]["DataType"];
+                Type sourceType = reader.GetFieldType(index);
 
                 // emit the code to convert the value and set the value on the field
                 Label finishLabel = TypeConverterGenerator.EmitConvertAndSetValue(il, sourceType, method);

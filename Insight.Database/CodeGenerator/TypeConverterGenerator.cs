@@ -129,9 +129,10 @@ namespace Insight.Database.CodeGenerator
 
 				// after: stack => [target][xDocument]
 			}
-			else if (sourceType == typeof(XmlDocument) && targetType != typeof(string) && !targetType.IsValueType)
+			else if (sourceType == typeof(string) && targetType != typeof(string) && !targetType.IsValueType)
 			{
-				// the column is an xml data type and the member is not a string
+                // we are getting a string from the database, but the target is not a string, but it's a reference type
+				// assume the column is an xml data type and that we want to deserialize it
 
 				// before: stack => [target][object-value]
 				il.Emit(OpCodes.Ldtoken, targetType);
@@ -162,10 +163,6 @@ namespace Insight.Database.CodeGenerator
 			}
 			else
 			{
-				// at this point, we can't treat it as an XmlDocument, we just have to treat it as a string
-				if (sourceType == typeof(XmlDocument))
-					sourceType = typeof(String);
-
 				// if timespan is broken and we have an object, then it's probably a timespan
 				if (SqlClientTimeIsBroken && sourceType == typeof(object) && underlyingTargetType == typeof(TimeSpan))
 					sourceType = typeof(TimeSpan);
