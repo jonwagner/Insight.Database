@@ -224,9 +224,6 @@ namespace Insight.Database.CodeGenerator
         {
             Type type = subTypes[0];
 
-            // we need the list of set methods for the object
-            var setMethods = ClassPropInfo.GetMembersForType(type).Where(m => m.CanSetMember);
-
             // go through each of the subtypes
             var deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
 
@@ -247,19 +244,42 @@ namespace Insight.Database.CodeGenerator
                 if (i > 0)                                                                  
                     il.Emit(OpCodes.Dup);
 
+                // if we don't have a callback, then we are going to store the value directly into the field on T or one of the subobjects
+                // here we determine the proper set method to store into.
+                // we are going to look into all of the types in the graph and find the first parameter that matches our current type
+                ClassPropInfo setMethod = null;
+                for (int parent = 0; parent < i; parent++)
+                {
+                    // find the set method on the current parent
+                    setMethod = GetFirstMatchingMethod(ClassPropInfo.GetMembersForType(subTypes[parent]).Where(m => m.CanSetMember), subTypes[i]);
+
+                    // if we didn't find a matching set method, then continue on to the next type in the graph
+                    if (setMethod == null)
+                        continue;
+
+                    // if the parent is not the root object, we have to drill down to the parent, then set the value
+                    // the root object is already on the stack, so emit a get method to get the object to drill down into
+                    for (int p = 0; p < parent; p++)
+                    {
+                        var getMethod = GetFirstMatchingMethod(ClassPropInfo.GetMembersForType(subTypes[p]).Where(m => m.CanGetMember && m.CanSetMember), subTypes[p + 1]);
+                        if (getMethod == null)
+                            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "In order to deserialize sub-objects, {0} must have a get/set method for type {1}", subTypes[p].FullName, subTypes[p + 1].FullName));
+                        getMethod.EmitGetValue(il);
+                    }
+
+                    break;
+                }
+
                 // call the deserializer for the subobject
                 il.Emit(OpCodes.Ldarg_0);
                 il.Emit(OpCodes.Call, deserializers[i]);
 
-                // if we don't have a callback, then we are going to store the value directly into the field on T
-                // TODO: does this handle selecting subobjects onto subobjects? should it? the wiki says we do, but I think that doesn't actually work. there are no test cases to show this.
+                // other than the root object, set the value on the parent object
                 if (i > 0)
                 {
-                    ClassPropInfo setMethod =
-                        setMethods.FirstOrDefault(s => subTypes[i] == s.MemberType) ??
-                        setMethods.FirstOrDefault(s => subTypes[i].IsSubclassOf(s.MemberType));
                     if (setMethod == null)
                         throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find set method for type {0} into type {1}", subTypes[i].FullName, subTypes[0].FullName));
+
                     setMethod.EmitSetValue(il);
                 }
             }
@@ -270,6 +290,18 @@ namespace Insight.Database.CodeGenerator
             // convert the dynamic method to a delegate
             var delegateType = typeof(Func<,>).MakeGenericType(typeof(IDataReader), type);
             return dm.CreateDelegate(delegateType);
+        }
+
+        /// <summary>
+        /// Gets the first get/set method out of a list that has a given membertype.
+        /// </summary>
+        /// <param name="properties">The list of properties to look through.</param>
+        /// <param name="type">The type to look for.</param>
+        /// <returns>The first method that has the given type.</returns>
+        private static ClassPropInfo GetFirstMatchingMethod(IEnumerable<ClassPropInfo> properties, Type type)
+        {
+            return properties.FirstOrDefault(s => type == s.MemberType) ??
+                properties.FirstOrDefault(s => type.IsSubclassOf(s.MemberType));
         }
         #endregion
 

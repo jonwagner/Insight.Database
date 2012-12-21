@@ -26,6 +26,7 @@ namespace Insight.Tests
 		{
 			public int ID;
 			public int SubInt;
+            public TestSubSubData SubSubData;
 		}
 
 		class TestSubData2
@@ -33,6 +34,12 @@ namespace Insight.Tests
 			public int ID;
 			public int SubInt;
 		}
+
+        class TestSubSubData
+        {
+            public int ID;
+            public int SubInt;
+        }
 
 		class TestOtherData
 		{
@@ -131,6 +138,28 @@ namespace Insight.Tests
 			Assert.AreEqual (3, testData.SubData2.ID);
 			Assert.AreEqual (4, testData.SubData2.SubInt);
 		}
+
+        [Test]
+        public void SelectSubSubObjectWithoutCustomMapper()
+        {
+            var reader = _connection.GetReaderSql(@"
+				SELECT ID=1, ID=2, ID=3, SubInt=4
+			");
+
+            var results = reader.AsEnumerable<TestData, TestSubData, TestSubSubData>().ToList();
+
+            Assert.IsNotNull(results);
+            Assert.AreEqual(1, results.Count);
+
+            // test that we got data back
+            var testData = results[0];
+            Assert.AreEqual(1, testData.ID, "ID should not be overwritten by sub-object id");
+            Assert.IsNotNull(testData.SubData);
+            Assert.AreEqual(2, testData.SubData.ID);
+            Assert.IsNotNull(testData.SubData.SubSubData);
+            Assert.AreEqual(3, testData.SubData.SubSubData.ID);
+            Assert.AreEqual(4, testData.SubData.SubSubData.SubInt);
+        }
 
 		[Test]
 		public void SelectSubSubObject ()
