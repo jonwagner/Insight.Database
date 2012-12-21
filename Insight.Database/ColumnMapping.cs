@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -21,9 +23,14 @@ namespace Insight.Database
         private static object _lock = new object();
 
         /// <summary>
-        /// The singleton instance of the ColumnMapping configuration.
+        /// The singleton instance of the ColumnMapping configuration for Tables and Table Valued Parameters.
         /// </summary>
-        private static ColumnMapping _configuration = new ColumnMapping();
+        private static ColumnMapping _tables = new ColumnMapping();
+
+        /// <summary>
+        /// The singleton instance of the ColumnMapping configuration for Parameters.
+        /// </summary>
+        private static ColumnMapping _parameters = new ColumnMapping();
 
         /// <summary>
         /// The mapping event handler.
@@ -43,9 +50,14 @@ namespace Insight.Database
 
         #region Properties
         /// <summary>
-        /// Gets the singleton instance of the ColumnMapping configuration.
+        /// Gets singleton instance of the ColumnMapping configuration for Tables and Table Valued Parameters.
         /// </summary>
-        public static ColumnMapping Configuration { get { return _configuration; } }
+        public static ColumnMapping Tables { get { return _tables; } }
+
+        /// <summary>
+        /// Gets singleton instance of the ColumnMapping configuration for Parameters.
+        /// </summary>
+        public static ColumnMapping Parameters { get { return _parameters; } }
         #endregion
 
         /// <summary>
@@ -53,7 +65,7 @@ namespace Insight.Database
         /// </summary>
         /// <param name="handler">The handler to add.</param>
         /// <returns>The current ColumnMapping configuration.</returns>
-        public ColumnMapping Add(IColumnMappingHandler handler)
+        public ColumnMapping AddHandler(IColumnMappingHandler handler)
         {
             lock (_lock)
             {
@@ -73,7 +85,7 @@ namespace Insight.Database
         /// <returns>The current ColumnMapping configuration.</returns>
         public ColumnMapping ReplaceRegex<T>(string text, string replacement)
         {
-            return Add(new RegexReplaceMappingHandler<T>(text, replacement));
+            return AddHandler(new RegexReplaceMappingHandler<T>(text, replacement));
         }
 
         /// <summary>
@@ -96,7 +108,7 @@ namespace Insight.Database
         /// <returns>The current ColumnMapping configuration.</returns>
         public ColumnMapping RemoveRegex<T>(string text)
         {
-            return Add(new RegexReplaceMappingHandler<T>(text, String.Empty));
+            return AddHandler(new RegexReplaceMappingHandler<T>(text, String.Empty));
         }
 
         /// <summary>
@@ -118,7 +130,7 @@ namespace Insight.Database
         /// <returns>The current ColumnMapping configuration.</returns>
         public ColumnMapping RemoveStrings<T>(string text)
         {
-            return Add(new RegexReplaceMappingHandler<T>(text, String.Empty));
+            return AddHandler(new RegexReplaceMappingHandler<T>(text, String.Empty));
         }
 
         /// <summary>
@@ -198,17 +210,22 @@ namespace Insight.Database
         /// </summary>
         /// <param name="type">The type of object to map to.</param>
         /// <param name="reader">The reader to read.</param>
+        /// <param name="parameters">The list of parameters used in the mapping operation.</param>
         /// <param name="startColumn">The index of the first column to map.</param>
         /// <param name="columnCount">The number of columns to map.</param>
         /// <param name="uniqueMatches">True to only return the first match per field, false to return all matches per field.</param>
         /// <returns>An array of setters.</returns>
-        internal static ClassPropInfo[] CreateMapping(Type type, IDataReader reader, int startColumn, int columnCount, bool uniqueMatches)
+        internal ClassPropInfo[] CreateMapping(Type type, IDataReader reader, IList<SqlParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
         {
             ClassPropInfo[] mapping = new ClassPropInfo[columnCount];
 
             // convert the list of names into a list of set reflections
             // clone the methods list, since we are only going to use each setter once (i.e. if you return two ID columns, we will only use the first one)
             var setMethods = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(type));
+
+            List<IDataParameter> readOnlyParameters = null;
+            if (parameters != null)
+                readOnlyParameters = new List<IDataParameter>(parameters.OfType<IDataParameter>().ToList());
 
             // find all of the mappings
             for (int i = 0; i < columnCount; i++)
@@ -219,11 +236,12 @@ namespace Insight.Database
                     TargetType = type,
                     Reader = reader,
                     FieldIndex = i + startColumn,
+                    Parameters = readOnlyParameters,
                 };
 
                 lock (_lock)
                 {
-                    Configuration._mappings(null, e);
+                    _mappings(null, e);
                 }
 
                 // if no mapping was returned, then skip the column
@@ -254,7 +272,12 @@ namespace Insight.Database
         /// <param name="e">The ColumnMappingEventArgs to process.</param>
         private void DefaultMappingHandler(object sender, ColumnMappingEventArgs e)
         {
-            e.TargetFieldName = e.Reader.GetName(e.FieldIndex);
+            if (e.Reader != null)
+                e.TargetFieldName = e.Reader.GetName(e.FieldIndex);
+            else if (e.Parameters != null)
+                e.TargetFieldName = e.Parameters[e.FieldIndex].ToString();
+            else
+                throw new InvalidOperationException("DefaultMappingHandler requires either a Reader or Parameters list.");
         }
         #endregion
     }

@@ -18,9 +18,14 @@ namespace Insight.Database
         public Type TargetType { get; internal set; }
 
         /// <summary>
-        /// Gets the source reader of the data set. At the time of the mapping, the reader will be open and the metadata will be available.
+        /// Gets the source reader of the data set for a table mapping. At the time of the mapping, the reader will be open and the metadata will be available.
         /// </summary>
         public IDataReader Reader { get; internal set; }
+
+        /// <summary>
+        /// Gets the source parameter list for a parameter mapping.
+        /// </summary>
+        public IList<IDataParameter> Parameters { get; internal set; }
 
         /// <summary>
         /// Gets the index of the field that is being mapped.

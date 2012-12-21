@@ -319,15 +319,17 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
 
 			// get the properties for the type
-            var properties = ClassPropInfo.GetMappingForType(type);
+            var mapping = ColumnMapping.Parameters.CreateMapping(type, null, parameters, 0, parameters.Count, true);
 
-			// go through all of the parameters
-			foreach (SqlParameter sqlParameter in parameters)
-			{
-				// see if there is a property that matches the parameter
-				ClassPropInfo prop;
-				if (!properties.TryGetValue(sqlParameter.ParameterName, out prop))
-				{
+            // go through all of the mappings
+            for (int i = 0; i < mapping.Length; i++)
+            {
+                var prop = mapping[i];
+                var sqlParameter = parameters[i];
+
+                // if there is no mapping for that parameter, then see if we need to add it as an output parameter
+                if (prop == null)
+                {
 					// if there is an unspecified output parameter, then we need to add a parameter for it
 					// this includes input/output parameters, as well as return values
 					if (sqlParameter.Direction.HasFlag(ParameterDirection.Output))
