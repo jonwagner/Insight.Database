@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Insight.Database.Reliable
@@ -66,8 +67,9 @@ namespace Insight.Database.Reliable
 		/// Executes the command asynchronously with retry.
 		/// </summary>
 		/// <param name="commandBehavior">The commandBehavior to execute with.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that provides an IDataReader of the results when complete.</returns>
-		public Task<IDataReader> GetReaderAsync(CommandBehavior commandBehavior)
+		internal Task<IDataReader> GetReaderAsync(CommandBehavior commandBehavior, CancellationToken cancellationToken)
 		{
 			// start the sql command executing
 			SqlCommand sqlCommand = InnerCommand as SqlCommand;
@@ -75,7 +77,13 @@ namespace Insight.Database.Reliable
 				throw new InvalidOperationException("Cannot perform an async query on a command that is not a SqlCommand");
 
 			// fallback to calling execute reader in a blocking task
-			return ExecuteWithRetryAsync(() => Task<IDataReader>.Factory.StartNew(() => InnerCommand.ExecuteReader(commandBehavior)));
+			return ExecuteWithRetryAsync(() => Task<IDataReader>.Factory.StartNew(
+				() =>
+				{
+					cancellationToken.ThrowIfCancellationRequested();
+
+					return InnerCommand.ExecuteReader(commandBehavior);
+				}));
 		}
 #endif
 

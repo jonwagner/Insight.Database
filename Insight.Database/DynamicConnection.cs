@@ -8,6 +8,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Reflection;
 using System.Text;
+using System.Threading;
 
 namespace Insight.Database
 {
@@ -25,10 +26,20 @@ namespace Insight.Database
         /// </summary>
         private static Type[] _queryParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type), typeof(CommandBehavior) };
 
+		/// <summary>
+		/// The types of parameters to pass to QueryAsync methods.
+		/// </summary>
+		private static Type[] _queryAsyncParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type), typeof(CommandBehavior), typeof(CancellationToken?) };
+
         /// <summary>
         /// The types of parameters to pass to QueryResults methods.
         /// </summary>
         private static Type[] _queryResultsParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior) };
+
+		/// <summary>
+		/// The types of parameters to pass to QueryResultsAsync methods.
+		/// </summary>
+		private static Type[] _queryResultsAsyncParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior), typeof(CancellationToken?) };
 
         /// <summary>
         /// Caches for MethodInfo for query methods.
@@ -90,6 +101,7 @@ namespace Insight.Database
             int? timeout = null;
             IDbTransaction transaction = null;
             object withGraph = null; // could be withGraph:Type or withGraphs:Type[]
+			CancellationToken cancellationToken = CancellationToken.None;
 
             CallInfo callInfo = binder.CallInfo;
             int unnamedParameterCount = callInfo.ArgumentCount - callInfo.ArgumentNames.Count;
@@ -109,6 +121,11 @@ namespace Insight.Database
             {
                 switch (argumentNames[i])
                 {
+					case "cancellationToken":
+						cancellationToken = (CancellationToken)args[i + unnamedParameterCount];
+                        specialParameters++;
+						break;
+
                     case "transaction":
                         transaction = (IDbTransaction)args[i + unnamedParameterCount];
                         specialParameters++;
@@ -174,7 +191,12 @@ namespace Insight.Database
                     string argumentName = callInfo.ArgumentNames[i];
 
                     // ignore out special parameters
-                    if (argumentName == "transaction" || argumentName == "timeout" || argumentName == "returnType" || argumentName == "withGraph" || argumentName == "withGraphs")
+					if (argumentName == "cancellationToken" ||
+						argumentName == "transaction" ||
+						argumentName == "timeout" ||
+						argumentName == "returnType" ||
+						argumentName == "withGraph" ||
+						argumentName == "withGraphs")
                         continue;
 
                     string parameterName = "@" + argumentName;
@@ -187,8 +209,11 @@ namespace Insight.Database
             // the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
             MethodInfo method = GetQueryMethod(type, doAsync);
 
-            return method.Invoke(null, new object[] { _connection, cmd, withGraph, CommandBehavior.Default });
-        }
+			if (doAsync)
+				return method.Invoke(null, new object[] { _connection, cmd, withGraph, CommandBehavior.Default, cancellationToken });
+			else
+				return method.Invoke(null, new object[] { _connection, cmd, withGraph, CommandBehavior.Default });
+		}
 
         /// <summary>
         /// Returns a MethodInfo for a query method based on the type and whether the call should be async.
@@ -202,14 +227,14 @@ namespace Insight.Database
             if (type.IsSubclassOf(typeof(Results)))
             {
                 if (doAsync)
-                    method = _queryResultsAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryResultsAsync", _queryResultsParameters).MakeGenericMethod(t));
+                    method = _queryResultsAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryResultsAsync", _queryResultsAsyncParameters).MakeGenericMethod(t));
                 else
                     method = _queryResultsMethods.GetOrAdd(type, t => typeof(DBConnectionExtensions).GetMethod("QueryResults", _queryResultsParameters).MakeGenericMethod(t));
             }
             else
             {
                 if (doAsync)
-                    method = _queryAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryAsync", _queryParameters).MakeGenericMethod(t));
+					method = _queryAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryAsync", _queryAsyncParameters).MakeGenericMethod(t));
                 else
                     method = _queryMethods.GetOrAdd(type, t => typeof(DBConnectionExtensions).GetMethod("Query", _queryParameters).MakeGenericMethod(t));
             }

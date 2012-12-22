@@ -41,7 +41,7 @@ namespace Insight.Tests
             public double Double;
         }
 
-        [Test]
+        [Test, Explicit]
         public void PerfTestQuerySql()
         {
             var results = _connection.QuerySql<PerfTestData>("SELECT Int=1, String='2', Decimal=3, [Double]=4");

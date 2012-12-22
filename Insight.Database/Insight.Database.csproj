@@ -48,6 +48,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncExtensions.cs" />
+    <Compile Include="AsyncExtensionsObsolete.cs" />
     <Compile Include="CodeGenerator\ClassDeserializerGenerator.cs" />
     <Compile Include="CodeGenerator\ClassPropInfo.cs" />
     <Compile Include="CodeGenerator\ObjectReader.cs" />
