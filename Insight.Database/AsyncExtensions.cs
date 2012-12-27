@@ -890,9 +890,9 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static async Task<IList<FastExpando>> ToListAsync(this Task<IDataReader> task, CancellationToken? cancellationToken = null)
 		{
-			IDataReader reader = await task;
+			IDataReader reader = await task.ConfigureAwait(false);
 
-			return await reader.ToListAsync(cancellationToken);
+			return await reader.ToListAsync(cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -914,7 +914,7 @@ namespace Insight.Database
 				return reader.ToList();
 
 			var mapper = DbReaderDeserializer.GetDeserializer<FastExpando>(dbReader);
-			return await dbReader.ToListAsync(mapper, ct);
+			return await dbReader.ToListAsync(mapper, ct).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -927,9 +927,9 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static async Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken? cancellationToken = null)
 		{
-			IDataReader reader = await task;
+			IDataReader reader = await task.ConfigureAwait(false);
 
-			return await reader.ToListAsync<TResult>(withGraph, cancellationToken);
+			return await reader.ToListAsync<TResult>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -953,7 +953,7 @@ namespace Insight.Database
 				return reader.ToList<TResult>();
 
 			var mapper = DbReaderDeserializer.GetDeserializer<TResult>(dbReader, withGraph);
-			return await dbReader.ToListAsync(mapper, ct);
+			return await dbReader.ToListAsync(mapper, ct).ConfigureAwait(false);
 		}
 #endif
 		#endregion
@@ -1174,13 +1174,13 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 			ct.ThrowIfCancellationRequested();
 
-			IDataReader reader = await task;
+			IDataReader reader = await task.ConfigureAwait(false);
 			DbDataReader dbReader = reader as DbDataReader;
 
 			if (dbReader == null)
 				return reader.Merge(item);
 
-			return await dbReader.MergeAsync(item, cancellationToken);
+			return await dbReader.MergeAsync(item, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -1208,11 +1208,11 @@ namespace Insight.Database
 				var merger = DbReaderDeserializer.GetMerger<T>(reader);
 
 				// read the identities from the recordset and merge it into the object
-				await reader.ReadAsync(ct);
+				await reader.ReadAsync(ct).ConfigureAwait(false);
 				merger(reader, item);
 
 				// we are done with this result set, so move onto the next or clean up the reader
-				moreResults = await reader.NextResultAsync(ct);
+				moreResults = await reader.NextResultAsync(ct).ConfigureAwait(false);
 
 				return item;
 			}
@@ -1241,13 +1241,13 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 			ct.ThrowIfCancellationRequested();
 
-			IDataReader reader = await task;
+			IDataReader reader = await task.ConfigureAwait(false);
 			DbDataReader dbReader = reader as DbDataReader;
 
 			if (dbReader == null)
 				return reader.Merge(items);
 
-			return await dbReader.MergeAsync(items, cancellationToken);
+			return await dbReader.MergeAsync(items, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -1272,7 +1272,7 @@ namespace Insight.Database
 				// read the identities of each item from the recordset and merge them into the objects
 				foreach (T item in items)
 				{
-					await reader.ReadAsync(ct);
+					await reader.ReadAsync(ct).ConfigureAwait(false);
 
 					ct.ThrowIfCancellationRequested();
 
@@ -1280,7 +1280,7 @@ namespace Insight.Database
 				}
 
 				// we are done with this result set, so move onto the next or clean up the reader
-				moreResults = await reader.NextResultAsync(ct);
+				moreResults = await reader.NextResultAsync(ct).ConfigureAwait(false);
 
 				return items;
 			}
@@ -1478,7 +1478,7 @@ namespace Insight.Database
 				IList<TResult> list = new List<TResult>();
 
 				// read in all of the records
-				while (await reader.ReadAsync(cancellationToken))
+				while (await reader.ReadAsync(cancellationToken).ConfigureAwait(false))
 				{
 					list.Add(mapper(reader));
 
@@ -1487,7 +1487,7 @@ namespace Insight.Database
 				}
 
 				// move to the next result set - the token should already be here
-				moreResults = await reader.NextResultAsync(cancellationToken);
+				moreResults = await reader.NextResultAsync(cancellationToken).ConfigureAwait(false);
 
 				return list;
 			}

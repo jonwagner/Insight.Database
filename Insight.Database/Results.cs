@@ -80,7 +80,7 @@ namespace Insight.Database
 
 			await base.ReadAsync(reader, withGraphs);
 
-			Set1 = await reader.ToListAsync<T1>(withGraph, cancellationToken);
+			Set1 = await reader.ToListAsync<T1>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
 #endif
 	}
@@ -125,7 +125,7 @@ namespace Insight.Database
 
 			await base.ReadAsync(reader, withGraphs);
 
-			Set2 = await reader.ToListAsync<T2>(withGraph, cancellationToken);
+			Set2 = await reader.ToListAsync<T2>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
 #endif
 	}
@@ -171,7 +171,7 @@ namespace Insight.Database
 
 			await base.ReadAsync(reader, withGraphs);
 
-			Set3 = await reader.ToListAsync<T3>(withGraph, cancellationToken);
+			Set3 = await reader.ToListAsync<T3>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
 #endif
 	}
@@ -218,7 +218,7 @@ namespace Insight.Database
 
 			await base.ReadAsync(reader, withGraphs);
 
-			Set4 = await reader.ToListAsync<T4>(withGraph, cancellationToken);
+			Set4 = await reader.ToListAsync<T4>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
 #endif
 	}
@@ -266,7 +266,7 @@ namespace Insight.Database
 
 			await base.ReadAsync(reader, withGraphs);
 
-			Set5 = await reader.ToListAsync<T5>(withGraph, cancellationToken);
+			Set5 = await reader.ToListAsync<T5>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
 #endif
 	}
