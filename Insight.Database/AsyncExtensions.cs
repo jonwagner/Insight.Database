@@ -8,6 +8,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Insight.Database.CodeGenerator;
 using Insight.Database.Reliable;
 
 namespace Insight.Database
@@ -189,7 +190,8 @@ namespace Insight.Database
 
             command.Connection = connection;
             return command.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct).ToList<TResult>(withGraph),
+				c => c.GetReaderAsync(commandBehavior, ct)
+					.ToListAsync<TResult>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
         }
@@ -220,7 +222,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList(),
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+					.ToListAsync(cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -253,7 +256,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction).ToList<TResult>(withGraph),
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+					.ToListAsync<TResult>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -281,7 +285,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList(),
+				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+					.ToListAsync(cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -312,7 +317,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction).ToList<TResult>(withGraph),
+				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+					.ToListAsync<TResult>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -335,7 +341,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return cmd.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct).ToList(),
+				c => c.GetReaderAsync(commandBehavior, ct)
+					.ToListAsync(cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -358,7 +365,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return cmd.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct).ToList<T>(withGraph),
+				c => c.GetReaderAsync(commandBehavior, ct)
+					.ToListAsync<T>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -837,29 +845,97 @@ namespace Insight.Database
         #endregion
 
 		#region Translation Methods
+#if NODBASYNC
 		/// <summary>
 		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
 		/// </summary>
 		/// <param name="task">The data reader task to continue.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<FastExpando>> ToList(this Task<IDataReader> task)
+		public static Task<IList<FastExpando>> ToListAsync(this Task<IDataReader> task, CancellationToken? cancellationToken = null)
 		{
-			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
-			return task.ContinueWith(t => t.Result.ToList(), TaskContinuationOptions.ExecuteSynchronously);
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+
+			return task.ContinueWith(
+				t =>
+				{
+					ct.ThrowIfCancellationRequested();
+
+					return t.Result.ToList();
+				},
+				TaskContinuationOptions.ExecuteSynchronously);
+		}
+
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to deserialize from the reader.</typeparam>
+		/// <param name="task">The data reader task to continue.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+
+			return task.ContinueWith(
+				t =>
+				{
+					ct.ThrowIfCancellationRequested();
+
+					return t.Result.ToList<TResult>(withGraph);
+				},
+				TaskContinuationOptions.ExecuteSynchronously);
+		}
+#else
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
+		/// </summary>
+		/// <param name="task">The data reader task to continue.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static async Task<IList<FastExpando>> ToListAsync(this Task<IDataReader> task, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+
+			// in .net 4.5, use ReadAsync for best performance
+			IDataReader reader = await task;
+			DbDataReader dbReader = reader as DbDataReader;
+
+			ct.ThrowIfCancellationRequested();
+
+			if (dbReader == null)
+				return reader.ToList();
+
+			var mapper = DbReaderDeserializer.GetDeserializer<FastExpando>(dbReader);
+			return await dbReader.ToListAsync(mapper, ct);
 		}
 
 		/// <summary>
 		/// Chain an asynchronous data reader task with a translation to a list of objects.
 		/// </summary>
-		/// <typeparam name="T">The type of object to return.</typeparam>
+		/// <typeparam name="TResult">The type of object to return.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
         /// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToList<T>(this Task<IDataReader> task, Type withGraph = null)
+		public static async Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken? cancellationToken = null)
 		{
-			// Continue the task with a translation. Run it synchronously so we consume the data ASAP and release the reader
-            return task.ContinueWith(t => t.Result.ToList<T>(withGraph), TaskContinuationOptions.ExecuteSynchronously);
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+
+			// in .net 4.5, use ReadAsync for best performance
+			IDataReader reader = await task;
+			DbDataReader dbReader = reader as DbDataReader;
+
+			ct.ThrowIfCancellationRequested();
+
+			if (dbReader == null)
+				return reader.ToList<TResult>();
+
+			var mapper = DbReaderDeserializer.GetDeserializer<TResult>(dbReader, withGraph);
+			return await dbReader.ToListAsync(mapper, ct);
 		}
+#endif
 		#endregion
 
 		#region Insert Methods
@@ -897,7 +973,7 @@ namespace Insight.Database
 
 			return connection.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction)
-						.ContinueWith(t => t.Result.Merge(inserted)),
+						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -934,7 +1010,7 @@ namespace Insight.Database
 
 			return connection.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction)
-						.ContinueWith(t => t.Result.Merge(inserted)),
+						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -973,7 +1049,7 @@ namespace Insight.Database
 
 			return connection.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction)
-						.ContinueWith(t => t.Result.Merge(inserted)),
+						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
 		}
@@ -1010,10 +1086,191 @@ namespace Insight.Database
 
 			return connection.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction)
-						.ContinueWith(t => t.Result.Merge(inserted)),
+						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
 		}
+		#endregion
+
+		#region Merge Methods
+#if NODBASYNC
+		/// <summary>
+		/// Merges the results of a recordset into an existing object.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="task">The task returning the records to read.</param>
+		/// <param name="item">The item to merge into.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>The item that has been merged.</returns>
+		/// <remarks>
+		/// This method reads a single record from the reader and overwrites the values of the object.
+		/// The reader is then advanced to the next result or disposed.
+		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
+		/// </remarks>
+		public static Task<T> MergeAsync<T>(this Task<IDataReader> task, T item, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			return task.ContinueWith(t => t.Result.Merge(item), ct);
+		}
+
+		/// <summary>
+		/// Merges the results of a recordset into an existing object.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="task">The task returning the records to read.</param>
+		/// <param name="items">The list of items to merge into.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>The item that has been merged.</returns>
+		/// <remarks>
+		/// This method reads a single record from the reader and overwrites the values of the object.
+		/// The reader is then advanced to the next result or disposed.
+		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
+		/// </remarks>
+		public static Task<IEnumerable<T>> MergeAsync<T>(this Task<IDataReader> task, IEnumerable<T> items, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			return task.ContinueWith(t => t.Result.Merge(items), ct);
+		}
+#else
+		/// <summary>
+		/// Merges the results of a recordset into an existing object.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="task">The task returning the records to read.</param>
+		/// <param name="item">The item to merge into.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>The item that has been merged.</returns>
+		/// <remarks>
+		/// This method reads a single record from the reader and overwrites the values of the object.
+		/// The reader is then advanced to the next result or disposed.
+		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
+		/// </remarks>
+		public static async Task<T> MergeAsync<T>(this Task<IDataReader> task, T item, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			IDataReader reader = await task;
+			DbDataReader dbReader = reader as DbDataReader;
+
+			if (dbReader == null)
+				return reader.Merge(item);
+
+			return await dbReader.MergeAsync(item, cancellationToken);
+		}
+
+		/// <summary>
+		/// Merges the results of a recordset into an existing object.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="reader">The recordset to read.</param>
+		/// <param name="item">The item to merge into.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>The item that has been merged.</returns>
+		/// <remarks>
+		/// This method reads a single record from the reader and overwrites the values of the object.
+		/// The reader is then advanced to the next result or disposed.
+		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
+		/// </remarks>
+		public static async Task<T> MergeAsync<T>(this DbDataReader reader, T item, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			bool moreResults = false;
+
+			try
+			{
+				var merger = DbReaderDeserializer.GetMerger<T>(reader);
+
+				// read the identities from the recordset and merge it into the object
+				await reader.ReadAsync(ct);
+				merger(reader, item);
+
+				// we are done with this result set, so move onto the next or clean up the reader
+				moreResults = await reader.NextResultAsync(ct);
+
+				return item;
+			}
+			finally
+			{
+				if (!moreResults)
+					reader.Dispose();
+			}
+		}
+
+		/// <summary>
+		/// Merges the results of a recordset into an existing object.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="task">The task returning the records to read.</param>
+		/// <param name="items">The list of items to merge into.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>The item that has been merged.</returns>
+		/// <remarks>
+		/// This method reads a single record from the reader and overwrites the values of the object.
+		/// The reader is then advanced to the next result or disposed.
+		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
+		/// </remarks>
+		public static async Task<IEnumerable<T>> MergeAsync<T>(this Task<IDataReader> task, IEnumerable<T> items, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			IDataReader reader = await task;
+			DbDataReader dbReader = reader as DbDataReader;
+
+			if (dbReader == null)
+				return reader.Merge(items);
+
+			return await dbReader.MergeAsync(items, cancellationToken);
+		}
+
+		/// <summary>
+		/// Merges the results of a recordset onto a list of existing objects.
+		/// </summary>
+		/// <typeparam name="T">The type of object to merge into.</typeparam>
+		/// <param name="reader">The recordset to read.</param>
+		/// <param name="items">The list of items to merge onto.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>The list of items that has been merged.</returns>
+		public static async Task<IEnumerable<T>> MergeAsync<T>(this DbDataReader reader, IEnumerable<T> items, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			bool moreResults = false;
+
+			try
+			{
+				var merger = DbReaderDeserializer.GetMerger<T>(reader);
+
+				// read the identities of each item from the recordset and merge them into the objects
+				foreach (T item in items)
+				{
+					await reader.ReadAsync(ct);
+
+					ct.ThrowIfCancellationRequested();
+
+					merger(reader, item);
+				}
+
+				// we are done with this result set, so move onto the next or clean up the reader
+				moreResults = await reader.NextResultAsync(ct);
+
+				return items;
+			}
+			finally
+			{
+				if (!moreResults)
+					reader.Dispose();
+			}
+		}
+#endif
 		#endregion
 
 		#region GetReader Methods
@@ -1122,10 +1379,19 @@ namespace Insight.Database
 			return connection.ExecuteAsyncAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection), cancellationToken);
 		}
 
-		/// <summary>		/// Execute an asynchronous action, ensuring that the connection is auto-closed.		/// </summary>		/// <typeparam name="T">The return type of the task.</typeparam>		/// <param name="command">The command to use.</param>		/// <param name="action">The action to perform.</param>		/// <param name="commandBehavior">The commandbehavior of the command.</param>
+		/// <summary>
+		/// Execute an asynchronous action, ensuring that the connection is auto-closed.
+		/// </summary>
+		/// <typeparam name="T">The return type of the task.</typeparam>
+		/// <param name="command">The command to use.</param>
+		/// <param name="action">The action to perform.</param>
+		/// <param name="commandBehavior">The commandbehavior of the command.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>A task that returns the result of the command after closing the connection.</returns>		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbCommand command, Func<IDbCommand, Task<T>> action, CommandBehavior commandBehavior, CancellationToken cancellationToken)		{
-			return command.Connection.ExecuteAsyncAndAutoClose(_ => action(command), commandBehavior, cancellationToken);		}
+		/// <returns>A task that returns the result of the command after closing the connection.</returns>
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbCommand command, Func<IDbCommand, Task<T>> action, CommandBehavior commandBehavior, CancellationToken cancellationToken)
+		{
+			return command.Connection.ExecuteAsyncAndAutoClose(_ => action(command), commandBehavior, cancellationToken);
+		}
 
 		/// <summary>
 		/// Detect if a connection needs to be automatically opened and closed.
@@ -1177,6 +1443,48 @@ namespace Insight.Database
 				},
 				cancellationToken);
 		}
+		#endregion
+
+		#region ToListAsync Methods
+#if !NODBASYNC
+		/// <summary>
+		/// Reads a list of objects asynchronously from the reader.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return.</typeparam>
+		/// <param name="reader">The reader to read from.</param>
+		/// <param name="mapper">The object mapper to use.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>A task that will contain the list of objects upon completion.</returns>
+		private static async Task<IList<TResult>> ToListAsync<TResult>(this DbDataReader reader, Func<IDataReader, TResult> mapper, CancellationToken cancellationToken)
+		{
+			bool moreResults = false;
+
+			try
+			{
+				IList<TResult> list = new List<TResult>();
+
+				// read in all of the records
+				while (await reader.ReadAsync(cancellationToken))
+				{
+					list.Add(mapper(reader));
+
+					// allow cancellation to occur within the list processing
+					cancellationToken.ThrowIfCancellationRequested();
+				}
+
+				// move to the next result set - the token should already be here
+				moreResults = await reader.NextResultAsync(cancellationToken);
+
+				return list;
+			}
+			finally
+			{
+				// clean up the reader unless there are more results
+				if (!moreResults)
+					reader.Dispose();
+			}
+		}
+#endif
 		#endregion
 	}
 }

@@ -366,9 +366,9 @@ namespace Insight.Database
 		/// <typeparam name="TSub1">The type of object to return as subobject 1.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToList<T, TSub1>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToListAsync<T, TSub1>(this Task<IDataReader> task)
 		{
-			return task.ToList<T>(typeof(Graph<T, TSub1>));
+			return task.ToListAsync<T>(typeof(Graph<T, TSub1>));
 		}
 
 		/// <summary>
@@ -379,9 +379,9 @@ namespace Insight.Database
 		/// <typeparam name="TSub2">The type of object to return as subobject 2.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToList<T, TSub1, TSub2>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToListAsync<T, TSub1, TSub2>(this Task<IDataReader> task)
 		{
-			return task.ToList<T>(typeof(Graph<T, TSub1, TSub2>));
+			return task.ToListAsync<T>(typeof(Graph<T, TSub1, TSub2>));
 		}
 
 		/// <summary>
@@ -393,9 +393,9 @@ namespace Insight.Database
 		/// <typeparam name="TSub3">The type of object to return as subobject 3.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToList<T, TSub1, TSub2, TSub3>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToListAsync<T, TSub1, TSub2, TSub3>(this Task<IDataReader> task)
 		{
-			return task.ToList<T>(typeof(Graph<T, TSub1, TSub2, TSub3>));
+			return task.ToListAsync<T>(typeof(Graph<T, TSub1, TSub2, TSub3>));
 		}
 
 		/// <summary>
@@ -408,9 +408,9 @@ namespace Insight.Database
 		/// <typeparam name="TSub4">The type of object to return as subobject 4.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToList<T, TSub1, TSub2, TSub3, TSub4>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToListAsync<T, TSub1, TSub2, TSub3, TSub4>(this Task<IDataReader> task)
 		{
-			return task.ToList<T>(typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>));
+			return task.ToListAsync<T>(typeof(Graph<T, TSub1, TSub2, TSub3, TSub4>));
 		}
 
 		/// <summary>
@@ -424,9 +424,9 @@ namespace Insight.Database
 		/// <typeparam name="TSub5">The type of object to return as subobject 5.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToList<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this Task<IDataReader> task)
+		public static Task<IList<T>> ToListAsync<T, TSub1, TSub2, TSub3, TSub4, TSub5>(this Task<IDataReader> task)
 		{
-			return task.ToList<T>(typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>));
+			return task.ToListAsync<T>(typeof(Graph<T, TSub1, TSub2, TSub3, TSub4, TSub5>));
 		}
 		#endregion
 	}
