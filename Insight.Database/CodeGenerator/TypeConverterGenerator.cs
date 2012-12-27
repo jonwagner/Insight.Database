@@ -131,7 +131,7 @@ namespace Insight.Database.CodeGenerator
 			}
 			else if (sourceType == typeof(string) && targetType != typeof(string) && !targetType.IsValueType)
 			{
-                // we are getting a string from the database, but the target is not a string, but it's a reference type
+				// we are getting a string from the database, but the target is not a string, but it's a reference type
 				// assume the column is an xml data type and that we want to deserialize it
 
 				// before: stack => [target][object-value]

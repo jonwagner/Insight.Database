@@ -60,20 +60,20 @@ namespace Insight.Tests
 			Assert.IsTrue(_connection.State == ConnectionState.Closed);
 		}
 
-        /// <summary>
-        /// Asynchronously run a command that is not a query
-        /// </summary>
-        [Test]
-        public void TestScalar()
-        {
-            var task = _connection.ExecuteScalarSqlAsync<int>("SELECT 5", Parameters.Empty, closeConnection: true);
-            task.Wait();
+		/// <summary>
+		/// Asynchronously run a command that is not a query
+		/// </summary>
+		[Test]
+		public void TestScalar()
+		{
+			var task = _connection.ExecuteScalarSqlAsync<int>("SELECT 5", Parameters.Empty, closeConnection: true);
+			task.Wait();
 
-            Assert.IsTrue(_connection.State == ConnectionState.Closed);
-            Assert.AreEqual(5, task.Result);
-        }
+			Assert.IsTrue(_connection.State == ConnectionState.Closed);
+			Assert.AreEqual(5, task.Result);
+		}
 
-        /// <summary>
+		/// <summary>
 		/// Asynchronously run a stored procedure with parameter detection
 		/// </summary>
 		[Test]
@@ -88,35 +88,35 @@ namespace Insight.Tests
 			Assert.AreEqual(5, results.First());
 		}
 
-        /// <summary>
-        /// Asynchronously run a stored procedure with parameter detection
-        /// </summary>
-        [Test]
-        public void TestAsyncQueryWithDefaultGraph()
-        {
-            // make sure the connection is closed so we can test parameter detection with a closed async connection
-            _connection.Close();
+		/// <summary>
+		/// Asynchronously run a stored procedure with parameter detection
+		/// </summary>
+		[Test]
+		public void TestAsyncQueryWithDefaultGraph()
+		{
+			// make sure the connection is closed so we can test parameter detection with a closed async connection
+			_connection.Close();
 
-            var results = _connection.QuerySqlAsync<ParentTestDataWithDefaultGraph>(ParentTestData.Sql).Result;
+			var results = _connection.QuerySqlAsync<ParentTestDataWithDefaultGraph>(ParentTestData.Sql).Result;
 
-            ParentTestData.Verify(results);
-        }
+			ParentTestData.Verify(results);
+		}
 
-        /// <summary>
-        /// Asynchronously run a stored procedure with parameter detection
-        /// </summary>
-        [Test]
-        public void TestAsyncQueryWithGraph()
-        {
-            // make sure the connection is closed so we can test parameter detection with a closed async connection
-            _connection.Close();
+		/// <summary>
+		/// Asynchronously run a stored procedure with parameter detection
+		/// </summary>
+		[Test]
+		public void TestAsyncQueryWithGraph()
+		{
+			// make sure the connection is closed so we can test parameter detection with a closed async connection
+			_connection.Close();
 
-            var results = _connection.QuerySqlAsync<ParentTestData>(ParentTestData.Sql, withGraph: typeof(Graph<ParentTestData, TestData>)).Result;
+			var results = _connection.QuerySqlAsync<ParentTestData>(ParentTestData.Sql, withGraph: typeof(Graph<ParentTestData, TestData>)).Result;
 
-            ParentTestData.Verify(results);
-        }
+			ParentTestData.Verify(results);
+		}
 
-        /// <summary>
+		/// <summary>
 		/// Asynchronously run a stored procedure with parameter detection
 		/// </summary>
 		[Test]
@@ -138,21 +138,21 @@ namespace Insight.Tests
 		public void TestAsyncReader()
 		{
 			var task = _connection.QuerySqlAsync(
-				"SELECT 1", 
-				Parameters.Empty, 
+				"SELECT 1",
+				Parameters.Empty,
 				reader =>
 				{
 					using (reader)
 					{
-						reader.Read ();
-						Assert.AreEqual (1, reader.GetInt32 (0));
+						reader.Read();
+						Assert.AreEqual(1, reader.GetInt32(0));
 					}
 				},
 				commandBehavior: CommandBehavior.CloseConnection);
 
 			task.Wait();
-			
-			Assert.IsTrue (_connection.State == ConnectionState.Closed);
+
+			Assert.IsTrue(_connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
@@ -163,30 +163,30 @@ namespace Insight.Tests
 		{
 			int result = 0;
 
-			var task = _connection.QuerySqlAsync (
-				"SELECT 1", 
-				Parameters.Empty, 
+			var task = _connection.QuerySqlAsync(
+				"SELECT 1",
+				Parameters.Empty,
 				reader =>
 				{
 					using (reader)
 					{
-						reader.Read ();
-						result = reader.GetInt32 (0);
-					}					
+						reader.Read();
+						result = reader.GetInt32(0);
+					}
 				},
 				CommandBehavior.CloseConnection);
 
-			task.Wait ();
+			task.Wait();
 
-			Assert.AreEqual (1, result);
-			Assert.IsTrue (_connection.State == ConnectionState.Closed);
+			Assert.AreEqual(1, result);
+			Assert.IsTrue(_connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
 		/// Make sure that we can chain sql tasks
 		/// </summary>
 		[Test]
-		public void TestSqlError ()
+		public void TestSqlError()
 		{
 			int result = 0;
 
@@ -203,20 +203,20 @@ namespace Insight.Tests
 				},
 				commandBehavior: CommandBehavior.CloseConnection);
 
-			Assert.Throws<AggregateException> (() => task.Wait ());
-			Assert.IsTrue (_connection.State == ConnectionState.Closed);
+			Assert.Throws<AggregateException>(() => task.Wait());
+			Assert.IsTrue(_connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
 		/// Asynchronously run a command that is not a query
 		/// </summary>
 		[Test]
-		public void TestNonQuerySqlError ()
+		public void TestNonQuerySqlError()
 		{
-			var task = _connection.ExecuteSqlAsync ("THIS IS INVALID SQL", Parameters.Empty, closeConnection: true);
+			var task = _connection.ExecuteSqlAsync("THIS IS INVALID SQL", Parameters.Empty, closeConnection: true);
 
-			Assert.Throws<AggregateException> (() => task.Wait ());
-			Assert.IsTrue (_connection.State == ConnectionState.Closed);
+			Assert.Throws<AggregateException>(() => task.Wait());
+			Assert.IsTrue(_connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
@@ -249,66 +249,66 @@ namespace Insight.Tests
 		}
 		#endregion
 
-        #region Async With Multiple Recordsets Tests
-        #region Multiple Recordset Tests
-        [Test]
-        public void TwoRecordsetsAreReturned()
-        {
-            var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(ParentTestData.Sql + TestData2.Sql).Result;
+		#region Async With Multiple Recordsets Tests
+		#region Multiple Recordset Tests
+		[Test]
+		public void TwoRecordsetsAreReturned()
+		{
+			var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(ParentTestData.Sql + TestData2.Sql).Result;
 
-            Assert.IsNotNull(results);
-            ParentTestData.Verify(results.Set1, withGraph: false);
-            TestData2.Verify(results.Set2);
-        }
-        #endregion
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: false);
+			TestData2.Verify(results.Set2);
+		}
+		#endregion
 
-        #region Multiple Recordset WithGraph Tests
-        [Test]
-        public void RecordsetWithDefaultGraphIsReturned()
-        {
-            var results = _connection.QueryResultsSqlAsync<ParentTestDataWithDefaultGraph, TestData2>(ParentTestData.Sql + TestData2.Sql).Result;
+		#region Multiple Recordset WithGraph Tests
+		[Test]
+		public void RecordsetWithDefaultGraphIsReturned()
+		{
+			var results = _connection.QueryResultsSqlAsync<ParentTestDataWithDefaultGraph, TestData2>(ParentTestData.Sql + TestData2.Sql).Result;
 
-            Assert.IsNotNull(results);
-            ParentTestData.Verify(results.Set1, withGraph: true);
-            TestData2.Verify(results.Set2);
-        }
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: true);
+			TestData2.Verify(results.Set2);
+		}
 
-        [Test]
-        public void RecordsetWithGraphIsReturned()
-        {
-            var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(
-                ParentTestData.Sql + TestData2.Sql,
-                withGraphs: new[] { typeof(Graph<ParentTestData, TestData>) }).Result;
+		[Test]
+		public void RecordsetWithGraphIsReturned()
+		{
+			var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(
+				ParentTestData.Sql + TestData2.Sql,
+				withGraphs: new[] { typeof(Graph<ParentTestData, TestData>) }).Result;
 
-            Assert.IsNotNull(results);
-            ParentTestData.Verify(results.Set1, withGraph: true);
-            TestData2.Verify(results.Set2);
-        }
-        #endregion
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: true);
+			TestData2.Verify(results.Set2);
+		}
+		#endregion
 
-        #region Derived Recordsets Tests
-        class PageData
-        {
-            public int TotalCount;
-        }
-        class PageData<T> : Results<T, PageData>
-        {
-            public int TotalCount { get { return Set2.First().TotalCount; } }
-        }
+		#region Derived Recordsets Tests
+		class PageData
+		{
+			public int TotalCount;
+		}
+		class PageData<T> : Results<T, PageData>
+		{
+			public int TotalCount { get { return Set2.First().TotalCount; } }
+		}
 
-        [Test]
-        public void DerivedRecordsetsCanBeReturned()
-        {
-            var results = _connection.QueryResultsSqlAsync<PageData<ParentTestData>>(ParentTestData.Sql + "SELECT TotalCount=70").Result;
+		[Test]
+		public void DerivedRecordsetsCanBeReturned()
+		{
+			var results = _connection.QueryResultsSqlAsync<PageData<ParentTestData>>(ParentTestData.Sql + "SELECT TotalCount=70").Result;
 
-            Assert.IsNotNull(results);
-            ParentTestData.Verify(results.Set1, withGraph: false);
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: false);
 
-            Assert.IsNotNull(results.Set2);
-            Assert.AreEqual(1, results.Set2.Count);
-            Assert.AreEqual(70, results.TotalCount);
-        }
-        #endregion
-        #endregion
-    }
+			Assert.IsNotNull(results.Set2);
+			Assert.AreEqual(1, results.Set2.Count);
+			Assert.AreEqual(70, results.TotalCount);
+		}
+		#endregion
+		#endregion
+	}
 }

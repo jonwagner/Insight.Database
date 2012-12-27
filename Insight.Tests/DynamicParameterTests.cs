@@ -56,19 +56,19 @@ namespace Insight.Tests
 			Assert.AreEqual("boo", d.GUEST);
 		}
 
-        [Test]
-        public void FastExpandoCanBeUsedAsDynamic()
-        {
-            dynamic d = FastExpando.FromObject(new { Id = 1, Text = "foo" });
-            d.Property = "prop";
-            d.Expand(new { Id = 2, Guest = "boo" });
+		[Test]
+		public void FastExpandoCanBeUsedAsDynamic()
+		{
+			dynamic d = FastExpando.FromObject(new { Id = 1, Text = "foo" });
+			d.Property = "prop";
+			d.Expand(new { Id = 2, Guest = "boo" });
 
-            FastExpando o = (FastExpando)d;
-            Assert.AreEqual(7, o.Count());
-            Assert.AreEqual(2, d.ID);
-            Assert.AreEqual("foo", d.Text);
-            Assert.AreEqual("prop", d.Property);
-        }
+			FastExpando o = (FastExpando)d;
+			Assert.AreEqual(7, o.Count());
+			Assert.AreEqual(2, d.ID);
+			Assert.AreEqual("foo", d.Text);
+			Assert.AreEqual("prop", d.Property);
+		}
 
 		[Test]
 		public void TestConvenienceExpandoQueries()
@@ -76,7 +76,7 @@ namespace Insight.Tests
 			// we have two objects with parameters in them
 			var o = new { Id = 1, Text = "foo" };
 			var p = new { Id = 2, Guest = "boo" };
-			
+
 			var list = _connection.QuerySql("SELECT ID=CONVERT (int, @ID), Text=@Text, Guest=@Guest", o.Expand(p));
 			FastExpando f = list[0];
 			dynamic d = f;
@@ -87,26 +87,26 @@ namespace Insight.Tests
 			Assert.AreEqual("boo", d.GUEST);
 		}
 
-        [Test]
-        public void TestConvenienceExpandoQueriesWithDynamicObject()
-        {
-            // start with a dynamic object
-            dynamic o = new FastExpando();
-            o.Id = 1;
-            o.Text = "foo";
+		[Test]
+		public void TestConvenienceExpandoQueriesWithDynamicObject()
+		{
+			// start with a dynamic object
+			dynamic o = new FastExpando();
+			o.Id = 1;
+			o.Text = "foo";
 
-            // expand the dynamic
-            var p = new { Id = 2, Guest = "boo" };
+			// expand the dynamic
+			var p = new { Id = 2, Guest = "boo" };
 
-            var list = _connection.QuerySql("SELECT ID=CONVERT (int, @ID), Text=@Text, Guest=@Guest", (object)o.Expand(p));
-            FastExpando f = list[0];
-            dynamic d = f;
+			var list = _connection.QuerySql("SELECT ID=CONVERT (int, @ID), Text=@Text, Guest=@Guest", (object)o.Expand(p));
+			FastExpando f = list[0];
+			dynamic d = f;
 
-            Assert.AreEqual(3, f.Count());
-            Assert.AreEqual(2, d.ID);
-            Assert.AreEqual("foo", d.Text);
-            Assert.AreEqual("boo", d.GUEST);
-        }
+			Assert.AreEqual(3, f.Count());
+			Assert.AreEqual(2, d.ID);
+			Assert.AreEqual("foo", d.Text);
+			Assert.AreEqual("boo", d.GUEST);
+		}
 
 		[Test]
 		public void TestExpandoNullFields()

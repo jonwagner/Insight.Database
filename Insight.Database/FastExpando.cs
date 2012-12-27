@@ -27,11 +27,11 @@ namespace Insight.Database
 		/// <summary>
 		/// Creates an expando from an object.
 		/// </summary>
-        /// <param name="value">The object to initialize with.</param>
+		/// <param name="value">The object to initialize with.</param>
 		/// <returns>A FastExpando containing the public properties and fields of obj.</returns>
 		public static FastExpando FromObject(object value)
 		{
-            return ExpandoGenerator.Convert(value);
+			return ExpandoGenerator.Convert(value);
 		}
 		#endregion
 
@@ -265,7 +265,7 @@ namespace Insight.Database
 				{
 					data.Remove(key);
 					data.Add(pair.Value.ToUpperInvariant(), value);
-				}				
+				}
 			}
 		}
 

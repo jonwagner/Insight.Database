@@ -23,7 +23,7 @@ namespace Insight.Database.Reliable
 		/// <summary>
 		/// The default retry strategy to use if none is specified.
 		/// </summary>
-		private static readonly RetryStrategy _default = new RetryStrategy(); 
+		private static readonly RetryStrategy _default = new RetryStrategy();
 
 		/// <summary>
 		/// Initializes a new instance of the RetryStrategy class.
@@ -88,7 +88,7 @@ namespace Insight.Database.Reliable
 			int attempt = 0;
 			TimeSpan delay = MinBackOff;
 
-			for (;;)
+			while (true)
 			{
 				try
 				{
@@ -106,7 +106,7 @@ namespace Insight.Database.Reliable
 
 					// first off the event to tell someone that we are going to retry this
 					if (OnRetrying(commandContext, ex, attempt))
-						throw;					
+						throw;
 
 					// wait before retrying the command
 					// unless this is the first attempt or first retry is disabled

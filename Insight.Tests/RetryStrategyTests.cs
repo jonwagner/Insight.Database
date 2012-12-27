@@ -38,7 +38,7 @@ namespace Insight.Tests
 
 			// by default only retry once or tests will take long
 			RetryStrategy.MaxRetryCount = 1;
-            RetryStrategy.MaxBackOff = new TimeSpan(0, 0, 0, 0, 10);
+			RetryStrategy.MaxBackOff = new TimeSpan(0, 0, 0, 0, 10);
 		}
 
 		#region Pure RetryStrategy Tests
@@ -149,48 +149,48 @@ namespace Insight.Tests
 		[Test]
 		public void StoredProcedureParametersDetectedWithReliableSqlConnection()
 		{
-            using (ReliableConnection retry = new ReliableConnection<SqlConnection>(_connection.ConnectionString, RetryStrategy))
-            {
-                retry.Open();
+			using (ReliableConnection retry = new ReliableConnection<SqlConnection>(_connection.ConnectionString, RetryStrategy))
+			{
+				retry.Open();
 
-                // the SqlCommand.DeriveParameters code looks specifically for SqlCommand. 
-                // This test ensures that reliable connections work with this.
+				// the SqlCommand.DeriveParameters code looks specifically for SqlCommand. 
+				// This test ensures that reliable connections work with this.
 
-                using (IDbTransaction t = retry.BeginTransaction())
-                {
-                    retry.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
+				using (IDbTransaction t = retry.BeginTransaction())
+				{
+					retry.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
 
-                    int result = retry.Query<int>("InsightTestProc", new { Value = 1 }, transaction: t).First();
+					int result = retry.Query<int>("InsightTestProc", new { Value = 1 }, transaction: t).First();
 
-                    Assert.AreEqual(1, result);
-                }
-            }
+					Assert.AreEqual(1, result);
+				}
+			}
 		}
 
 		[Test]
 		public void ExecuteStoredProcWithTVPThroughReliableConnection()
 		{
-            using (ReliableConnection retry = new ReliableConnection<SqlConnection>(_connection.ConnectionString, RetryStrategy))
-            {
-                retry.Open();
+			using (ReliableConnection retry = new ReliableConnection<SqlConnection>(_connection.ConnectionString, RetryStrategy))
+			{
+				retry.Open();
 
-                try
-                {
-                    retry.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
-                    retry.ExecuteSql("CREATE PROC InsightTestProc (@Value Int32Table READONLY) AS SELECT * FROM @Value");
+				try
+				{
+					retry.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
+					retry.ExecuteSql("CREATE PROC InsightTestProc (@Value Int32Table READONLY) AS SELECT * FROM @Value");
 
-                    // the ListParameterHelper.AddEnumerableClassParameters code looks specifically for SqlCommand. 
-                    // This test ensures that reliable connections work with this.
-                    var result = retry.Query<int>("InsightTestProc", new int[] { 1, 2, 3, 4, 5 });
+					// the ListParameterHelper.AddEnumerableClassParameters code looks specifically for SqlCommand. 
+					// This test ensures that reliable connections work with this.
+					var result = retry.Query<int>("InsightTestProc", new int[] { 1, 2, 3, 4, 5 });
 
-                    Assert.AreEqual(5, result.Count());
-                }
-                finally
-                {
-                    Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestProc') DROP PROCEDURE [InsightTestProc]");
-                    Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
-                }
-            }
+					Assert.AreEqual(5, result.Count());
+				}
+				finally
+				{
+					Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestProc') DROP PROCEDURE [InsightTestProc]");
+					Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
+				}
+			}
 		}
 		#endregion
 

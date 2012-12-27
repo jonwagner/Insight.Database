@@ -38,36 +38,36 @@ namespace Insight.Tests
 			private T? FieldNull;
 			private T? PropertyNull { get; set; }
 
-			public static void Test (T value, SqlConnection connection, string sqlType)
+			public static void Test(T value, SqlConnection connection, string sqlType)
 			{
 				// make sure we can read the values
-				var data = connection.QuerySql<NullableData<T>> (String.Format("SELECT Field=@p, Property=@p, FieldNullable=@p, PropertyNullable=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First ();
-				Assert.AreEqual (value, data.Field);
-				Assert.AreEqual (value, data.Property);
-				Assert.AreEqual (value, data.FieldNullable);
-				Assert.AreEqual (value, data.PropertyNullable);
-				Assert.IsNull (data.FieldNull);
-				Assert.IsNull (data.PropertyNull);
+				var data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNullable=@p, PropertyNullable=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
+				Assert.AreEqual(value, data.Field);
+				Assert.AreEqual(value, data.Property);
+				Assert.AreEqual(value, data.FieldNullable);
+				Assert.AreEqual(value, data.PropertyNullable);
+				Assert.IsNull(data.FieldNull);
+				Assert.IsNull(data.PropertyNull);
 
 				// make sure we can query with a null parameter
 				data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = (T?)null }).First();
-				Assert.AreEqual (default (T), data.Field);
-				Assert.AreEqual (default (T), data.Property);
-				Assert.IsNull (data.FieldNullable);
-				Assert.IsNull (data.PropertyNullable);
-				Assert.IsNull (data.FieldNull);
-				Assert.IsNull (data.PropertyNull);
+				Assert.AreEqual(default(T), data.Field);
+				Assert.AreEqual(default(T), data.Property);
+				Assert.IsNull(data.FieldNullable);
+				Assert.IsNull(data.PropertyNullable);
+				Assert.IsNull(data.FieldNull);
+				Assert.IsNull(data.PropertyNull);
 
 				// make sure that we can return a list of the types
-				var data2 = connection.QuerySql<T> ("SELECT @p UNION ALL SELECT @p", new { p = value });
-				Assert.AreEqual (2, data2.Count);
-				Assert.AreEqual (value, data2[0]);
-				Assert.AreEqual (value, data2[1]);
+				var data2 = connection.QuerySql<T>("SELECT @p UNION ALL SELECT @p", new { p = value });
+				Assert.AreEqual(2, data2.Count);
+				Assert.AreEqual(value, data2[0]);
+				Assert.AreEqual(value, data2[1]);
 
-				var data3 = connection.QuerySql<T?> ("SELECT @p UNION SELECT @p", new { p = (T?)null });
+				var data3 = connection.QuerySql<T?>("SELECT @p UNION SELECT @p", new { p = (T?)null });
 			}
 		}
-		
+
 		/// <summary>
 		/// Tests deserialization of class types
 		/// </summary>
@@ -79,21 +79,21 @@ namespace Insight.Tests
 			private T FieldNull;
 			private T PropertyNull { get; set; }
 
-			public static void Test (T value, SqlConnection connection, string sqlType)
+			public static void Test(T value, SqlConnection connection, string sqlType)
 			{
 				// make sure we can read the values
 				var data = connection.QuerySql<Data<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
-				Assert.AreEqual (value, data.Field);
-				Assert.AreEqual (value, data.Property);
-				Assert.IsNull (data.FieldNull);
-				Assert.IsNull (data.PropertyNull);
+				Assert.AreEqual(value, data.Field);
+				Assert.AreEqual(value, data.Property);
+				Assert.IsNull(data.FieldNull);
+				Assert.IsNull(data.PropertyNull);
 
 				// make sure we can query with a null parameter
 				data = connection.QuerySql<Data<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = (T)null }).First();
-				Assert.IsNull (data.Field);
-				Assert.IsNull (data.Property);
-				Assert.IsNull (data.FieldNull);
-				Assert.IsNull (data.PropertyNull);
+				Assert.IsNull(data.Field);
+				Assert.IsNull(data.Property);
+				Assert.IsNull(data.FieldNull);
+				Assert.IsNull(data.PropertyNull);
 			}
 		}
 		#endregion
@@ -128,7 +128,7 @@ namespace Insight.Tests
 			Data<System.Data.Linq.Binary>.Test(new System.Data.Linq.Binary(new byte[] { 1, 2, 3, 4 }), _connection, "varbinary(MAX)");
 
 			// enums
-			NullableData<TestEnum>.Test (TestEnum.Two, _connection, "int");
+			NullableData<TestEnum>.Test(TestEnum.Two, _connection, "int");
 
 			// make sure that we can return a list of strings
 			var data2 = _connection.QuerySql<string>("SELECT @p UNION ALL SELECT @p", new { p = "foo" });
@@ -323,7 +323,7 @@ namespace Insight.Tests
 		enum UInt8Enum : byte
 		{
 			One = 1
-		}	
+		}
 		#endregion
 
 		#region Class/Struct Field Deserialization Tests
@@ -332,7 +332,7 @@ namespace Insight.Tests
 		{
 			public int Value;
 
-			public FooID (int i)
+			public FooID(int i)
 			{
 				Value = i;
 			}
@@ -629,7 +629,7 @@ namespace Insight.Tests
 			public FooNullableID()
 			{
 			}
-			
+
 			public FooNullableID(int i)
 			{
 				Value = i;

@@ -24,7 +24,7 @@ namespace Insight.Database
 		/// <summary>
 		/// A cache of the table schemas used for bulk copy.
 		/// </summary>
-        private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tableReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
+		private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tableReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
 		#endregion
 
 		#region Open Method
@@ -268,24 +268,24 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="command">The command to execute.</param>
-        /// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult>(
 			this IDbConnection connection,
 			IDbCommand command,
-            Type withGraph = null,
+			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
-            command.Connection = connection;
+			command.Connection = connection;
 
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
 					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
 					{
-                        return reader.ToList<TResult>(withGraph);
+						return reader.ToList<TResult>(withGraph);
 					}
 				},
 				commandBehavior);
@@ -329,7 +329,7 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
@@ -339,7 +339,7 @@ namespace Insight.Database
 			this IDbConnection connection,
 			string sql,
 			object parameters = null,
-            Type withGraph = null,
+			Type withGraph = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
@@ -350,7 +350,7 @@ namespace Insight.Database
 				{
 					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
-                        return reader.ToList<TResult>(withGraph);
+						return reader.ToList<TResult>(withGraph);
 					}
 				},
 				commandBehavior);
@@ -567,7 +567,7 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
@@ -576,7 +576,7 @@ namespace Insight.Database
 			this IDbConnection connection,
 			string sql,
 			object parameters = null,
-            Type withGraph = null,
+			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
@@ -586,7 +586,7 @@ namespace Insight.Database
 				{
 					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
-                        return reader.ToList<TResult>(withGraph);
+						return reader.ToList<TResult>(withGraph);
 					}
 				},
 				commandBehavior);
@@ -758,7 +758,7 @@ namespace Insight.Database
 		}
 		#endregion
 
-        #region Query With Read Callback Methods
+		#region Query With Read Callback Methods
 		/// <summary>
 		/// Executes a query and performs a callback to read the data in the IDataReader.
 		/// </summary>
@@ -794,7 +794,7 @@ namespace Insight.Database
 		}
 
 		/// <summary>
-        /// Executes a query and performs a callback to read the data in the IDataReader.
+		/// Executes a query and performs a callback to read the data in the IDataReader.
 		/// </summary>
 		/// <param name="connection">The connection to execute on.</param>
 		/// <param name="sql">The sql to execute.</param>
@@ -874,325 +874,325 @@ namespace Insight.Database
 		}
 		#endregion
 
-        #region QueryResults Methods
-        /// <summary>
-        /// Execute an existing command, and translate the result set. This method supports auto-open.
-        /// </summary>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="command">The command to execute.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <typeparam name="T">The type of result object to return. This must derive from Results.</typeparam>
-        /// <returns>A data reader with the results.</returns>
-        public static T QueryResults<T>(
-            this IDbConnection connection,
-            IDbCommand command,
-            Type[] withGraphs = null,
-            CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
-        {
-            return connection.ExecuteAndAutoClose(
-                c =>
-                {
+		#region QueryResults Methods
+		/// <summary>
+		/// Execute an existing command, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <typeparam name="T">The type of result object to return. This must derive from Results.</typeparam>
+		/// <returns>A data reader with the results.</returns>
+		public static T QueryResults<T>(
+			this IDbConnection connection,
+			IDbCommand command,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
+		{
+			return connection.ExecuteAndAutoClose(
+				c =>
+				{
 					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
-                    {
-                        T results = new T();
-                        results.Read(reader, withGraphs);
+					{
+						T results = new T();
+						results.Read(reader, withGraphs);
 
-                        return results;
-                    }
-                },
-                commandBehavior);
-        }
+						return results;
+					}
+				},
+				commandBehavior);
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandType">The type of the command.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static T QueryResults<T>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandType commandType = CommandType.StoredProcedure,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null) where T : Results, new()
-        {
-            return connection.ExecuteAndAutoClose(c =>
-            {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static T QueryResults<T>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null) where T : Results, new()
+		{
+			return connection.ExecuteAndAutoClose(c =>
+			{
 				using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-                {
-                    T results = new T();
-                    results.Read(reader, withGraphs);
+				{
+					T results = new T();
+					results.Read(reader, withGraphs);
 
-                    return results;
-                }
-            });
-        }
+					return results;
+				}
+			});
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static T QueryResultsSql<T>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null) where T : Results, new()
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static T QueryResultsSql<T>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null) where T : Results, new()
+		{
 			return connection.QueryResults<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandType">The type of the command.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2> QueryResults<T1, T2>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandType commandType = CommandType.StoredProcedure,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2> QueryResults<T1, T2>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2> QueryResultsSql<T1, T2>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2> QueryResultsSql<T1, T2>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandType">The type of the command.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2, T3> QueryResults<T1, T2, T3>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandType commandType = CommandType.StoredProcedure,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2, T3> QueryResults<T1, T2, T3>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2, T3> QueryResultsSql<T1, T2, T3>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2, T3> QueryResultsSql<T1, T2, T3>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandType">The type of the command.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2, T3, T4> QueryResults<T1, T2, T3, T4>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandType commandType = CommandType.StoredProcedure,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2, T3, T4> QueryResults<T1, T2, T3, T4>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2, T3, T4> QueryResultsSql<T1, T2, T3, T4>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2, T3, T4> QueryResultsSql<T1, T2, T3, T4>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-        /// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandType">The type of the command.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2, T3, T4, T5> QueryResults<T1, T2, T3, T4, T5>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandType commandType = CommandType.StoredProcedure,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2, T3, T4, T5> QueryResults<T1, T2, T3, T4, T5>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
+		}
 
-        /// <summary>
-        /// Executes a query that returns multiple result sets and reads the results.
-        /// </summary>
-        /// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-        /// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-        /// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-        /// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-        /// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
-        /// <param name="connection">The connection to use.</param>
-        /// <param name="sql">The sql to execute.</param>
-        /// <param name="parameters">The parameter to pass.</param>
-        /// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-        /// <param name="commandBehavior">The behavior of the command when executed.</param>
-        /// <param name="commandTimeout">The timeout of the command.</param>
-        /// <param name="transaction">The transaction to participate in.</param>
-        /// <returns>The results object filled with the data.</returns>
-        public static Results<T1, T2, T3, T4, T5> QueryResultsSql<T1, T2, T3, T4, T5>(
-            this IDbConnection connection,
-            string sql,
-            object parameters = null,
-            Type[] withGraphs = null,
-            CommandBehavior commandBehavior = CommandBehavior.Default,
-            int? commandTimeout = null,
-            IDbTransaction transaction = null)
-        {
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<T1, T2, T3, T4, T5> QueryResultsSql<T1, T2, T3, T4, T5>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
 			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
-        }
-        #endregion
+		}
+		#endregion
 
-        #region ForEach Methods
-        /// <summary>
+		#region ForEach Methods
+		/// <summary>
 		/// Executes a query and performs an action for each item in the result.
 		/// </summary>
 		/// <param name="connection">The connection to execute on.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
-        /// <param name="withGraph">The object graph to use to deserialize the objects.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
 		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
@@ -1202,15 +1202,15 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<dynamic> action,
-            Type withGraph = null,
+			Type withGraph = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-            // we don't use this parameter, but it is necessary to have so the compiler can infer the proper method signature to use
-            if (withGraph == null)
-                throw new ArgumentException("withGraph should be null for returning dynamic objects.", "withGraph");
+			// we don't use this parameter, but it is necessary to have so the compiler can infer the proper method signature to use
+			if (withGraph == null)
+				throw new ArgumentException("withGraph should be null for returning dynamic objects.", "withGraph");
 
 			connection.ExecuteAndAutoClose(
 				c =>
@@ -1233,7 +1233,7 @@ namespace Insight.Database
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
-        /// <param name="withGraph">The object graph to use to deserialize the objects.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
@@ -1242,12 +1242,12 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<dynamic> action,
-            Type withGraph = null,
+			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-            connection.ForEach(sql, parameters, action, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			connection.ForEach(sql, parameters, action, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
 		}
 
 		/// <summary>
@@ -1258,7 +1258,7 @@ namespace Insight.Database
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
-        /// <param name="withGraph">The type of graph to use to deserialize the object or null to use the default graph.</param>
+		/// <param name="withGraph">The type of graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
@@ -1268,7 +1268,7 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<T> action,
-            Type withGraph = null,
+			Type withGraph = null,
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
@@ -1279,7 +1279,7 @@ namespace Insight.Database
 				{
 					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
-                        foreach (T t in reader.AsEnumerable<T>(withGraph))
+						foreach (T t in reader.AsEnumerable<T>(withGraph))
 							action(t);
 					}
 
@@ -1296,7 +1296,7 @@ namespace Insight.Database
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameters for the query.</param>
 		/// <param name="action">The reader callback.</param>
-        /// <param name="withGraph">The type of graph to use to deserialize the object or null to use the default graph.</param>
+		/// <param name="withGraph">The type of graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
@@ -1305,12 +1305,12 @@ namespace Insight.Database
 			string sql,
 			object parameters,
 			Action<T> action,
-            Type withGraph = null,
+			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-            connection.ForEach<T>(sql, parameters, action, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			connection.ForEach<T>(sql, parameters, action, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
 		}
 		#endregion
 
@@ -1346,20 +1346,20 @@ namespace Insight.Database
 					bulk.BatchSize = batchSize.Value;
 
 				// see if we already have a mapping for the given table name and type
-                // we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
-                var key = Tuple.Create<string, Type>(tableName, typeof(T));
-                ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
-                    key,
-                    t =>
-                    {
-                        // select a 0 row result set so we can determine the schema of the table
-                        string sql = String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
-                        using (var sqlReader = connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly))
-                            return ObjectReader.GetObjectReader(sqlReader, typeof(T));
-                    });
+				// we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
+				var key = Tuple.Create<string, Type>(tableName, typeof(T));
+				ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
+					key,
+					t =>
+					{
+						// select a 0 row result set so we can determine the schema of the table
+						string sql = String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
+						using (var sqlReader = connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly))
+							return ObjectReader.GetObjectReader(sqlReader, typeof(T));
+					});
 
 				// create a reader for the list
-                ObjectListDbDataReader reader = new ObjectListDbDataReader(fieldReaderData, list);
+				ObjectListDbDataReader reader = new ObjectListDbDataReader(fieldReaderData, list);
 
 				// write the data to the server
 				bulk.WriteToServer(reader);

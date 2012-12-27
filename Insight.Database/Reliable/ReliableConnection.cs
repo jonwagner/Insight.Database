@@ -188,7 +188,8 @@ namespace Insight.Database.Reliable
 		/// <summary>
 		/// Initializes a new instance of the ReliableConnection class.
 		/// </summary>
-		public ReliableConnection() : base(new TConnection())
+		public ReliableConnection()
+			: base(new TConnection())
 		{
 		}
 

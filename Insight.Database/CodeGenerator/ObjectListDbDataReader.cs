@@ -68,12 +68,12 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Initializes a new instance of the ObjectListDbDataReader class.
 		/// </summary>
-        /// <param name="objectReader">The objectReader to use to read the values from an object in the list.</param>
+		/// <param name="objectReader">The objectReader to use to read the values from an object in the list.</param>
 		/// <param name="list">The list of objects.</param>
-        public ObjectListDbDataReader(ObjectReader objectReader, IEnumerable list)
+		public ObjectListDbDataReader(ObjectReader objectReader, IEnumerable list)
 		{
-            _objectReader = objectReader;
-            _schemaTable = objectReader.SchemaTable;
+			_objectReader = objectReader;
+			_schemaTable = objectReader.SchemaTable;
 			_list = list.GetEnumerator();
 		}
 		#endregion
@@ -107,7 +107,7 @@ namespace Insight.Database.CodeGenerator
 				_currentStringValue = null;
 
 				// not allowed to have nulls in the list
-                if (_current == null && !_objectReader.IsValueType)
+				if (_current == null && !_objectReader.IsValueType)
 					throw new InvalidOperationException("Cannot send a list of objects to a table-valued parameter when the list contains a null value");
 			}
 
@@ -138,12 +138,12 @@ namespace Insight.Database.CodeGenerator
 				else
 				{
 					// we are reading IEnumerable<ObjectType>, so look up the accessor and call it
-                    // if there is no accessor, that means the mapper could not find an appropriate column, so make it null
-                    var accessor = _objectReader.Accessors[ordinal];
-                    if (accessor != null)
-                        _currentValue = accessor(_current);
-                    else
-                        _currentValue = null;
+					// if there is no accessor, that means the mapper could not find an appropriate column, so make it null
+					var accessor = _objectReader.Accessors[ordinal];
+					if (accessor != null)
+						_currentValue = accessor(_current);
+					else
+						_currentValue = null;
 				}
 			}
 

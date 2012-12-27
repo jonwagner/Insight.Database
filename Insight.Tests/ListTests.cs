@@ -16,10 +16,10 @@ namespace Insight.Tests
 		[TestFixtureSetUp]
 		public override void SetUpFixture()
 		{
-			base.SetUpFixture ();
+			base.SetUpFixture();
 
 			// clean up old stuff first
-			CleanupObjects ();
+			CleanupObjects();
 
 			_connection.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
 			_connection.ExecuteSql("CREATE TYPE [InsightTestDataTable] AS TABLE ([Int] [int] NOT NULL, [IntNull][int])");
@@ -37,9 +37,9 @@ namespace Insight.Tests
 		[TestFixtureTearDown]
 		public override void TearDownFixture()
 		{
-			CleanupObjects ();
+			CleanupObjects();
 
-			base.TearDownFixture ();
+			base.TearDownFixture();
 		}
 
 		private void CleanupObjects()
@@ -80,16 +80,16 @@ namespace Insight.Tests
 		/// Test support for enumerable parameters (a parameter is IEnumerable ValueType)
 		/// </summary>
 		[Test]
-		public void TestEnumerableValueParameters ()
+		public void TestEnumerableValueParameters()
 		{
 			string sql = "SELECT p FROM (SELECT p=0 UNION SELECT 1 UNION SELECT 2) as v WHERE p IN (@p)";
 
 			for (int i = 0; i < 3; i++)
 			{
-				int[] array = Enumerable.Range (0, i).ToArray ();
-				var items = _connection.QuerySql (sql, new { p = array });
-				Assert.IsNotNull (items);
-				Assert.AreEqual (i, items.Count);
+				int[] array = Enumerable.Range(0, i).ToArray();
+				var items = _connection.QuerySql(sql, new { p = array });
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
 			}
 		}
 
@@ -97,50 +97,50 @@ namespace Insight.Tests
 		/// Test support for enumerable parameters of classes sent as table value parameters.
 		/// </summary>
 		[Test]
-		public void TestEnumerableClassArrayParameters ()
+		public void TestEnumerableClassArrayParameters()
 		{
 			for (int i = 0; i < 3; i++)
 			{
 				// build test data
 				InsightTestData[] array = new InsightTestData[i];
 				for (int j = 0; j < i; j++)
-					array[j] = new InsightTestData () { Int = j };
+					array[j] = new InsightTestData() { Int = j };
 
 				// run the query
-				var items = _connection.QuerySql<InsightTestData> ("SELECT * FROM @p", new { p = array });
-				Assert.IsNotNull (items);
-				Assert.AreEqual (i, items.Count);
+				var items = _connection.QuerySql<InsightTestData>("SELECT * FROM @p", new { p = array });
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual (j, items[j].Int);
+					Assert.AreEqual(j, items[j].Int);
 			}
 
 			// make sure that we cannot send up a null item in the list
-			Assert.Throws<InvalidOperationException> (() => _connection.QuerySql<InsightTestData> ("SELECT * FROM @p", new { p = new InsightTestData[] { new InsightTestData (), null, new InsightTestData () } }));
+			Assert.Throws<InvalidOperationException>(() => _connection.QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new InsightTestData[] { new InsightTestData(), null, new InsightTestData() } }));
 		}
 
 		/// <summary>
 		/// Test support for enumerable parameters of classes sent as table value parameters.
 		/// </summary>
 		[Test]
-		public void TestEnumerableClassListParameters ()
+		public void TestEnumerableClassListParameters()
 		{
 			for (int i = 0; i < 3; i++)
 			{
 				// build test data
 				InsightTestData[] array = new InsightTestData[i];
 				for (int j = 0; j < i; j++)
-					array[j] = new InsightTestData () { Int = j };
+					array[j] = new InsightTestData() { Int = j };
 
 				// run the query
-				var items = _connection.QuerySql<InsightTestData> ("SELECT * FROM @p", new { p = array.ToList () });
-				Assert.IsNotNull (items);
-				Assert.AreEqual (i, items.Count);
+				var items = _connection.QuerySql<InsightTestData>("SELECT * FROM @p", new { p = array.ToList() });
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual (j, items[j].Int);
+					Assert.AreEqual(j, items[j].Int);
 			}
 
 			// make sure that we cannot send up a null item in the list
-			Assert.Throws<InvalidOperationException> (() => _connection.QuerySql<InsightTestData> ("SELECT * FROM @p", new { p = new List<InsightTestData> () { new InsightTestData (), null, new InsightTestData () } }));
+			Assert.Throws<InvalidOperationException>(() => _connection.QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new List<InsightTestData>() { new InsightTestData(), null, new InsightTestData() } }));
 		}
 
 		/// <summary>
@@ -207,21 +207,21 @@ namespace Insight.Tests
 		/// Test support for enumerable parameters of classes sent as table value parameters.
 		/// </summary>
 		[Test]
-		public void TestEnumerableValueParametersToStoredProc ()
+		public void TestEnumerableValueParametersToStoredProc()
 		{
 			for (int i = 0; i < 3; i++)
 			{
 				// build test data
-				int[] array = Enumerable.Range (0, i).ToArray ();
+				int[] array = Enumerable.Range(0, i).ToArray();
 
 				// run the query
-				var items = _connection.Query<InsightTestData> ("Int32TestProc", new { p = array });
-				Assert.IsNotNull (items);
-				Assert.AreEqual (i, items.Count);
+				var items = _connection.Query<InsightTestData>("Int32TestProc", new { p = array });
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
 			}
 
 			// make sure that we CAN send up a null item in the list
-			Assert.AreEqual (3, _connection.Query<InsightTestData> ("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
+			Assert.AreEqual(3, _connection.Query<InsightTestData>("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
 		}
 
 		class Data
@@ -243,7 +243,7 @@ namespace Insight.Tests
 
 			var list = new List<Data>() { o };
 
-			_connection.Query("EvilProc", new { p = list});			
+			_connection.Query("EvilProc", new { p = list });
 		}
 
 		[Test]
@@ -310,12 +310,12 @@ namespace Insight.Tests
 
 		#region Mismatch Tests
 		[Test]
-		public void TestTypeMismatchInObjectReader ()
+		public void TestTypeMismatchInObjectReader()
 		{
-			InsightTestData[] array = new InsightTestData[] { new InsightTestData () };
+			InsightTestData[] array = new InsightTestData[] { new InsightTestData() };
 
 			// run the query
-			_connection.QuerySql<InsightTestData> ("InsightTestDataTestProc2", new { p = array.ToList () });
+			_connection.QuerySql<InsightTestData>("InsightTestDataTestProc2", new { p = array.ToList() });
 		}
 		#endregion
 	}

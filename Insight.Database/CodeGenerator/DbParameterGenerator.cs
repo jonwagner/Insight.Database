@@ -155,15 +155,15 @@ namespace Insight.Database.CodeGenerator
 			QueryIdentity identity = new QueryIdentity(command, type);
 
 			// try to get the deserializer. if not found, create one.
-            return _serializers.GetOrAdd(
-                identity,
-                key =>
-                {
-			        if (type.IsSubclassOf(typeof(DynamicObject)))
-				        return CreateDynamicInputParameterGenerator(command);
-			        else
-				        return CreateClassInputParameterGenerator(command, type);
-                });
+			return _serializers.GetOrAdd(
+				identity,
+				key =>
+				{
+					if (type.IsSubclassOf(typeof(DynamicObject)))
+						return CreateDynamicInputParameterGenerator(command);
+					else
+						return CreateClassInputParameterGenerator(command, type);
+				});
 		}
 
 		/// <summary>
@@ -213,13 +213,13 @@ namespace Insight.Database.CodeGenerator
 		private static List<SqlParameter> DeriveParametersFromSqlProcedure(SqlCommand command)
 		{
 			// call the server to get the parameters
-			command.Connection.ExecuteAndAutoClose(_ => 
-            { 
-                SqlCommandBuilder.DeriveParameters(command);
-                CheckForMissingParameters(command);
+			command.Connection.ExecuteAndAutoClose(_ =>
+			{
+				SqlCommandBuilder.DeriveParameters(command);
+				CheckForMissingParameters(command);
 
-                return true; 
-            });
+				return true;
+			});
 
 			// make the list of parameters
 			List<SqlParameter> parameters = command.Parameters.Cast<SqlParameter>().ToList();
@@ -227,38 +227,38 @@ namespace Insight.Database.CodeGenerator
 
 			// clear the list so we can re-add them
 			command.Parameters.Clear();
-            
+
 			return parameters;
 		}
 
-        /// <summary>
-        /// Verify that DeriveParameters returned the correct parameters.
-        /// </summary>
-        /// <remarks>
-        /// If the current user doesn't have execute permissions the type of a parameter,
-        /// DeriveParameters won't return the parameter. This is very difficult to debug,
-        /// so we are going to check to make sure that we got all of the parameters.
-        /// </remarks>
-        /// <param name="command">The command to analyze.</param>
-        private static void CheckForMissingParameters(SqlCommand command)
-        {
-            // if the current user doesn't have execute permissions on the database
-            // DeriveParameters will just skip the parameter
-            // so we are going to check the list ourselves for anything missing
-            var parameterNames = command.Connection.QuerySql<string>(
-                "SELECT p.Name FROM sys.parameters p WHERE p.object_id = OBJECT_ID(@Name)",
-                new { Name = command.CommandText },
-                transaction: command.Transaction);
+		/// <summary>
+		/// Verify that DeriveParameters returned the correct parameters.
+		/// </summary>
+		/// <remarks>
+		/// If the current user doesn't have execute permissions the type of a parameter,
+		/// DeriveParameters won't return the parameter. This is very difficult to debug,
+		/// so we are going to check to make sure that we got all of the parameters.
+		/// </remarks>
+		/// <param name="command">The command to analyze.</param>
+		private static void CheckForMissingParameters(SqlCommand command)
+		{
+			// if the current user doesn't have execute permissions on the database
+			// DeriveParameters will just skip the parameter
+			// so we are going to check the list ourselves for anything missing
+			var parameterNames = command.Connection.QuerySql<string>(
+				"SELECT p.Name FROM sys.parameters p WHERE p.object_id = OBJECT_ID(@Name)",
+				new { Name = command.CommandText },
+				transaction: command.Transaction);
 
-            var parameters = command.Parameters.OfType<SqlParameter>();
-            string missingParameter = parameterNames.FirstOrDefault(n => !parameters.Any(p => String.Compare(p.ParameterName, n, ignoreCase: true) == 0));
-            if (missingParameter != null)
-                throw new InvalidOperationException(String.Format(
-                    CultureInfo.InvariantCulture,
-                    "{0} is missing parameter {1}. Check to see if the parameter is using a type that the current user does not have EXECUTE access to.",
-                    command.CommandText, 
-                    missingParameter));
-        }
+			var parameters = command.Parameters.OfType<SqlParameter>();
+			string missingParameter = parameterNames.FirstOrDefault(n => !parameters.Any(p => String.Compare(p.ParameterName, n, ignoreCase: true) == 0));
+			if (missingParameter != null)
+				throw new InvalidOperationException(String.Format(
+					CultureInfo.InvariantCulture,
+					"{0} is missing parameter {1}. Check to see if the parameter is using a type that the current user does not have EXECUTE access to.",
+					command.CommandText,
+					missingParameter));
+		}
 
 		/// <summary>
 		/// Get a list of parameters from Sql text.
@@ -319,17 +319,17 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
 
 			// get the properties for the type
-            var mapping = ColumnMapping.Parameters.CreateMapping(type, null, parameters, 0, parameters.Count, true);
+			var mapping = ColumnMapping.Parameters.CreateMapping(type, null, parameters, 0, parameters.Count, true);
 
-            // go through all of the mappings
-            for (int i = 0; i < mapping.Length; i++)
-            {
-                var prop = mapping[i];
-                var sqlParameter = parameters[i];
+			// go through all of the mappings
+			for (int i = 0; i < mapping.Length; i++)
+			{
+				var prop = mapping[i];
+				var sqlParameter = parameters[i];
 
-                // if there is no mapping for that parameter, then see if we need to add it as an output parameter
-                if (prop == null)
-                {
+				// if there is no mapping for that parameter, then see if we need to add it as an output parameter
+				if (prop == null)
+				{
 					// if there is an unspecified output parameter, then we need to add a parameter for it
 					// this includes input/output parameters, as well as return values
 					if (sqlParameter.Direction.HasFlag(ParameterDirection.Output))
@@ -409,10 +409,10 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// Start handling all of the other types
 				///////////////////////////////////////////////////////////////
-				
+
 				// duplicate parameters so we can call add later
 				il.Emit(OpCodes.Dup);													// dup parameters
-	
+
 				EmitCreateParameter(il, sqlParameter, sqlType);							// adds parameter to the stack
 
 				// duplicate the parameter so we can call setvalue later
@@ -717,8 +717,8 @@ namespace Insight.Database.CodeGenerator
 
 			foreach (var prop in ClassPropInfo.GetMappingForType(type))
 			{
-                if (!prop.Value.CanSetMember)
-                    continue;
+				if (!prop.Value.CanSetMember)
+					continue;
 
 				// if there is no parameter for this property, then skip it
 				// if the parameter is not output, then skip it
@@ -799,7 +799,7 @@ namespace Insight.Database.CodeGenerator
 			/// <summary>
 			/// Cache for Table-Valued Parameter schemas.
 			/// </summary>
-            private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
+			private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
 
 			/// <summary>
 			/// The regex to detect parameters.
@@ -904,17 +904,17 @@ namespace Insight.Database.CodeGenerator
 					tableTypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
 
 				// see if we already have a reader for the given type and table type name
-                // we can't use the schema cache because we don't have a schema yet
-                var key = Tuple.Create<string, Type>(tableTypeName, listType);
-                ObjectReader objectReader = _tvpReaders.GetOrAdd(
-                    key,
+				// we can't use the schema cache because we don't have a schema yet
+				var key = Tuple.Create<string, Type>(tableTypeName, listType);
+				ObjectReader objectReader = _tvpReaders.GetOrAdd(
+					key,
 					k => cmd.Connection.ExecuteAndAutoClose(
 						_ =>
 						{
-                            // select a 0 row result set so we can determine the schema of the table
-                            string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
-                            using (var sqlReader = cmd.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: cmd.Transaction))
-                                return ObjectReader.GetObjectReader(sqlReader, listType);
+							// select a 0 row result set so we can determine the schema of the table
+							string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
+							using (var sqlReader = cmd.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: cmd.Transaction))
+								return ObjectReader.GetObjectReader(sqlReader, listType);
 						}));
 
 				// create the structured parameter
@@ -922,7 +922,7 @@ namespace Insight.Database.CodeGenerator
 				p.ParameterName = parameterName;
 				p.SqlDbType = SqlDbType.Structured;
 				p.TypeName = tableTypeName;
-                p.Value = new ObjectListDbDataReader(objectReader, list);
+				p.Value = new ObjectListDbDataReader(objectReader, list);
 				cmd.Parameters.Add(p);
 			}
 		}

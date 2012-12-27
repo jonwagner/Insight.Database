@@ -12,29 +12,29 @@ namespace Insight.Tests
 	{
 		#region SetUp and TearDown
 		[TestFixtureSetUp]
-		public override void SetUpFixture ()
+		public override void SetUpFixture()
 		{
 			// clean up old stuff first
-			CleanupObjects ();
+			CleanupObjects();
 
-			base.SetUpFixture ();
+			base.SetUpFixture();
 
-			_connection.ExecuteSql ("CREATE TABLE [InsightTestData] ([Int] [int])");
+			_connection.ExecuteSql("CREATE TABLE [InsightTestData] ([Int] [int])");
 		}
 
 		[TestFixtureTearDown]
-		public override void TearDownFixture ()
+		public override void TearDownFixture()
 		{
-			CleanupObjects ();
+			CleanupObjects();
 
-			base.TearDownFixture ();
+			base.TearDownFixture();
 		}
 
 		private void CleanupObjects()
 		{
 			try
 			{
-				_connection.ExecuteSql ("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestData') DROP TABLE [InsightTestData]");
+				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestData') DROP TABLE [InsightTestData]");
 			}
 			catch { }
 		}
@@ -56,19 +56,19 @@ namespace Insight.Tests
 				// build test data
 				InsightTestData[] array = new InsightTestData[i];
 				for (int j = 0; j < i; j++)
-					array[j] = new InsightTestData () { Int = j };
+					array[j] = new InsightTestData() { Int = j };
 
 				// bulk load the data
-				_connection.BulkCopy ("InsightTestData", array);
+				_connection.BulkCopy("InsightTestData", array);
 
 				// run the query
-				var items = _connection.QuerySql<InsightTestData> ("SELECT * FROM InsightTestData");
-				Assert.IsNotNull (items);
-				Assert.AreEqual (i, items.Count);
+				var items = _connection.QuerySql<InsightTestData>("SELECT * FROM InsightTestData");
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual (j, items[j].Int);
+					Assert.AreEqual(j, items[j].Int);
 
-				_connection.ExecuteSql ("DELETE FROM InsightTestData");
+				_connection.ExecuteSql("DELETE FROM InsightTestData");
 			}
 		}
 	}

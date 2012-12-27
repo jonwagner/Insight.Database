@@ -17,37 +17,37 @@ namespace Insight.Tests
 	{
 		#region SetUp
 		[TestFixtureSetUp]
-		public virtual void SetUpFixture ()
+		public virtual void SetUpFixture()
 		{
 			// open the test connection
-			SqlConnectionStringBuilder sb = new SqlConnectionStringBuilder ();
+			SqlConnectionStringBuilder sb = new SqlConnectionStringBuilder();
 			sb.IntegratedSecurity = true;
 			sb.AsynchronousProcessing = true;
-			_connection = new SqlConnection (sb.ConnectionString);
+			_connection = new SqlConnection(sb.ConnectionString);
 
 			if (_connection.State != ConnectionState.Open)
-				_connection.Open ();
+				_connection.Open();
 		}
 
 		[TestFixtureTearDown]
-		public virtual void TearDownFixture ()
+		public virtual void TearDownFixture()
 		{
 			if (_connection.State != ConnectionState.Closed)
-				_connection.Close ();
+				_connection.Close();
 		}
 
 		[SetUp]
-		public virtual void SetUp ()
+		public virtual void SetUp()
 		{
 			if (_connection.State != ConnectionState.Open)
-				_connection.Open ();
+				_connection.Open();
 		}
 
 		[TearDown]
-		public virtual void TearDown ()
+		public virtual void TearDown()
 		{
 			if (_connection.State != ConnectionState.Closed)
-				_connection.Close ();
+				_connection.Close();
 		}
 
 		protected SqlConnection _connection;

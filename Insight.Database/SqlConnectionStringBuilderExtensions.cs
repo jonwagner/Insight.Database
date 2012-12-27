@@ -20,7 +20,7 @@ namespace Insight.Database
 		{
 			return new SqlConnection(builder.ConnectionString);
 		}
-		
+
 		/// <summary>
 		/// Opens and returns a database connection.
 		/// </summary>
