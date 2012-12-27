@@ -60,6 +60,7 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="Helpers.cs" />
     <Compile Include="IColumnMappingHandler.cs" />
     <Compile Include="DefaultGraphAttribute.cs" />
     <Compile Include="Graph.cs" />

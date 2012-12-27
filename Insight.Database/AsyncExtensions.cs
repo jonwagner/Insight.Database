@@ -524,17 +524,14 @@ namespace Insight.Database
         {
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
+            T results = new T();
+
             command.Connection = connection;
             return command.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct).ContinueWith(
-                        t =>
-                        {
-                            T results = new T();
-                            results.Read(t.Result, withGraphs);
-
-                            return results;
-                        },
-                        TaskContinuationOptions.ExecuteSynchronously),
+				c => c.GetReaderAsync(commandBehavior, ct)
+						.ContinueWith(t => results.ReadAsync(t.Result, withGraphs, cancellationToken))
+						.Unwrap()
+						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously),
 				commandBehavior,
 				ct);
         }
@@ -566,17 +563,13 @@ namespace Insight.Database
         {
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
+            T results = new T();
+
             return connection.ExecuteAsyncAndAutoClose(
                 c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
-                    .ContinueWith(
-                        t =>
-                        {
-                            T results = new T();
-                            results.Read(t.Result, withGraphs);
-
-                            return results;
-                        },
-                        TaskContinuationOptions.ExecuteSynchronously),
+						.ContinueWith(t => results.ReadAsync(t.Result, withGraphs, cancellationToken))
+						.Unwrap()
+						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously),
 				commandBehavior,
 				ct);
         }
@@ -889,17 +882,30 @@ namespace Insight.Database
 		}
 #else
 		/// <summary>
-		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
+		/// Chain an asynchronous data reader task with a translation to a list of objects.
 		/// </summary>
+		/// <typeparam name="TResult">The type of object to return.</typeparam>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
 		public static async Task<IList<FastExpando>> ToListAsync(this Task<IDataReader> task, CancellationToken? cancellationToken = null)
 		{
+			IDataReader reader = await task;
+
+			return await reader.ToListAsync(cancellationToken);
+		}
+
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
+		/// </summary>
+		/// <param name="reader">The data reader to read from.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static async Task<IList<FastExpando>> ToListAsync(this IDataReader reader, CancellationToken? cancellationToken = null)
+		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			// in .net 4.5, use ReadAsync for best performance
-			IDataReader reader = await task;
 			DbDataReader dbReader = reader as DbDataReader;
 
 			ct.ThrowIfCancellationRequested();
@@ -921,10 +927,24 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static async Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken? cancellationToken = null)
 		{
+			IDataReader reader = await task;
+
+			return await reader.ToListAsync<TResult>(withGraph, cancellationToken);
+		}
+
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return.</typeparam>
+		/// <param name="reader">The data reader to read from.</param>
+        /// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static async Task<IList<TResult>> ToListAsync<TResult>(this IDataReader reader, Type withGraph = null, CancellationToken? cancellationToken = null)
+		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			// in .net 4.5, use ReadAsync for best performance
-			IDataReader reader = await task;
 			DbDataReader dbReader = reader as DbDataReader;
 
 			ct.ThrowIfCancellationRequested();
@@ -1406,13 +1426,7 @@ namespace Insight.Database
 		{
 			// if the connection is already open, then it doesn't need to be opened or closed.
 			if (connection.State == ConnectionState.Open)
-			{
-#if NODBASYNC
-				return Task<bool>.Factory.StartNew(() => false);
-#else
-				return Task.FromResult(false);
-#endif
-			}
+				return Helpers.FalseTask;
 
 #if !NODBASYNC
 			// open the connection and plan to close it
