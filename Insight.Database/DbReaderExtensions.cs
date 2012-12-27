@@ -527,18 +527,27 @@ namespace Insight.Database
 		/// <returns>The list of merged objects.</returns>
 		public static IEnumerable<T> Merge<T>(this IDataReader reader, IEnumerable<T> items)
 		{
-            var merger = DbReaderDeserializer.GetMerger<T>(reader);
+			bool moreResults = false;
 
-			// read the identities of each item from the recordset and merge them into the objects
-			foreach (T item in items)
+			try
 			{
-				reader.Read();
-				merger(reader, item);
-			}
+				var merger = DbReaderDeserializer.GetMerger<T>(reader);
 
-			// we are done with this result set, so move onto the next or clean up the reader
-			if (!reader.NextResult())
-				reader.Dispose();
+				// read the identities of each item from the recordset and merge them into the objects
+				foreach (T item in items)
+				{
+					reader.Read();
+					merger(reader, item);
+				}
+
+				// we are done with this result set, so move onto the next or clean up the reader
+				moreResults = reader.NextResult();
+			}
+			finally
+			{
+				if (!moreResults)
+					reader.Dispose();
+			}
 
 			return items;
 		}
