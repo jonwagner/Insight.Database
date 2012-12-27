@@ -400,8 +400,22 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-					.ContinueWith(t => { read(t.Result); return false; }),
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+					.ContinueWith(
+						t =>
+						{
+							try
+							{
+								read(t.Result);
+								return false;
+							}
+							finally
+							{
+								// make sure the reader is always closed
+								t.Result.Dispose();
+							}
+						},
+						ct),
 				commandBehavior,
 				ct);
 		}
@@ -428,13 +442,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null,
 			CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
-
-			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-					.ContinueWith(t => { read(t.Result); return false; }),
-				commandBehavior,
-				ct);
+			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 
 		/// <summary>
@@ -465,8 +473,21 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-					.ContinueWith(t => read(t.Result)),
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+					.ContinueWith(
+						t =>
+						{
+							try
+							{
+								return read(t.Result);
+							}
+							finally
+							{
+								// make sure the reader is always closed
+								t.Result.Dispose();
+							}
+						},
+						ct),
 				commandBehavior,
 				ct);
 		}
@@ -494,13 +515,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null,
 			CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
-
-			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-					.ContinueWith(t => read(t.Result)),
-				commandBehavior,
-				ct);
+			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 		#endregion
 
@@ -524,14 +539,17 @@ namespace Insight.Database
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
-			T results = new T();
-
 			command.Connection = connection;
 			return command.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct)
-						.ContinueWith(t => results.ReadAsync(t.Result, withGraphs, cancellationToken))
-						.Unwrap()
-						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously),
+				c =>
+				{
+					var reader = c.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct);
+
+					T results = new T();
+
+					return results.ReadAsync(reader, withGraphs, cancellationToken)
+						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously);
+				},
 				commandBehavior,
 				ct);
 		}
@@ -563,13 +581,16 @@ namespace Insight.Database
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
-			T results = new T();
-
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-						.ContinueWith(t => results.ReadAsync(t.Result, withGraphs, cancellationToken))
-						.Unwrap()
-						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously),
+				c =>
+				{
+					var reader = c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+
+					T results = new T();
+
+					return results.ReadAsync(reader, withGraphs, cancellationToken)
+						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously);
+				},
 				commandBehavior,
 				ct);
 		}
@@ -1363,7 +1384,8 @@ namespace Insight.Database
 		private static Task<T> ExecuteAsyncAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, Task<T>> action, bool closeConnection, CancellationToken cancellationToken)
 		{
 			return AutoOpenAsync(connection, cancellationToken)
-				.ContinueWith(t =>
+				.ContinueWith(
+				t =>
 				{
 					// this needs to run even if the open has been cancelled so we don't leak a connection
 					closeConnection |= t.Result;
@@ -1373,16 +1395,19 @@ namespace Insight.Database
 					cancellationToken.ThrowIfCancellationRequested();
 
 					return action(connection);
-				})
+				},
+				TaskContinuationOptions.ExecuteSynchronously)
 				.Unwrap()
-				.ContinueWith(t =>
+				.ContinueWith(
+				t =>
 				{
 					// close before accessing the result so we can guarantee that the connection doesn't leak
 					if (closeConnection)
 						connection.Close();
 
 					return t.Result;
-				});
+				},
+				TaskContinuationOptions.ExecuteSynchronously);
 		}
 
 		/// <summary>
@@ -1437,6 +1462,7 @@ namespace Insight.Database
 					t =>
 					{
 						// call wait on the task to re-throw any connection errors
+						// otherwise we just get a task cancelled error
 						t.Wait();
 
 						return dbConnection.State == ConnectionState.Open;

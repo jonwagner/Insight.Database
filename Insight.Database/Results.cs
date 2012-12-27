@@ -24,6 +24,21 @@ namespace Insight.Database
 		{
 		}
 
+#if NODBASYNC
+		/// <summary>
+		/// Reads the contents from an IDataReader.
+		/// </summary>
+		/// <param name="task">The task containing the reader to read from.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
+		/// <returns>A task representing the completion of this operation.</returns>
+		public virtual Task ReadAsync(Task<IDataReader> task, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+
+			return task.ContinueWith(t => Read(t.Result, withGraphs), ct);
+		}
+#else
 		/// <summary>
 		/// Reads the contents from an IDataReader.
 		/// </summary>
@@ -31,14 +46,11 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public virtual Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		public virtual async Task ReadAsync(Task<IDataReader> reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
-#if NODBASYNC
-			// in .NET 4.0, perform the read synchronously
-			Read(reader, withGraphs);
-#endif
-			return Helpers.TrueTask;
+			await reader.ConfigureAwait(false);
 		}
+#endif
 	}
 
 	/// <summary>
@@ -74,11 +86,11 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		public override async Task ReadAsync(Task<IDataReader> reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 1) ? withGraphs[0] : null;
 
-			await base.ReadAsync(reader, withGraphs);
+			await base.ReadAsync(reader, withGraphs).ConfigureAwait(false);
 
 			Set1 = await reader.ToListAsync<T1>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
@@ -119,11 +131,11 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		public override async Task ReadAsync(Task<IDataReader> reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 2) ? withGraphs[1] : null;
 
-			await base.ReadAsync(reader, withGraphs);
+			await base.ReadAsync(reader, withGraphs).ConfigureAwait(false);
 
 			Set2 = await reader.ToListAsync<T2>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
@@ -165,11 +177,11 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		public override async Task ReadAsync(Task<IDataReader> reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 3) ? withGraphs[2] : null;
 
-			await base.ReadAsync(reader, withGraphs);
+			await base.ReadAsync(reader, withGraphs).ConfigureAwait(false);
 
 			Set3 = await reader.ToListAsync<T3>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
@@ -212,11 +224,11 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		public override async Task ReadAsync(Task<IDataReader> reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 4) ? withGraphs[3] : null;
 
-			await base.ReadAsync(reader, withGraphs);
+			await base.ReadAsync(reader, withGraphs).ConfigureAwait(false);
 
 			Set4 = await reader.ToListAsync<T4>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
@@ -260,11 +272,11 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of the read operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		public override async Task ReadAsync(Task<IDataReader> reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 5) ? withGraphs[4] : null;
 
-			await base.ReadAsync(reader, withGraphs);
+			await base.ReadAsync(reader, withGraphs).ConfigureAwait(false);
 
 			Set5 = await reader.ToListAsync<T5>(withGraph, cancellationToken).ConfigureAwait(false);
 		}
