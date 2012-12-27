@@ -282,13 +282,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null,
 			CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
-
-			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-					.ToListAsync(cancellationToken),
-				commandBehavior,
-				ct);
+			return connection.QueryAsync(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 
 		/// <summary>
@@ -314,13 +308,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null,
 			CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
-
-			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-					.ToListAsync<TResult>(withGraph, cancellationToken),
-				commandBehavior,
-				ct);
+			return connection.QueryAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 		#endregion
 
@@ -1047,13 +1035,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null,
 			CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
-
-			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-						.MergeAsync(inserted, cancellationToken),
-				commandBehavior,
-				ct);
+			return connection.InsertAsync(sql, inserted, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 
 		/// <summary>
@@ -1123,13 +1105,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null,
 			CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
-
-			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
-						.MergeAsync(inserted, cancellationToken),
-				commandBehavior,
-				ct);
+			return connection.InsertListAsync(sql, inserted, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 		#endregion
 
