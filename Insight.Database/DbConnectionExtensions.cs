@@ -255,7 +255,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = command.ExecuteReader())
+					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
 					{
 						return reader.ToList();
 					}
@@ -283,7 +283,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = command.ExecuteReader())
+					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
 					{
                         return reader.ToList<TResult>(withGraph);
 					}
@@ -314,7 +314,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList();
 					}
@@ -348,7 +348,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
                         return reader.ToList<TResult>(withGraph);
 					}
@@ -381,7 +381,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1>();
 					}
@@ -415,7 +415,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2>();
 					}
@@ -450,7 +450,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2, TSub3>();
 					}
@@ -486,7 +486,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4>();
 					}
@@ -523,7 +523,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>();
 					}
@@ -552,7 +552,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList();
 					}
@@ -584,7 +584,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
                         return reader.ToList<TResult>(withGraph);
 					}
@@ -615,7 +615,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1>();
 					}
@@ -647,7 +647,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2>();
 					}
@@ -680,7 +680,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2, TSub3>();
 					}
@@ -714,7 +714,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4>();
 					}
@@ -749,7 +749,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>();
 					}
@@ -783,7 +783,7 @@ namespace Insight.Database
 			connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						read(reader);
 					}
@@ -841,7 +841,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return read(reader);
 					}
@@ -893,7 +893,7 @@ namespace Insight.Database
             return connection.ExecuteAndAutoClose(
                 c =>
                 {
-                    using (IDataReader reader = command.ExecuteReader())
+					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
                     {
                         T results = new T();
                         results.Read(reader, withGraphs);
@@ -929,7 +929,7 @@ namespace Insight.Database
         {
             return connection.ExecuteAndAutoClose(c =>
             {
-                using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+				using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
                 {
                     T results = new T();
                     results.Read(reader, withGraphs);
@@ -960,7 +960,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null) where T : Results, new()
         {
-            return connection.QueryResults<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -987,7 +987,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1012,7 +1012,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1040,7 +1040,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1066,7 +1066,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1095,7 +1095,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1122,7 +1122,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1152,7 +1152,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
 
         /// <summary>
@@ -1180,7 +1180,7 @@ namespace Insight.Database
             int? commandTimeout = null,
             IDbTransaction transaction = null)
         {
-            return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
         }
         #endregion
 
@@ -1215,7 +1215,7 @@ namespace Insight.Database
 			connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						foreach (FastExpando expando in reader.AsEnumerable())
 							action(expando);
@@ -1277,7 +1277,7 @@ namespace Insight.Database
 			connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
                         foreach (T t in reader.AsEnumerable<T>(withGraph))
 							action(t);
@@ -1427,7 +1427,7 @@ namespace Insight.Database
 			connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.Merge(inserted);
 					}
@@ -1463,7 +1463,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.Insert<TResult>(sql, inserted, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.Insert<TResult>(sql, inserted, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
 		}
 
 		/// <summary>
@@ -1497,7 +1497,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.Merge(inserted);
 					}
@@ -1534,7 +1534,7 @@ namespace Insight.Database
 			return connection.ExecuteAndAutoClose(
 				c =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction))
+					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
 					{
 						return reader.Merge(inserted);
 					}

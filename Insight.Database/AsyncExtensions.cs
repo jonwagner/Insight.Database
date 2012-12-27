@@ -190,7 +190,7 @@ namespace Insight.Database
 
             command.Connection = connection;
             return command.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct)
+				c => c.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct)
 					.ToListAsync<TResult>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
@@ -222,7 +222,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ToListAsync(cancellationToken),
 				commandBehavior,
 				ct);
@@ -256,7 +256,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ToListAsync<TResult>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
@@ -285,7 +285,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ToListAsync(cancellationToken),
 				commandBehavior,
 				ct);
@@ -317,7 +317,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ToListAsync<TResult>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
@@ -341,7 +341,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return cmd.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct)
+				c => c.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct)
 					.ToListAsync(cancellationToken),
 				commandBehavior,
 				ct);
@@ -365,7 +365,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return cmd.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct)
+				c => c.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct)
 					.ToListAsync<T>(withGraph, cancellationToken),
 				commandBehavior,
 				ct);
@@ -400,7 +400,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ContinueWith(t => { read(t.Result); return false; }),
 				commandBehavior,
 				ct);
@@ -431,7 +431,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ContinueWith(t => { read(t.Result); return false; }),
 				commandBehavior,
 				ct);
@@ -465,7 +465,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ContinueWith(t => read(t.Result)),
 				commandBehavior,
 				ct);
@@ -497,7 +497,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 					.ContinueWith(t => read(t.Result)),
 				commandBehavior,
 				ct);
@@ -528,7 +528,7 @@ namespace Insight.Database
 
             command.Connection = connection;
             return command.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(commandBehavior, ct)
+				c => c.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct)
 						.ContinueWith(t => results.ReadAsync(t.Result, withGraphs, cancellationToken))
 						.Unwrap()
 						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously),
@@ -566,7 +566,7 @@ namespace Insight.Database
             T results = new T();
 
             return connection.ExecuteAsyncAndAutoClose(
-                c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 						.ContinueWith(t => results.ReadAsync(t.Result, withGraphs, cancellationToken))
 						.Unwrap()
 						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously),
@@ -992,7 +992,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
@@ -1029,7 +1029,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
@@ -1068,7 +1068,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
@@ -1105,7 +1105,7 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior, commandTimeout, transaction)
+				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction)
 						.MergeAsync(inserted, cancellationToken),
 				commandBehavior,
 				ct);
