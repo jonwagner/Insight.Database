@@ -129,6 +129,7 @@ namespace Insight.Database.Sample
 
 		class Serving
 		{
+			public int ID;
 			public DateTime When;
 			public int BeerID { get { return Beer.Id; } }
 			public Beer Beer;

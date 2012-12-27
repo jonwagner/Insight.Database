@@ -1209,7 +1209,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			// we don't use this parameter, but it is necessary to have so the compiler can infer the proper method signature to use
-			if (withGraph == null)
+			if (withGraph != null)
 				throw new ArgumentException("withGraph should be null for returning dynamic objects.", "withGraph");
 
 			connection.ExecuteAndAutoClose(

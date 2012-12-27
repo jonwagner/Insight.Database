@@ -154,7 +154,7 @@ namespace Insight.Database.CodeGenerator
 				var method = mapping[index];
 
 				// if there is no matching property for this column, then continue
-				if (method == null)
+				if (method == null || !method.CanSetMember)
 					continue;
 
 				// we will need to store the value on the target at the end of the method
@@ -170,7 +170,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);		// call getItem, stack => [target][value-as-object]
 
 				// determine the type of the object in the recordset
-				Type sourceType = reader.GetFieldType(index);
+				Type sourceType = reader.GetFieldType(index + startColumn);
 
 				// emit the code to convert the value and set the value on the field
 				Label finishLabel = TypeConverterGenerator.EmitConvertAndSetValue(il, sourceType, method);
@@ -438,7 +438,8 @@ namespace Insight.Database.CodeGenerator
 			// then it is time to switch types
 			int i = 0;
 			for (i = 0; i < columnsLeft; i++)
-				if (currentSetters[i] == null && nextSetters[i] != null)
+				if ((currentSetters[i] == null || !currentSetters[i].CanSetMember) &&
+					(nextSetters[i] != null && nextSetters[i].CanSetMember))
 					break;
 
 			return index + i;
