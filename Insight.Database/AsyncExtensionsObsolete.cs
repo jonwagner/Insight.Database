@@ -358,7 +358,19 @@ namespace Insight.Database
 		}
 		#endregion
 
-		#region Transation Methods
+		#region Translation Methods
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to deserialize from the reader.</typeparam>
+		/// <param name="task">The task returning the reader to read from.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null)
+		{
+			return task.ContinueWith(reader => reader.ToListAsync<TResult>(withGraph)).Unwrap();
+		}
+
 		/// <summary>
 		/// Chain an asynchronous data reader task with a translation to a list of objects.
 		/// </summary>
