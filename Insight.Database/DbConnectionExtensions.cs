@@ -242,17 +242,16 @@ namespace Insight.Database
 		#region Query Methods
 		/// <summary>
 		/// Execute an existing command, and translate the result set into a FastExpando. This method supports auto-open.
+		/// The Connection property of the command should be initialized before calling this method.
 		/// </summary>
-		/// <param name="connection">The connection to use.</param>
 		/// <param name="command">The command to execute.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<FastExpando> Query(
-			this IDbConnection connection,
-			IDbCommand command,
+			this IDbCommand command,
 			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
-			return connection.ExecuteAndAutoClose(
+			return command.Connection.ExecuteAndAutoClose(
 				c =>
 				{
 					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
@@ -265,22 +264,19 @@ namespace Insight.Database
 
 		/// <summary>
 		/// Execute an existing command, and translate the result set. This method supports auto-open.
+		/// The Connection property of the command should be initialized before calling this method.
 		/// </summary>
-		/// <param name="connection">The connection to use.</param>
 		/// <param name="command">The command to execute.</param>
 		/// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult>(
-			this IDbConnection connection,
-			IDbCommand command,
+			this IDbCommand command,
 			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
-			command.Connection = connection;
-
-			return connection.ExecuteAndAutoClose(
+			return command.Connection.ExecuteAndAutoClose(
 				c =>
 				{
 					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
@@ -877,20 +873,19 @@ namespace Insight.Database
 		#region QueryResults Methods
 		/// <summary>
 		/// Execute an existing command, and translate the result set. This method supports auto-open.
+		/// The Connection property of the command must be initialized before calling this method.
 		/// </summary>
-		/// <param name="connection">The connection to use.</param>
 		/// <param name="command">The command to execute.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <typeparam name="T">The type of result object to return. This must derive from Results.</typeparam>
 		/// <returns>A data reader with the results.</returns>
 		public static T QueryResults<T>(
-			this IDbConnection connection,
-			IDbCommand command,
+			this IDbCommand command,
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
 		{
-			return connection.ExecuteAndAutoClose(
+			return command.Connection.ExecuteAndAutoClose(
 				c =>
 				{
 					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))

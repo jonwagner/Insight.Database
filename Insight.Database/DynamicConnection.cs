@@ -24,22 +24,22 @@ namespace Insight.Database
 		/// <summary>
 		/// The types of parameters to pass to Query methods.
 		/// </summary>
-		private static Type[] _queryParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type), typeof(CommandBehavior) };
+		private static Type[] _queryParameters = new Type[] { typeof(IDbCommand), typeof(Type), typeof(CommandBehavior) };
 
 		/// <summary>
 		/// The types of parameters to pass to QueryAsync methods.
 		/// </summary>
-		private static Type[] _queryAsyncParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type), typeof(CommandBehavior), typeof(CancellationToken?) };
+		private static Type[] _queryAsyncParameters = new Type[] { typeof(IDbCommand), typeof(Type), typeof(CommandBehavior), typeof(CancellationToken?) };
 
 		/// <summary>
 		/// The types of parameters to pass to QueryResults methods.
 		/// </summary>
-		private static Type[] _queryResultsParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior) };
+		private static Type[] _queryResultsParameters = new Type[] { typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior) };
 
 		/// <summary>
 		/// The types of parameters to pass to QueryResultsAsync methods.
 		/// </summary>
-		private static Type[] _queryResultsAsyncParameters = new Type[] { typeof(IDbConnection), typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior), typeof(CancellationToken?) };
+		private static Type[] _queryResultsAsyncParameters = new Type[] { typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior), typeof(CancellationToken?) };
 
 		/// <summary>
 		/// Caches for MethodInfo for query methods.
@@ -210,9 +210,9 @@ namespace Insight.Database
 			MethodInfo method = GetQueryMethod(type, doAsync);
 
 			if (doAsync)
-				return method.Invoke(null, new object[] { _connection, cmd, withGraph, CommandBehavior.Default, cancellationToken });
+				return method.Invoke(null, new object[] { cmd, withGraph, CommandBehavior.Default, cancellationToken });
 			else
-				return method.Invoke(null, new object[] { _connection, cmd, withGraph, CommandBehavior.Default });
+				return method.Invoke(null, new object[] { cmd, withGraph, CommandBehavior.Default });
 		}
 
 		/// <summary>

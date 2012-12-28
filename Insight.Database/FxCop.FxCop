@@ -122,6 +122,15 @@
            </Message>
           </Messages>
          </Type>
+         <Type Name="Graph">
+          <Messages>
+           <Message TypeName="StaticHolderTypesShouldNotHaveConstructors" Category="Microsoft.Design" CheckId="CA1053" Status="Excluded" Created="2012-12-28 04:19:14Z">
+            <Issue>
+             <Item>'Graph'</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
          <Type Name="Graph`1">
           <Messages>
            <Message TypeName="AvoidEmptyInterfaces" Category="Microsoft.Design" CheckId="CA1040" Status="Excluded" Created="2012-11-20 20:53:12Z">
@@ -373,6 +382,9 @@
    </Rule>
    <Rule TypeName="InitializeReferenceTypeStaticFieldsInline" Category="Microsoft.Performance" CheckId="CA1810">
     <Resolution Name="Default">Initialize all static fields in {0} when those fields are declared and remove the explicit static constructor.</Resolution>
+   </Rule>
+   <Rule TypeName="StaticHolderTypesShouldNotHaveConstructors" Category="Microsoft.Design" CheckId="CA1053">
+    <Resolution Name="Default">Because type {0} contains only 'static' ('Shared' in Visual Basic) members, add a default private constructor to prevent the compiler from adding a default public constructor.</Resolution>
    </Rule>
   </Rules>
  </FxCopReport>

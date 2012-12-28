@@ -14,6 +14,10 @@ namespace Insight.Database
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public class Graph
 	{
+		/// <summary>
+		/// Represents a null graph type.
+		/// </summary>
+		public static readonly Type Null = null;
 	}
 
 	/// <summary>

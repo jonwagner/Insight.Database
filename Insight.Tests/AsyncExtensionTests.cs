@@ -102,6 +102,23 @@ namespace Insight.Tests
 			ParentTestData.Verify(results);
 		}
 
+
+		/// <summary>
+		/// Asynchronously run a stored procedure with parameter detection
+		/// </summary>
+		[Test]
+		public void TestAsyncQueryDynamic()
+		{
+			// make sure the connection is closed so we can test parameter detection with a closed async connection
+			_connection.Close();
+
+			var results = _connection.QueryAsync("SELECT X=1", Parameters.Empty, CommandType.Text).Result;
+
+			Assert.AreEqual(1, results.Count);
+			dynamic d = results[0];
+			Assert.AreEqual(1, d.X);
+		}
+
 		/// <summary>
 		/// Asynchronously run a stored procedure with parameter detection
 		/// </summary>
