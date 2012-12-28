@@ -32,11 +32,11 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public virtual Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		public Task<T> ReadAsync<T>(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null) where T : Results
 		{
 			Read(reader, withGraphs);
 
-			return Helpers.FalseTask;
+			return Helpers.FromResult((T)this);
 		}
 #else
 		/// <summary>
@@ -46,9 +46,24 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public virtual Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		protected virtual Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			return Helpers.FalseTask;
+		}
+
+		/// <summary>
+		/// Reads the contents from an IDataReader.
+		/// </summary>
+		/// <typeparam name="T">The type to cast the results to.</typeparam>
+		/// <param name="reader">The reader to read from.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
+		/// <returns>A task representing the completion of this operation.</returns>
+		public async Task<T> ReadAsync<T>(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null) where T : Results
+		{
+			await ReadAsync(reader, withGraphs, cancellationToken).ConfigureAwait(false);
+
+			return (T)this;
 		}
 #endif
 	}
@@ -86,7 +101,7 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		protected override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 1) ? withGraphs[0] : null;
 
@@ -131,7 +146,7 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		protected override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 2) ? withGraphs[1] : null;
 
@@ -177,7 +192,7 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		protected override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 3) ? withGraphs[2] : null;
 
@@ -224,7 +239,7 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		protected override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 4) ? withGraphs[3] : null;
 
@@ -272,7 +287,7 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of the read operation.</returns>
-		public override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		protected override async Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
 		{
 			Type withGraph = (withGraphs != null && withGraphs.Length >= 5) ? withGraphs[4] : null;
 

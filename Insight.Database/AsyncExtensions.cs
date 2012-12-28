@@ -466,13 +466,7 @@ namespace Insight.Database
 
 			return command.Connection.ExecuteAsyncAndAutoClose(
 				c => command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct),
-				r =>
-				{
-					T results = new T();
-
-					return results.ReadAsync(r, withGraphs, cancellationToken)
-						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously);
-				},
+				r => new T().ReadAsync<T>(r, withGraphs, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -506,13 +500,7 @@ namespace Insight.Database
 
 			return connection.ExecuteAsyncAndAutoClose(
 				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r =>
-				{
-					T results = new T();
-
-					return results.ReadAsync(r, withGraphs, cancellationToken)
-						.ContinueWith(t => results, TaskContinuationOptions.ExecuteSynchronously);
-				},
+				r => new T().ReadAsync<T>(r, withGraphs, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -1071,7 +1059,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static async Task<T> MergeAsync<T>(this IDataReader reader, T item, CancellationToken? cancellationToken = null)
 		{
-			await reader.MergeAsync<T>(new T[] { item }, cancellationToken);
+			await reader.MergeAsync<T>(new T[] { item }, cancellationToken).ConfigureAwait(false);
 
 			return item;
 		}
