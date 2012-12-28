@@ -18,7 +18,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Extension methods for DbConnection to make it easier to call the database.
 	/// </summary>
-	public static class DBConnectionExtensions
+	public static partial class DBConnectionExtensions
 	{
 		#region Private Fields
 		/// <summary>
@@ -116,7 +116,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteNonQuery(),
+				c => null,
+				r => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteNonQuery(),
 				closeConnection);
 		}
 
@@ -165,7 +166,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => (T)c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteScalar(),
+				c => null,
+				r => (T)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteScalar(),
 				closeConnection);
 		}
 
@@ -241,53 +243,6 @@ namespace Insight.Database
 
 		#region Query Methods
 		/// <summary>
-		/// Execute an existing command, and translate the result set into a FastExpando. This method supports auto-open.
-		/// The Connection property of the command should be initialized before calling this method.
-		/// </summary>
-		/// <param name="command">The command to execute.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<FastExpando> Query(
-			this IDbCommand command,
-			CommandBehavior commandBehavior = CommandBehavior.Default)
-		{
-			return command.Connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
-					{
-						return reader.ToList();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Execute an existing command, and translate the result set. This method supports auto-open.
-		/// The Connection property of the command should be initialized before calling this method.
-		/// </summary>
-		/// <param name="command">The command to execute.</param>
-		/// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <typeparam name="TResult">The type of object to return in the result set.</typeparam>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> Query<TResult>(
-			this IDbCommand command,
-			Type withGraph = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default)
-		{
-			return command.Connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
-					{
-						return reader.ToList<TResult>(withGraph);
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
 		/// Create a command, execute it, and translate the result set into a FastExpando. This method supports auto-open.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
@@ -307,15 +262,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList();
-					}
-				},
-				commandBehavior);
+			return connection.Query<FastExpando>(sql, parameters, Graph.Null, commandType, commandBehavior, commandTimeout, transaction);
 		}
 
 		/// <summary>
@@ -342,188 +289,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult>(withGraph);
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> Query<TResult, TSub1>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> Query<TResult, TSub1, TSub2>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type to return as subobject 3.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2, TSub3>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type to return as subobject 3.</typeparam>
-		/// <typeparam name="TSub4">The type to return as subobject 4.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type to return as subobject 3.</typeparam>
-		/// <typeparam name="TSub4">The type to return as subobject 4.</typeparam>
-		/// <typeparam name="TSub5">The type to return as subobject 5.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> Query<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>();
-					}
-				},
+				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r => r.ToList<TResult>(withGraph),
 				commandBehavior);
 		}
 
@@ -545,15 +312,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList();
-					}
-				},
-				commandBehavior);
+			return connection.Query<FastExpando>(sql, parameters, Graph.Null, CommandType.Text, commandBehavior, commandTimeout, transaction);
 		}
 
 		/// <summary>
@@ -577,180 +336,7 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult>(withGraph);
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> QuerySql<TResult, TSub1>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> QuerySql<TResult, TSub1, TSub2>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type to return as subobject 3.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2, TSub3>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type to return as subobject 3.</typeparam>
-		/// <typeparam name="TSub4">The type to return as subobject 4.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4>();
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
-		/// Create a command, execute it, and translate the result set. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="TResult">The type of object to return.</typeparam>
-		/// <typeparam name="TSub1">The type to return as subobject 1.</typeparam>
-		/// <typeparam name="TSub2">The type to return as subobject 2.</typeparam>
-		/// <typeparam name="TSub3">The type to return as subobject 3.</typeparam>
-		/// <typeparam name="TSub4">The type to return as subobject 4.</typeparam>
-		/// <typeparam name="TSub5">The type to return as subobject 5.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		public static IList<TResult> QuerySql<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.ToList<TResult, TSub1, TSub2, TSub3, TSub4, TSub5>();
-					}
-				},
-				commandBehavior);
+			return connection.Query<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
 		}
 		#endregion
 
@@ -777,15 +363,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						read(reader);
-					}
-
-					return false;
-				},
+				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r => { read(r); return false; },
 				commandBehavior);
 		}
 
@@ -835,13 +414,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return read(reader);
-					}
-				},
+				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r => read(r),
 				commandBehavior);
 		}
 
@@ -872,34 +446,6 @@ namespace Insight.Database
 
 		#region QueryResults Methods
 		/// <summary>
-		/// Execute an existing command, and translate the result set. This method supports auto-open.
-		/// The Connection property of the command must be initialized before calling this method.
-		/// </summary>
-		/// <param name="command">The command to execute.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <typeparam name="T">The type of result object to return. This must derive from Results.</typeparam>
-		/// <returns>A data reader with the results.</returns>
-		public static T QueryResults<T>(
-			this IDbCommand command,
-			Type[] withGraphs = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
-		{
-			return command.Connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess))
-					{
-						T results = new T();
-						results.Read(reader, withGraphs);
-
-						return results;
-					}
-				},
-				commandBehavior);
-		}
-
-		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
 		/// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
@@ -922,16 +468,15 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null) where T : Results, new()
 		{
-			return connection.ExecuteAndAutoClose(c =>
-			{
-				using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
+			return connection.ExecuteAndAutoClose(
+				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r => 
 				{
 					T results = new T();
-					results.Read(reader, withGraphs);
+					results.Read(r, withGraphs);
 
 					return results;
-				}
-			});
+				});
 		}
 
 		/// <summary>
@@ -1208,13 +753,11 @@ namespace Insight.Database
 				throw new ArgumentException("withGraph should be null for returning dynamic objects.", "withGraph");
 
 			connection.ExecuteAndAutoClose(
-				c =>
+				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						foreach (FastExpando expando in reader.AsEnumerable())
-							action(expando);
-					}
+					foreach (FastExpando expando in r.AsEnumerable())
+						action(expando);
 
 					return false;
 				},
@@ -1270,13 +813,11 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c =>
+				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r =>
 				{
-					using (IDataReader reader = c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						foreach (T t in reader.AsEnumerable<T>(withGraph))
-							action(t);
-					}
+					foreach (T t in r.AsEnumerable<T>(withGraph))
+						action(t);
 
 					return false;
 				},
@@ -1420,13 +961,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.Merge(inserted);
-					}
-				},
+				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r => r.Merge(inserted),
 				commandBehavior);
 
 			return inserted;
@@ -1490,13 +1026,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.Merge(inserted);
-					}
-				},
+				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r => r.Merge(inserted),
 				commandBehavior);
 		}
 
@@ -1527,13 +1058,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c =>
-				{
-					using (IDataReader reader = c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction))
-					{
-						return reader.Merge(inserted);
-					}
-				},
+				c => c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
+				r => r.Merge(inserted),
 				commandBehavior);
 		}
 		#endregion
@@ -1588,12 +1114,17 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The return type of the action.</typeparam>
 		/// <param name="connection">The connection to use.</param>
-		/// <param name="action">The action to perform.</param>
+		/// <param name="getReader">The action to perform to get an open data reader.</param>
+		/// <param name="translate">The action to perform to translate a reader into results.</param>
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <returns>The result of the action.</returns>
-		internal static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, CommandBehavior commandBehavior = CommandBehavior.Default)
+		internal static T ExecuteAndAutoClose<T>(
+			this IDbConnection connection,
+			Func<IDbConnection, IDataReader> getReader,
+			Func<IDataReader, T> translate,
+			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
-			return connection.ExecuteAndAutoClose(action, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
+			return connection.ExecuteAndAutoClose(getReader, translate, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
 		}
 
 		/// <summary>
@@ -1601,19 +1132,32 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The return type of the action.</typeparam>
 		/// <param name="connection">The connection to use.</param>
-		/// <param name="action">The action to perform.</param>
+		/// <param name="getReader">The action to perform to get an open data reader.</param>
+		/// <param name="translate">The action to perform to translate a reader into results.</param>
 		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>The result of the action.</returns>
-		internal static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, bool closeConnection)
+		internal static T ExecuteAndAutoClose<T>(
+			this IDbConnection connection,
+			Func<IDbConnection, IDataReader> getReader,
+			Func<IDataReader, T> translate,
+			bool closeConnection)
 		{
+			IDataReader reader = null;
+
 			try
 			{
 				DetectAutoOpen(connection, ref closeConnection);
 
-				return action(connection);
+				// get the reader, then translate the data
+				reader = getReader(connection);
+
+				return translate(reader);
 			}
 			finally
 			{
+				if (reader != null)
+					reader.Dispose();
+
 				if (closeConnection)
 					connection.Close();
 			}

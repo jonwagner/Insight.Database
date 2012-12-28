@@ -213,13 +213,15 @@ namespace Insight.Database.CodeGenerator
 		private static List<SqlParameter> DeriveParametersFromSqlProcedure(SqlCommand command)
 		{
 			// call the server to get the parameters
-			command.Connection.ExecuteAndAutoClose(_ =>
-			{
-				SqlCommandBuilder.DeriveParameters(command);
-				CheckForMissingParameters(command);
+			command.Connection.ExecuteAndAutoClose(
+				_ =>
+				{
+					SqlCommandBuilder.DeriveParameters(command);
+					CheckForMissingParameters(command);
 
-				return true;
-			});
+					return null;
+				},
+				_ => false);
 
 			// make the list of parameters
 			List<SqlParameter> parameters = command.Parameters.Cast<SqlParameter>().ToList();
@@ -909,6 +911,7 @@ namespace Insight.Database.CodeGenerator
 				ObjectReader objectReader = _tvpReaders.GetOrAdd(
 					key,
 					k => cmd.Connection.ExecuteAndAutoClose(
+						_ => null,
 						_ =>
 						{
 							// select a 0 row result set so we can determine the schema of the table

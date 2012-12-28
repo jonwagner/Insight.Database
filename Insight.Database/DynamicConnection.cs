@@ -229,14 +229,14 @@ namespace Insight.Database
 				if (doAsync)
 					method = _queryResultsAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryResultsAsync", _queryResultsAsyncParameters).MakeGenericMethod(t));
 				else
-					method = _queryResultsMethods.GetOrAdd(type, t => typeof(DBConnectionExtensions).GetMethod("QueryResults", _queryResultsParameters).MakeGenericMethod(t));
+					method = _queryResultsMethods.GetOrAdd(type, t => typeof(DBCommandExtensions).GetMethod("QueryResults", _queryResultsParameters).MakeGenericMethod(t));
 			}
 			else
 			{
 				if (doAsync)
 					method = _queryAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryAsync", _queryAsyncParameters).MakeGenericMethod(t));
 				else
-					method = _queryMethods.GetOrAdd(type, t => typeof(DBConnectionExtensions).GetMethod("Query", _queryParameters).MakeGenericMethod(t));
+					method = _queryMethods.GetOrAdd(type, t => typeof(DBCommandExtensions).GetMethod("Query", _queryParameters).MakeGenericMethod(t));
 			}
 
 			return method;

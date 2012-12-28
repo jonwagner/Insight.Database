@@ -28,29 +28,21 @@ namespace Insight.Database
 		/// <summary>
 		/// Reads the contents from an IDataReader.
 		/// </summary>
+		/// <typeparam name="T">The type to cast the results to.</typeparam>
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
 		/// <returns>A task representing the completion of this operation.</returns>
 		public Task<T> ReadAsync<T>(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null) where T : Results
 		{
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
 			Read(reader, withGraphs);
 
 			return Helpers.FromResult((T)this);
 		}
 #else
-		/// <summary>
-		/// Reads the contents from an IDataReader.
-		/// </summary>
-		/// <param name="reader">The reader to read from.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
-		/// <returns>A task representing the completion of this operation.</returns>
-		protected virtual Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
-		{
-			return Helpers.FalseTask;
-		}
-
 		/// <summary>
 		/// Reads the contents from an IDataReader.
 		/// </summary>
@@ -64,6 +56,18 @@ namespace Insight.Database
 			await ReadAsync(reader, withGraphs, cancellationToken).ConfigureAwait(false);
 
 			return (T)this;
+		}
+
+		/// <summary>
+		/// Reads the contents from an IDataReader.
+		/// </summary>
+		/// <param name="reader">The reader to read from.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
+		/// <returns>A task representing the completion of this operation.</returns>
+		protected virtual Task ReadAsync(IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		{
+			return Helpers.FalseTask;
 		}
 #endif
 	}
