@@ -167,6 +167,21 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void TestReturnTypeOverrideWithJustWithGraph()
+		{
+			using (SqlTransaction t = _connection.BeginTransaction())
+			{
+				_connection.ExecuteSql("CREATE PROC InsightTestProc AS " + ParentTestData.Sql, transaction: t);
+
+				var dc = _connection.Dynamic();
+
+				// going to infer the return type of the stored procedure rather than specifying it
+				IList<ParentTestData> results = dc.InsightTestProc(withGraph: typeof(Graph<ParentTestData>), transaction: t);
+				ParentTestData.Verify(results, false);
+			}
+		}
+
+		[Test]
 		public void TestMultipleRecordsets()
 		{
 			using (SqlTransaction t = _connection.BeginTransaction())

@@ -81,7 +81,7 @@ namespace Insight.Database
 		/// <returns>True if the operation is successful; otherwise, false.</returns>
 		public override bool TryInvokeMember(InvokeMemberBinder binder, object[] args, out object result)
 		{
-			result = DoInvokeMember(binder, args, typeof(FastExpando));
+			result = DoInvokeMember(binder, args, null);
 
 			return true;
 		}
@@ -131,7 +131,7 @@ namespace Insight.Database
 						specialParameters++;
 						break;
 
-					case "timeout":
+					case "commandTimeout":
 						timeout = (int)args[i + unnamedParameterCount];
 						specialParameters++;
 						break;
@@ -193,7 +193,7 @@ namespace Insight.Database
 					// ignore out special parameters
 					if (argumentName == "cancellationToken" ||
 						argumentName == "transaction" ||
-						argumentName == "timeout" ||
+						argumentName == "commandTimeout" ||
 						argumentName == "returnType" ||
 						argumentName == "withGraph" ||
 						argumentName == "withGraphs")
@@ -204,6 +204,20 @@ namespace Insight.Database
 					p.Value = args[i];
 				}
 			}
+
+			// if type was not specified, but withGraph was specified, then use the first item in the graph as the type
+			if (type == null && withGraph != null)
+			{
+				Type withGraphType = withGraph as Type;
+				if (withGraphType != null && withGraphType.IsSubclassOf(typeof(Graph)))
+				{
+					type = withGraphType.GetGenericArguments()[0];
+				}
+			}
+
+			// if we don't have a type, use FastExpando
+			if (type == null)
+				type = typeof(FastExpando);
 
 			// get the proper query method to call based on whether we are doing this async and whether there is a single or multiple result set
 			// the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
