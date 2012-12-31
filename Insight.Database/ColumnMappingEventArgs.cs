@@ -23,6 +23,16 @@ namespace Insight.Database
 		public IDataReader Reader { get; internal set; }
 
 		/// <summary>
+		/// Gets the Command Text that is currently being mapped.
+		/// </summary>
+		public string CommandText { get; internal set; }
+
+		/// <summary>
+		/// Gets the Command Type that is currently being mapped.
+		/// </summary>
+		public CommandType? CommandType { get; internal set; }
+
+		/// <summary>
 		/// Gets the source parameter list for a parameter mapping.
 		/// </summary>
 		public IList<IDataParameter> Parameters { get; internal set; }

@@ -112,7 +112,7 @@ namespace Insight.Database.CodeGenerator
 		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject)
 		{
 			// get the mapping from the reader to the type
-			ClassPropInfo[] mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, startColumn, columnCount, true);
+			ClassPropInfo[] mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, startColumn, columnCount, true);
 
 			// need to know the constructor for the object
 			ConstructorInfo constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
@@ -431,8 +431,8 @@ namespace Insight.Database.CodeGenerator
 			// for the current set, we want to simulate what we will actually use, so we only want to use unique matches
 			// for the next set, we want to find all applicable matches, so we can detect the transition to the next object
 			int columnsLeft = reader.FieldCount - index;
-			var currentSetters = ColumnMapping.Tables.CreateMapping(tCurrent, reader, null, index, columnsLeft, uniqueMatches: true);
-			var nextSetters = ColumnMapping.Tables.CreateMapping(tNext, reader, null, index, columnsLeft, uniqueMatches: false);
+			var currentSetters = ColumnMapping.Tables.CreateMapping(tCurrent, reader, null, null, null, index, columnsLeft, uniqueMatches: true);
+			var nextSetters = ColumnMapping.Tables.CreateMapping(tNext, reader, null, null, null, index, columnsLeft, uniqueMatches: false);
 
 			// if there is a column not defined on the current type, but is defined on the next type
 			// then it is time to switch types

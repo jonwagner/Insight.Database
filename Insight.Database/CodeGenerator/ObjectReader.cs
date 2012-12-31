@@ -53,7 +53,7 @@ namespace Insight.Database.CodeGenerator
 				// get the type we are binding to
 				var types = identity.Graph.GetGenericArguments();
 				Type type = (types.Length > 0) ? types[0] : identity.Graph;
-				var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, 0, reader.FieldCount, uniqueMatches: true);
+				var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, uniqueMatches: true);
 
 				Accessors = new Func<object, object>[mapping.Length];
 				MemberTypes = new Type[mapping.Length];

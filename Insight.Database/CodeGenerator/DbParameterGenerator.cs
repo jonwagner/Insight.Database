@@ -321,7 +321,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
 
 			// get the properties for the type
-			var mapping = ColumnMapping.Parameters.CreateMapping(type, null, parameters, 0, parameters.Count, true);
+			var mapping = ColumnMapping.Parameters.CreateMapping(type, null, command.CommandText, command.CommandType, parameters, 0, parameters.Count, true);
 
 			// go through all of the mappings
 			for (int i = 0; i < mapping.Length; i++)

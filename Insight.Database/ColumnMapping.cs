@@ -210,12 +210,14 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="type">The type of object to map to.</param>
 		/// <param name="reader">The reader to read.</param>
+		/// <param name="commandText">The command text that is currently being mapped.</param>
+		/// <param name="commandType">The command type that is currently being mapped.</param>
 		/// <param name="parameters">The list of parameters used in the mapping operation.</param>
 		/// <param name="startColumn">The index of the first column to map.</param>
 		/// <param name="columnCount">The number of columns to map.</param>
 		/// <param name="uniqueMatches">True to only return the first match per field, false to return all matches per field.</param>
 		/// <returns>An array of setters.</returns>
-		internal ClassPropInfo[] CreateMapping(Type type, IDataReader reader, IList<SqlParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
+		internal ClassPropInfo[] CreateMapping(Type type, IDataReader reader, string commandText, CommandType? commandType, IList<SqlParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
 		{
 			ClassPropInfo[] mapping = new ClassPropInfo[columnCount];
 
@@ -236,6 +238,8 @@ namespace Insight.Database
 					TargetType = type,
 					Reader = reader,
 					FieldIndex = i + startColumn,
+					CommandText = commandText,
+					CommandType = commandType,
 					Parameters = readOnlyParameters,
 				};
 
