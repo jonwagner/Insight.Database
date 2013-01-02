@@ -100,7 +100,7 @@ namespace Insight.Database
 
 			set
 			{
-				data[key] = value;
+				data[key.ToUpperInvariant()] = value;
 			}
 		}
 
