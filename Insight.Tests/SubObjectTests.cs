@@ -105,6 +105,20 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void SelectWithNoColumnsForSubObjectShouldContainNullObject()
+		{
+			var results = _connection.QuerySql<TestData, TestSubData>(@"SELECT ID=1");
+
+			Assert.IsNotNull(results);
+			Assert.AreEqual(1, results.Count);
+
+			// test that we got data back
+			var testData = results[0];
+			Assert.AreEqual(1, testData.ID, "ID should be set");
+			Assert.IsNull(testData.SubData, "Sub object should be null in left join");
+		}
+
+		[Test]
 		public void SelectTwoSubObjects()
 		{
 			var results = _connection.QuerySql<TestData, TestSubData, TestSubData2>(@"

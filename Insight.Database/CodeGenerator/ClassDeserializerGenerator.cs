@@ -87,7 +87,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		private static Delegate CreateClassDeserializer(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject)
 		{
-			var method = CreateClassDeserializerDynamicMethod(type, reader, startColumn, columnCount, createNewObject);
+			var method = CreateClassDeserializerDynamicMethod(type, reader, startColumn, columnCount, createNewObject, true);
 
 			// create a generic type for the delegate we are returning
 			Type delegateType;
@@ -107,10 +107,15 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="startColumn">The index of the first column to read.</param>
 		/// <param name="columnCount">The number of columns to read.</param>
 		/// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
+		/// <param name="isRootObject">True if this object is the root object and should always be created.</param>
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		/// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
-		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject)
+		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject, bool isRootObject)
 		{
+			// if there are no columns detected for the class, then the deserializer is null
+			if (columnCount == 0 && !isRootObject)
+				return null;
+
 			// get the mapping from the reader to the type
 			ClassPropInfo[] mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, startColumn, columnCount, true);
 
@@ -240,6 +245,10 @@ namespace Insight.Database.CodeGenerator
 			///////////////////////////////////////////////////
 			for (int i = 0; i < deserializers.Length; i++)
 			{
+				// if there is no deserializer for this object, then skip it
+				if (deserializers[i] == null)
+					continue;
+
 				// for subobjects, dup the core object so we can set values on it
 				if (i > 0)
 					il.Emit(OpCodes.Dup);
@@ -395,7 +404,7 @@ namespace Insight.Database.CodeGenerator
 				int endColumn = DetectEndColumn(reader, idColumns, column, subType, nextType);
 
 				// generate a deserializer for the class
-				deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, column, endColumn - column, createNewObject: true);
+				deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, column, endColumn - column, createNewObject: true, isRootObject: (i == 0));
 
 				column = endColumn;
 			}
