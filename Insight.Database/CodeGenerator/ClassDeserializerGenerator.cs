@@ -396,15 +396,11 @@ namespace Insight.Database.CodeGenerator
 			int column = 0;
 			for (int i = 0; i < subTypeCount; i++)
 			{
-				// determine the type of the next class in the list
-				Type subType = subTypes[i];
-				Type nextType = ((i + 1) < subTypes.Length) ? subTypes[i + 1] : typeof(object);
-
 				// determine the end of this type and the beginning of the next
-				int endColumn = DetectEndColumn(reader, idColumns, column, subType, nextType);
+				int endColumn = DetectEndColumn(reader, idColumns, column, subTypes, i);
 
 				// generate a deserializer for the class
-				deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, column, endColumn - column, createNewObject: true, isRootObject: (i == 0));
+				deserializers[i] = CreateClassDeserializerDynamicMethod(subTypes[i], reader, column, endColumn - column, createNewObject: true, isRootObject: (i == 0));
 
 				column = endColumn;
 			}
@@ -417,41 +413,60 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="reader">The reader to analyze.</param>
 		/// <param name="idColumns">Caller-specified column to look for.</param>
-		/// <param name="index">The index of the next column to look at.</param>
-		/// <param name="tCurrent">The type of the current object being analyzed.</param>
-		/// <param name="tNext">The type of the next object being analyzed.</param>
+		/// <param name="columnIndex">The index of the next column to look at.</param>
+		/// <param name="types">The list of types to be deserialized.</param>
+		/// <param name="typeIndex">The index of the current type being deserialized.</param>
 		/// <returns>The end boundary for the current object.</returns>
-		private static int DetectEndColumn(IDataReader reader, Dictionary<Type, string> idColumns, int index, Type tCurrent, Type tNext)
+		private static int DetectEndColumn(IDataReader reader, Dictionary<Type, string> idColumns, int columnIndex, Type[] types, int typeIndex)
 		{
-			// if the caller specified columns to split on then use that
-			string columnName;
-			if (idColumns != null && idColumns.TryGetValue(tNext, out columnName))
-			{
-				for (; index < reader.FieldCount; index++)
-				{
-					if (String.Compare(columnName, reader.GetName(index), StringComparison.OrdinalIgnoreCase) == 0)
-						return index;
-				}
+			Type tCurrent = types[typeIndex];
+			Type tNext = (typeIndex + 1 < types.Length) ? types[typeIndex + 1] : typeof(object);
 
-				return index;
+			// if the caller specified columns to split on then use that
+			if (idColumns != null)
+			{
+				// go through all of the remaining types
+				for (int t = typeIndex + 1; t < types.Length; t++)
+				{
+					// get the column name for the id of the next type
+					string columnName;
+					if (!idColumns.TryGetValue(types[t], out columnName))
+						continue;
+						
+					for (; columnIndex < reader.FieldCount; columnIndex++)
+					{
+						if (String.Compare(columnName, reader.GetName(columnIndex), StringComparison.OrdinalIgnoreCase) == 0)
+							return columnIndex;
+					}
+				}
 			}
 
 			// get the setters for the class and the next class
 			// for the current set, we want to simulate what we will actually use, so we only want to use unique matches
 			// for the next set, we want to find all applicable matches, so we can detect the transition to the next object
-			int columnsLeft = reader.FieldCount - index;
-			var currentSetters = ColumnMapping.Tables.CreateMapping(tCurrent, reader, null, null, null, index, columnsLeft, uniqueMatches: true);
-			var nextSetters = ColumnMapping.Tables.CreateMapping(tNext, reader, null, null, null, index, columnsLeft, uniqueMatches: false);
+			int fieldCount = reader.FieldCount;
+			int columnsLeft = fieldCount - columnIndex;
+			var currentSetters = ColumnMapping.Tables.CreateMapping(tCurrent, reader, null, null, null, columnIndex, columnsLeft, uniqueMatches: true);
 
-			// if there is a column not defined on the current type, but is defined on the next type
-			// then it is time to switch types
+			// go through the remaining types to see if anything will claim the column
 			int i = 0;
-			for (i = 0; i < columnsLeft; i++)
-				if ((currentSetters[i] == null || !currentSetters[i].CanSetMember) &&
-					(nextSetters[i] != null && nextSetters[i].CanSetMember))
-					break;
+			for (; columnIndex + i < fieldCount; i++)
+			{
+				// if there is a setter for the current column, keep going
+				if (currentSetters[i] != null)
+					continue;
 
-			return index + i;
+				// there isn't a setting for the column, so see if any other type can claim the column
+				for (int t = typeIndex + 1; t < types.Length; t++)
+				{
+					// one of the next types can claim the column, so quit now
+					var nextSetters = ColumnMapping.Tables.CreateMapping(types[t], reader, null, null, null, columnIndex + i, 1, uniqueMatches: false);
+					if (nextSetters[0] != null)
+						return columnIndex + i;
+				}
+			}
+
+			return columnIndex + i;
 		}
 		#endregion
 	}

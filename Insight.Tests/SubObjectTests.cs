@@ -20,6 +20,7 @@ namespace Insight.Tests
 			public int SubDataID2;
 			public TestSubData2 SubData2;
 			public TestOtherData OtherData;
+			public int Foo;
 		}
 
 		class TestSubData
@@ -45,6 +46,7 @@ namespace Insight.Tests
 		{
 			public int OtherID;
 			public TestSubData SubData;
+			public int Bar;
 		}
 
 		class TestProperties
@@ -151,6 +153,30 @@ namespace Insight.Tests
 			Assert.IsNotNull(testData.SubData2);
 			Assert.AreEqual(3, testData.SubData2.ID);
 			Assert.AreEqual(4, testData.SubData2.SubInt);
+		}
+
+		[Test]
+		public void SelectTwoSubObjectsWithMissingMiddleObjectShouldHaveNullMiddleObject()
+		{
+			var results = _connection.QuerySql<TestData, TestSubData, TestOtherData>(@"
+				SELECT ID=1, Foo=3, OtherID=2, Bar=4
+			");
+
+			Assert.IsNotNull(results);
+			Assert.AreEqual(1, results.Count);
+
+			// test that we got data back
+			var testData = results[0];
+			Assert.AreEqual(1, testData.ID, "ID should be set");
+			Assert.AreEqual(3, testData.Foo, "Foo should be set");
+
+			// test that we got a sub object back in object 1
+			Assert.IsNull(testData.SubData);
+
+			// test that we got a sub object back in object 1
+			Assert.IsNotNull(testData.OtherData);
+			Assert.AreEqual(2, testData.OtherData.OtherID);
+			Assert.AreEqual(4, testData.OtherData.Bar);
 		}
 
 		[Test]
