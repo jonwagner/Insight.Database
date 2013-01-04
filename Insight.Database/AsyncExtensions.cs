@@ -44,8 +44,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => Helpers.DataReaderTask,
-				r =>
+				c => null,
+				(cmd, r) =>
 				{
 					// NOTE: we open the connection before creating the command because we may need to use the retry logic
 					// when deriving the stored procedure parameters
@@ -122,8 +122,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => Helpers.DataReaderTask,
-				r =>
+				c => null,
+				(cmd, r) =>
 				{
 					// NOTE: we open the connection before creating the command because we may need to use the retry logic
 					// when deriving the stored procedure parameters
@@ -225,9 +225,9 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => r.ToListAsync<TResult>(withGraph, cancellationToken),
-				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) => r.ToListAsync<TResult>(withGraph, cancellationToken),
+				commandBehavior,
 				ct);
 		}
 
@@ -318,8 +318,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return command.Connection.ExecuteAsyncAndAutoClose(
-				c => command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct),
-				r => r.ToListAsync<T>(withGraph, cancellationToken),
+				c => command,
+				(cmd, r) => r.ToListAsync<T>(withGraph, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -353,8 +353,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction),
-				r => { read(r); return Helpers.FalseTask; },
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) => { read(r); return Helpers.FalseTask; },
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -412,8 +412,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior, commandTimeout, transaction),
-				r => Helpers.FromResult(read(r)),
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) => Helpers.FromResult(read(r)),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -465,8 +465,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return command.Connection.ExecuteAsyncAndAutoClose(
-				c => command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, ct),
-				r => new T().ReadAsync<T>(r, withGraphs, cancellationToken),
+				c => command,
+				(cmd, r) => new T().ReadAsync<T>(cmd, r, withGraphs, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -499,8 +499,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => new T().ReadAsync<T>(r, withGraphs, cancellationToken),
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) => new T().ReadAsync<T>(cmd, r, withGraphs, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -894,8 +894,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => r.MergeAsync(inserted, cancellationToken),
+				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
+				(cmd, r) => r.MergeAsync(inserted, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -964,8 +964,8 @@ namespace Insight.Database
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => c.GetReaderAsync(ct, sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => r.MergeAsync(inserted, cancellationToken),
+				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
+				(cmd, r) => r.MergeAsync(inserted, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
 				ct);
 		}
@@ -1180,18 +1180,40 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The return type of the task.</typeparam>
 		/// <param name="connection">The connection to use.</param>
-		/// <param name="getReader">An action to perform to get the data reader.</param>
+		/// <param name="getCommand">An action to perform to get the command to execute.</param>
 		/// <param name="translate">An action to perform to translate the reader into results.</param>
 		/// <param name="closeConnection">True to force the connection to close after the operation completes.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
 		private static Task<T> ExecuteAsyncAndAutoClose<T>(
 			this IDbConnection connection,
-			Func<IDbConnection, Task<IDataReader>> getReader,
-			Func<IDataReader, Task<T>> translate,
+			Func<IDbConnection, IDbCommand> getCommand,
+			Func<IDbCommand, IDataReader, Task<T>> translate,
 			bool closeConnection,
 			CancellationToken cancellationToken)
 		{
+			return connection.ExecuteAsyncAndAutoClose<T>(getCommand, translate, closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default, cancellationToken);
+		}
+
+		/// <summary>
+		/// Execute an asynchronous action, ensuring that the connection is auto-closed.
+		/// </summary>
+		/// <typeparam name="T">The return type of the task.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="getCommand">An action to perform to get the command to execute.</param>
+		/// <param name="translate">An action to perform to translate the reader into results.</param>
+		/// <param name="commandBehavior">The CommandBehavior to use to execute the command.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A task that returns the result of the command after closing the connection.</returns>
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(
+			this IDbConnection connection,
+			Func<IDbConnection, IDbCommand> getCommand,
+			Func<IDbCommand, IDataReader, Task<T>> translate,
+			CommandBehavior commandBehavior,
+			CancellationToken cancellationToken)
+		{
+			bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
+			IDbCommand command = null;
 			IDataReader reader = null;
 
 			return AutoOpenAsync(connection, cancellationToken)
@@ -1205,7 +1227,14 @@ namespace Insight.Database
 						// but before taking the action
 						cancellationToken.ThrowIfCancellationRequested();
 
-						return getReader(connection);
+						// get the command
+						command = getCommand(connection);
+
+						// if we have a command, execute it
+						if (command != null)
+							return command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, cancellationToken);
+
+						return Helpers.FromResult<IDataReader>(null);
 					},
 					TaskContinuationOptions.ExecuteSynchronously)
 				.Unwrap()
@@ -1213,7 +1242,7 @@ namespace Insight.Database
 					t =>
 					{
 						reader = t.Result;
-						return translate(reader);
+						return translate(command, reader);
 					},
 					TaskContinuationOptions.ExecuteSynchronously)
 				.Unwrap()

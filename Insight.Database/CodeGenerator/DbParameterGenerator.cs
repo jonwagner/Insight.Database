@@ -221,7 +221,8 @@ namespace Insight.Database.CodeGenerator
 
 					return null;
 				},
-				_ => false);
+				(_, __) => false,
+				CommandBehavior.Default);
 
 			// make the list of parameters
 			List<SqlParameter> parameters = command.Parameters.Cast<SqlParameter>().ToList();
@@ -912,13 +913,14 @@ namespace Insight.Database.CodeGenerator
 					key,
 					k => cmd.Connection.ExecuteAndAutoClose(
 						_ => null,
-						_ =>
+						(_, __) =>
 						{
 							// select a 0 row result set so we can determine the schema of the table
 							string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
 							using (var sqlReader = cmd.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: cmd.Transaction))
 								return ObjectReader.GetObjectReader(sqlReader, listType);
-						}));
+						},
+						CommandBehavior.Default));
 
 				// create the structured parameter
 				SqlParameter p = new SqlParameter();

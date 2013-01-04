@@ -117,7 +117,7 @@ namespace Insight.Database
 		{
 			return connection.ExecuteAndAutoClose(
 				c => null,
-				r => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteNonQuery(),
+				(_, __) => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteNonQuery(),
 				closeConnection);
 		}
 
@@ -167,7 +167,7 @@ namespace Insight.Database
 		{
 			return connection.ExecuteAndAutoClose(
 				c => null,
-				r => (T)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteScalar(),
+				(_, __) => (T)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteScalar(),
 				closeConnection);
 		}
 
@@ -289,8 +289,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => r.ToList<TResult>(withGraph),
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) => r.ToList<TResult>(withGraph),
 				commandBehavior);
 		}
 
@@ -363,8 +363,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => { read(r); return false; },
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) => { read(r); return false; },
 				commandBehavior);
 		}
 
@@ -414,8 +414,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => read(r),
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) => read(r),
 				commandBehavior);
 		}
 
@@ -469,14 +469,15 @@ namespace Insight.Database
 			IDbTransaction transaction = null) where T : Results, new()
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => 
+				c => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) =>
 				{
 					T results = new T();
-					results.Read(r, withGraphs);
+					results.Read(cmd, r, withGraphs);
 
 					return results;
-				});
+				},
+				commandBehavior);
 		}
 
 		/// <summary>
@@ -753,8 +754,8 @@ namespace Insight.Database
 				throw new ArgumentException("withGraph should be null for returning dynamic objects.", "withGraph");
 
 			connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r =>
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) =>
 				{
 					foreach (FastExpando expando in r.AsEnumerable())
 						action(expando);
@@ -813,8 +814,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r =>
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				(cmd, r) =>
 				{
 					foreach (T t in r.AsEnumerable<T>(withGraph))
 						action(t);
@@ -961,8 +962,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => r.Merge(inserted),
+				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
+				(cmd, r) => r.Merge(inserted),
 				commandBehavior);
 
 			return inserted;
@@ -1026,8 +1027,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters ?? inserted, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => r.Merge(inserted),
+				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
+				(cmd, r) => r.Merge(inserted),
 				commandBehavior);
 		}
 
@@ -1058,8 +1059,8 @@ namespace Insight.Database
 			IDbTransaction transaction = null)
 		{
 			return connection.ExecuteAndAutoClose(
-				c => c.GetReader(sql, parameters ?? inserted, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction),
-				r => r.Merge(inserted),
+				c => c.CreateCommand(sql, parameters ?? inserted, CommandType.Text, commandTimeout, transaction),
+				(cmd, r) => r.Merge(inserted),
 				commandBehavior);
 		}
 		#endregion
@@ -1114,17 +1115,17 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The return type of the action.</typeparam>
 		/// <param name="connection">The connection to use.</param>
-		/// <param name="getReader">The action to perform to get an open data reader.</param>
-		/// <param name="translate">The action to perform to translate a reader into results.</param>
-		/// <param name="commandBehavior">The behavior of the command.</param>
+		/// <param name="getCommand">The action to perform to get the command to execute.</param>
+		/// <param name="translate">The action to perform to translate a command and reader into results.</param>
+		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>The result of the action.</returns>
 		internal static T ExecuteAndAutoClose<T>(
 			this IDbConnection connection,
-			Func<IDbConnection, IDataReader> getReader,
-			Func<IDataReader, T> translate,
-			CommandBehavior commandBehavior = CommandBehavior.Default)
+			Func<IDbConnection, IDbCommand> getCommand,
+			Func<IDbCommand, IDataReader, T> translate,
+			bool closeConnection)
 		{
-			return connection.ExecuteAndAutoClose(getReader, translate, commandBehavior.HasFlag(CommandBehavior.CloseConnection));
+			return connection.ExecuteAndAutoClose<T>(getCommand, translate, closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default);
 		}
 
 		/// <summary>
@@ -1132,26 +1133,31 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The return type of the action.</typeparam>
 		/// <param name="connection">The connection to use.</param>
-		/// <param name="getReader">The action to perform to get an open data reader.</param>
-		/// <param name="translate">The action to perform to translate a reader into results.</param>
-		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
+		/// <param name="getCommand">The action to perform to get the command to execute.</param>
+		/// <param name="translate">The action to perform to translate a command and reader into results.</param>
+		/// <param name="commandBehavior">The CommandBehavior to use for the query.</param>
 		/// <returns>The result of the action.</returns>
 		internal static T ExecuteAndAutoClose<T>(
 			this IDbConnection connection,
-			Func<IDbConnection, IDataReader> getReader,
-			Func<IDataReader, T> translate,
-			bool closeConnection)
+			Func<IDbConnection, IDbCommand> getCommand,
+			Func<IDbCommand, IDataReader, T> translate,
+			CommandBehavior commandBehavior)
 		{
 			IDataReader reader = null;
+			bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
 
 			try
 			{
 				DetectAutoOpen(connection, ref closeConnection);
 
-				// get the reader, then translate the data
-				reader = getReader(connection);
+				// generate the command
+				var command = getCommand(connection);
 
-				return translate(reader);
+				// if the command is not null, then automatically generate the reader
+				if (command != null)
+					reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess);
+
+				return translate(command, reader);
 			}
 			finally
 			{

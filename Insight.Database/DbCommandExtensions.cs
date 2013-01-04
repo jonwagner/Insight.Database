@@ -40,15 +40,7 @@ namespace Insight.Database
 		/// <returns>A dynamic object containing the output parameters.</returns>
 		public static dynamic OutputParameters(this IDbCommand command)
 		{
-			IDictionary<string, object> dictionary = new FastExpando();
-
-			foreach (IDataParameter p in command.Parameters)
-			{
-				if (p.Direction.HasFlag(ParameterDirection.Output))
-					dictionary[p.ParameterName] = p.Value;
-			}
-
-			return dictionary;
+			return command.OutputParameters<FastExpando>();
 		}
 
 		/// <summary>
@@ -125,8 +117,8 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
 			return command.Connection.ExecuteAndAutoClose(
-				c => command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess),
-				r => r.ToList<TResult>(withGraph),
+				c => command,
+				(cmd, r) => r.ToList<TResult>(withGraph),
 				commandBehavior);
 		}
 		#endregion
@@ -147,11 +139,11 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
 		{
 			return command.Connection.ExecuteAndAutoClose(
-				c => command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess),
-				r =>
+				c => command,
+				(cmd, r) =>
 				{
 					T results = new T();
-					results.Read(r, withGraphs);
+					results.Read(cmd, r, withGraphs);
 
 					return results;
 				},

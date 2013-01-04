@@ -174,5 +174,41 @@ namespace Insight.Tests
 			ReturnTypeTest<TestEnum>.Test(TestEnum.Two, _connection, "int");
 		}
 		#endregion
+
+		#region Tests To Verify Query Results
+		/// <summary>
+		/// Test that an expando can receive an output parameter even if the value has not been set.
+		/// </summary>
+		[Test]
+		public void TestQueryResults()
+		{
+			using (SqlTransaction t = _connection.BeginTransaction())
+			{
+				_connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1", transaction: t);
+
+				var result = _connection.QueryResults<Results<int>>("Insight_TestOutput", new { p = 5 }, transaction: t);
+
+				Assert.IsNotNull(result.Outputs);
+				Assert.AreEqual(9, result.Outputs.p);
+			}
+		}
+
+		/// <summary>
+		/// Test that an expando can receive an output parameter even if the value has not been set.
+		/// </summary>
+		[Test]
+		public void TestAsyncQueryResults()
+		{
+			using (SqlTransaction t = _connection.BeginTransaction())
+			{
+				_connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1", transaction: t);
+
+				var result = _connection.QueryResultsAsync<Results<int>>("Insight_TestOutput", new { p = 5 }, transaction: t).Result;
+
+				Assert.IsNotNull(result.Outputs);
+				Assert.AreEqual(9, result.Outputs.p);
+			}
+		}
+		#endregion
 	}
 }
