@@ -306,6 +306,44 @@ namespace Insight.Tests
 				Assert.AreEqual(j, items[j].Int);
 		}
 
+		[Test]
+		public void TestSerializingBasedOnWhereSelectIterator()
+		{
+			Dictionary<string, string> map = new Dictionary<string,string>();
+			map["from"] = "to";
+
+			// because we are going to pass in this select iterator, we are testing that we pull out the proper underlying IEnumerable interface
+			// and underlying types (ick)
+			var list = map.Select(m => new { m.Key, m.Value });
+
+			try
+			{
+				_connection.ExecuteSql(@"
+					CREATE TYPE [StringMapTable] AS TABLE
+					(
+						[Key] [varchar](1024),
+						[Value] [varchar](1024)
+					)");
+				_connection.ExecuteSql(@"GRANT EXEC ON TYPE::dbo.StringMapTable TO public");
+				_connection.ExecuteSql(@"
+					CREATE PROC [TestMap]
+						@Map [StringMapTable] READONLY
+					AS
+						SELECT * FROM @Map
+					");
+
+				var results = _connection.Query("TestMap", list);
+				dynamic first = results[0];
+				Assert.AreEqual("from", first.Key);
+				Assert.AreEqual("to", first.Value);
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP PROC TestMap");
+				_connection.ExecuteSql("DROP TYPE StringMapTable");
+			}
+		}
+
 		#endregion
 
 		#region Mismatch Tests

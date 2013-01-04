@@ -51,8 +51,8 @@ namespace Insight.Database.CodeGenerator
 			if (!IsValueType)
 			{
 				// get the type we are binding to
-				var types = identity.Graph.GetGenericArguments();
-				Type type = (types.Length > 0) ? types[0] : identity.Graph;
+				Type type = identity.Graph.IsSubclassOf(typeof(Graph)) ? identity.Graph.GetGenericArguments()[0] : identity.Graph;
+
 				var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, uniqueMatches: true);
 
 				Accessors = new Func<object, object>[mapping.Length];
