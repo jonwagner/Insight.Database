@@ -2,7 +2,7 @@
 
 **Insight.Database** is a lightweight micro-ORM for .NET.
 
-# v2.0.0-alpha2 is now in NuGet!
+# v2.0 (Release build) is now in NuGet!
 
 - v2.0 has full async reads in .NET 4.5, automatic multi-recordset processing, customizable binding rules, tons of optimizations, and more code than I can remember.
 - In Package Manager, turn on "Include PreRelease" packages to get the new package.
