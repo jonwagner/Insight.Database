@@ -47,8 +47,8 @@ namespace Insight.Database.CodeGenerator
 					row["NumericScale"] = 0;
 			}
 
-			IsValueType = identity.Graph.IsValueType || identity.Graph == typeof(string);
-			if (!IsValueType)
+			IsAtomicType = TypeHelper.IsAtomicType(identity.Graph);
+			if (!IsAtomicType)
 			{
 				// get the type we are binding to
 				Type type = identity.Graph.IsSubclassOf(typeof(Graph)) ? identity.Graph.GetGenericArguments()[0] : identity.Graph;
@@ -68,13 +68,26 @@ namespace Insight.Database.CodeGenerator
 					var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
 					var il = dm.GetILGenerator();
 
-					il.Emit(OpCodes.Ldarg_0);						// push object argument
-					il.Emit(OpCodes.Isinst, type);					// cast object -> type
+					// convert the object reference to the desired type
+					if (type.IsValueType)
+					{
+						// access the field/property of a value type
+						il.DeclareLocal(type);
+						il.Emit(OpCodes.Ldarg_0);
+						il.Emit(OpCodes.Unbox_Any, type);
+						il.Emit(OpCodes.Stloc_0);
+						il.Emit(OpCodes.Ldloca_S, (byte)0);
+					}
+					else
+					{
+						// access the field/property of a reference type
+						il.Emit(OpCodes.Ldarg_0);						// push object argument
+						il.Emit(OpCodes.Isinst, type);					// cast object -> type
+					}
 
 					// get the value from the object
 					propInfo.EmitGetValue(il);
 					propInfo.EmitBox(il);
-
 					il.Emit(OpCodes.Ret);
 
 					MemberTypes[i] = propInfo.MemberType;
@@ -103,7 +116,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Gets a value indicating whether the given type is a value type.
 		/// </summary>
-		public bool IsValueType { get; private set; }
+		public bool IsAtomicType { get; private set; }
 		#endregion
 
 		/// <summary>

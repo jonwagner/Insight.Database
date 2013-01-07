@@ -153,8 +153,9 @@ namespace Insight.Database.CodeGenerator
 				{
 					List<ClassPropInfo> members = new List<ClassPropInfo>();
 
-					// if this is an object (and not a value type) get the get properties for the types that we pass in
-					if (!t.IsValueType
+					// if this is a structured type get the get properties for the types that we pass in
+					// exception are the Xml/XDocument classes that we already have special handlers for
+					if (!TypeHelper.IsAtomicType(t)
 						&& t != typeof(XmlDocument)
 						&& t != typeof(XDocument))
 					{
@@ -184,7 +185,12 @@ namespace Insight.Database.CodeGenerator
 			if (FieldInfo != null)
 				il.Emit(OpCodes.Ldfld, FieldInfo);
 			else if (GetMethodInfo != null)
-				il.Emit(OpCodes.Callvirt, GetMethodInfo);
+			{
+				if (Type.IsValueType)
+					il.Emit(OpCodes.Call, GetMethodInfo);
+				else
+					il.Emit(OpCodes.Callvirt, GetMethodInfo);
+			}
 			else
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a GetProperty method for {1} on class {0}.", Type.FullName, Name));
 		}
@@ -198,7 +204,12 @@ namespace Insight.Database.CodeGenerator
 			if (FieldInfo != null)
 				il.Emit(OpCodes.Stfld, FieldInfo);
 			else if (SetMethodInfo != null)
-				il.Emit(OpCodes.Callvirt, SetMethodInfo);
+			{
+				if (Type.IsValueType)
+					il.Emit(OpCodes.Call, SetMethodInfo);
+				else
+					il.Emit(OpCodes.Callvirt, SetMethodInfo);
+			}
 			else
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.FullName, Name));
 		}

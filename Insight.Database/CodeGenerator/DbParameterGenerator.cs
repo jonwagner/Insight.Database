@@ -119,7 +119,9 @@ namespace Insight.Database.CodeGenerator
 			{ DbType.String, typeof(string) },
 			{ DbType.StringFixedLength, typeof(char) },
 			{ DbType.Guid, typeof(Guid) },
+			{ DbType.Date, typeof(DateTime) },
 			{ DbType.DateTime, typeof(DateTime) },
+			{ DbType.DateTime2, typeof(DateTime) },
 			{ DbType.DateTimeOffset, typeof(DateTimeOffset) },
 			{ DbType.Time, typeof(TimeSpan) },
 			{ DbType.Binary, typeof(byte[]) },
@@ -363,6 +365,14 @@ namespace Insight.Database.CodeGenerator
 								break;
 						}
 
+						// since time is broken, we treat it as a string
+						if (TypeConverterGenerator.SqlClientTimeIsBroken && sqlParameter.DbType == DbType.Time)
+						{
+							il.Emit(OpCodes.Dup);
+							il.Emit(OpCodes.Ldc_I4, -1);
+							il.Emit(OpCodes.Callvirt, _iDataParameterSetSize);
+						}
+
 						il.Emit(OpCodes.Callvirt, _iListAdd);						// stack => [parameters]
 						il.Emit(OpCodes.Pop);										// IList.Add returns the index, ignore it
 					}
@@ -433,10 +443,16 @@ namespace Insight.Database.CodeGenerator
 					il.Emit(OpCodes.Box, prop.MemberType);
 				}
 
+				// .NET doesn't like timespan so convert to strings
+				if (TypeConverterGenerator.SqlClientTimeIsBroken && prop.MemberType == typeof(TimeSpan))
+				{
+					il.Emit(OpCodes.Callvirt, typeof(Object).GetMethod("ToString", new Type[] { }));
+				}
+
 				// jump right to the spot where we are ready to set the value
 				Label readyToSetLabel = il.DefineLabel();
 
-				// if it's class type or nullable, then we have to check for null
+				// if it's class type, boxed value type (in an object), or nullable, then we have to check for null
 				if (!prop.MemberType.IsValueType || Nullable.GetUnderlyingType(prop.MemberType) != null)
 				{
 					Label notNull = il.DefineLabel();
@@ -452,7 +468,7 @@ namespace Insight.Database.CodeGenerator
 					///////////////////////////////////////////////////////////////
 					// if this is a string, set the local length variable to 0
 					///////////////////////////////////////////////////////////////
-					if (sqlType == DbType.String)
+					if (IsDbTypeAString(sqlType))
 					{
 						IlHelper.EmitLdInt32(il, 0);
 						il.Emit(OpCodes.Stloc_0);
@@ -464,70 +480,26 @@ namespace Insight.Database.CodeGenerator
 					// we know the value is not null
 					il.MarkLabel(notNull);
 
-					// support converting simple object types to values
-					if (!TypeHelper.IsSystemType(prop.MemberType))
-					{
-						// if the type supports IConvertible, then we can just cast it by boxing
-						if (prop.MemberType.GetInterfaces().Contains(typeof(IConvertible)))
-						{
-							// switch the sql type to the type of the parameter
-							sqlType = sqlParameter.DbType;
-
-							// use IConvertible to convert to the expected type
-							Type expectedType = _dbTypeToTypeMap[sqlParameter.DbType];
-							il.Emit(OpCodes.Call, typeof(Convert).GetMethod("To" + expectedType.Name, new Type[] { typeof(Object) }));
-
-							// we need to box the object as the expected type before loading into the field
-							il.Emit(OpCodes.Box, expectedType);
-						}
-						else if (prop.MemberType == typeof(XmlDocument))
-						{
-							// we are sending up an XmlDocument. ToString just returns the classname, so use the outerxml.
-							il.Emit(OpCodes.Callvirt, prop.MemberType.GetProperty("OuterXml").GetGetMethod());
-						}
-						else if (prop.MemberType == typeof(XDocument))
-						{
-							// we are sending up an XDocument. Use ToString.
-							il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
-						}
-						else if (sqlParameter.DbType == DbType.Xml)
-						{
-							// we have an object and it is expecting an xml parameter. let's serialize the object.
-							il.Emit(OpCodes.Ldtoken, prop.MemberType);
-							il.Emit(OpCodes.Call, _typeGetTypeFromHandle);
-							il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(object), typeof(Type) }, null));
-						}
-						else
-						{
-							// it's not a system type and it's not IConvertible, so let's add it as a string and let the data engine convert it.
-							il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
-						}
-
-						// handle null internal values
-						Label internalValueIsNotNull = il.DefineLabel();
-
-						// check to see if it's not null
-						il.Emit(OpCodes.Dup);
-						il.Emit(OpCodes.Brtrue_S, internalValueIsNotNull);
-
-						// it's null. replace the value with DbNull
-						il.Emit(OpCodes.Pop);
-						il.Emit(OpCodes.Ldsfld, _dbNullValue);
-
-						il.MarkLabel(internalValueIsNotNull);
-					}
-
 					///////////////////////////////////////////////////////////////
 					// if this is a linq binary, convert it to a byte array
 					///////////////////////////////////////////////////////////////
 					if (prop.MemberType == typeof(System.Data.Linq.Binary))
-						il.Emit(OpCodes.Callvirt, _linqBinaryToArray);
-
-					///////////////////////////////////////////////////////////////
-					// if this is a string, set the length property
-					///////////////////////////////////////////////////////////////
-					if (prop.MemberType == typeof(string))
 					{
+						il.Emit(OpCodes.Callvirt, _linqBinaryToArray);
+					}
+					else if (prop.MemberType == typeof(XmlDocument))
+					{
+						// we are sending up an XmlDocument. ToString just returns the classname, so use the outerxml.
+						il.Emit(OpCodes.Callvirt, prop.MemberType.GetProperty("OuterXml").GetGetMethod());
+					}
+					else if (prop.MemberType == typeof(XDocument))
+					{
+						// we are sending up an XDocument. Use ToString.
+						il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
+					}
+					else if (prop.MemberType == typeof(string))
+					{
+						// if this is a string, set the length property
 						Label isLong = il.DefineLabel();
 						Label lenDone = il.DefineLabel();
 
@@ -553,6 +525,44 @@ namespace Insight.Database.CodeGenerator
 						// store the length of the string in loc.1 so we can stick it in the parameter
 						il.Emit(OpCodes.Stloc_0);								// [string]   
 					}
+					else if (prop.MemberType.GetInterfaces().Contains(typeof(IConvertible)) || prop.MemberType == typeof(object))
+					{
+						// if the type supports IConvertible, then let SQL convert it
+						// if the type is object, we can't do anything, so let SQL attempt to convert it
+
+						// The timespan type isn't liked by .NET and TimeSpan isn't convertible to a string, so convert it manually
+						if (TypeConverterGenerator.SqlClientTimeIsBroken && sqlType == DbType.Time)
+							il.Emit(OpCodes.Callvirt, typeof(Object).GetMethod("ToString", new Type[] { }));
+					}
+					else if (!TypeHelper.IsAtomicType(prop.MemberType))
+					{
+						// NOTE: at this point we know it's an object and the object reference is not null
+						if (sqlParameter.DbType == DbType.Xml)
+						{
+							// we have an object and it is expecting an xml parameter. let's serialize the object.
+							il.Emit(OpCodes.Ldtoken, prop.MemberType);
+							il.Emit(OpCodes.Call, _typeGetTypeFromHandle);
+							il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(object), typeof(Type) }, null));
+						}
+						else
+						{
+							// it's not a system type and it's not IConvertible, so let's add it as a string and let the data engine convert it.
+							il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
+
+							// it's possible that ToString returns a null
+							Label internalValueIsNotNull = il.DefineLabel();
+
+							// check to see if it's not null
+							il.Emit(OpCodes.Dup);
+							il.Emit(OpCodes.Brtrue_S, internalValueIsNotNull);
+
+							// it's null. replace the value with DbNull
+							il.Emit(OpCodes.Pop);
+							il.Emit(OpCodes.Ldsfld, _dbNullValue);
+
+							il.MarkLabel(internalValueIsNotNull);
+						}
+					}
 				}
 
 				///////////////////////////////////////////////////////////////
@@ -566,7 +576,7 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// p.Size = string.length
 				///////////////////////////////////////////////////////////////
-				if (prop.MemberType == typeof(string))
+				if (IsDbTypeAString(sqlType))
 				{
 					var endOfSize = il.DefineLabel();
 
@@ -627,7 +637,10 @@ namespace Insight.Database.CodeGenerator
 			// p.DbType = DbType
 			///////////////////////////////////////////////////////////////
 			if (TypeConverterGenerator.SqlClientTimeIsBroken && dbType == DbType.Time)
-				dbType = DbType.Object;
+			{
+				// treat as object
+				dbType = DbType.String;
+			}
 
 			il.Emit(OpCodes.Dup);													// dup parameter
 			IlHelper.EmitLdInt32(il, (int)dbType);									// push dbtype
@@ -790,6 +803,26 @@ namespace Insight.Database.CodeGenerator
 
 			// let's see if the type can be directly converted to the parameter type
 			return parameterType;
+		}
+
+		/// <summary>
+		/// Determines if a given DbType represents a string.
+		/// </summary>
+		/// <param name="dbType">The dbType to test.</param>
+		/// <returns>True if the type is a string type.</returns>
+		private static bool IsDbTypeAString(DbType dbType)
+		{
+			switch (dbType)
+			{
+				case DbType.AnsiString:
+				case DbType.AnsiStringFixedLength:
+				case DbType.String:
+				case DbType.StringFixedLength:
+					return true;
+
+				default:
+					return false;
+			}
 		}
 		#endregion
 

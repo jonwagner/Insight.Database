@@ -107,7 +107,7 @@ namespace Insight.Database.CodeGenerator
 				_currentStringValue = null;
 
 				// not allowed to have nulls in the list
-				if (_current == null && !_objectReader.IsValueType)
+				if (_current == null && !_objectReader.IsAtomicType)
 					throw new InvalidOperationException("Cannot send a list of objects to a table-valued parameter when the list contains a null value");
 			}
 
@@ -128,7 +128,7 @@ namespace Insight.Database.CodeGenerator
 				_currentOrdinal = ordinal;
 
 				// if we are reading IEnumerable<ValueType>, then there is one column and the value just needs to be converted
-				if (_objectReader.IsValueType)
+				if (_objectReader.IsAtomicType)
 				{
 					if (ordinal == 0)
 						_currentValue = _current;

@@ -344,6 +344,41 @@ namespace Insight.Tests
 			}
 		}
 
+		/// <summary>
+		/// There is some special IL for handling structs, so test that here.
+		/// </summary>
+		[Test]
+		public void TestSerializingListOfStructures()
+		{
+			var list = new KeyValuePair<string, string>[] { new KeyValuePair<string, string> ("from", "to") };
+
+			try
+			{
+				_connection.ExecuteSql(@"
+					CREATE TYPE [StringMapTable] AS TABLE
+					(
+						[Key] [varchar](1024),
+						[Value] [varchar](1024)
+					)");
+				_connection.ExecuteSql(@"GRANT EXEC ON TYPE::dbo.StringMapTable TO public");
+				_connection.ExecuteSql(@"
+					CREATE PROC [TestMap]
+						@Map [StringMapTable] READONLY
+					AS
+						SELECT * FROM @Map
+					");
+
+				var results = _connection.Query("TestMap", list);
+				dynamic first = results[0];
+				Assert.AreEqual("from", first.Key);
+				Assert.AreEqual("to", first.Value);
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP PROC TestMap");
+				_connection.ExecuteSql("DROP TYPE StringMapTable");
+			}
+		}
 		#endregion
 
 		#region Mismatch Tests

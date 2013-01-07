@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
@@ -15,29 +16,36 @@ namespace Insight.Database.CodeGenerator
 	static class TypeHelper
 	{
 		/// <summary>
-		/// Determines whether the given type is a system type that can be easily converted to by the unbox or cast operations.
+		/// Determines whether the given type is is an atomic type that does not have members.
 		/// </summary>
 		/// <param name="type">The type to check.</param>
-		/// <returns>True if this is a system type that unbox or cast can convert to.</returns>
-		public static bool IsSystemType(Type type)
+		/// <returns>True if this is an atomic type that does not have members.</returns>
+		public static bool IsAtomicType(Type type)
 		{
-			// enums are just ints in disguise
-			if (type.IsEnum)
+			// treat strings as atomic
+			if (type == typeof(string))
 				return true;
 
-			// if it's in the system assembly, it's a good bet.
-			if (type.Assembly == typeof(System.Byte).Assembly)
-				return true;
-
-			// just need this for byte[]
+			// arrays are atomic
 			if (type.IsArray)
 				return true;
 
-			// another special case
-			if (type == typeof(System.Data.Linq.Binary))
+			// enums are atomic
+			if (type.IsEnum)
 				return true;
 
-			return false;
+			// treat all references as non-atomic
+			if (!type.IsValueType)
+				return false;
+
+			// these are structures, but we want to treat them as atomic
+			if (type == typeof(DateTime)) return true;
+			if (type == typeof(DateTimeOffset)) return true;
+			if (type == typeof(Guid)) return true;
+			if (type == typeof(TimeSpan)) return true;
+
+			// all of the primitive types, array, etc. are atomic
+			return type.IsPrimitive;
 		}
 
 		#region Xml Serialization Helpers

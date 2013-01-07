@@ -59,12 +59,33 @@ namespace Insight.Tests
 				Assert.IsNull(data.PropertyNull);
 
 				// make sure that we can return a list of the types
-				var data2 = connection.QuerySql<T>("SELECT @p UNION ALL SELECT @p", new { p = value });
+				var data2 = connection.QuerySql<T>(String.Format("SELECT @p UNION ALL SELECT CONVERT({0}, @p)", sqlType), new { p = value });
 				Assert.AreEqual(2, data2.Count);
 				Assert.AreEqual(value, data2[0]);
 				Assert.AreEqual(value, data2[1]);
 
-				var data3 = connection.QuerySql<T?>("SELECT @p UNION SELECT @p", new { p = (T?)null });
+				var data3 = connection.QuerySql<T?>(String.Format("SELECT @p UNION SELECT CONVERT({0}, @p)", sqlType), new { p = (T?)null });
+
+				// make sure that we can convert the type to an individual parameter
+				try
+				{
+					connection.ExecuteSql(String.Format("CREATE PROC InsightTestProc{1} @p {0} AS SELECT CONVERT({0}, @p)", sqlType, typeof(T).Name));
+
+					var data4 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = value });
+					Assert.AreEqual(value, data4.First());
+
+					// test passing in the value as an object rather than the type
+					var data5 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (object)value });
+					Assert.AreEqual(value.ToString(), data5.First().ToString());
+				}
+				finally
+				{
+					try
+					{
+						connection.ExecuteSql("DROP PROC InsightTestProc" + typeof(T).Name);
+					}
+					catch{}
+				}
 			}
 		}
 
@@ -94,6 +115,23 @@ namespace Insight.Tests
 				Assert.IsNull(data.Property);
 				Assert.IsNull(data.FieldNull);
 				Assert.IsNull(data.PropertyNull);
+
+				// make sure that we can convert the type to a stored proc parameter
+				try
+				{
+					connection.ExecuteSql(String.Format("CREATE PROC InsightTestProc @p {0} AS SELECT Field=CONVERT({0}, @p)", sqlType));
+
+					var data4 = connection.Query<Data<T>>("InsightTestProc", new { p = value });
+					Assert.AreEqual(value, data4.First().Field);
+				}
+				finally
+				{
+					try
+					{
+						connection.ExecuteSql("DROP PROC InsightTestProc");
+					}
+					catch { }
+				}
 			}
 		}
 		#endregion
@@ -111,12 +149,12 @@ namespace Insight.Tests
 			NullableData<short>.Test(-2, _connection, "smallint");
 			NullableData<int>.Test(-120, _connection, "int");
 			NullableData<long>.Test(-120000000, _connection, "bigint");
-			NullableData<float>.Test(123.456f, _connection, "float");
-			NullableData<double>.Test(567.134567, _connection, "real");
+			NullableData<float>.Test(123.456f, _connection, "real");
+			NullableData<double>.Test(567.134567, _connection, "float");
 			NullableData<decimal>.Test(890.12345m, _connection, "decimal(18,5)");
 			NullableData<bool>.Test(false, _connection, "bit");
 			NullableData<bool>.Test(true, _connection, "bit");
-			NullableData<char>.Test('c', _connection, "char");
+			NullableData<char>.Test('c', _connection, "char(1)");
 			NullableData<Guid>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
 			NullableData<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
 			NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
