@@ -22,6 +22,9 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if this is an atomic type that does not have members.</returns>
 		public static bool IsAtomicType(Type type)
 		{
+			// we convert nulls to dbnull. So if the type is nullable, then we look at the underlying type.
+			type = Nullable.GetUnderlyingType(type) ?? type;
+
 			// treat strings as atomic
 			if (type == typeof(string))
 				return true;
