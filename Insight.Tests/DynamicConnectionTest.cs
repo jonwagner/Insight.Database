@@ -296,5 +296,48 @@ namespace Insight.Tests
 			Assert.IsTrue(result5.Count == 2);
 			Assert.AreEqual(ConnectionState.Closed, _connection.State);
 		}
+
+		/// <summary>
+		/// Tests GitHub Issue #13
+		/// </summary>
+		[Test]
+		public void SqlExceptionShouldNotBeHiddenByDynamicCalls()
+		{
+			using (SqlTransaction t = _connection.BeginTransaction())
+			{
+				_connection.ExecuteSql("CREATE PROC InsightTestProcWithError (@Value varchar(128)) AS raiserror ('test', 18, 1)", transaction: t);
+
+				// in v2.0.1, we were using method.Invoke to execute the sql. 
+				// This would wrap the results in a TargetInvocationException and hide the SQL error.
+				Assert.Throws(typeof(SqlException), () => _connection.Dynamic().InsightTestProcWithError(value: 4, transaction: t));
+				Assert.Throws(typeof(SqlException), () => _connection.Dynamic().InsightTestProcWithError(value: 4, transaction: t, returnType: typeof(Results<int>)));
+
+				Assert.Throws(typeof(SqlException), () =>
+					{
+						try
+						{
+							_connection.Dynamic().InsightTestProcWithErrorAsync(value: 4, transaction: t).Wait();
+						}
+						catch (AggregateException e)
+						{
+							throw e.Flatten().InnerExceptions.OfType<SqlException>().First();
+						}
+					}
+				);
+
+				Assert.Throws(typeof(SqlException), () =>
+					{
+						try
+						{
+							_connection.Dynamic().InsightTestProcWithErrorAsync(value: 4, transaction: t, returnType: typeof(Results<int>)).Wait();
+						}
+						catch (AggregateException e)
+						{
+							throw e.Flatten().InnerExceptions.OfType<SqlException>().First();
+						}
+					}
+				);
+			}
+		}
 	}
 }

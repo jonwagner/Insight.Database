@@ -44,10 +44,10 @@ namespace Insight.Database
 		/// <summary>
 		/// Caches for MethodInfo for query methods.
 		/// </summary>
-		private static ConcurrentDictionary<Type, MethodInfo> _queryResultsAsyncMethods = new ConcurrentDictionary<Type, MethodInfo>();
-		private static ConcurrentDictionary<Type, MethodInfo> _queryResultsMethods = new ConcurrentDictionary<Type, MethodInfo>();
-		private static ConcurrentDictionary<Type, MethodInfo> _queryAsyncMethods = new ConcurrentDictionary<Type, MethodInfo>();
-		private static ConcurrentDictionary<Type, MethodInfo> _queryMethods = new ConcurrentDictionary<Type, MethodInfo>();
+		private static ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>> _queryResultsAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>>();
+		private static ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, object>> _queryResultsMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, object>>();
+		private static ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>> _queryAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>>();
+		private static ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, object>> _queryMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, object>>();
 
 		/// <summary>
 		/// The internal cache for parameters to stored procedures.
@@ -91,9 +91,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="binder">The binder used on the method.</param>
 		/// <param name="args">The arguments to the method.</param>
-		/// <param name="type">The default type of object to return if no type parameter is specified.</param>
+		/// <param name="returnType">The default type of object to return if no type parameter is specified.</param>
 		/// <returns>The results of the stored procedure call.</returns>
-		protected object DoInvokeMember(InvokeMemberBinder binder, object[] args, Type type)
+		protected internal object DoInvokeMember(InvokeMemberBinder binder, object[] args, Type returnType)
 		{
 			bool doAsync = false;
 			IDbCommand cmd = null;
@@ -137,7 +137,7 @@ namespace Insight.Database
 						break;
 
 					case "returnType":
-						type = (Type)args[i + unnamedParameterCount];
+						returnType = (Type)args[i + unnamedParameterCount];
 						specialParameters++;
 						break;
 
@@ -206,55 +206,108 @@ namespace Insight.Database
 			}
 
 			// if type was not specified, but withGraph was specified, then use the first item in the graph as the type
-			if (type == null && withGraph != null)
+			if (returnType == null && withGraph != null)
 			{
 				Type withGraphType = withGraph as Type;
 				if (withGraphType != null && withGraphType.IsSubclassOf(typeof(Graph)))
 				{
-					type = withGraphType.GetGenericArguments()[0];
+					returnType = withGraphType.GetGenericArguments()[0];
 				}
 			}
 
 			// if we don't have a type, use FastExpando
-			if (type == null)
-				type = typeof(FastExpando);
+			if (returnType == null)
+				returnType = typeof(FastExpando);
 
 			// get the proper query method to call based on whether we are doing this async and whether there is a single or multiple result set
 			// the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
-			MethodInfo method = GetQueryMethod(type, doAsync);
-
-			if (doAsync)
-				return method.Invoke(null, new object[] { cmd, withGraph, CommandBehavior.Default, cancellationToken });
+			if (returnType.IsSubclassOf(typeof(Results)))
+			{
+				if (doAsync)
+					return CallQueryResultsAsync(returnType, cmd, withGraph, cancellationToken);
+				else
+					return CallQueryResults(returnType, cmd, withGraph);
+			}
 			else
-				return method.Invoke(null, new object[] { cmd, withGraph, CommandBehavior.Default });
+			{
+				if (doAsync)
+					return CallQueryAsync(returnType, cmd, withGraph, cancellationToken);
+				else
+					return CallQuery(returnType, cmd, withGraph);
+			}
+		}
+
+		#region Delegate Invocation Methods
+		/// <summary>
+		/// Invokes a cached delegate of Query, taking a command and withGraph, and returning the specified type.
+		/// </summary>
+		/// <param name="returnType">The type to return.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="withGraph">The type of graph to generate.</param>
+		/// <returns>The result of the invocation.</returns>
+		private static object CallQuery(Type returnType, IDbCommand command, object withGraph)
+		{
+			var method = _queryMethods.GetOrAdd(
+				returnType,
+				t => (Func<IDbCommand, Type, CommandBehavior, object>)Delegate.CreateDelegate(
+					typeof(Func<IDbCommand, Type, CommandBehavior, object>),
+					typeof(DBCommandExtensions).GetMethod("Query", _queryParameters).MakeGenericMethod(t)));
+			return method(command, (Type)withGraph, CommandBehavior.Default);
 		}
 
 		/// <summary>
-		/// Returns a MethodInfo for a query method based on the type and whether the call should be async.
+		/// Invokes a cached delegate of QueryAsync, taking a command, withGraph and cancellationToken, and returning the specified type.
 		/// </summary>
-		/// <param name="type">The type of object to return.</param>
-		/// <param name="doAsync">True to return the asynchronous method.</param>
-		/// <returns>The MethodInfo for the query method.</returns>
-		private static MethodInfo GetQueryMethod(Type type, bool doAsync)
+		/// <param name="returnType">The type to return.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="withGraph">The type of graph to generate.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>The result of the invocation.</returns>
+		private static object CallQueryAsync(Type returnType, IDbCommand command, object withGraph, CancellationToken? cancellationToken)
 		{
-			MethodInfo method;
-			if (type.IsSubclassOf(typeof(Results)))
-			{
-				if (doAsync)
-					method = _queryResultsAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryResultsAsync", _queryResultsAsyncParameters).MakeGenericMethod(t));
-				else
-					method = _queryResultsMethods.GetOrAdd(type, t => typeof(DBCommandExtensions).GetMethod("QueryResults", _queryResultsParameters).MakeGenericMethod(t));
-			}
-			else
-			{
-				if (doAsync)
-					method = _queryAsyncMethods.GetOrAdd(type, t => typeof(AsyncExtensions).GetMethod("QueryAsync", _queryAsyncParameters).MakeGenericMethod(t));
-				else
-					method = _queryMethods.GetOrAdd(type, t => typeof(DBCommandExtensions).GetMethod("Query", _queryParameters).MakeGenericMethod(t));
-			}
-
-			return method;
+			var method = _queryAsyncMethods.GetOrAdd(
+				returnType,
+				t => (Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>)Delegate.CreateDelegate(
+					typeof(Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>),
+					typeof(AsyncExtensions).GetMethod("QueryAsync", _queryAsyncParameters).MakeGenericMethod(t)));
+			return method(command, (Type)withGraph, CommandBehavior.Default, cancellationToken);
 		}
+
+		/// <summary>
+		/// Invokes a cached delegate of QueryResults, taking a command and withGraph, and returning the specified type.
+		/// </summary>
+		/// <param name="returnType">The type to return.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="withGraph">The type of graph to generate.</param>
+		/// <returns>The result of the invocation.</returns>
+		private static object CallQueryResults(Type returnType, IDbCommand command, object withGraph)
+		{
+			var method = _queryResultsMethods.GetOrAdd(
+				returnType,
+				t => (Func<IDbCommand, Type[], CommandBehavior, object>)Delegate.CreateDelegate(
+					typeof(Func<IDbCommand, Type[], CommandBehavior, object>),
+					typeof(DBCommandExtensions).GetMethod("QueryResults", _queryResultsParameters).MakeGenericMethod(t)));
+			return method(command, (Type[])withGraph, CommandBehavior.Default);
+		}
+
+		/// <summary>
+		/// Invokes a cached delegate of QueryResultsAsync, taking a command, withGraph and cancellationToken, and returning the specified type.
+		/// </summary>
+		/// <param name="returnType">The type to return.</param>
+		/// <param name="command">The command to execute.</param>
+		/// <param name="withGraph">The type of graph to generate.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>The result of the invocation.</returns>
+		private static object CallQueryResultsAsync(Type returnType, IDbCommand command, object withGraph, CancellationToken? cancellationToken)
+		{
+			var method = _queryResultsAsyncMethods.GetOrAdd(
+				returnType,
+				t => (Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>)Delegate.CreateDelegate(
+					typeof(Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>),
+					typeof(AsyncExtensions).GetMethod("QueryResultsAsync", _queryResultsAsyncParameters).MakeGenericMethod(t)));
+			return method(command, (Type[])withGraph, CommandBehavior.Default, cancellationToken);
+		}
+		#endregion
 
 		/// <summary>
 		/// Derive the parameters that are needed to execute a given command.
