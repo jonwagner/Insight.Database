@@ -60,43 +60,51 @@ namespace Insight.Tests
 				Assert.IsNull(data.PropertyNull);
 
 				// make sure that we can return a list of the T
-				var data2 = connection.QuerySql<T>(String.Format("SELECT @p UNION ALL SELECT CONVERT({0}, @p)", sqlType), new { p = value });
+				var data2 = connection.QuerySql<T>(String.Format("SELECT CONVERT({0}, @p) UNION ALL SELECT CONVERT({0}, @p)", sqlType), new { p = value });
 				Assert.AreEqual(2, data2.Count);
 				Assert.AreEqual(value, data2[0]);
 				Assert.AreEqual(value, data2[1]);
 
 				// make sure that we can return a list of nullable<T>
-				var data3 = connection.QuerySql<T?>(String.Format("SELECT @p UNION SELECT CONVERT({0}, @p)", sqlType), new { p = (T?)null });
-//				data3 = connection.QuerySql<T?>(String.Format("SELECT @p UNION SELECT CONVERT({0}, @p)", sqlType), new { p = (T?)value });
+				var data3 = connection.QuerySql<T?>(String.Format("SELECT CONVERT({0}, @p) UNION SELECT CONVERT({0}, @p)", sqlType), new { p = (T?)null });
+				data3 = connection.QuerySql<T?>(String.Format("SELECT CONVERT({0}, @p) UNION SELECT CONVERT({0}, @p)", sqlType), new { p = (T?)value });
 
 				// make sure that we can convert the type to an proc parameter
 				try
 				{
 					connection.ExecuteSql(String.Format("CREATE PROC InsightTestProc{1} @p {0} AS SELECT CONVERT({0}, @p)", sqlType, typeof(T).Name));
 
-					// parameter as T
-					var data4 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = value });
+					// parameter as T => T
+					var data4 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (T)value });
 					Assert.AreEqual(value, data4.First());
 
-					// parameter as (object)T
+					// parameter as (object)T => T
 					var data5 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (object)value });
 					Assert.AreEqual(value.ToString(), data5.First().ToString());
 
-					// parameter as T?(null)
-					var data6 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (T?)null });
-					Assert.AreEqual(default(T), data6.First());
+					// parameter as T?(value) => T
+					var data6 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (T?)value });
+					Assert.AreEqual(value, data6.First());
 
-					// parameter as T? value
-					//var data7 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (T?)null });
-					//Assert.AreEqual(value.ToString(), data7.First());
+					// parameter as T(value) => T?
+					var data7 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T)value });
+					Assert.AreEqual(value.ToString(), data7.First().ToString());
 
-					//// parameter as T?
-					//var data8 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T?)value });
-					//Assert.AreEqual(value.ToString(), data8.First().ToString());
+					// parameter as (object)T=value => T?
+					var data8 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (object)value });
+					Assert.AreEqual(value.ToString(), data8.First().ToString());
 
-					//// parameter as T?=null
-					//var data9 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T?)null });
-					//Assert.IsNull(data9.First());
+					// parameter as T?(value) => T?
+					var data9 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T?)value });
+					Assert.AreEqual(value.ToString(), data9.First().ToString());
+
+					// parameter as T?=null => T?
+					var data10 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T?)null });
+					Assert.IsNull(data10.First());
+
+					// parameter as (object)T=null => T?
+					var data11 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (object)null });
+					Assert.IsNull(data11.First());
 				}
 				finally
 				{
@@ -186,7 +194,7 @@ namespace Insight.Tests
 			Data<System.Data.Linq.Binary>.Test(new System.Data.Linq.Binary(new byte[] { 1, 2, 3, 4 }), _connection, "varbinary(MAX)");
 
 			// enums
-///			NullableData<TestEnum>.Test(TestEnum.Two, _connection, "int");
+			NullableData<TestEnum>.Test(TestEnum.Two, _connection, "int");
 
 			// make sure that we can return a list of strings
 			var data2 = _connection.QuerySql<string>("SELECT @p UNION ALL SELECT @p", new { p = "foo" });

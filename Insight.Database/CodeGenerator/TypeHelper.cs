@@ -42,6 +42,7 @@ namespace Insight.Database.CodeGenerator
 				return false;
 
 			// these are structures, but we want to treat them as atomic
+			if (type == typeof(Decimal)) return true;
 			if (type == typeof(DateTime)) return true;
 			if (type == typeof(DateTimeOffset)) return true;
 			if (type == typeof(Guid)) return true;

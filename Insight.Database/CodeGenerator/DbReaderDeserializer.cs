@@ -214,10 +214,14 @@ namespace Insight.Database.CodeGenerator
 				new[] { typeof(IDataReader) },
 				true);
 
+			Type underlyingType = Nullable.GetUnderlyingType(type);
+
 			var il = dm.GetILGenerator();
 			Label isNull = il.DefineLabel();
 			if (type.IsValueType)
 				il.DeclareLocal(type);
+			if (underlyingType != null)
+				il.DeclareLocal(underlyingType);
 
 			// get the value from the reader
 			il.Emit(OpCodes.Ldarg_0);
@@ -230,7 +234,26 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Beq, isNull);
 
 			// not null, so unbox it and return it
-			il.Emit(OpCodes.Unbox_Any, type);
+			if (underlyingType != null)
+			{
+				// a nullable type, so unbox to the underlying type
+				il.Emit(OpCodes.Unbox_Any, underlyingType);
+				il.Emit(OpCodes.Stloc_1);
+
+				// now create the nullable
+				il.Emit(OpCodes.Ldloca_S, (byte)0);
+				il.Emit(OpCodes.Ldloc_1);
+				il.Emit(OpCodes.Call, type.GetConstructor(new Type[] { underlyingType }));
+
+				// return the nullable
+				il.Emit(OpCodes.Ldloc_0);
+			}
+			else
+			{
+				// not a nullable type, so just unbox the type
+				il.Emit(OpCodes.Unbox_Any, type);
+			}
+
 			il.Emit(OpCodes.Ret);
 
 			// is null, so return a default
