@@ -59,7 +59,7 @@ namespace Insight.Tests
 					array[j] = new InsightTestData() { Int = j };
 
 				// bulk load the data
-				_connection.BulkCopy("InsightTestData", array);
+				_sqlConnection.BulkCopy("InsightTestData", array);
 
 				// run the query
 				var items = _connection.QuerySql<InsightTestData>("SELECT * FROM InsightTestData");

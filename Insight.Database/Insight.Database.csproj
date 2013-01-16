@@ -60,7 +60,15 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
+    <Compile Include="DbConnectionStringBuilderExtensions.cs" />
     <Compile Include="DBConnectionExtensionsObsolete.cs" />
+    <Compile Include="DbConnectionWithTransaction.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DbConnectionWrapper.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Helpers.cs" />
     <Compile Include="IColumnMappingHandler.cs" />
     <Compile Include="DefaultGraphAttribute.cs" />
@@ -89,7 +97,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reliable\RetryEventArgs.cs" />
-    <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DBReaderExtensions.cs" />
     <Compile Include="Parameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

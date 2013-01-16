@@ -6,6 +6,7 @@ using System.Text;
 using Insight.Database;
 using NUnit.Framework;
 using System.Transactions;
+using System.Data.Common;
 
 #pragma warning disable 0649
 
@@ -29,11 +30,11 @@ namespace Insight.Tests
 		[Test]
 		public void TestClassOutputParameterWithDefault()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9", transaction: t);
+				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9");
 
-				var command = _connection.CreateCommand("Insight_TestOutput", new { p = 5 }, transaction: t);
+				var command = connection.CreateCommand("Insight_TestOutput", new { p = 5 });
 				var result = command.ExecuteNonQuery();
 
 				var outputData = new OutputData();
@@ -49,11 +50,11 @@ namespace Insight.Tests
 		[Test]
 		public void TestExpandoOutputParameterWithDefault()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 11", transaction: t);
+				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 11");
 
-				var command = _connection.CreateCommand("Insight_TestOutput", transaction: t);
+				var command = connection.CreateCommand("Insight_TestOutput");
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
@@ -67,11 +68,11 @@ namespace Insight.Tests
 		[Test]
 		public void TestExpandoOutputParameterWithoutDefault()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int OUTPUT AS SET @p = 6", transaction: t);
+				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int OUTPUT AS SET @p = 6");
 
-				var command = _connection.CreateCommand("Insight_TestOutput", new { p = 5 }, transaction: t);
+				var command = connection.CreateCommand("Insight_TestOutput", new { p = 5 });
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
@@ -85,9 +86,9 @@ namespace Insight.Tests
 		{
 			public T p;
 
-			public static void Test(T value, SqlConnection connection, string sqlType)
+			public static void Test(T value, DbConnection connection, string sqlType)
 			{
-				using (SqlTransaction t = connection.BeginTransaction())
+				using (DbTransaction t = connection.BeginTransaction())
 				{
 					// special case for formatting enums in our proc definition
 					string stringValue = value.ToString();
@@ -182,11 +183,11 @@ namespace Insight.Tests
 		[Test]
 		public void TestQueryResults()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1", transaction: t);
+				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1");
 
-				var result = _connection.QueryResults<Results<int>>("Insight_TestOutput", new { p = 5 }, transaction: t);
+				var result = connection.QueryResults<Results<int>>("Insight_TestOutput", new { p = 5 });
 
 				Assert.IsNotNull(result.Outputs);
 				Assert.AreEqual(9, result.Outputs.p);
@@ -199,11 +200,11 @@ namespace Insight.Tests
 		[Test]
 		public void TestAsyncQueryResults()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1", transaction: t);
+				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1");
 
-				var result = _connection.QueryResultsAsync<Results<int>>("Insight_TestOutput", new { p = 5 }, transaction: t).Result;
+				var result = connection.QueryResultsAsync<Results<int>>("Insight_TestOutput", new { p = 5 }).Result;
 
 				Assert.IsNotNull(result.Outputs);
 				Assert.AreEqual(9, result.Outputs.p);

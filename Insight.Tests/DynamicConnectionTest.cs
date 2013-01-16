@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Data.Common;
 
 #pragma warning disable 0649
 
@@ -52,45 +53,45 @@ namespace Insight.Tests
 		[Test]
 		public void Test()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
 
-				List<Data> result = _connection.Dynamic<Data>().InsightTestProc(transaction: t, value: 5);
+				List<Data> result = connection.Dynamic<Data>().InsightTestProc(value: 5);
 			}
 		}
 
 		[Test]
 		public void TestUnnamedParameter()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
 
-				List<Data> result = _connection.Dynamic<Data>().InsightTestProc(5, transaction: t);
+				List<Data> result = connection.Dynamic<Data>().InsightTestProc(5);
 			}
 		}
 
 		[Test]
 		public void TestExecute()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS PRINT 'foo'", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS PRINT 'foo'");
 
-				_connection.Dynamic().InsightTestProc(transaction: t, value: 5);
+				connection.Dynamic().InsightTestProc(value: 5);
 			}
 		}
 
 		[Test]
 		public void TestObjectParameter()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
 
 				Data d = new Data() { Value = 10 };
-				IList<Data> list = _connection.Dynamic<Data>().InsightTestProc(d, transaction: t);
+				IList<Data> list = connection.Dynamic<Data>().InsightTestProc(d);
 				Data result = list.First();
 
 				Assert.AreEqual(d.Value, result.Value);
@@ -100,12 +101,12 @@ namespace Insight.Tests
 		[Test]
 		public void TestSingleStringParameter()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value");
 
 				string value = "foo";
-				IList<string> list = _connection.Dynamic<string>().InsightTestProc(value, transaction: t);
+				IList<string> list = connection.Dynamic<string>().InsightTestProc(value);
 				string result = list.First();
 
 				Assert.AreEqual(value, result);
@@ -115,13 +116,13 @@ namespace Insight.Tests
 		[Test]
 		public void TestDynamicWithMultipleResultSets()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128), @Value2 varchar(128)) AS SELECT Value=@Value SELECT Value=@Value2", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128), @Value2 varchar(128)) AS SELECT Value=@Value SELECT Value=@Value2");
 
 				string value = "foo";
 				string value2 = "foo2";
-				Results<string, string> results = _connection.Dynamic<Results<string, string>>().InsightTestProc(value, value2, transaction: t);
+				Results<string, string> results = connection.Dynamic<Results<string, string>>().InsightTestProc(value, value2);
 
 				Assert.AreEqual(value, results.Set1.First());
 				Assert.AreEqual(value2, results.Set2.First());
@@ -131,16 +132,16 @@ namespace Insight.Tests
 		[Test]
 		public void TestReturnTypeOverride()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value");
 
 				string value = "foo";
 
-				var dc = _connection.Dynamic();
+				var dc = connection.Dynamic();
 
 				// going to infer the return type of the stored procedure rather than specifying it
-				IList<string> results = dc.InsightTestProc(value, returnType: typeof(string), transaction: t);
+				IList<string> results = dc.InsightTestProc(value, returnType: typeof(string));
 
 				Assert.AreEqual(value, results.First());
 			}
@@ -149,16 +150,16 @@ namespace Insight.Tests
 		[Test]
 		public void TestReturnTypeOverrideAsync()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value");
 
 				string value = "foo";
 
-				var dc = _connection.Dynamic();
+				var dc = connection.Dynamic();
 
 				// going to infer the return type of the stored procedure rather than specifying it
-				Task<IList<string>> task = dc.InsightTestProcAsync(value, returnType: typeof(string), transaction: t);
+				Task<IList<string>> task = dc.InsightTestProcAsync(value, returnType: typeof(string));
 
 				var results = task.Result;
 
@@ -169,14 +170,14 @@ namespace Insight.Tests
 		[Test]
 		public void TestReturnTypeOverrideWithJustWithGraph()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc AS " + ParentTestData.Sql, transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc AS " + ParentTestData.Sql);
 
-				var dc = _connection.Dynamic();
+				var dc = connection.Dynamic();
 
 				// going to infer the return type of the stored procedure rather than specifying it
-				IList<ParentTestData> results = dc.InsightTestProc(withGraph: typeof(Graph<ParentTestData>), transaction: t);
+				IList<ParentTestData> results = dc.InsightTestProc(withGraph: typeof(Graph<ParentTestData>));
 				ParentTestData.Verify(results, false);
 			}
 		}
@@ -184,16 +185,16 @@ namespace Insight.Tests
 		[Test]
 		public void TestMultipleRecordsets()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql, transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql);
 
 				string value = "foo";
 
-				var dc = _connection.Dynamic();
+				var dc = connection.Dynamic();
 
 				// going to infer the return type of the stored procedure rather than specifying it
-				Results<ParentTestDataWithDefaultGraph, TestData2> results = dc.InsightTestProc(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>), transaction: t);
+				Results<ParentTestDataWithDefaultGraph, TestData2> results = dc.InsightTestProc(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>));
 
 				Assert.IsNotNull(results);
 				ParentTestData.Verify(results.Set1, withGraph: true);
@@ -204,16 +205,16 @@ namespace Insight.Tests
 		[Test]
 		public void TestMultipleRecordsetsAsync()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql, transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql);
 
 				string value = "foo";
 
-				var dc = _connection.Dynamic();
+				var dc = connection.Dynamic();
 
 				// going to infer the return type of the stored procedure rather than specifying it
-				Task<Results<ParentTestDataWithDefaultGraph, TestData2>> task = dc.InsightTestProcAsync(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>), transaction: t);
+				Task<Results<ParentTestDataWithDefaultGraph, TestData2>> task = dc.InsightTestProcAsync(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>));
 				var results = task.Result;
 
 				Assert.IsNotNull(results);
@@ -225,20 +226,19 @@ namespace Insight.Tests
 		[Test]
 		public void TestMultipleRecordsetsWithGraph()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql, transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql);
 
 				string value = "foo";
 
-				var dc = _connection.Dynamic();
+				var dc = connection.Dynamic();
 
 				// going to infer the return type of the stored procedure rather than specifying it
 				Results<ParentTestData, TestData2> results = dc.InsightTestProc(
 					value,
 					returnType: typeof(Results<ParentTestData, TestData2>),
-					withGraphs: new Type[] { typeof(Graph<ParentTestData, TestData>) },
-						transaction: t);
+					withGraphs: new Type[] { typeof(Graph<ParentTestData, TestData>) });
 
 				Assert.IsNotNull(results);
 				ParentTestData.Verify(results.Set1, withGraph: true);
@@ -303,20 +303,20 @@ namespace Insight.Tests
 		[Test]
 		public void SqlExceptionShouldNotBeHiddenByDynamicCalls()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProcWithError (@Value varchar(128)) AS raiserror ('test', 18, 1)", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProcWithError (@Value varchar(128)) AS raiserror ('test', 18, 1)");
 
 				// in v2.0.1, we were using method.Invoke to execute the sql. 
 				// This would wrap the results in a TargetInvocationException and hide the SQL error.
-				Assert.Throws(typeof(SqlException), () => _connection.Dynamic().InsightTestProcWithError(value: 4, transaction: t));
-				Assert.Throws(typeof(SqlException), () => _connection.Dynamic().InsightTestProcWithError(value: 4, transaction: t, returnType: typeof(Results<int>)));
+				Assert.Throws(typeof(SqlException), () => connection.Dynamic().InsightTestProcWithError(value: 4));
+				Assert.Throws(typeof(SqlException), () => connection.Dynamic().InsightTestProcWithError(value: 4, returnType: typeof(Results<int>)));
 
 				Assert.Throws(typeof(SqlException), () =>
 					{
 						try
 						{
-							_connection.Dynamic().InsightTestProcWithErrorAsync(value: 4, transaction: t).Wait();
+							connection.Dynamic().InsightTestProcWithErrorAsync(value: 4).Wait();
 						}
 						catch (AggregateException e)
 						{
@@ -329,7 +329,7 @@ namespace Insight.Tests
 					{
 						try
 						{
-							_connection.Dynamic().InsightTestProcWithErrorAsync(value: 4, transaction: t, returnType: typeof(Results<int>)).Wait();
+							connection.Dynamic().InsightTestProcWithErrorAsync(value: 4, returnType: typeof(Results<int>)).Wait();
 						}
 						catch (AggregateException e)
 						{

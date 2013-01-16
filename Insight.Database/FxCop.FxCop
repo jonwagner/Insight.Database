@@ -112,6 +112,39 @@
       <Namespaces>
        <Namespace Name="Insight.Database">
         <Types>
+         <Type Name="DbConnectionStringBuilderExtensions">
+          <Messages>
+           <Message Id="Db" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Excluded" Created="2013-01-16 19:03:20Z">
+            <Issue Name="Type">
+             <Item>Db</Item>
+             <Item>'DbConnectionStringBuilderExtensions'</Item>
+             <Item>DB</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="DbConnectionWithTransaction">
+          <Messages>
+           <Message Id="Db" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Excluded" Created="2013-01-16 19:03:20Z">
+            <Issue Name="Type">
+             <Item>Db</Item>
+             <Item>'DbConnectionWithTransaction'</Item>
+             <Item>DB</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="DbConnectionWrapper">
+          <Messages>
+           <Message Id="Db" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Excluded" Created="2013-01-16 19:03:20Z">
+            <Issue Name="Type">
+             <Item>Db</Item>
+             <Item>'DbConnectionWrapper'</Item>
+             <Item>DB</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
          <Type Name="FastExpando">
           <Messages>
            <Message TypeName="IdentifiersShouldHaveCorrectSuffix" Category="Microsoft.Naming" CheckId="CA1710" Status="Excluded" Created="2012-09-14 19:28:38Z">
@@ -373,6 +406,9 @@
    </Rule>
    <Rule TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031">
     <Resolution Name="Default">Modify {0} to catch a more specific exception than {1} or rethrow the exception.</Resolution>
+   </Rule>
+   <Rule TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709">
+    <Resolution Name="Type">Correct the casing of '{0}' in type name {1} by changing it to '{2}'.</Resolution>
    </Rule>
    <Rule TypeName="IdentifiersShouldHaveCorrectPrefix" Category="Microsoft.Naming" CheckId="CA1715">
     <Resolution Name="Interface">Prefix interface name {0} with 'I'.</Resolution>

@@ -7,6 +7,7 @@ using System.Data.SqlClient;
 using System.Configuration;
 using System.Data;
 using System.Threading.Tasks;
+using System.Data.Common;
 
 #pragma warning disable 0649
 
@@ -160,7 +161,7 @@ namespace Insight.Database.Sample
 			ConnectionStringSettings database = ConfigurationManager.ConnectionStrings["MyDatabase"];
 
 			// get an open connection from the ConnectionStringSettings
-			using (SqlConnection c = database.Open())
+			using (IDbConnection c = database.Open())
 			{
 				c.QuerySql("SELECT * FROM Beer", Parameters.Empty);
 			}
@@ -181,7 +182,7 @@ namespace Insight.Database.Sample
 			// make other changes here
 
 			// manage the lifetime ourselves
-			using (SqlConnection c = database.Open())
+			using (IDbConnection c = database.Open())
 			{
 				c.QuerySql("SELECT * FROM Beer", Parameters.Empty);
 			}
@@ -222,7 +223,7 @@ namespace Insight.Database.Sample
 		#region Creating Commands
 		static void IDbConnection_CreateCommand()
 		{
-			using (SqlConnection connection = Database.Open())
+			using (IDbConnection connection = Database.Open())
 			{
 				IDbCommand command = connection.CreateCommand("FindBeers", new { Name = "IPA" });
 			}
@@ -230,7 +231,7 @@ namespace Insight.Database.Sample
 
 		static void IDbConnection_CreateCommandSql()
 		{
-			using (SqlConnection connection = Database.Open())
+			using (IDbConnection connection = Database.Open())
 			{
 				IDbCommand command = connection.CreateCommandSql("SELECT * FROM Beer WHERE Name = @Name", new { Name = "IPA" });
 			}
@@ -240,11 +241,10 @@ namespace Insight.Database.Sample
 		#region Common Method Parameters
 		static void CommonParameter_Transaction()
 		{
-			using (SqlConnection connection = Database.Open())
-			using (SqlTransaction t = connection.BeginTransaction())
+			using (var connection = Database.OpenWithTransaction())
 			{
 				Beer beer = new Beer("Sly Fox IPA");
-				connection.Execute("InsertBeer", beer, transaction: t);
+				connection.Execute("InsertBeer", beer);
 
 				// without a commit this rolls back
 			}
@@ -290,7 +290,7 @@ namespace Insight.Database.Sample
 
 		static void ManualTransform_GetReader()
 		{
-			using (SqlConnection connection = Database.Open())
+			using (IDbConnection connection = Database.Open())
 			using (IDataReader reader = connection.GetReader("FindBeers", new { Name = "IPA" }))
 			{
 				while (reader.Read())
@@ -314,7 +314,7 @@ namespace Insight.Database.Sample
 
 		static void Query_ToList()
 		{
-			using (SqlConnection connection = Database.Open())
+			using (IDbConnection connection = Database.Open())
 			using (IDataReader reader = connection.GetReader("FindBeers", new { Name = "IPA" }))
 			{
 				IList<Beer> beer = reader.ToList<Beer>();
@@ -323,7 +323,7 @@ namespace Insight.Database.Sample
 
 		static void Query_AsEnumerable()
 		{
-			using (SqlConnection connection = Database.Open())
+			using (IDbConnection connection = Database.Open())
 			using (IDataReader reader = connection.GetReader("FindBeers", new { Name = "IPA" }))
 			{
 				foreach (Beer beer in reader.AsEnumerable<Beer>())
@@ -393,10 +393,9 @@ namespace Insight.Database.Sample
 
 		static void DynamicCall_Transaction()
 		{
-			using (SqlConnection connection = Database.Open())
-			using (SqlTransaction t = connection.BeginTransaction())
+			using (var connection = Database.OpenWithTransaction())
 			{
-				IList<Beer> beer = connection.Dynamic<Beer>().FindBeers(name: "IPA", transaction: t);
+				IList<Beer> beer = connection.Dynamic<Beer>().FindBeers(name: "IPA");
 			}
 		}
 		#endregion
@@ -475,7 +474,7 @@ namespace Insight.Database.Sample
 		#region Multiple Result Sets
 		static void MultipleResultSets()
 		{
-			using (SqlConnection connection = Database.Open())
+			using (IDbConnection connection = Database.Open())
 			using (var reader = connection.GetReaderSql("SELECT * FROM Beer SELECT * FROM Glasses", Parameters.Empty))
 			{
 				var beer = reader.ToList<Beer>();
@@ -571,7 +570,7 @@ namespace Insight.Database.Sample
 
 		static void AsEnumerable()
 		{
-			using (SqlConnection connection = Database.Open())
+			using (IDbConnection connection = Database.Open())
 			using (var reader = connection.GetReaderSql("SELECT * FROM Beer", Parameters.Empty))
 			{
 				foreach (Beer beer in reader.AsEnumerable<Beer>())

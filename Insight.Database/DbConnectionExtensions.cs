@@ -64,7 +64,8 @@ namespace Insight.Database
 			IDbCommand cmd = connection.CreateCommand();
 			cmd.CommandType = commandType;
 			cmd.CommandText = sql;
-			cmd.Transaction = transaction;
+			if (transaction != null)
+				cmd.Transaction = transaction;
 			if (commandTimeout != null)
 				cmd.CommandTimeout = commandTimeout.Value;
 
@@ -864,7 +865,7 @@ namespace Insight.Database
 		/// <param name="options">The options to use for the bulk copy.</param>
 		/// <param name="transaction">An optional external transaction.</param>
 		public static void BulkCopy<T>(
-			this SqlConnection connection,
+			this IDbConnection connection,
 			string tableName,
 			IEnumerable<T> list,
 			int? batchSize = null,
@@ -872,12 +873,17 @@ namespace Insight.Database
 			SqlBulkCopyOptions options = SqlBulkCopyOptions.Default,
 			SqlTransaction transaction = null)
 		{
+			// bulk copy only works for sql server
+			SqlConnection sqlConnection = connection as SqlConnection;
+			if (sqlConnection == null)
+				throw new ArgumentException("connection must be a SqlConnection", "connection");
+
 			try
 			{
 				DetectAutoOpen(connection, ref closeConnection);
 
 				// create a bulk copier
-				SqlBulkCopy bulk = new SqlBulkCopy(connection, options, transaction);
+				SqlBulkCopy bulk = new SqlBulkCopy(sqlConnection, options, transaction);
 				bulk.DestinationTableName = tableName;
 				if (batchSize != null)
 					bulk.BatchSize = batchSize.Value;
@@ -1071,26 +1077,51 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="connection">The connection to unwrap.</param>
 		/// <returns>The inner SqlConnection.</returns>
-		internal static DbConnection UnwrapDbConnection(this IDbConnection connection)
+		/// <typeparam name="T">The type of connection to unwrap to.</typeparam>
+		internal static T UnwrapDbConnection<T>(this IDbConnection connection) where T : DbConnection
 		{
 			// if we have a DbConnection, use it
-			DbConnection dbConnection = connection as DbConnection;
+			T dbConnection = connection as T;
 			if (dbConnection != null)
 				return dbConnection;
 
-			// if we have a reliable command, break it down
-			ReliableConnection reliable = connection as ReliableConnection;
-			if (reliable != null)
-				return reliable.InnerConnection.UnwrapDbConnection();
+			// if we have a wrapped connection, break it down
+			DbConnectionWrapper wrapper = connection as DbConnectionWrapper;
+			if (wrapper != null)
+				return wrapper.InnerConnection.UnwrapDbConnection<T>();
 
 			// if the command is not a SqlConnection, then maybe it is wrapped by something like MiniProfiler
 			if (connection.GetType().Name == "ProfiledDbConnection")
 			{
 				dynamic dynamicConnection = connection;
-				return UnwrapDbConnection(dynamicConnection.InnerConnection);
+				return UnwrapDbConnection<T>(dynamicConnection.InnerConnection);
 			}
 
 			// there is no inner sql connection
+			return null;
+		}
+
+		/// <summary>
+		/// Unwraps an IDbTransaction to determine its inner DbTransaction to use with advanced features.
+		/// </summary>
+		/// <param name="transaction">The transaction to unwrap.</param>
+		/// <returns>The inner DbTransaction.</returns>
+		internal static DbTransaction UnwrapDbTransaction(this IDbTransaction transaction)
+		{
+			if (transaction == null)
+				return null;
+
+			// if we have a DbTransaction, use it
+			DbTransaction dbTransaction = transaction as DbTransaction;
+			if (dbTransaction != null)
+				return dbTransaction;
+
+			// if we have a wrapped transaction, unwrap it
+			DbConnectionWithTransaction wrapper = transaction as DbConnectionWithTransaction;
+			if (wrapper != null)
+				return wrapper.InnerTransaction.UnwrapDbTransaction();
+
+			// there is no inner transaction
 			return null;
 		}
 		#endregion

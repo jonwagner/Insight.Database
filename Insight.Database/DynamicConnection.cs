@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
@@ -170,8 +171,8 @@ namespace Insight.Database
 				cmd = _connection.CreateCommand();
 				cmd.CommandType = CommandType.StoredProcedure;
 				cmd.CommandText = procName;
-				cmd.Connection = _connection;
-				cmd.Transaction = transaction;
+				if (transaction != null)
+					cmd.Transaction = transaction;
 
 				// fill in the parameters for the command object
 				// we will do the values next

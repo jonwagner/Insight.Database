@@ -7,6 +7,7 @@ using NUnit.Framework;
 using System.Data.SqlClient;
 using System.Transactions;
 using System.Data;
+using System.Data.Common;
 
 namespace Insight.Tests
 {
@@ -20,13 +21,10 @@ namespace Insight.Tests
 		public virtual void SetUpFixture()
 		{
 			// open the test connection
-			SqlConnectionStringBuilder sb = new SqlConnectionStringBuilder();
-			sb.IntegratedSecurity = true;
-			sb.AsynchronousProcessing = true;
-			_connection = new SqlConnection(sb.ConnectionString);
-
-			if (_connection.State != ConnectionState.Open)
-				_connection.Open();
+			_connectionStringBuilder = new SqlConnectionStringBuilder();
+			_connectionStringBuilder.IntegratedSecurity = true;
+			_connectionStringBuilder.AsynchronousProcessing = true;
+			_connection = _connectionStringBuilder.Open();
 		}
 
 		[TestFixtureTearDown]
@@ -50,7 +48,10 @@ namespace Insight.Tests
 				_connection.Close();
 		}
 
-		protected SqlConnection _connection;
+		protected SqlConnection _sqlConnection { get { return _connection as SqlConnection; } }
+
+		protected SqlConnectionStringBuilder _connectionStringBuilder;
+		protected DbConnection _connection;
 		protected TransactionScope _transaction;
 		#endregion
 

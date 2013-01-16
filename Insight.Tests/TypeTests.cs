@@ -7,6 +7,7 @@ using Insight.Database;
 using System.Data.SqlClient;
 using System.Data;
 using System.Dynamic;
+using System.Data.Common;
 
 #pragma warning disable 0649
 
@@ -38,7 +39,7 @@ namespace Insight.Tests
 			private T? FieldNull;
 			private T? PropertyNull { get; set; }
 
-			public static void Test(T value, SqlConnection connection, string sqlType)
+			public static void Test(T value, DbConnection connection, string sqlType)
 			{
 				// make sure we can send values up to SQL
 				// make sure we can deserialize properties and fields
@@ -128,7 +129,7 @@ namespace Insight.Tests
 			private T FieldNull;
 			private T PropertyNull { get; set; }
 
-			public static void Test(T value, SqlConnection connection, string sqlType)
+			public static void Test(T value, DbConnection connection, string sqlType)
 			{
 				// make sure we can read the values
 				var data = connection.QuerySql<Data<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
@@ -430,11 +431,11 @@ namespace Insight.Tests
 		{
 			Foo f = new Foo() { ID = new FooID(1), Name = "goo" };
 
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
 
-				var data = _connection.Query<Foo>("InsightTestProc", f, transaction: t);
+				var data = connection.Query<Foo>("InsightTestProc", f);
 				Assert.AreEqual(1, data.Count);
 				Assert.IsNotNull(data[0].ID);
 				Assert.AreEqual(1, data[0].ID.Value);
@@ -447,11 +448,11 @@ namespace Insight.Tests
 		{
 			Foo f = new Foo() { ID = null, Name = "goo" };
 
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
 
-				var data = _connection.Query<Foo>("InsightTestProc", f, transaction: t);
+				var data = connection.Query<Foo>("InsightTestProc", f);
 				Assert.AreEqual(1, data.Count);
 				Assert.IsNull(data[0].ID);
 				Assert.AreEqual("goo", data[0].Name);
@@ -662,11 +663,11 @@ namespace Insight.Tests
 		{
 			FooConvertible f = new FooConvertible() { ID = new FooConvertibleID(1), Name = "goo" };
 
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
 
-				var data = _connection.Query<FooConvertible>("InsightTestProc", f, transaction: t);
+				var data = connection.Query<FooConvertible>("InsightTestProc", f);
 				Assert.AreEqual(1, data.Count);
 				Assert.IsNotNull(data[0].ID);
 				Assert.AreEqual(1, data[0].ID.Value);
@@ -751,11 +752,11 @@ namespace Insight.Tests
 			// since the values are not round-trip, this configuration is NOT recommended
 			FooNullable f = new FooNullable() { ID = new FooNullableID(), Name = "goo" };
 
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
 
-				var data = _connection.Query<FooNullable>("InsightTestProc", f, transaction: t);
+				var data = connection.Query<FooNullable>("InsightTestProc", f);
 				Assert.AreEqual(1, data.Count);
 				Assert.IsNull(data[0].ID);
 				Assert.AreEqual("goo", data[0].Name);

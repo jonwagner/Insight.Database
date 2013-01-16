@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -111,19 +112,19 @@ namespace Insight.Tests
 		[Test]
 		public void TestExpandoNullFields()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
 
 				// an expando with a null value passes in null
 				dynamic f = new FastExpando();
 				f.Value = null;
-				dynamic result = _connection.Query("InsightTestProc", (object)f, transaction: t).FirstOrDefault();
+				dynamic result = connection.Query("InsightTestProc", (object)f).FirstOrDefault();
 				Assert.IsNull(result.Value);
 
 				// an expando with a NO value passes in DEFAULT
 				f = new FastExpando();
-				result = _connection.Query("InsightTestProc", (object)f, transaction: t).FirstOrDefault();
+				result = connection.Query("InsightTestProc", (object)f).FirstOrDefault();
 				Assert.AreEqual(5, result.Value);
 			}
 		}

@@ -138,7 +138,7 @@ namespace Insight.Tests
 					array[j] = new ParentTestData() { ParentX = j };
 
 				// bulk load the data
-				_connection.BulkCopy("InsightTestDataTable2", array);
+				_sqlConnection.BulkCopy("InsightTestDataTable2", array);
 
 				// run the query
 				var items = _connection.QuerySql<ParentTestData>("SELECT * FROM InsightTestDataTable2");

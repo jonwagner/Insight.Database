@@ -10,6 +10,7 @@ using System.Dynamic;
 using System.Xml;
 using System.Xml.Linq;
 using System.Runtime.Serialization;
+using System.Data.Common;
 
 #pragma warning disable 0649
 
@@ -122,15 +123,15 @@ namespace Insight.Tests
 		[Test]
 		public void XmlDocumentCanSerializeToXmlParameter()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml");
 
 				// create a document
 				XmlDocument doc = new XmlDocument();
 				doc.LoadXml("<Data><Text>foo</Text></Data>");
 
-				var list = _connection.Query<XmlDocument>("InsightTestProc", new { Xml = doc }, transaction: t);
+				var list = connection.Query<XmlDocument>("InsightTestProc", new { Xml = doc });
 				var data = list[0];
 				Assert.IsNotNull(data);
 				Assert.AreEqual(doc.OuterXml, data.OuterXml);
@@ -140,14 +141,14 @@ namespace Insight.Tests
 		[Test]
 		public void XDocumentCanSerializeToXmlParameter()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml");
 
 				// create a document
 				XDocument doc = XDocument.Parse("<Data><Text>foo</Text></Data>");
 
-				var list = _connection.Query<XDocument>("InsightTestProc", new { Xml = doc }, transaction: t);
+				var list = connection.Query<XDocument>("InsightTestProc", new { Xml = doc });
 				var data = list[0];
 				Assert.IsNotNull(data);
 				Assert.AreEqual(doc.ToString(), data.ToString());
@@ -157,9 +158,9 @@ namespace Insight.Tests
 		[Test]
 		public void ObjectCanSerializeToXmlParameter()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Data=@Xml", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Data=@Xml");
 
 				// create a document
 				Data d = new Data()
@@ -167,7 +168,7 @@ namespace Insight.Tests
 					Text = "foo"
 				};
 
-				var list = _connection.Query<Result>("InsightTestProc", new { Xml = d }, transaction: t);
+				var list = connection.Query<Result>("InsightTestProc", new { Xml = d });
 				var data = list[0];
 				Assert.IsNotNull(data);
 				Assert.AreEqual(d.Text, data.Data.Text);
@@ -177,14 +178,14 @@ namespace Insight.Tests
 		[Test]
 		public void StringCanSerializeToXmlParameter()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml");
 
 				// create a document
 				string doc = "<Data><Text>foo</Text></Data>";
 
-				var list = _connection.Query<string>("InsightTestProc", new { Xml = doc }, transaction: t);
+				var list = connection.Query<string>("InsightTestProc", new { Xml = doc });
 				var data = list[0];
 				Assert.IsNotNull(data);
 				Assert.AreEqual(doc, data);

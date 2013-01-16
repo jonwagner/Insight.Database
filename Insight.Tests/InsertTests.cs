@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
@@ -32,14 +33,14 @@ namespace Insight.Tests
 		[Test]
 		public void SingleInsertShouldFillInIdentities()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int) AS SELECT Id=1, Id2=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int) AS SELECT Id=1, Id2=@Value");
 
 				InsertRecord i = new InsertRecord();
 				i.Value = 5;
 
-				var result = _connection.Insert("InsightTestProc", i, transaction: t);
+				var result = connection.Insert("InsightTestProc", i);
 
 				Assert.AreEqual(i, result);
 				Assert.AreEqual(1, i.Id);
@@ -54,14 +55,14 @@ namespace Insight.Tests
 		[Test]
 		public void SingleInsertShouldAllowParameters()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProcSingleInsert (@OtherValue int) AS SELECT Id=1, Id2=@OtherValue", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProcSingleInsert (@OtherValue int) AS SELECT Id=1, Id2=@OtherValue");
 
 				InsertRecord i = new InsertRecord();
 				List<InsertRecord> list = new List<InsertRecord>() { i };
 
-				var result = _connection.Insert("InsightTestProcSingleInsert", i, i.Expand(new { OtherValue = 5 }), transaction: t);
+				var result = connection.Insert("InsightTestProcSingleInsert", i, i.Expand(new { OtherValue = 5 }));
 
 				Assert.AreEqual(i, result);
 				Assert.AreEqual(1, i.Id);
@@ -129,14 +130,14 @@ namespace Insight.Tests
 		[Test]
 		public void AsyncSingleInsertShouldFillInIdentities()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int) AS SELECT Id=1, Id2=@Value", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int) AS SELECT Id=1, Id2=@Value");
 
 				InsertRecord i = new InsertRecord();
 				i.Value = 5;
 
-				var result = _connection.InsertAsync("InsightTestProc", i, transaction: t).Result;
+				var result = connection.InsertAsync("InsightTestProc", i).Result;
 
 				Assert.AreEqual(i, result);
 				Assert.AreEqual(1, i.Id);
@@ -151,14 +152,14 @@ namespace Insight.Tests
 		[Test]
 		public void AsyncSingleInsertShouldAllowParameters()
 		{
-			using (SqlTransaction t = _connection.BeginTransaction())
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE PROC InsightTestProcSingleInsert (@OtherValue int) AS SELECT Id=1, Id2=@OtherValue", transaction: t);
+				connection.ExecuteSql("CREATE PROC InsightTestProcSingleInsert (@OtherValue int) AS SELECT Id=1, Id2=@OtherValue");
 
 				InsertRecord i = new InsertRecord();
 				List<InsertRecord> list = new List<InsertRecord>() { i };
 
-				var result = _connection.InsertAsync("InsightTestProcSingleInsert", i, i.Expand(new { OtherValue = 5 }), transaction: t).Result;
+				var result = connection.InsertAsync("InsightTestProcSingleInsert", i, i.Expand(new { OtherValue = 5 })).Result;
 
 				Assert.AreEqual(i, result);
 				Assert.AreEqual(1, i.Id);
