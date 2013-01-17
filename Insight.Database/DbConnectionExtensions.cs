@@ -1078,23 +1078,18 @@ namespace Insight.Database
 		/// <param name="connection">The connection to unwrap.</param>
 		/// <returns>The inner SqlConnection.</returns>
 		/// <typeparam name="T">The type of connection to unwrap to.</typeparam>
-		internal static T UnwrapDbConnection<T>(this IDbConnection connection) where T : DbConnection
+		internal static DbConnection UnwrapDbConnection(this IDbConnection connection)
 		{
 			// if we have a DbConnection, use it
-			T dbConnection = connection as T;
+			DbConnection dbConnection = connection as DbConnection;
 			if (dbConnection != null)
 				return dbConnection;
-
-			// if we have a wrapped connection, break it down
-			DbConnectionWrapper wrapper = connection as DbConnectionWrapper;
-			if (wrapper != null)
-				return wrapper.InnerConnection.UnwrapDbConnection<T>();
 
 			// if the command is not a SqlConnection, then maybe it is wrapped by something like MiniProfiler
 			if (connection.GetType().Name == "ProfiledDbConnection")
 			{
 				dynamic dynamicConnection = connection;
-				return UnwrapDbConnection<T>(dynamicConnection.InnerConnection);
+				return UnwrapDbConnection(dynamicConnection.InnerConnection);
 			}
 
 			// there is no inner sql connection
