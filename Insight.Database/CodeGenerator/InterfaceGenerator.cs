@@ -114,7 +114,6 @@ namespace Insight.Database.CodeGenerator
 			// TODO: function name/parameter mapping
 			// TODO: handle special parameters
 			// TODO: handle graph specifications
-			// TODO: inline sql attributes(?)
 
 			// look at the parameters on the interface
 			var parameters = interfaceMethod.GetParameters();
@@ -122,6 +121,9 @@ namespace Insight.Database.CodeGenerator
 
 			// determine the proper method to call
 			MethodInfo executeMethod = GetExecuteMethod(interfaceMethod);
+
+			// see if the interface has inlined SQL
+			var sqlAttribute = interfaceMethod.GetCustomAttributes(false).OfType<SqlAttribute>().FirstOrDefault();
 
 			// start a new method
 			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual, interfaceMethod.ReturnType, parameterTypes);
@@ -140,6 +142,11 @@ namespace Insight.Database.CodeGenerator
 						break;
 
 					case "sql":
+						if (sqlAttribute != null)
+						{
+							mIL.Emit(OpCodes.Ldstr, sqlAttribute.Sql);
+						}
+						else
 						{
 							// if this is an async method, remove async from the end of the proc name
 							var procName = (executeMethod.DeclaringType == typeof(AsyncExtensions)) ? Regex.Replace(interfaceMethod.Name, "Async$", String.Empty, RegexOptions.IgnoreCase) : interfaceMethod.Name;
@@ -179,7 +186,7 @@ namespace Insight.Database.CodeGenerator
 						break;
 
 					case "commandType":
-						IlHelper.EmitLdInt32(mIL, (int)CommandType.StoredProcedure);
+						IlHelper.EmitLdInt32(mIL, (sqlAttribute != null) ? (int)sqlAttribute.CommandType : (int)CommandType.StoredProcedure);
 						break;
 
 					case "commandBehavior":

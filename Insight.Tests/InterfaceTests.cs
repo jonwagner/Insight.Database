@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using Insight.Database;
 using System.Data.Common;
+using System.Data;
 
 // since the interface and types are private, we have to let insight have access to them
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Insight.Database")]
@@ -33,6 +34,11 @@ namespace Insight.Tests
 		Task<int> ObjectAsParameterAsync(TestDataClasses.ParentTestData data);
 		Task<IList<int>> ObjectListAsParameterAsync(IEnumerable<TestDataClasses.ParentTestData> data);
 		Task<Results<TestDataClasses.ParentTestData, int>> QueryResultsAsync(int p);
+
+		[Sql("SELECT X=CONVERT(varchar(128), @p)")]
+		string InlineSql(int p);
+		[Sql("ExecuteSomethingScalar", CommandType = CommandType.StoredProcedure)]
+		int InlineSqlProcOverride(int p);
 	}
 
 	#region Test 1
@@ -94,6 +100,10 @@ namespace Insight.Tests
 					results = i.QueryResultsAsync(7).Result;
 					TestDataClasses.ParentTestData.Verify(results.Set1, false);
 					Assert.AreEqual(7, results.Set2.First());
+
+					// inline SQL!
+					Assert.AreEqual("42", i.InlineSql(42));
+					Assert.AreEqual(99, i.InlineSqlProcOverride(99));
 				}
 			}
 			finally

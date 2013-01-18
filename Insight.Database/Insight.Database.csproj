@@ -61,6 +61,7 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="SqlAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />
     <Compile Include="DBConnectionExtensionsObsolete.cs" />
