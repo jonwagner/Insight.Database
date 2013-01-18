@@ -21,6 +21,19 @@ namespace Insight.Tests.TestDataClasses
 
 		public static readonly string Sql = "SELECT ParentX=2, X=5 ";
 
+		public void Verify(bool withGraph = true)
+		{
+			Assert.AreEqual(2, ParentX);
+
+			if (withGraph)
+			{
+				Assert.IsNotNull(TestData);
+				Assert.AreEqual(5, TestData.X);
+			}
+			else
+				Assert.IsNull(TestData);
+		}
+
 		public static void Verify(IEnumerable results, bool withGraph = true)
 		{
 			var list = results.OfType<ParentTestData>().ToList();
@@ -28,16 +41,7 @@ namespace Insight.Tests.TestDataClasses
 			Assert.IsNotNull(results);
 			Assert.AreEqual(1, list.Count);
 
-			var data = list[0];
-			Assert.AreEqual(2, data.ParentX);
-
-			if (withGraph)
-			{
-				Assert.IsNotNull(data.TestData);
-				Assert.AreEqual(5, data.TestData.X);
-			}
-			else
-				Assert.IsNull(data.TestData);
+			list[0].Verify(withGraph);
 		}
 	}
 

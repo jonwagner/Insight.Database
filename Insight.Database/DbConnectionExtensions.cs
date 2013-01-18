@@ -341,6 +341,58 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region Single Methods
+		/// <summary>
+		/// Create a command, execute it, and translate the result set into a single object or null. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static TResult Single<TResult>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type withGraph = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.Query<TResult>(sql, parameters, withGraph, commandType, commandBehavior, commandTimeout, transaction).FirstOrDefault();
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set into a single object or null. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the object or null to use the default graph.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static TResult SingleSql<TResult>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type withGraph = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null)
+		{
+			return connection.Query<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction).FirstOrDefault();
+		}
+		#endregion
+
 		#region Query With Read Callback Methods
 		/// <summary>
 		/// Executes a query and performs a callback to read the data in the IDataReader.
@@ -1068,6 +1120,19 @@ namespace Insight.Database
 				c => c.CreateCommand(sql, parameters ?? inserted, CommandType.Text, commandTimeout, transaction),
 				(cmd, r) => r.Merge(inserted),
 				commandBehavior);
+		}
+		#endregion
+
+		#region Interface Members
+		/// <summary>
+		/// Uses a DbConnection to implement an interface. Calls to the interface are automatically mapped to stored procedure calls.
+		/// </summary>
+		/// <typeparam name="T">The interface type to implmement.</typeparam>
+		/// <param name="connection">The connection to use for database calls.</param>
+		/// <returns>An implementation of the interface that executes database calls.</returns>
+		public static T As<T>(this DbConnection connection) where T : class
+		{
+			return (T)InterfaceGenerator.GetImplementorOf(connection, typeof(T));
 		}
 		#endregion
 

@@ -281,6 +281,63 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region Single Methods
+		/// <summary>
+		/// Asynchronously create a command, execute it, and translate the result set into a single object or null. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<TResult> SingleAsync<TResult>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type withGraph = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.QueryAsync<TResult>(sql, parameters, withGraph, commandType, commandBehavior, commandTimeout, transaction, cancellationToken)
+				.ContinueWith(t => t.Result.FirstOrDefault(), TaskContinuationOptions.ExecuteSynchronously);
+		}
+
+		/// <summary>
+		/// Asynchronously create a command, execute it, and translate the result set into a single object or null. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<TResult> SingleSqlAsync<TResult>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type withGraph = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.SingleAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+		#endregion
+
 		#region Query Command Methods
 		/// <summary>
 		/// Run a command asynchronously and return a list of objects as FastExpandos. This method supports auto-open.

@@ -96,8 +96,11 @@ namespace Insight.Database
 		{
 			if (disposing)
 			{
-				InnerTransaction.Dispose();
-				InnerTransaction = null;
+				if (InnerTransaction != null)
+				{
+					InnerTransaction.Dispose();
+					InnerTransaction = null;
+				}
 			}
 
 			base.Dispose(disposing);
