@@ -22,6 +22,7 @@ namespace Insight.Database.CodeGenerator
 	class InterfaceGenerator
 	{
 		#region Private Fields
+		private static readonly MethodInfo _typeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
 		private static readonly Type[] _dbConnectionParameterTypes = new Type[] { typeof(DbConnection) };
 		private static readonly Type[] _executeParameterTypes = new Type[]
 		{
@@ -78,6 +79,8 @@ namespace Insight.Database.CodeGenerator
 
 			// create a type based on DbConnectionWrapper and call the default constructor
 			TypeBuilder tb = mb.DefineType(interfaceType.FullName + "_Connection", TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { interfaceType });
+
+			// create a constructor for the type
 			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _dbConnectionParameterTypes);
 			ILGenerator ctor0IL = ctor0.GetILGenerator();
 			ctor0IL.Emit(OpCodes.Ldarg_0);
@@ -122,8 +125,11 @@ namespace Insight.Database.CodeGenerator
 			// determine the proper method to call
 			MethodInfo executeMethod = GetExecuteMethod(interfaceMethod);
 
-			// see if the interface has inlined SQL
+			// see if the interface method has inlined SQL
 			var sqlAttribute = interfaceMethod.GetCustomAttributes(false).OfType<SqlAttribute>().FirstOrDefault();
+
+			// see if the interface method has a graph defined
+			var graphAttribute = interfaceMethod.GetCustomAttributes(false).OfType<DefaultGraphAttribute>().FirstOrDefault();
 
 			// start a new method
 			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual, interfaceMethod.ReturnType, parameterTypes);
@@ -142,6 +148,7 @@ namespace Insight.Database.CodeGenerator
 						break;
 
 					case "sql":
+						// if the sql attribute is on the method, use that
 						if (sqlAttribute != null)
 						{
 							mIL.Emit(OpCodes.Ldstr, sqlAttribute.Sql);
@@ -181,8 +188,32 @@ namespace Insight.Database.CodeGenerator
 						break;
 
 					case "withGraph":
+						// if the defaultgraph attribute is on the method, use that
+						if (graphAttribute != null)
+						{
+							mIL.Emit(OpCodes.Ldtoken, graphAttribute.GraphTypes[0]);
+							mIL.Emit(OpCodes.Call, _typeGetTypeFromHandle);
+						}
+						else
+							mIL.Emit(OpCodes.Ldnull);
+						break;
+
 					case "withGraphs":
-						mIL.Emit(OpCodes.Ldnull);
+						// if the defaultgraph attribute is on the method, use that
+						if (graphAttribute != null)
+						{
+							// need to pass in the GraphTypes array
+							// this way copies the graph attribute onto our new method and then pulls it out at runtime
+							// i haven't found a good way to embed the types into the dynamic assembly
+							// type references seem to get lost if you convert to a handle via ldtoken and then back with type.gettype
+							// this method serializes the types into attributes, and then they pop out on the other side
+							CustomAttributeBuilder cab = new CustomAttributeBuilder(typeof(DefaultGraphAttribute).GetConstructor(new Type[] { typeof(Type[]) }), new object[] { graphAttribute.GraphTypes });
+							m.SetCustomAttribute(cab);
+							mIL.Emit(OpCodes.Ldtoken, m);
+							mIL.Emit(OpCodes.Call, typeof(InterfaceGeneratorHelper).GetMethod("GetGraphTypesFromMethodHandle", BindingFlags.Static | BindingFlags.Public));
+						}
+						else
+							mIL.Emit(OpCodes.Ldnull);
 						break;
 
 					case "commandType":

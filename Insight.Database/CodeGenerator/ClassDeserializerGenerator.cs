@@ -45,7 +45,7 @@ namespace Insight.Database.CodeGenerator
 			{
 				DefaultGraphAttribute defaultGraph = type.GetCustomAttributes(typeof(DefaultGraphAttribute), true).OfType<DefaultGraphAttribute>().FirstOrDefault();
 				if (defaultGraph != null)
-					withGraph = defaultGraph.GraphType;
+					withGraph = defaultGraph.GetGraphTypes()[0];
 				else
 					withGraph = typeof(Graph<>).MakeGenericType(type);
 			}

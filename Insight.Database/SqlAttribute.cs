@@ -24,13 +24,24 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Initializes a new instance of the SqlAttribute class.
+		/// </summary>
+		/// <param name="sql">The SQL to use for the interface method.</param>
+		/// <param name="commandType">The CommandType to use to execute the query.</param>
+		public SqlAttribute(string sql, CommandType commandType)
+		{
+			Sql = sql;
+			CommandType = commandType;
+		}
+
+		/// <summary>
 		/// Gets the SQL to use for the interface method.
 		/// </summary>
 		public string Sql { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the CommandType to use for the interface method.
+		/// Gets the CommandType to use for the interface method.
 		/// </summary>
-		public CommandType CommandType { get; set; }
+		public CommandType CommandType { get; private set; }
 	}
 }

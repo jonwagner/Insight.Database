@@ -35,10 +35,23 @@ namespace Insight.Tests
 		Task<IList<int>> ObjectListAsParameterAsync(IEnumerable<TestDataClasses.ParentTestData> data);
 		Task<Results<TestDataClasses.ParentTestData, int>> QueryResultsAsync(int p);
 
+		// inline overrides
 		[Sql("SELECT X=CONVERT(varchar(128), @p)")]
 		string InlineSql(int p);
-		[Sql("ExecuteSomethingScalar", CommandType = CommandType.StoredProcedure)]
+		[Sql("ExecuteSomethingScalar", CommandType.StoredProcedure)]
 		int InlineSqlProcOverride(int p);
+
+		// graph override
+		[DefaultGraph(typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>))]
+		[Sql("QueryObject", CommandType.StoredProcedure)]
+		TestDataClasses.ParentTestData QueryWithGraph();
+
+		// graph override for results
+		[DefaultGraph(
+			typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>),
+			null)]
+		[Sql("QueryResults", CommandType.StoredProcedure)]
+		Results<TestDataClasses.ParentTestData, int> QueryResultsWithGraph(int p);
 	}
 
 	#region Test 1
@@ -104,6 +117,10 @@ namespace Insight.Tests
 					// inline SQL!
 					Assert.AreEqual("42", i.InlineSql(42));
 					Assert.AreEqual(99, i.InlineSqlProcOverride(99));
+
+					// graphs
+					i.QueryWithGraph().Verify(true);
+					i.QueryResultsWithGraph(87).Set1.First().Verify(true);
 				}
 			}
 			finally

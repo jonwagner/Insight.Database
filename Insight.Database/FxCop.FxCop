@@ -98,6 +98,17 @@
   <Settings />
  </Rules>
  <FxCopReport Version="10.0">
+  <Namespaces>
+   <Namespace Name="Insight.Database.CodeGenerator">
+    <Messages>
+     <Message TypeName="AvoidNamespacesWithFewTypes" Category="Microsoft.Design" CheckId="CA1020" Status="Excluded" Created="2013-01-18 21:20:49Z">
+      <Issue>
+       <Item>Insight.Database.CodeGenerator</Item>
+      </Issue>
+     </Message>
+    </Messages>
+   </Namespace>
+  </Namespaces>
   <Targets>
    <Target Name="$(ProjectDir)/bin/Release/Insight.Database.dll">
     <Modules>
@@ -141,6 +152,20 @@
              <Item>Db</Item>
              <Item>'DbConnectionWrapper'</Item>
              <Item>DB</Item>
+            </Issue>
+           </Message>
+          </Messages>
+         </Type>
+         <Type Name="DefaultGraphAttribute">
+          <Messages>
+           <Message TypeName="DefineAccessorsForAttributeArguments" Category="Microsoft.Design" CheckId="CA1019" Status="Excluded" Created="2013-01-18 21:20:49Z">
+            <Issue>
+             <Item>'graphType'</Item>
+             <Item>'DefaultGraphAttribute'</Item>
+            </Issue>
+            <Issue Name="IncreaseVisibility">
+             <Item>'DefaultGraphAttribute.GraphTypes'</Item>
+             <Item>'graphTypes'</Item>
             </Issue>
            </Message>
           </Messages>
@@ -403,6 +428,13 @@
    </Rule>
    <Rule TypeName="AvoidExcessiveParametersOnGenericTypes" Category="Microsoft.Design" CheckId="CA1005">
     <Resolution Name="Default">Consider a design where {0} has no more than 2 type parameters.</Resolution>
+   </Rule>
+   <Rule TypeName="AvoidNamespacesWithFewTypes" Category="Microsoft.Design" CheckId="CA1020">
+    <Resolution Name="Default">Consider merging the types defined in '{0}' with another namespace.</Resolution>
+   </Rule>
+   <Rule TypeName="DefineAccessorsForAttributeArguments" Category="Microsoft.Design" CheckId="CA1019">
+    <Resolution Name="Default">Add a public read-only property accessor for positional argument {0} of Attribute {1}.</Resolution>
+    <Resolution Name="IncreaseVisibility">If {0} is the property accessor for positional argument {1}, make it public.</Resolution>
    </Rule>
    <Rule TypeName="DoNotCatchGeneralExceptionTypes" Category="Microsoft.Design" CheckId="CA1031">
     <Resolution Name="Default">Modify {0} to catch a more specific exception than {1} or rethrow the exception.</Resolution>
