@@ -115,8 +115,6 @@ namespace Insight.Database.CodeGenerator
 		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod)
 		{
 			// TODO: function name/parameter mapping
-			// TODO: handle special parameters
-			// TODO: handle graph specifications
 
 			// look at the parameters on the interface
 			var parameters = interfaceMethod.GetParameters();
@@ -188,9 +186,12 @@ namespace Insight.Database.CodeGenerator
 						break;
 
 					case "withGraph":
-						// if the defaultgraph attribute is on the method, use that
+						if (EmitSpecialParameter(mIL, "withGraph", parameters, executeParameters))
+							break;
+
 						if (graphAttribute != null)
 						{
+							// if the defaultgraph attribute is on the method, use that
 							mIL.Emit(OpCodes.Ldtoken, graphAttribute.GraphTypes[0]);
 							mIL.Emit(OpCodes.Call, _typeGetTypeFromHandle);
 						}
@@ -199,9 +200,12 @@ namespace Insight.Database.CodeGenerator
 						break;
 
 					case "withGraphs":
-						// if the defaultgraph attribute is on the method, use that
+						if (EmitSpecialParameter(mIL, "withGraphs", parameters, executeParameters))
+							break;
+
 						if (graphAttribute != null)
 						{
+							// if the defaultgraph attribute is on the method, use that
 							// need to pass in the GraphTypes array
 							// this way copies the graph attribute onto our new method and then pulls it out at runtime
 							// i haven't found a good way to embed the types into the dynamic assembly
@@ -217,35 +221,53 @@ namespace Insight.Database.CodeGenerator
 						break;
 
 					case "commandType":
+						if (EmitSpecialParameter(mIL, "commandType", parameters, executeParameters))
+							break;
+
 						IlHelper.EmitLdInt32(mIL, (sqlAttribute != null) ? (int)sqlAttribute.CommandType : (int)CommandType.StoredProcedure);
 						break;
 
 					case "commandBehavior":
-						IlHelper.EmitLdInt32(mIL, (int)CommandBehavior.Default);
+						if (EmitSpecialParameter(mIL, "commandBehavior", parameters, executeParameters))
+							break;
+
+							IlHelper.EmitLdInt32(mIL, (int)CommandBehavior.Default);
 						break;
 
 					case "closeConnection":
+						if (EmitSpecialParameter(mIL, "closeConnection", parameters, executeParameters))
+							break;
+
 						IlHelper.EmitLdInt32(mIL, (int)0);
 						break;
 
 					case "commandTimeout":
+						if (EmitSpecialParameter(mIL, "commandTimeout", parameters, executeParameters))
+							break;
+
 						mIL.Emit(OpCodes.Ldloca_S, (int)0);
 						mIL.Emit(OpCodes.Initobj, typeof(int?));
 						mIL.Emit(OpCodes.Ldloc_0);
 						break;
 
 					case "transaction":
+						if (EmitSpecialParameter(mIL, "transaction", parameters, executeParameters))
+							break;
+
 						mIL.Emit(OpCodes.Ldnull);
 						break;
 
 					case "cancellationToken":
+						if (EmitSpecialParameter(mIL, "cancellationToken", parameters, executeParameters))
+							break;
+
 						mIL.Emit(OpCodes.Ldloca_S, (int)1);
 						mIL.Emit(OpCodes.Initobj, typeof(CancellationToken?));
 						mIL.Emit(OpCodes.Ldloc_1);
 						break;
 
 					default:
-						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot determine how to generate parameters for interfaceMethod {0}", executeMethod.Name));
+						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot determine how to generate parameter {1} for method {0}", executeMethod.Name, executeParameters[i].Name));
 				}
 			}
 
@@ -321,8 +343,6 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An anonymous wrapper class for the parameters.</returns>
 		private static Type CreateParameterClass(ModuleBuilder mb, IEnumerable<ParameterInfo> parameters)
 		{
-			// TODO: handle/filter-out special parameters
-
 			// if there are no parameters, then there is no need to create a type
 			if (!parameters.Any())
 				return null;
@@ -335,21 +355,77 @@ namespace Insight.Database.CodeGenerator
 			ILGenerator ctorIL = ctor.GetILGenerator();
 
 			// the constructor just copies the parameters into the internal fields
-			int i = 1;
+			int i = 0;
 			foreach (ParameterInfo p in parameters)
 			{
+				i++;
+
+				// if the parameter is one of our special parameters, strip it out
+				if (IsSpecialParameter(p))
+					continue;
+
 				FieldBuilder fb = tb.DefineField(p.Name, p.ParameterType, FieldAttributes.Private);
 
 				ctorIL.Emit(OpCodes.Ldarg_0);			// this
 				ctorIL.Emit(OpCodes.Ldarg, (int)i);		// parameter (in order)
 				ctorIL.Emit(OpCodes.Stfld, fb);			// store to field
-
-				i++;
 			}
 
 			ctorIL.Emit(OpCodes.Ret);
 
 			return tb.CreateType();
+		}
+
+		/// <summary>
+		/// Returns true if the parameter is a parameter that should be handled specially.
+		/// </summary>
+		/// <param name="parameterInfo">Information about the parameter.</param>
+		/// <returns>True if the parameter is a special parameter, false otherwise.</returns>
+		private static bool IsSpecialParameter(ParameterInfo parameterInfo)
+		{
+			switch (parameterInfo.Name)
+			{
+				case "withGraph":
+				case "withGraphs":
+				case "commandBehavior":
+				case "closeConnection":
+				case "commandTimeout":
+				case "transaction":
+				case "cancellationToken":
+					return true;
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Attempts to emit the code to push a special parameter by looking it up in the interface parameters.
+		/// If the parameter is defined, this emits a Ldarg operation.
+		/// </summary>
+		/// <param name="il">The ILGenerator to use.</param>
+		/// <param name="parameterName">The name of the special parameter.</param>
+		/// <param name="interfaceParameters">The parameters on the interface method.</param>
+		/// <param name="executeParameters">The parameters on the execute method.</param>
+		/// <returns>True if a parameter was emitted.</returns>
+		private static bool EmitSpecialParameter(ILGenerator il, string parameterName, ParameterInfo[] interfaceParameters, ParameterInfo[] executeParameters)
+		{
+			// attempt to find the parameter on the interface method
+			var interfaceParameter = interfaceParameters.FirstOrDefault(p => p.Name == parameterName);
+			if (interfaceParameter == null)
+				return false;
+
+			// attempt to find the parameter on the execute method
+			var executeParameter = executeParameters.FirstOrDefault(p => p.Name == parameterName);
+			if (executeParameter == null)
+				return false;
+
+			// the types must match
+			if (interfaceParameter.ParameterType != executeParameter.ParameterType)
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Special Parameter {0} must have type {1}", parameterName, executeParameter.ParameterType.FullName));
+
+			// the parameter list is 0-based, but 0 is the this pointer, so we add one
+			il.Emit(OpCodes.Ldarg, (int)interfaceParameter.Position + 1);
+			return true;
 		}
 	}
 }

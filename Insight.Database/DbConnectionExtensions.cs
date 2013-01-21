@@ -65,7 +65,7 @@ namespace Insight.Database
 			cmd.CommandType = commandType;
 			cmd.CommandText = sql;
 			if (transaction != null)
-				cmd.Transaction = transaction;
+				cmd.Transaction = UnwrapDbTransaction(transaction);
 			if (commandTimeout != null)
 				cmd.CommandTimeout = commandTimeout.Value;
 

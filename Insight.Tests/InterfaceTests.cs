@@ -7,6 +7,7 @@ using NUnit.Framework;
 using Insight.Database;
 using System.Data.Common;
 using System.Data;
+using System.Threading;
 
 // since the interface and types are private, we have to let insight have access to them
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Insight.Database")]
@@ -15,6 +16,7 @@ namespace Insight.Tests
 {
 	interface ITest1
 	{
+		// all execution modes
 		void ExecuteSomething();
 		void ExecuteSomethingWithParameters(int p, string q);
 		int ExecuteSomethingScalar(int p);
@@ -25,6 +27,7 @@ namespace Insight.Tests
 		IList<int> ObjectListAsParameter(IEnumerable<TestDataClasses.ParentTestData> data);
 		Results<TestDataClasses.ParentTestData, int> QueryResults(int p);
 
+		// same procs, asynchronously
 		Task ExecuteSomethingAsync();
 		Task ExecuteSomethingWithParametersAsync(int p, string q);
 		Task<int> ExecuteSomethingScalarAsync(int p);
@@ -54,10 +57,21 @@ namespace Insight.Tests
 		Results<TestDataClasses.ParentTestData, int> QueryResultsWithGraph(int p);
 	}
 
-	#region Test 1
+	interface ITestWithSpecialParameters
+	{
+		IList<TestDataClasses.ParentTestData> QueryObject(Type withGraph);
+		Task<Results<TestDataClasses.ParentTestData, int>> QueryResultsAsync(Type[] withGraphs, int p);
+		void ExecuteSomething(int? commandTimeout);
+		Task ExecuteSomethingAsync(CancellationToken? cancellationToken);
+
+		[Sql("ExecuteSomething")]
+		void ExecuteSomethingWithTransaction(IDbTransaction transaction);
+	}
+
 	[TestFixture]
 	public class InterfaceTests : BaseDbTest
 	{
+		#region Test 1
 		[Test]
 		public void InterfaceIsGenerated()
 		{
@@ -126,6 +140,47 @@ namespace Insight.Tests
 			finally
 			{
 				_connection.ExecuteSql("DROP TYPE ObjectTable");
+			}
+		}
+		#endregion
+
+		#region Test 2
+		[Test]
+		public void InterfaceWithSpecialParametersIsGenerated()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				// make sure that we can create an interface
+				ITestWithSpecialParameters i = connection.As<ITestWithSpecialParameters>();
+				Assert.IsNotNull(i);
+
+				// create some procs to call
+				connection.ExecuteSql("CREATE PROC QueryObject AS " + TestDataClasses.ParentTestData.Sql);
+				connection.ExecuteSql("CREATE PROC QueryResults @p int AS " + TestDataClasses.ParentTestData.Sql + " SELECT @p");
+				connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT NULL");
+
+				// let's call us some methods
+
+				// commandTimeout
+				i.ExecuteSomething(30);
+
+				// withGraph
+				TestDataClasses.ParentTestData.Verify(i.QueryObject(typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>)), true);
+
+				// withGraphs
+				Type[] graphs = new[] { typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>), null };
+				var results = i.QueryResultsAsync(graphs, 7).Result;
+				TestDataClasses.ParentTestData.Verify(results.Set1, true);
+				Assert.AreEqual(7, results.Set2.First());
+
+				// a cancelled cancellation token
+				CancellationTokenSource cts = new CancellationTokenSource();
+				cts.Cancel();
+				Assert.Throws<AggregateException>(() => { i.ExecuteSomethingAsync(cts.Token).Wait(); });
+
+				// override of the transaction
+				// NOTE: if you use OpenWithTransaction, the transaction is propagated automatically, so you don't need to do this
+				i.ExecuteSomethingWithTransaction(connection);
 			}
 		}
 		#endregion

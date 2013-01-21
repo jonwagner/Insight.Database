@@ -172,7 +172,7 @@ namespace Insight.Database
 				cmd.CommandType = CommandType.StoredProcedure;
 				cmd.CommandText = procName;
 				if (transaction != null)
-					cmd.Transaction = transaction;
+					cmd.Transaction = DBConnectionExtensions.UnwrapDbTransaction(transaction);
 
 				// fill in the parameters for the command object
 				// we will do the values next
