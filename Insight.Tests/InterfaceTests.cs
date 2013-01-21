@@ -14,7 +14,7 @@ using System.Threading;
 
 namespace Insight.Tests
 {
-	interface ITest1
+	interface ITest1 : IDbConnection, IDbTransaction
 	{
 		// all execution modes
 		void ExecuteSomething();
@@ -71,7 +71,7 @@ namespace Insight.Tests
 	[TestFixture]
 	public class InterfaceTests : BaseDbTest
 	{
-		#region Test 1
+		#region Test Interface Is Generated
 		[Test]
 		public void InterfaceIsGenerated()
 		{
@@ -144,7 +144,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
-		#region Test 2
+		#region Test Interface Special Parameters
 		[Test]
 		public void InterfaceWithSpecialParametersIsGenerated()
 		{
@@ -184,5 +184,16 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+
+		[Test]
+		public void ConnectionOpenedWithInterfaceAndTransaction()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransactionAs<ITest1>())
+			{
+				connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT NULL");
+				connection.ExecuteSomething();
+				connection.Rollback();
+			}
+		}
 	}
 }

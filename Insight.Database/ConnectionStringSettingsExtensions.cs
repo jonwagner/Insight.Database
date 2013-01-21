@@ -17,10 +17,10 @@ namespace Insight.Database
 	{
 		#region Connection and Open Members
 		/// <summary>
-		/// Creates and returns a new SqlConnection.
+		/// Creates and returns a new DbConnection for the connection string.
 		/// </summary>
 		/// <param name="settings">The ConnectionStringSettings containing the connection string.</param>
-		/// <returns>A closed SqlConnection.</returns>
+		/// <returns>A closed DbConnection.</returns>
 		public static DbConnection Connection(this ConnectionStringSettings settings)
 		{
 			if (settings == null)
@@ -40,6 +40,17 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Creates and returns a new DbConnection for the connection string and implments the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="settings">The ConnectionStringSettings containing the connection string.</param>
+		/// <returns>A closed connection.</returns>
+		public static T As<T>(this ConnectionStringSettings settings) where T : class
+		{
+			return settings.Connection().As<T>();
+		}
+
+		/// <summary>
 		/// Opens and returns a database connection.
 		/// </summary>
 		/// <param name="settings">The connection string to open and return.</param>
@@ -49,6 +60,17 @@ namespace Insight.Database
 			DbConnection connection = settings.Connection();
 			connection.Open();
 			return connection;
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="settings">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static T OpenAs<T>(this ConnectionStringSettings settings) where T : class
+		{
+			return settings.Open().As<T>();
 		}
 
 		/// <summary>
@@ -63,8 +85,21 @@ namespace Insight.Database
 #if NODBASYNC
 			return Task<DbConnection>.Factory.StartNew(_ => { connection.Open(); return connection; }, TaskContinuationOptions.ExecuteSynchronously);
 #else
-			return connection.OpenAsync().ContinueWith(t => { t.Wait(); return connection; }, TaskContinuationOptions.ExecuteSynchronously);
+			return connection.OpenAsync().ContinueWith(t => connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 #endif
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection implmenting the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="settings">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static Task<T> OpenAsAsync<T>(this ConnectionStringSettings settings) where T : class
+		{
+			DbConnectionWrapper connection = (DbConnectionWrapper)(object)settings.Connection().As<T>();
+
+			return connection.OpenAsync().ContinueWith(t => (T)(object)connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		/// <summary>
@@ -72,9 +107,26 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="settings">The connection string to open and return.</param>
 		/// <returns>The opened connection.</returns>
-		public static DbConnectionWithTransaction OpenWithTransaction(this ConnectionStringSettings settings)
+		public static DbConnectionWrapper OpenWithTransaction(this ConnectionStringSettings settings)
 		{
-			return new DbConnectionWithTransaction(settings.Open());
+			var connection = new DbConnectionWrapper(settings.Connection());
+			connection.Open();
+			connection.BeginTransaction();
+			return connection;
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection with an open transaction and implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="settings">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static T OpenWithTransactionAs<T>(this ConnectionStringSettings settings) where T : class
+		{
+			var t = settings.OpenAs<T>();
+			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
+			connection.BeginAutoTransaction();
+			return t;
 		}
 
 		/// <summary>
@@ -82,9 +134,37 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="settings">The connection string to open and return.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<DbConnectionWithTransaction> OpenWithTransactionAsync(this ConnectionStringSettings settings)
+		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this ConnectionStringSettings settings)
 		{
-			return settings.OpenAsync().ContinueWith(t => new DbConnectionWithTransaction(t.Result), TaskContinuationOptions.ExecuteSynchronously);
+			var connection = new DbConnectionWrapper(settings.Connection());
+
+			return connection.OpenAsync().ContinueWith(
+				t =>
+				{
+					connection.BeginAutoTransaction();
+					return connection;
+				},
+				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+		}
+
+		/// <summary>
+		/// Asynchronously opens and returns a database connection with an open transaction and implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="settings">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static Task<T> OpenWithTransactionAsAsync<T>(this ConnectionStringSettings settings) where T : class
+		{
+			var t = settings.Connection().As<T>();
+			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
+
+			return connection.OpenAsync().ContinueWith(
+				task =>
+				{
+					connection.BeginAutoTransaction();
+					return t;
+				},
+				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 		}
 		#endregion
 

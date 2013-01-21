@@ -16,10 +16,10 @@ namespace Insight.Database
 	public static class DbConnectionStringBuilderExtensions
 	{
 		/// <summary>
-		/// Creates and returns a new SqlConnection.
+		/// Creates and returns a new DbConnection.
 		/// </summary>
-		/// <param name="builder">The SqlConnectionStringBuilder containing the connection string.</param>
-		/// <returns>A closed SqlConnection.</returns>
+		/// <param name="builder">The DbConnectionStringBuilder containing the connection string.</param>
+		/// <returns>A closed DbConnection.</returns>
 		public static DbConnection Connection(this DbConnectionStringBuilder builder)
 		{
 			DbConnection connection = null;
@@ -41,6 +41,17 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Creates and returns a new connection implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="builder">The DbConnectionStringBuilder containing the connection string.</param>
+		/// <returns>A closed connection that implements the given interface.</returns>
+		public static T As<T>(this DbConnectionStringBuilder builder) where T : class
+		{
+			return builder.Connection().As<T>();
+		}
+
+		/// <summary>
 		/// Opens and returns a database connection.
 		/// </summary>
 		/// <param name="builder">The connection string to open and return.</param>
@@ -48,6 +59,17 @@ namespace Insight.Database
 		public static DbConnection Open(this DbConnectionStringBuilder builder)
 		{
 			return builder.Connection().OpenConnection();
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="builder">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static T OpenAs<T>(this DbConnectionStringBuilder builder) where T : class
+		{
+			return builder.Open().As<T>();
 		}
 
 		/// <summary>
@@ -62,8 +84,21 @@ namespace Insight.Database
 #if NODBASYNC
 			return Task<DbConnection>.Factory.StartNew(_ => { connection.Open(); return connection; }, TaskContinuationOptions.ExecuteSynchronously);
 #else
-			return connection.OpenAsync().ContinueWith(t => { t.Wait(); return connection; }, TaskContinuationOptions.ExecuteSynchronously);
+			return connection.OpenAsync().ContinueWith(t => connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 #endif
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="builder">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static Task<T> OpenAsAsync<T>(this DbConnectionStringBuilder builder) where T : class
+		{
+			DbConnectionWrapper connection = (DbConnectionWrapper)(object)builder.Connection().As<T>();
+
+			return connection.OpenAsync().ContinueWith(t => (T)(object)connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		/// <summary>
@@ -71,9 +106,25 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="builder">The connection string to open and return.</param>
 		/// <returns>The opened connection.</returns>
-		public static DbConnectionWithTransaction OpenWithTransaction(this DbConnectionStringBuilder builder)
+		public static DbConnectionWrapper OpenWithTransaction(this DbConnectionStringBuilder builder)
 		{
-			return new DbConnectionWithTransaction(builder.Open());
+			var connection = new DbConnectionWrapper(builder.Open());
+			connection.BeginAutoTransaction();
+			return connection;
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection with an open transaction implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="builder">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static T OpenWithTransactionAs<T>(this DbConnectionStringBuilder builder) where T : class
+		{
+			var t = builder.OpenAs<T>();
+			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
+			connection.BeginAutoTransaction();
+			return t;
 		}
 
 		/// <summary>
@@ -81,9 +132,37 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="builder">The connection string to open and return.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<DbConnectionWithTransaction> OpenWithTransactionAsync(this DbConnectionStringBuilder builder)
+		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this DbConnectionStringBuilder builder)
 		{
-			return builder.OpenAsync().ContinueWith(t => new DbConnectionWithTransaction(t.Result), TaskContinuationOptions.ExecuteSynchronously);
+			var connection = new DbConnectionWrapper(builder.Connection());
+
+			return connection.OpenAsync().ContinueWith(
+				task =>
+				{
+					connection.BeginAutoTransaction();
+					return connection;
+				},
+				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+		}
+
+		/// <summary>
+		/// Asynchronously opens and returns a database connection with an open transaction implementing the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="builder">The connection string to open and return.</param>
+		/// <returns>The opened connection.</returns>
+		public static Task<T> OpenWithTransactionAsAsync<T>(this DbConnectionStringBuilder builder) where T : class
+		{
+			var t = builder.Connection().As<T>();
+			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
+
+			return connection.OpenAsync().ContinueWith(
+				task =>
+				{
+					connection.BeginAutoTransaction();
+					return t;
+				},
+				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 		}
 	}
 }

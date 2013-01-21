@@ -1177,7 +1177,7 @@ namespace Insight.Database
 				return dbTransaction;
 
 			// if we have a wrapped transaction, unwrap it
-			DbConnectionWithTransaction wrapper = transaction as DbConnectionWithTransaction;
+			DbConnectionWrapper wrapper = transaction as DbConnectionWrapper;
 			if (wrapper != null)
 				return wrapper.InnerTransaction.UnwrapDbTransaction();
 

@@ -114,8 +114,6 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="interfaceMethod">The interface method to implement.</param>
 		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod)
 		{
-			// TODO: function name/parameter mapping
-
 			// look at the parameters on the interface
 			var parameters = interfaceMethod.GetParameters();
 			var parameterTypes = parameters.Select(p => p.ParameterType).ToArray();

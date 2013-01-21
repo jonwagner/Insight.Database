@@ -134,17 +134,6 @@
            </Message>
           </Messages>
          </Type>
-         <Type Name="DbConnectionWithTransaction">
-          <Messages>
-           <Message Id="Db" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Excluded" Created="2013-01-16 19:03:20Z">
-            <Issue Name="Type">
-             <Item>Db</Item>
-             <Item>'DbConnectionWithTransaction'</Item>
-             <Item>DB</Item>
-            </Issue>
-           </Message>
-          </Messages>
-         </Type>
          <Type Name="DbConnectionWrapper">
           <Messages>
            <Message Id="Db" TypeName="IdentifiersShouldBeCasedCorrectly" Category="Microsoft.Naming" CheckId="CA1709" Status="Excluded" Created="2013-01-16 19:03:20Z">

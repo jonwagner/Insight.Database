@@ -66,9 +66,6 @@
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />
     <Compile Include="DBConnectionExtensionsObsolete.cs" />
-    <Compile Include="DbConnectionWithTransaction.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="DbConnectionWrapper.cs">
       <SubType>Component</SubType>
     </Compile>

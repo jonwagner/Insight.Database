@@ -15,7 +15,7 @@ namespace Insight.Database
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "The implementation of IDbConnection is generated code")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the implementation of IDbConnection would be redundant without adding additional information.")]
-	public class DbConnectionWrapper : DbConnection
+	public class DbConnectionWrapper : DbConnection, IDbTransaction
 	{
 		#region Private Members
 		/// <summary>
@@ -51,7 +51,10 @@ namespace Insight.Database
 		/// <returns>A ReliableCommand.</returns>
 		protected override DbCommand CreateDbCommand()
 		{
-			return InnerConnection.CreateCommand();
+			DbCommand command = InnerConnection.CreateCommand();
+			if (InnerTransaction != null)
+				command.Transaction = InnerTransaction;
+			return command;
 		}
 		#endregion
 
@@ -136,7 +139,22 @@ namespace Insight.Database
 		{
 			try
 			{
-				InnerConnection.Dispose();
+				if (disposing)
+				{
+					if (InnerTransaction != null)
+					{
+						InnerTransaction.Dispose();
+						InnerTransaction = null;
+					}
+				}
+
+				if (InnerConnection != null)
+				{
+					InnerConnection.Dispose();
+					InnerConnection = null;
+				}
+
+				base.Dispose(disposing);
 			}
 			finally
 			{
@@ -144,5 +162,78 @@ namespace Insight.Database
 			}
 		}
 		#endregion
+
+		#region Properties
+		/// <summary>
+		/// Gets the inner auto transaction for the connection.
+		/// </summary>
+		public DbTransaction InnerTransaction { get; private set; }
+		#endregion
+
+		#region IDbTransaction Members
+		/// <summary>
+		/// Gets the connection associated with this transaction.
+		/// </summary>
+		public IDbConnection Connection
+		{
+			get { return this; }
+		}
+
+		/// <summary>
+		/// Gets the isolation level for the transaction.
+		/// </summary>
+		public IsolationLevel IsolationLevel
+		{
+			get
+			{
+				if (InnerTransaction == null)
+					throw new InvalidOperationException("A transaction has not been created for this connection");
+
+				return InnerTransaction.IsolationLevel;
+			}
+		}
+
+		/// <summary>
+		/// Commits the open transaction.
+		/// </summary>
+		public void Commit()
+		{
+			if (InnerTransaction == null)
+				throw new InvalidOperationException("A transaction has not been created for this connection");
+
+			InnerTransaction.Commit();
+		}
+
+		/// <summary>
+		/// Rolls back the open transaction.
+		/// </summary>
+		public void Rollback()
+		{
+			if (InnerTransaction == null)
+				throw new InvalidOperationException("A transaction has not been created for this connection");
+
+			InnerTransaction.Rollback();
+		}
+
+		/// <summary>
+		/// Begins an automatic transaction that ends when the connection is disposed.
+		/// </summary>
+		/// <param name="isolationLevel">The isolationLevel for the transaction.</param>
+		public void BeginAutoTransaction(IsolationLevel isolationLevel = System.Data.IsolationLevel.Unspecified)
+		{
+			InnerTransaction = BeginTransaction(isolationLevel);
+		}
+		#endregion
+
+#if NODBASYNC
+		/// <summary>
+		/// Opens a connection asynchronously.
+		/// </summary>
+		/// <returns>A task representing when the connection has opened.</returns>
+		public Task OpenAsync()
+		{
+			return Task.Factory.StartNew(() => Open());
+		}
+#endif
 	}
 }
