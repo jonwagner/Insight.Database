@@ -2,7 +2,37 @@
 
 **Insight.Database** is a fast, lightweight, (and dare we say awesome) micro-orm for .NET.
 
-If you are thinking that you need something that is simple and just works for almost any use case that you can think of, Insight probably does it.
+Insight.Database lets you call your database with almost no code, and makes it easy to send objects to your database and get them back.
+
+Here is Insight implementing a repository automatically:
+
+	CREATE TABLE Beer ([ID] [int], [Type] varchar(128), [Description] varchar(128)) GO
+	CREATE PROC InsertBeer @type varchar(128), @description varchar(128) AS
+		INSERT INTO Beer (Type, Description) VALUES (@type, @description)
+			OUTPUT inserted.ID GO
+	CREATE PROC GetBeerByType @type [varchar] AS SELECT * FROM Beer WHERE Type = @type GO
+
+	public class Beer
+	{
+		public int ID { get; private set; }
+		public string Type { get; set; }
+		public string Description { get; set; }
+	}
+
+	public interface IBeerRepository
+	{
+		void InsertBeer(Beer beer);
+		IList<Beer> GetBeerByType(string type);
+	}
+
+	ConnectionStringBuilder builder = "blah blah";
+
+	// insight will connect your interface to the stored proc automatically
+	var repo = builder.OpenAs<IBeerRepository>();
+	repo.Insert(new Beer() { Type = "ipa", Description = "Sly Fox 113" });
+	IList<Beer> beer = repo.GetBeerByType("ipa");
+
+Here is Insight letting you call your database directly with almost no code:
 
 	// auto open/close
 	var c = new SqlConnection(connectionString);
@@ -36,13 +66,16 @@ If you are thinking that you need something that is simple and just works for al
 	IEnumerable<Beer> listOBeer; // from somewhere
 	c.BulkCopy("Beer", listOfBeer);
 
-# v2.0 (Release build) is now in NuGet!
+# v2.1 (coming soon) - with automatic interface mapping #
+
+- Insight will now automatically convert your .NET interface to SQL calls! See the wiki for some automajikal love!
+- Also now with handy wrappers for managing transactions.
+
+# v2.0 is now in NuGet! #
 
 - v2.0 has full async reads in .NET 4.5, automatic multi-recordset processing, customizable binding rules, tons of optimizations, and more code than I can remember.
-- In Package Manager, turn on "Include PreRelease" packages to get the new package.
 - v2.0 should be compile-compatible with v1.x. (Except for a few APIs I'm pretty sure nobody is using.) It's not binary-compatible with v1.x.
-- If you are using Insight.Database.Schema, please upgrade to v2.0.7, which no longer has a dependency on Insight.Database v1.0.
-- v2.0 Documentation is online!
+- If you are using Insight.Database.Schema, please upgrade to v2.0.8, which no longer has a dependency on Insight.Database v1.0.
 
 # Documentation #
 
