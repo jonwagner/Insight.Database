@@ -68,6 +68,19 @@ namespace Insight.Tests
 		void ExecuteSomethingWithTransaction(IDbTransaction transaction);
 	}
 
+	interface ITestInsertUpdate
+	{
+		void InsertTestData(TestDataClasses.TestData data);
+		void UpdateTestData(TestDataClasses.TestData data);
+		void InsertMultipleTestData(IEnumerable<TestDataClasses.TestData> data);
+		void UpdateMultipleTestData(IEnumerable<TestDataClasses.TestData> data);
+
+		Task InsertTestDataAsync(TestDataClasses.TestData data);
+		Task UpdateTestDataAsync(TestDataClasses.TestData data);
+		Task InsertMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
+		Task UpdateMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
+	}
+
 	[TestFixture]
 	public class InterfaceTests : BaseDbTest
 	{
@@ -185,6 +198,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Test Interface with Transaction
 		[Test]
 		public void ConnectionOpenedWithInterfaceAndTransaction()
 		{
@@ -193,6 +207,83 @@ namespace Insight.Tests
 				connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT NULL");
 				connection.ExecuteSomething();
 				connection.Rollback();
+			}
+		}
+		#endregion
+
+		[Test]
+		public void TestInsert()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TYPE InsertTestDataTVP AS TABLE (X [int], Z [int])");
+
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					connection.ExecuteSql("CREATE TABLE InsertTestDataTable (X [int] identity (5, 1), Z [int])");
+					connection.ExecuteSql("CREATE PROC InsertTestData @Z [int] AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X VALUES (@Z)");
+					connection.ExecuteSql("CREATE PROC UpdateTestData @X [int], @Z [int] AS UPDATE InsertTestDataTable SET Z=@Z WHERE X=@X SELECT X=0");
+					connection.ExecuteSql("CREATE PROC InsertMultipleTestData @data [InsertTestDataTVP] READONLY AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X SELECT Z FROM @data");
+					connection.ExecuteSql("CREATE PROC UpdateMultipleTestData @data [InsertTestDataTVP] READONLY AS UPDATE InsertTestDataTable SET Z=data.Z FROM @data data WHERE data.X = InsertTestDataTable.X SELECT X=0 FROM @data");
+
+					var i = connection.As<ITestInsertUpdate>();
+
+					{
+						// single insert
+						TestDataClasses.TestData data = new TestDataClasses.TestData() { Z = 4 };
+						i.InsertTestData(data);
+						Assert.AreEqual(5, data.X, "ID should be returned");
+
+						// single update
+						i.UpdateTestData(data);
+						Assert.AreEqual(0, data.X, "ID should be reset");
+
+						// multiple insert
+						var list = new[]
+						{
+							new TestDataClasses.TestData() { Z = 5 },
+							new TestDataClasses.TestData() { Z = 6 }
+						};
+						i.InsertMultipleTestData(list);
+						Assert.AreEqual(6, list[0].X, "ID should be returned");
+						Assert.AreEqual(7, list[1].X, "ID should be returned");
+
+						// multiple update
+						i.UpdateMultipleTestData(list);
+						Assert.AreEqual(0, list[0].X, "ID should be reset");
+						Assert.AreEqual(0, list[1].X, "ID should be reset");
+					}
+
+					{
+						// single insert
+						TestDataClasses.TestData data = new TestDataClasses.TestData() { Z = 4 };
+						i.InsertTestDataAsync(data).Wait();
+						Assert.AreEqual(8, data.X, "ID should be returned");
+
+						// single update
+						i.UpdateTestDataAsync(data).Wait();
+						Assert.AreEqual(0, data.X, "ID should be reset");
+
+						// multiple insert
+						var list = new[]
+						{
+							new TestDataClasses.TestData() { Z = 5 },
+							new TestDataClasses.TestData() { Z = 6 }
+						};
+						i.InsertMultipleTestDataAsync(list).Wait();
+						Assert.AreEqual(9, list[0].X, "ID should be returned");
+						Assert.AreEqual(10, list[1].X, "ID should be returned");
+
+						// multiple update
+						i.UpdateMultipleTestDataAsync(list).Wait();
+						Assert.AreEqual(0, list[0].X, "ID should be reset");
+						Assert.AreEqual(0, list[1].X, "ID should be reset");
+					}
+				}
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP TYPE InsertTestDataTVP");
 			}
 		}
 	}

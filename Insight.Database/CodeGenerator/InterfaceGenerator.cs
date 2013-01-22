@@ -44,12 +44,16 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _queryMethod = typeof(DBConnectionExtensions).GetMethod("Query", _queryParameterTypes);
 		private static readonly MethodInfo _queryResultsMethod = typeof(DBConnectionExtensions).GetMethods().FirstOrDefault(mi => mi.Name == "QueryResults" && mi.GetGenericArguments().Length == 1 && mi.GetParameters()[0].ParameterType == typeof(IDbConnection));
 		private static readonly MethodInfo _singleMethod = typeof(DBConnectionExtensions).GetMethod("Single", _queryParameterTypes);
+		private static readonly MethodInfo _insertMethod = typeof(DBConnectionExtensions).GetMethod("Insert");
+		private static readonly MethodInfo _insertListMethod = typeof(DBConnectionExtensions).GetMethod("InsertList");
 
 		private static readonly MethodInfo _executeAsyncMethod = typeof(AsyncExtensions).GetMethods().First(mi => mi.Name == "ExecuteAsync");
 		private static readonly MethodInfo _executeScalarAsyncMethod = typeof(AsyncExtensions).GetMethods().First(mi => mi.Name == "ExecuteScalarAsync");
 		private static readonly MethodInfo _queryAsyncMethod = typeof(AsyncExtensions).GetMethod("QueryAsync", _queryAsyncParameterTypes);
 		private static readonly MethodInfo _singleAsyncMethod = typeof(AsyncExtensions).GetMethod("SingleAsync", _queryAsyncParameterTypes);
 		private static readonly MethodInfo _queryResultsAsyncMethod = typeof(AsyncExtensions).GetMethods().FirstOrDefault(mi => mi.Name == "QueryResultsAsync" && mi.GetGenericArguments().Length == 1 && mi.GetParameters()[0].ParameterType == typeof(IDbConnection));
+		private static readonly MethodInfo _insertAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertAsync");
+		private static readonly MethodInfo _insertListAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertListAsync");
 
 		private static readonly ConcurrentDictionary<Type, Func<DbConnection, object>> _constructors = new ConcurrentDictionary<Type, Func<DbConnection, object>>();
 		#endregion
@@ -183,6 +187,11 @@ namespace Insight.Database.CodeGenerator
 
 						break;
 
+					case "inserted":
+						// always pass argument 1 in
+						mIL.Emit(OpCodes.Ldarg_1);
+						break;
+
 					case "withGraph":
 						if (EmitSpecialParameter(mIL, "withGraph", parameters, executeParameters))
 							break;
@@ -286,9 +295,27 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The extension method that can implement the given method.</returns>
 		private static MethodInfo GetExecuteMethod(MethodInfo method)
 		{
-			// if returntype is null, then we call Execute
+			// if returntype is null
 			if (method.ReturnType == typeof(void))
+			{
+				// methods that start with insert/update/upsert map to insert
+				if (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Update", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase))
+				{
+					// if the first parameter is enumerable, then we assume we are doing an insert/update multiple
+					Type type = method.GetParameters()[0].ParameterType;
+					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					if (enumerable != null)
+						return _insertListMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
+
+					// not enumerable, so doing a single insert
+					return _insertMethod.MakeGenericMethod(type);
+				}
+
+				// not an insert, so call execute
 				return _executeMethod;
+			}
 
 			// if returntype is IList<T>, then we call Query
 			if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(IList<>))
@@ -298,9 +325,27 @@ namespace Insight.Database.CodeGenerator
 			if (method.ReturnType.IsSubclassOf(typeof(Results)))
 				return _queryResultsMethod.MakeGenericMethod(method.ReturnType);
 
-			// if returntype is Task, then we call ExecuteAsync
+			// if returntype is Task
 			if (method.ReturnType == typeof(Task))
+			{
+				// methods that start with insert/update/upsert map to insert
+				if (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Update", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase))
+				{
+					// if the first parameter is enumerable, then we assume we are doing an insert/update multiple
+					Type type = method.GetParameters()[0].ParameterType;
+					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					if (enumerable != null)
+						return _insertListAsyncMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
+
+					// not enumerable, so doing a single insert
+					return _insertAsyncMethod.MakeGenericMethod(type);
+				}
+
+				// just a task, call ExecuteAsync
 				return _executeAsyncMethod;
+			}
 
 			// if the returntype is Task<T>, look a little deeper
 			if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))

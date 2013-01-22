@@ -8,8 +8,9 @@ Here is Insight implementing a repository automatically:
 
 	CREATE TABLE Beer ([ID] [int], [Type] varchar(128), [Description] varchar(128)) GO
 	CREATE PROC InsertBeer @type varchar(128), @description varchar(128) AS
-		INSERT INTO Beer (Type, Description) VALUES (@type, @description)
-			OUTPUT inserted.ID GO
+		INSERT INTO Beer (Type, Description) OUTPUT inserted.ID
+			VALUES (@type, @description)
+			GO
 	CREATE PROC GetBeerByType @type [varchar] AS SELECT * FROM Beer WHERE Type = @type GO
 
 	public class Beer

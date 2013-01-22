@@ -59,6 +59,7 @@ namespace Insight.Tests.TestDataClasses
 	class TestData
 	{
 		public int X;
+		public int Z;
 	}
 
 	/// <summary>
