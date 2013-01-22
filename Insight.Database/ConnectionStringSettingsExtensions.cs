@@ -6,6 +6,7 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Insight.Database
@@ -57,114 +58,85 @@ namespace Insight.Database
 		/// <returns>The opened connection.</returns>
 		public static DbConnection Open(this ConnectionStringSettings settings)
 		{
-			DbConnection connection = settings.Connection();
-			connection.Open();
-			return connection;
-		}
-
-		/// <summary>
-		/// Opens and returns a database connection implementing the given interface.
-		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
-		/// <param name="settings">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static T OpenAs<T>(this ConnectionStringSettings settings) where T : class
-		{
-			return settings.Open().As<T>();
+			return settings.Connection().OpenConnection();
 		}
 
 		/// <summary>
 		/// Opens and returns a database connection.
 		/// </summary>
 		/// <param name="settings">The connection string to open and return.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<DbConnection> OpenAsync(this ConnectionStringSettings settings)
+		public static Task<DbConnection> OpenAsync(this ConnectionStringSettings settings, CancellationToken? cancellationToken = null)
 		{
-			DbConnection connection = settings.Connection();
-
-#if NODBASYNC
-			return Task<DbConnection>.Factory.StartNew(_ => { connection.Open(); return connection; }, TaskContinuationOptions.ExecuteSynchronously);
-#else
-			return connection.OpenAsync().ContinueWith(t => connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
-#endif
+			return settings.Connection().OpenConnectionAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Opens and returns a database connection implmenting the given interface.
+		/// Opens and returns a database connection implementing a given interface.
 		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <typeparam name="T">The interface to implmement.</typeparam>
 		/// <param name="settings">The connection string to open and return.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<T> OpenAsAsync<T>(this ConnectionStringSettings settings) where T : class
+		public static T OpenAs<T>(this ConnectionStringSettings settings) where T : class, IDbConnection
 		{
-			DbConnectionWrapper connection = (DbConnectionWrapper)(object)settings.Connection().As<T>();
-
-			return connection.OpenAsync().ContinueWith(t => (T)(object)connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			return settings.Connection().OpenAs<T>();
 		}
 
 		/// <summary>
-		/// Opens and returns a database connection with an open transaction.
+		/// Asynchronously opens and returns a database connection implementing a given interface.
 		/// </summary>
+		/// <typeparam name="T">The interface to implmement.</typeparam>
 		/// <param name="settings">The connection string to open and return.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>The opened connection.</returns>
+		public static Task<T> OpenAsAsync<T>(this ConnectionStringSettings settings, CancellationToken? cancellationToken = null) where T : class, IDbConnection
+		{
+			return settings.Connection().OpenAsAsync<T>(cancellationToken);
+		}
+
+		/// <summary>
+		/// Opens a database connection and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="settings">The settings for the connection.</param>
+		/// <returns>A wrapper for the database connection.</returns>
 		public static DbConnectionWrapper OpenWithTransaction(this ConnectionStringSettings settings)
 		{
-			var connection = new DbConnectionWrapper(settings.Connection());
-			connection.Open();
-			connection.BeginTransaction();
-			return connection;
+			return settings.Connection().OpenWithTransaction();
 		}
 
 		/// <summary>
-		/// Opens and returns a database connection with an open transaction and implementing the given interface.
+		/// Asynchronously opens a database connection and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
-		/// <param name="settings">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static T OpenWithTransactionAs<T>(this ConnectionStringSettings settings) where T : class
+		/// <param name="settings">The settings for the connection.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this ConnectionStringSettings settings, CancellationToken? cancellationToken = null)
 		{
-			var t = settings.OpenAs<T>();
-			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
-			connection.BeginAutoTransaction();
-			return t;
+			return settings.Connection().OpenWithTransactionAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Asynchronously opens and returns a database connection with an open transaction.
+		/// Opens a database connection implementing a given interface and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
-		/// <param name="settings">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this ConnectionStringSettings settings)
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="settings">The settings for the connection.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static T OpenWithTransactionAs<T>(this ConnectionStringSettings settings) where T : class, IDbConnection, IDbTransaction
 		{
-			var connection = new DbConnectionWrapper(settings.Connection());
-
-			return connection.OpenAsync().ContinueWith(
-				t =>
-				{
-					connection.BeginAutoTransaction();
-					return connection;
-				},
-				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			return settings.Connection().OpenWithTransactionAs<T>();
 		}
 
 		/// <summary>
-		/// Asynchronously opens and returns a database connection with an open transaction and implementing the given interface.
+		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
-		/// <param name="settings">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static Task<T> OpenWithTransactionAsAsync<T>(this ConnectionStringSettings settings) where T : class
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="settings">The settings for the connection.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<T> OpenWithTransactionAsAsync<T>(this ConnectionStringSettings settings, CancellationToken? cancellationToken = null) where T : class, IDbConnection, IDbTransaction
 		{
-			var t = settings.Connection().As<T>();
-			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
-
-			return connection.OpenAsync().ContinueWith(
-				task =>
-				{
-					connection.BeginAutoTransaction();
-					return t;
-				},
-				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			return settings.Connection().OpenWithTransactionAsAsync<T>(cancellationToken);
 		}
 		#endregion
 

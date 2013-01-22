@@ -38,6 +38,9 @@
     <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Ninject">
+      <HintPath>..\packages\Ninject.3.0.1.10\lib\net45-full\Ninject.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
@@ -51,6 +54,7 @@
     <Compile Include="Beer.cs" />
     <Compile Include="BeerRepository.cs" />
     <Compile Include="BeerRepository_Receipts.cs" />
+    <Compile Include="BeerService.cs" />
     <Compile Include="PerformanceTest.cs" />
     <Compile Include="Receipt.cs" />
     <Compile Include="Program.cs" />
@@ -64,6 +68,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

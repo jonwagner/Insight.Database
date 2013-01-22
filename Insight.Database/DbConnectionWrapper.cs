@@ -30,9 +30,15 @@ namespace Insight.Database
 		/// A default retry strategy is used.
 		/// </summary>
 		/// <param name="innerConnection">The inner connection to wrap.</param>
-		public DbConnectionWrapper(DbConnection innerConnection)
+		public DbConnectionWrapper(IDbConnection innerConnection)
 		{
-			InnerConnection = innerConnection;
+			DbConnection dbConnection = innerConnection as DbConnection;
+
+			// currently we only support wrapping DbConnection because we need the async support, etc.
+			if (dbConnection == null)
+				throw new ArgumentException("innerConnection must be derived from DbConnection", "innerConnection");
+
+			InnerConnection = dbConnection;
 		}
 		#endregion
 
@@ -55,6 +61,16 @@ namespace Insight.Database
 			if (InnerTransaction != null)
 				command.Transaction = InnerTransaction;
 			return command;
+		}
+
+		/// <summary>
+		/// Returns the connection as a DbConnectionWrapper, wrapping it in a new wrapper if necessary.
+		/// </summary>
+		/// <param name="connection">The connection to wrap.</param>
+		/// <returns>The connection, possibly wrapped in a DbConnection wrapper.</returns>
+		internal static DbConnectionWrapper Wrap(IDbConnection connection)
+		{
+			return (connection as DbConnectionWrapper) ?? new DbConnectionWrapper(connection);
 		}
 		#endregion
 
@@ -219,9 +235,12 @@ namespace Insight.Database
 		/// Begins an automatic transaction that ends when the connection is disposed.
 		/// </summary>
 		/// <param name="isolationLevel">The isolationLevel for the transaction.</param>
-		public void BeginAutoTransaction(IsolationLevel isolationLevel = System.Data.IsolationLevel.Unspecified)
+		/// <returns>This connection.</returns>
+		public DbConnectionWrapper BeginAutoTransaction(IsolationLevel isolationLevel = System.Data.IsolationLevel.Unspecified)
 		{
 			InnerTransaction = BeginTransaction(isolationLevel);
+
+			return this;
 		}
 		#endregion
 

@@ -8,8 +8,12 @@ using System.Configuration;
 using System.Data;
 using System.Threading.Tasks;
 using System.Data.Common;
+using Ninject;
+using System.Runtime.CompilerServices;
 
 #pragma warning disable 0649
+
+[assembly: InternalsVisibleTo("Insight.Database")]
 
 namespace Insight.Database.Sample
 {
@@ -119,7 +123,11 @@ namespace Insight.Database.Sample
 			#region Repository Pattern
 			Repository();
 			#endregion
-        }
+
+			#region Auto Interface Implementation
+			AutoInterfaceImplementation();
+			#endregion
+		}
 
 		class Glass
 		{
@@ -241,7 +249,7 @@ namespace Insight.Database.Sample
 		#region Common Method Parameters
 		static void CommonParameter_Transaction()
 		{
-			using (var connection = Database.OpenWithTransaction())
+			using (var connection = Database.Connection().OpenWithTransaction())
 			{
 				Beer beer = new Beer("Sly Fox IPA");
 				connection.Execute("InsertBeer", beer);
@@ -393,7 +401,7 @@ namespace Insight.Database.Sample
 
 		static void DynamicCall_Transaction()
 		{
-			using (var connection = Database.OpenWithTransaction())
+			using (var connection = Database.Connection().OpenWithTransaction())
 			{
 				IList<Beer> beer = connection.Dynamic<Beer>().FindBeers(name: "IPA");
 			}
@@ -589,7 +597,7 @@ namespace Insight.Database.Sample
 		#region Repository Pattern
 		private static void Repository()
 		{
-			IBeerRepository repo = new BeerRepository(() => Database.Connection());
+			IBeerRepository repo = Database.As<IBeerRepository>();
 
 			// single object operations
 			Beer b = new Beer() { Name = "Double IPA" };
@@ -621,7 +629,23 @@ namespace Insight.Database.Sample
 		}
 		#endregion
 
-        class PerfTestData
+		#region Interface Implementation
+		static void AutoInterfaceImplementation()
+		{
+			// use ninject to inject the connections
+			StandardKernel kernel = new StandardKernel();
+			kernel.Bind<IBeerRepository>().ToMethod(_ => Database.As<IBeerRepository>());
+
+			var beerService = kernel.Get<BeerService>();
+
+			// call the service
+			Beer[] beers = new[] { new Beer() { Name = "Sly Fox 113", Flavor = "yummy" } };
+			beerService.AddBeer(beers);
+			beerService.StockBeer(beers.Select(b => b.Id));
+		}
+		#endregion
+
+		class PerfTestData
         {
             public int Int;
             public string String;

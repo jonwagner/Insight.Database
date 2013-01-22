@@ -13,6 +13,7 @@ namespace Insight.Database.Sample
 		public string Flavor { get; set; }
 		public decimal? OriginalGravity { get; set; }
 		public string Details { get; set; }
+		public int InStock { get; set; }
 
 		public Beer()
 		{

@@ -38,7 +38,7 @@ namespace Insight.Tests
 		public virtual void SetUp()
 		{
 			if (_connection.State != ConnectionState.Open)
-				_connection.Open();
+				_connection = _connectionStringBuilder.Open();
 		}
 
 		[TearDown]

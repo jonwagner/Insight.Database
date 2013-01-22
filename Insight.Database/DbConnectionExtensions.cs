@@ -10,6 +10,8 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Reliable;
 
@@ -27,7 +29,7 @@ namespace Insight.Database
 		private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tableReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
 		#endregion
 
-		#region Open Method
+		#region Open Methods
 		/// <summary>
 		/// Opens and returns a database connection.
 		/// </summary>
@@ -38,6 +40,135 @@ namespace Insight.Database
 		{
 			connection.Open();
 			return connection;
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection.
+		/// </summary>
+		/// <typeparam name="T">The type of database connection.</typeparam>
+		/// <param name="connection">The connection to open and return.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>The opened connection.</returns>
+		public static Task<T> OpenConnectionAsync<T>(this T connection, CancellationToken? cancellationToken = null) where T : IDbConnection
+		{
+			CancellationToken ct = cancellationToken ?? CancellationToken.None;
+			DbConnection dbConnection = connection as DbConnection;
+
+			// if the connection is not a DbConnection, then open it synchronously
+			if (dbConnection == null)
+			{
+				connection.Open();
+				return Helpers.FromResult(connection);
+			}
+
+			// DbConnection supports OpenAsync, but it doesn't return self
+			return dbConnection.OpenAsync(ct)
+					.ContinueWith(t => connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+		}
+
+		/// <summary>
+		/// Opens and returns a database connection that implmements the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="connection">The connection to open.</param>
+		/// <returns>The connection implementing the interface.</returns>
+		public static T OpenAs<T>(this IDbConnection connection) where T : class, IDbConnection
+		{
+			connection.Open();
+			return connection.As<T>();
+		}
+
+		/// <summary>
+		/// Asynchronously opens and returns a database connection that implmements the given interface.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="connection">The connection to open.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning the connection and interface when the connection is opened.</returns>
+		public static Task<T> OpenAsAsync<T>(this IDbConnection connection, CancellationToken? cancellationToken = null) where T : class, IDbConnection
+		{
+			return OpenConnectionAsync(connection, cancellationToken)
+					.ContinueWith(t => t.Result.As<T>(), TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+		}
+
+		/// <summary>
+		/// Opens a database connection and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="connection">The connection to open.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static DbConnectionWrapper OpenWithTransaction(this IDbConnection connection)
+		{
+			// if the connection isn't wrapped, we need to wrap it
+			DbConnectionWrapper wrapper = DbConnectionWrapper.Wrap(connection);
+			wrapper.Open();
+			return wrapper.BeginAutoTransaction();
+		}
+
+		/// <summary>
+		/// Opens a database connection implementing a given interface and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="connection">The connection to open.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static T OpenWithTransactionAs<T>(this T connection) where T : class, IDbConnection, IDbTransaction
+		{
+			// connection is already a T, so pass it in unwrapped
+			return (T)(object)((IDbConnection)connection).OpenWithTransaction();
+		}
+
+		/// <summary>
+		/// Opens a database connection implementing a given interface and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="connection">The connection to open.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static T OpenWithTransactionAs<T>(this IDbConnection connection) where T : class, IDbConnection, IDbTransaction
+		{
+			// convert to interface first, then open, so we only get one layer of wrapping
+			return connection.As<T>().OpenWithTransactionAs();
+		}
+
+		/// <summary>
+		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="connection">The connection to open.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this IDbConnection connection, CancellationToken? cancellationToken = null)
+		{
+			CancellationToken ct = cancellationToken ?? CancellationToken.None;
+
+			return DbConnectionWrapper.Wrap(connection)
+				.OpenConnectionAsync(ct)
+				.ContinueWith(t => t.Result.BeginAutoTransaction(), TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+		}
+
+		/// <summary>
+		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="connection">The connection to open.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<T> OpenWithTransactionAsAsync<T>(this T connection, CancellationToken? cancellationToken = null) where T : class, IDbConnection, IDbTransaction
+		{
+			// connection is already a T, so just pass it in
+			return OpenWithTransactionAsync((IDbConnection)connection, cancellationToken)
+					.ContinueWith(t => t.Result.As<T>(), TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+		}
+
+		/// <summary>
+		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="connection">The connection to open.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<T> OpenWithTransactionAsAsync<T>(this IDbConnection connection, CancellationToken? cancellationToken = null) where T : class, IDbConnection, IDbTransaction
+		{
+			// convert to interface first, then open, so we only get one layer of wrapping
+			return connection.As<T>().OpenWithTransactionAsAsync(cancellationToken);
 		}
 		#endregion
 
@@ -1130,9 +1261,10 @@ namespace Insight.Database
 		/// <typeparam name="T">The interface type to implmement.</typeparam>
 		/// <param name="connection">The connection to use for database calls.</param>
 		/// <returns>An implementation of the interface that executes database calls.</returns>
-		public static T As<T>(this DbConnection connection) where T : class
+		public static T As<T>(this IDbConnection connection) where T : class
 		{
-			return (T)InterfaceGenerator.GetImplementorOf(connection, typeof(T));
+			// if the connection already supports T, then return it, otherwise we need a wrapper
+			return (connection as T) ?? (T)InterfaceGenerator.GetImplementorOf(connection, typeof(T));
 		}
 		#endregion
 

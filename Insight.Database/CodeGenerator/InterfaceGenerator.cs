@@ -23,7 +23,7 @@ namespace Insight.Database.CodeGenerator
 	{
 		#region Private Fields
 		private static readonly MethodInfo _typeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
-		private static readonly Type[] _dbConnectionParameterTypes = new Type[] { typeof(DbConnection) };
+		private static readonly Type[] _idbConnectionParameterTypes = new Type[] { typeof(IDbConnection) };
 		private static readonly Type[] _executeParameterTypes = new Type[]
 		{
 				typeof(IDbConnection), typeof(string), typeof(object), typeof(CommandType), typeof(bool), typeof(int?), typeof(IDbTransaction)
@@ -55,7 +55,7 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _insertAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertAsync");
 		private static readonly MethodInfo _insertListAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertListAsync");
 
-		private static readonly ConcurrentDictionary<Type, Func<DbConnection, object>> _constructors = new ConcurrentDictionary<Type, Func<DbConnection, object>>();
+		private static readonly ConcurrentDictionary<Type, Func<IDbConnection, object>> _constructors = new ConcurrentDictionary<Type, Func<IDbConnection, object>>();
 		#endregion
 
 		/// <summary>
@@ -64,8 +64,11 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="connection">The connection to wrap.</param>
 		/// <param name="interfaceType">The interface to implmement.</param>
 		/// <returns>An implmementor of the given interface.</returns>
-		public static object GetImplementorOf(DbConnection connection, Type interfaceType)
+		public static object GetImplementorOf(IDbConnection connection, Type interfaceType)
 		{
+			if (!interfaceType.IsInterface)
+				throw new ArgumentException("interfaceType must be an interface", "interfaceType");
+
 			return _constructors.GetOrAdd(interfaceType, t => CreateImplementorOf(t))(connection);
 		}
 
@@ -74,7 +77,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="interfaceType">The interface to implmement.</param>
 		/// <returns>An implmementor of the given interface.</returns>
-		private static Func<DbConnection, object> CreateImplementorOf(Type interfaceType)
+		private static Func<IDbConnection, object> CreateImplementorOf(Type interfaceType)
 		{
 			// create a new assembly
 			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
@@ -85,11 +88,11 @@ namespace Insight.Database.CodeGenerator
 			TypeBuilder tb = mb.DefineType(interfaceType.FullName + "_Connection", TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { interfaceType });
 
 			// create a constructor for the type
-			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _dbConnectionParameterTypes);
+			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _idbConnectionParameterTypes);
 			ILGenerator ctor0IL = ctor0.GetILGenerator();
 			ctor0IL.Emit(OpCodes.Ldarg_0);
 			ctor0IL.Emit(OpCodes.Ldarg_1);
-			ctor0IL.Emit(OpCodes.Call, typeof(DbConnectionWrapper).GetConstructor(_dbConnectionParameterTypes));
+			ctor0IL.Emit(OpCodes.Call, typeof(DbConnectionWrapper).GetConstructor(_idbConnectionParameterTypes));
 			ctor0IL.Emit(OpCodes.Ret);
 
 			// for each method on the interface, try to implement it with a call to the database
@@ -97,7 +100,7 @@ namespace Insight.Database.CodeGenerator
 				EmitMethodImpl(mb, tb, interfaceMethod);
 
 			// create a static create method that we can invoke directly as a delegate
-			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, interfaceType, _dbConnectionParameterTypes);
+			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, interfaceType, _idbConnectionParameterTypes);
 			ILGenerator createIL = m.GetILGenerator();
 			createIL.Emit(OpCodes.Ldarg_0);
 			createIL.Emit(OpCodes.Newobj, ctor0);
@@ -107,7 +110,7 @@ namespace Insight.Database.CodeGenerator
 			Type t = tb.CreateType();
 
 			// return the create method
-			return (Func<DbConnection, object>)Delegate.CreateDelegate(typeof(Func<DbConnection, object>), t.GetMethod("Create"));
+			return (Func<IDbConnection, object>)Delegate.CreateDelegate(typeof(Func<IDbConnection, object>), t.GetMethod("Create"));
 		}
 
 		/// <summary>

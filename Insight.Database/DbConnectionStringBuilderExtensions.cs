@@ -1,11 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Data.Common;
 using System.Data.Odbc;
 using System.Data.OleDb;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Insight.Database
@@ -62,107 +64,81 @@ namespace Insight.Database
 		}
 
 		/// <summary>
-		/// Opens and returns a database connection implementing the given interface.
-		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
-		/// <param name="builder">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static T OpenAs<T>(this DbConnectionStringBuilder builder) where T : class
-		{
-			return builder.Open().As<T>();
-		}
-
-		/// <summary>
 		/// Opens and returns a database connection.
 		/// </summary>
 		/// <param name="builder">The connection string to open and return.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<DbConnection> OpenAsync(this DbConnectionStringBuilder builder)
+		public static Task<DbConnection> OpenAsync(this DbConnectionStringBuilder builder, CancellationToken? cancellationToken = null)
 		{
-			DbConnection connection = builder.Connection();
-
-#if NODBASYNC
-			return Task<DbConnection>.Factory.StartNew(_ => { connection.Open(); return connection; }, TaskContinuationOptions.ExecuteSynchronously);
-#else
-			return connection.OpenAsync().ContinueWith(t => connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
-#endif
+			return builder.Connection().OpenConnectionAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Opens and returns a database connection implementing the given interface.
+		/// Opens and returns a database connection implementing a given interface.
 		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <typeparam name="T">The interface to implmement.</typeparam>
 		/// <param name="builder">The connection string to open and return.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<T> OpenAsAsync<T>(this DbConnectionStringBuilder builder) where T : class
+		public static T OpenAs<T>(this DbConnectionStringBuilder builder) where T : class, IDbConnection
 		{
-			DbConnectionWrapper connection = (DbConnectionWrapper)(object)builder.Connection().As<T>();
-
-			return connection.OpenAsync().ContinueWith(t => (T)(object)connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			return builder.Connection().OpenAs<T>();
 		}
 
 		/// <summary>
-		/// Opens and returns a database connection with an open transaction.
+		/// Asynchronously opens and returns a database connection implementing a given interface.
 		/// </summary>
+		/// <typeparam name="T">The interface to implmement.</typeparam>
 		/// <param name="builder">The connection string to open and return.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>The opened connection.</returns>
+		public static Task<T> OpenAsAsync<T>(this DbConnectionStringBuilder builder, CancellationToken? cancellationToken = null) where T : class, IDbConnection
+		{
+			return builder.Connection().OpenAsAsync<T>(cancellationToken);
+		}
+
+		/// <summary>
+		/// Opens a database connection and begins a new transaction that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <returns>A wrapper for the database connection.</returns>
 		public static DbConnectionWrapper OpenWithTransaction(this DbConnectionStringBuilder builder)
 		{
-			var connection = new DbConnectionWrapper(builder.Open());
-			connection.BeginAutoTransaction();
-			return connection;
+			return builder.Connection().OpenWithTransaction();
 		}
 
 		/// <summary>
-		/// Opens and returns a database connection with an open transaction implementing the given interface.
+		/// Asynchronously opens a database connection and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
-		/// <param name="builder">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static T OpenWithTransactionAs<T>(this DbConnectionStringBuilder builder) where T : class
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this DbConnectionStringBuilder builder, CancellationToken? cancellationToken = null)
 		{
-			var t = builder.OpenAs<T>();
-			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
-			connection.BeginAutoTransaction();
-			return t;
+			return builder.Connection().OpenWithTransactionAsync(cancellationToken);
 		}
 
 		/// <summary>
-		/// Asynchronously opens and returns a database connection with an open transaction.
+		/// Opens a database connection implementing a given interface and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
-		/// <param name="builder">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this DbConnectionStringBuilder builder)
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static T OpenWithTransactionAs<T>(this DbConnectionStringBuilder builder) where T : class, IDbConnection, IDbTransaction
 		{
-			var connection = new DbConnectionWrapper(builder.Connection());
-
-			return connection.OpenAsync().ContinueWith(
-				task =>
-				{
-					connection.BeginAutoTransaction();
-					return connection;
-				},
-				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			return builder.Connection().OpenWithTransactionAs<T>();
 		}
 
 		/// <summary>
-		/// Asynchronously opens and returns a database connection with an open transaction implementing the given interface.
+		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
-		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
-		/// <param name="builder">The connection string to open and return.</param>
-		/// <returns>The opened connection.</returns>
-		public static Task<T> OpenWithTransactionAsAsync<T>(this DbConnectionStringBuilder builder) where T : class
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<T> OpenWithTransactionAsAsync<T>(this DbConnectionStringBuilder builder, CancellationToken? cancellationToken = null) where T : class, IDbConnection, IDbTransaction
 		{
-			var t = builder.Connection().As<T>();
-			DbConnectionWrapper connection = (DbConnectionWrapper)(object)t;
-
-			return connection.OpenAsync().ContinueWith(
-				task =>
-				{
-					connection.BeginAutoTransaction();
-					return t;
-				},
-				TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			return builder.Connection().OpenWithTransactionAsAsync<T>(cancellationToken);
 		}
 	}
 }
