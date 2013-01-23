@@ -763,6 +763,32 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+
+		#region Set Members on a Struct
+		struct TestStruct
+		{
+			public int Foo { get; private set; }
+		}
+
+		struct TestParentStruct
+		{
+			public TestStruct Struct { get; private set; }
+		}
+
+		[Test]
+		public void TestSettingMembersOfAStruct()
+		{
+			var results = _connection.QuerySql<TestStruct>("SELECT Foo = 4");
+			Assert.AreEqual(4, results[0].Foo);
+		}
+
+		[Test]
+		public void TestSettingNestedStructures()
+		{
+			var results = _connection.QuerySql<TestParentStruct, TestStruct>("SELECT Foo = 4");
+			Assert.AreEqual(4, results[0].Struct.Foo);
+		}
+		#endregion
 		#endregion
 	}
 }

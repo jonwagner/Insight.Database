@@ -142,7 +142,7 @@ namespace Insight.Database.CodeGenerator
 			// since these types are single column types, deserializing these types do not depend on the schema that comes back from the database
 			// we don't need to keep a schema identity for these
 			Delegate deserializer = null;
-			if (!_simpleDeserializers.TryGetValue(type, out deserializer) && type.IsValueType)
+			if (!_simpleDeserializers.TryGetValue(type, out deserializer) && TypeHelper.IsAtomicType(type))
 				deserializer = GetValueDeserializer(type);
 
 			// we have a simple deserializer

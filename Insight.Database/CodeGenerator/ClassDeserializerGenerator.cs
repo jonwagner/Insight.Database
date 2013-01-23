@@ -119,10 +119,15 @@ namespace Insight.Database.CodeGenerator
 			// get the mapping from the reader to the type
 			ClassPropInfo[] mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, startColumn, columnCount, true);
 
-			// need to know the constructor for the object
-			ConstructorInfo constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
-			if (constructor == null)
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}", type.FullName));
+			// need to know the constructor for the object (except for structs)
+			bool isStruct = type.IsValueType;
+			ConstructorInfo constructor = null;
+			if (!isStruct)
+			{
+				constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+				if (constructor == null)
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}", type.FullName));
+			}
 
 			// the method can either be:
 			// createNewObject => Func<IDataReader, T>
@@ -147,12 +152,30 @@ namespace Insight.Database.CodeGenerator
 			// emit a call to the constructor of the object
 			il.BeginExceptionBlock();
 
-			// if we are supposed to create a new object, then new that up, otherwise use the object passed in as an argument 
-			if (createNewObject)
-				il.Emit(OpCodes.Newobj, constructor);		// push new T, stack => [target]
+			// if we are supposed to create a new object, then new that up, otherwise use the object passed in as an argument
+			// this block sets loc.1 with the return value
+			if (isStruct)
+			{
+				if (createNewObject)
+				{
+					il.Emit(OpCodes.Ldloca_S, (int)1);		// load the pointer to the result on the stack
+					il.Emit(OpCodes.Initobj, type);			// initialize the object on the stack
+				}
+				else
+				{
+					il.Emit(OpCodes.Ldarg_1);				// store arg.1 => loc.1
+					il.Emit(OpCodes.Stloc_1);
+				}
+			}
 			else
-				il.Emit(OpCodes.Ldarg_1);					// push arg.1 (T), stack => [target]
-			il.Emit(OpCodes.Stloc_1);						// pop loc.1 (result), stack => [empty]
+			{
+				if (createNewObject)
+					il.Emit(OpCodes.Newobj, constructor);	// push new T, stack => [target]
+				else
+					il.Emit(OpCodes.Ldarg_1);				// push arg.1 (T), stack => [target]
+
+				il.Emit(OpCodes.Stloc_1);					// pop loc.1 (result), stack => [empty]
+			}
 
 			for (int index = 0; index < columnCount; index++)
 			{
@@ -162,8 +185,11 @@ namespace Insight.Database.CodeGenerator
 				if (method == null || !method.CanSetMember)
 					continue;
 
-				// we will need to store the value on the target at the end of the method
-				il.Emit(OpCodes.Ldloc_1);							// push loc.1 (target), stack => [target]
+				// load the address of the object we are working on
+				if (isStruct)
+					il.Emit(OpCodes.Ldloca_S, (int)1);				// push pointer to object
+				else
+					il.Emit(OpCodes.Ldloc_1);						// push loc.1 (target), stack => [target]
 
 				// need to call IDataReader.GetItem to get the value of the field
 				il.Emit(OpCodes.Ldarg_0);							// push arg.0 (reader), stack => [target][reader]
@@ -228,6 +254,7 @@ namespace Insight.Database.CodeGenerator
 		private static Delegate CreateGraphDeserializer(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
 		{
 			Type type = subTypes[0];
+			bool isStruct = type.IsValueType;
 
 			// go through each of the subtypes
 			var deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
@@ -239,6 +266,7 @@ namespace Insight.Database.CodeGenerator
 				new[] { typeof(IDataReader) },
 				true);
 			var il = dm.GetILGenerator();
+			il.DeclareLocal(type);				// loc.0
 
 			///////////////////////////////////////////////////
 			// emit the method
@@ -251,7 +279,12 @@ namespace Insight.Database.CodeGenerator
 
 				// for subobjects, dup the core object so we can set values on it
 				if (i > 0)
-					il.Emit(OpCodes.Dup);
+				{
+					if (isStruct)
+						il.Emit(OpCodes.Ldloca_S, (int)0);
+					else
+						il.Emit(OpCodes.Ldloc_0);
+				}
 
 				// if we don't have a callback, then we are going to store the value directly into the field on T or one of the subobjects
 				// here we determine the proper set method to store into.
@@ -284,7 +317,12 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Call, deserializers[i]);
 
 				// other than the root object, set the value on the parent object
-				if (i > 0)
+				if (i == 0)
+				{
+					// store root object in loc.0
+					il.Emit(OpCodes.Stloc_0);
+				}
+				else
 				{
 					if (setMethod == null)
 						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find set method for type {0} into type {1}", subTypes[i].FullName, subTypes[0].FullName));
@@ -293,7 +331,8 @@ namespace Insight.Database.CodeGenerator
 				}
 			}
 
-			// the value should be on the stack because of the dup above
+			// return the object from loc.0
+			il.Emit(OpCodes.Ldloc_0);
 			il.Emit(OpCodes.Ret);
 
 			// convert the dynamic method to a delegate
