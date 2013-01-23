@@ -18,7 +18,7 @@
 
   <!-- This is the list of nuget package files that we need to insert version information into -->
   <ItemGroup>
-    <NuGetFiles Include="**\*.nuspec" />
+    <NuGetFiles Include="**\*.nuspec" Exclude="packages\**\*.nuspec" />
   </ItemGroup>
 
   <!-- This is the list of nuget package files that we need to delete when we build -->

@@ -67,6 +67,7 @@
     <Compile Include="ColumnAttributeTests.cs" />
     <Compile Include="ConnectionTests.cs" />
     <Compile Include="ConnectionStringSettingsTests.cs" />
+    <Compile Include="OpenTests.cs" />
     <Compile Include="InterfaceTests.cs" />
     <Compile Include="MappingTests.cs" />
     <Compile Include="OutputParameterTests.cs" />

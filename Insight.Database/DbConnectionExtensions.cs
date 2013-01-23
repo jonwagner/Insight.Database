@@ -52,6 +52,11 @@ namespace Insight.Database
 		public static Task<T> OpenConnectionAsync<T>(this T connection, CancellationToken? cancellationToken = null) where T : IDbConnection
 		{
 			CancellationToken ct = cancellationToken ?? CancellationToken.None;
+
+#if NODBASYNC
+			connection.Open();
+			return Helpers.FromResult(connection);
+#else
 			DbConnection dbConnection = connection as DbConnection;
 
 			// if the connection is not a DbConnection, then open it synchronously
@@ -64,6 +69,7 @@ namespace Insight.Database
 			// DbConnection supports OpenAsync, but it doesn't return self
 			return dbConnection.OpenAsync(ct)
 					.ContinueWith(t => connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+#endif
 		}
 
 		/// <summary>
