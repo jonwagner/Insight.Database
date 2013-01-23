@@ -67,7 +67,7 @@ Here is Insight letting you call your database directly with almost no code:
 	IEnumerable<Beer> listOBeer; // from somewhere
 	c.BulkCopy("Beer", listOfBeer);
 
-# v2.1 (coming soon) - with automatic interface mapping #
+# v2.1 now with automatic interface mapping #
 
 - Insight will now automatically convert your .NET interface to SQL calls! See the wiki for some automajikal love!
 - Also now with handy wrappers for managing transactions.
