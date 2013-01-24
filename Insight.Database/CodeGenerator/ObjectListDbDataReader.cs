@@ -275,22 +275,26 @@ namespace Insight.Database.CodeGenerator
 
 		public override Guid GetGuid(int ordinal)
 		{
-			return (Guid)GetValue(ordinal);
+			object value = GetValue(ordinal);
+			if (value is Guid)
+				return (Guid)value;
+
+			return Guid.Parse(value.ToString());
 		}
 
 		public override short GetInt16(int ordinal)
 		{
-			return (short)GetValue(ordinal);
+			return Convert.ToInt16(GetValue(ordinal), CultureInfo.InvariantCulture);
 		}
 
 		public override int GetInt32(int ordinal)
 		{
-			return (int)GetValue(ordinal);
+			return Convert.ToInt32(GetValue(ordinal), CultureInfo.InvariantCulture);
 		}
 
 		public override long GetInt64(int ordinal)
 		{
-			return (long)GetValue(ordinal);
+			return Convert.ToInt64(GetValue(ordinal), CultureInfo.InvariantCulture);
 		}
 
 		public override object this[int ordinal]
