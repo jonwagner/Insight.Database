@@ -139,6 +139,8 @@ namespace Insight.Database.CodeGenerator
 				{
 					// we are reading IEnumerable<ObjectType>, so look up the accessor and call it
 					// if there is no accessor, that means the mapper could not find an appropriate column, so make it null
+					// note that the accessor has code in it that converts to the target schema type (see objectreader)
+					// this is much better than letting sql do it later
 					var accessor = _objectReader.Accessors[ordinal];
 					if (accessor != null)
 						_currentValue = accessor(_current);

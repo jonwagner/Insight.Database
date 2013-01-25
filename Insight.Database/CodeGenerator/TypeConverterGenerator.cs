@@ -351,7 +351,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="sourceType">The source type for the conversion.</param>
 		/// <param name="targetType">The target type for the conversion.</param>
 		/// <returns>A conversion method or null if none could be found.</returns>
-		private static MethodInfo FindConversionMethod(Type sourceType, Type targetType)
+		internal static MethodInfo FindConversionMethod(Type sourceType, Type targetType)
 		{
 			MethodInfo mi = null;
 			if (mi == null)
@@ -380,7 +380,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="sourceType">The source type for the conversion.</param>
 		/// <param name="targetType">The target type for the conversion.</param>
 		/// <returns>A conversion method or null if none could be found.</returns>
-		private static MethodInfo FindConversionMethod(string methodName, Type searchType, Type sourceType, Type targetType)
+		internal static MethodInfo FindConversionMethod(string methodName, Type searchType, Type sourceType, Type targetType)
 		{
 			var members = searchType.FindMembers(
 				MemberTypes.Method,
@@ -408,7 +408,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="sourceType">The source type of data.</param>
 		/// <param name="targetType">The type to coerce to.</param>
 		/// <returns>True if a coersion was emitted, false otherwise.</returns>
-		private static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
+		internal static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
 		{
 			// support auto-converting strings to other types
 			if (sourceType == typeof(string))

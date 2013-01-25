@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
@@ -67,12 +68,13 @@ namespace Insight.Database.CodeGenerator
 					// create a new anonymous method that takes an object and returns the value
 					var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
 					var il = dm.GetILGenerator();
+					il.DeclareLocal(type);						// loc.0 - for calling methods on struct objects
+					il.DeclareLocal(propInfo.MemberType);		// loc.1 - for calling methods on nullable values
 
 					// convert the object reference to the desired type
 					if (type.IsValueType)
 					{
 						// access the field/property of a value type
-						il.DeclareLocal(type);
 						il.Emit(OpCodes.Ldarg_0);
 						il.Emit(OpCodes.Unbox_Any, type);
 						il.Emit(OpCodes.Stloc_0);
@@ -87,7 +89,55 @@ namespace Insight.Database.CodeGenerator
 
 					// get the value from the object
 					propInfo.EmitGetValue(il);
-					propInfo.EmitBox(il);
+
+					// if the type is nullable, handle nulls
+					Type sourceType = propInfo.MemberType;
+					Type targetType = (Type)SchemaTable.Rows[i]["DataType"];
+					Type underlyingType = Nullable.GetUnderlyingType(sourceType);
+					if (underlyingType != null)
+					{
+						// check for not null
+						Label notNullLabel = il.DefineLabel();
+
+						il.Emit(OpCodes.Stloc_1);
+						il.Emit(OpCodes.Ldloca_S, (int)1);
+						il.Emit(OpCodes.Call, sourceType.GetProperty("HasValue").GetGetMethod());
+						il.Emit(OpCodes.Brtrue_S, notNullLabel);
+
+						// it's null, just return null
+						il.Emit(OpCodes.Ldnull);
+						il.Emit(OpCodes.Ret);
+
+						il.MarkLabel(notNullLabel);
+
+						// it's not null, so unbox to the underlyingtype
+						il.Emit(OpCodes.Ldloca_S, (int)1);
+						il.Emit(OpCodes.Call, sourceType.GetProperty("Value").GetGetMethod());
+
+						// at this point we have de-nulled value, so use those converters
+						sourceType = underlyingType;
+					}
+
+					// see if there is an conversion operator on either the source or target types
+					MethodInfo mi = TypeConverterGenerator.FindConversionMethod(sourceType, targetType);
+					if (mi != null)
+					{
+						// convert the object's member type to the target member type and box it
+						il.Emit(OpCodes.Call, mi);
+						il.Emit(OpCodes.Box, targetType);
+					}
+					else if (TypeConverterGenerator.EmitCoersion(il, sourceType, targetType))
+					{
+						// we convert primitives to the proper type
+						// now we box it aas a target object
+						il.Emit(OpCodes.Box, targetType);
+					}
+					else
+					{
+						// wrap the object as its source type
+						il.Emit(OpCodes.Box, sourceType);
+					}
+
 					il.Emit(OpCodes.Ret);
 
 					MemberTypes[i] = propInfo.MemberType;
