@@ -439,7 +439,8 @@ namespace Insight.Database.CodeGenerator
 					// if the value hasn't been boxed yet, do it so we can call the method
 					if (prop.MemberType.IsValueType)
 						il.Emit(OpCodes.Box, prop.MemberType);
-					il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("ObjectToSqlTime"));
+					IlHelper.EmitLdInt32(il, (int)sqlParameter.DbType);
+					il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("ObjectToSqlDateTime"));
 				}
 				else if (prop.MemberType.IsValueType)
 				{

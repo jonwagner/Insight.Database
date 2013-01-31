@@ -815,9 +815,8 @@ namespace Insight.Tests
 				var time = connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = oneHour });
 				Assert.AreEqual(oneHour, time);
 
-				// > 1 day should truncate the day portions
-				time = connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = new TimeSpan(1, 1, 0, 0) });
-				Assert.AreEqual(oneHour, time);
+				// > 1 day should throw
+				Assert.Throws<InvalidOperationException>(() => connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = new TimeSpan(1, 1, 0, 0) }));
 			}
 		}
 
@@ -846,6 +845,38 @@ namespace Insight.Tests
 				// > 1 day should not fail because [datetime] is longer
 				result = connection.ExecuteScalar<DateTime>("DateTimeInput", new { t = oneDayAndOneMinute });
 				Assert.AreEqual(oneDayAndOneMinute, result - timeBase);
+			}
+		}
+
+		[Test]
+		public void DateTimeMathShouldWorkOnBothSides()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC TimeAdd @t [datetime], @add [datetime] AS SELECT @t + @add");
+
+				// make a time and a span and add them
+				DateTime now = new DateTime (1970, 2, 1, 1, 0, 5);
+				TimeSpan adjust = new TimeSpan(2, 1, 5, 6);
+
+				var time = connection.ExecuteScalar<DateTime>("TimeAdd", new { t = now, add = adjust });
+				Assert.AreEqual(now + adjust, time);
+			}
+		}
+
+		[Test]
+		public void TimeSpanMathShouldWorkOnBothSides()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC TimeAdd @t [datetime], @add [time] AS SELECT @t + @add");
+
+				// make a time and a span and add them
+				DateTime now = new DateTime(1970, 2, 1, 1, 0, 5);
+				TimeSpan oneHour = new TimeSpan(1, 0, 0);
+
+				var time = connection.ExecuteScalar<DateTime>("TimeAdd", new { t = now, add = oneHour });
+				Assert.AreEqual(now + oneHour, time);
 			}
 		}
 		#endregion

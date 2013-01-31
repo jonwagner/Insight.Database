@@ -386,18 +386,36 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Converts a .NET TimeSpan to a SQL DateTime by offseting by SqlZeroTime.
 		/// The object is only offset if it is a TimeSpan or TimeSpan?.
+		/// When converting to a SQL time, the value must be within a 24-hour period.
 		/// </summary>
 		/// <param name="o">The object to convert.</param>
+		/// <param name="dbType">The expected type in the database..</param>
 		/// <returns>The corresponding SQL DateTime.</returns>
-		public static object ObjectToSqlTime(object o)
+		public static object ObjectToSqlDateTime(object o, DbType dbType)
 		{
 			if (o == null)
 				return null;
 
 			if (o is TimeSpan)
-				return TimeSpanToSqlDateTime((TimeSpan)o);
+			{
+				TimeSpan timeSpan = (TimeSpan)o;
+
+				// if we are converting to a timespan, make sure it is within the range of one day
+				if (dbType == DbType.Time && (timeSpan.Ticks < 0 || timeSpan.Ticks >= TimeSpan.TicksPerDay))
+					throw new InvalidOperationException("Error converting timespan to time. Value must be between 0 and 1 day.");
+
+				return TimeSpanToSqlDateTime(timeSpan);
+			}
 			if (o is TimeSpan?)
+			{
+				TimeSpan timeSpan = ((TimeSpan?)o).Value;
+
+				// if we are converting to a timespan, make sure it is within the range of one day
+				if (dbType == DbType.Time && (timeSpan.Ticks < 0 || timeSpan.Ticks >= TimeSpan.TicksPerDay))
+					throw new InvalidOperationException("Error converting timespan to time. Value must be between 0 and 1 day.");
+
 				return TimeSpanToNullableSqlDateTime((TimeSpan?)o);
+			}
 
 			// We don't know how to convert it. Let .NET handle it.
 			return o;
