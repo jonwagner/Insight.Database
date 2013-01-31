@@ -71,7 +71,7 @@ namespace Insight.Database.CodeGenerator
 			_simpleDeserializers.TryAdd(typeof(double), GetValueDeserializer<double>());
 			_simpleDeserializers.TryAdd(typeof(DateTime), GetValueDeserializer<DateTime>());
 			_simpleDeserializers.TryAdd(typeof(DateTimeOffset), GetValueDeserializer<DateTimeOffset>());
-			_simpleDeserializers.TryAdd(typeof(TimeSpan), GetValueDeserializer<TimeSpan>());
+			_simpleDeserializers.TryAdd(typeof(TimeSpan), GetValueDeserializer(typeof(TimeSpan)));
 
 			_simpleDeserializers.TryAdd(typeof(byte?), GetValueDeserializer<byte?>());
 			_simpleDeserializers.TryAdd(typeof(short?), GetValueDeserializer<short?>());
@@ -82,7 +82,7 @@ namespace Insight.Database.CodeGenerator
 			_simpleDeserializers.TryAdd(typeof(double?), GetValueDeserializer<double?>());
 			_simpleDeserializers.TryAdd(typeof(DateTime?), GetValueDeserializer<DateTime?>());
 			_simpleDeserializers.TryAdd(typeof(DateTimeOffset?), GetValueDeserializer<DateTimeOffset?>());
-			_simpleDeserializers.TryAdd(typeof(TimeSpan?), GetValueDeserializer<TimeSpan?>());
+			_simpleDeserializers.TryAdd(typeof(TimeSpan?), GetValueDeserializer(typeof(TimeSpan?)));
 		}
 		#endregion
 
@@ -232,6 +232,13 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Dup);
 			il.Emit(OpCodes.Ldsfld, _dbNullField);
 			il.Emit(OpCodes.Beq, isNull);
+
+			// convert timespans from SQL values to timespans
+			if (type == typeof(TimeSpan) || type == typeof(TimeSpan?))
+			{
+				// convert whatever object it is to a boxed timespan
+				il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("SqlObjectToTimeSpan"));
+			}
 
 			// not null, so unbox it and return it
 			if (underlyingType != null)

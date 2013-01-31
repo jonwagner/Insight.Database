@@ -33,6 +33,11 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _readXmlDocument = typeof(TypeConverterGenerator).GetMethod("ReadXmlDocument");
 		private static readonly MethodInfo _readXDocument = typeof(TypeConverterGenerator).GetMethod("ReadXDocument");
 		private static readonly MethodInfo _deserializeXml = typeof(TypeConverterGenerator).GetMethod("DeserializeXml");
+
+		/// <summary>
+		/// The number of ticks to offset when converting between .NET TimeSpan and SQL DateTime.
+		/// </summary>
+		private static readonly long SqlZeroTime = new DateTime(1900, 1, 1, 0, 0, 0).Ticks;
 		#endregion
 
 		#region Constructors
@@ -344,6 +349,79 @@ namespace Insight.Database.CodeGenerator
 		}
 		#endregion
 
+		#region TimeSpan Helpers
+		/// <summary>
+		/// Converts a DateTime from the SQL side into a .NET TimeSpan by offseting by SqlZeroTime.
+		/// </summary>
+		/// <param name="dateTime">The DateTime to convert.</param>
+		/// <returns>The corresponding TimeSpan.</returns>
+		public static TimeSpan SqlDateTimeToTimeSpan(DateTime dateTime)
+		{
+			return new TimeSpan(dateTime.Ticks - SqlZeroTime);
+		}
+
+		/// <summary>
+		/// Converts a .NET TimeSpan to a SQL DateTime by offseting by SqlZeroTime.
+		/// </summary>
+		/// <param name="span">The TimeSpan to convert.</param>
+		/// <returns>The corresponding SQL DateTime.</returns>
+		public static DateTime TimeSpanToSqlDateTime(TimeSpan span)
+		{
+			return new DateTime(span.Ticks + SqlZeroTime);
+		}
+
+		/// <summary>
+		/// Converts a .NET TimeSpan to a SQL DateTime by offseting by SqlZeroTime.
+		/// </summary>
+		/// <param name="span">The TimeSpan to convert.</param>
+		/// <returns>The corresponding SQL DateTime.</returns>
+		public static DateTime? TimeSpanToNullableSqlDateTime(TimeSpan? span)
+		{
+			if (span == null)
+				return (DateTime?)null;
+
+			return TimeSpanToSqlDateTime(span.Value);
+		}
+
+		/// <summary>
+		/// Converts a .NET TimeSpan to a SQL DateTime by offseting by SqlZeroTime.
+		/// The object is only offset if it is a TimeSpan or TimeSpan?.
+		/// </summary>
+		/// <param name="o">The object to convert.</param>
+		/// <returns>The corresponding SQL DateTime.</returns>
+		public static object ObjectToSqlTime(object o)
+		{
+			if (o == null)
+				return null;
+
+			if (o is TimeSpan)
+				return TimeSpanToSqlDateTime((TimeSpan)o);
+			if (o is TimeSpan?)
+				return TimeSpanToNullableSqlDateTime((TimeSpan?)o);
+
+			// We don't know how to convert it. Let .NET handle it.
+			return o;
+		}
+
+		/// <summary>
+		/// Converts a SQL DateTime  to a .NET TimeSpan by offseting by SqlZeroTime.
+		/// The object is only offset if it is a DateTime.
+		/// </summary>
+		/// <param name="o">The object to convert.</param>
+		/// <returns>The corresponding .NET TimeSpan.</returns>
+		public static object SqlObjectToTimeSpan(object o)
+		{
+			if (o == null)
+				return null;
+
+			if (o is DateTime)
+				return SqlDateTimeToTimeSpan((DateTime)o);
+
+			// We don't know how to convert it. Let .NET handle it.
+			return o;
+		}
+		#endregion
+
 		#region Code Generation Helpers
 		/// <summary>
 		/// Attempt to find a valid conversion method.
@@ -368,6 +446,10 @@ namespace Insight.Database.CodeGenerator
 				mi = FindConversionMethod(sourceType, Nullable.GetUnderlyingType(targetType));
 			if (mi == null && targetType.IsEnum)
 				return FindConversionMethod(sourceType, Enum.GetUnderlyingType(targetType));
+
+			// handle converting sql datetime to timespan
+			if (sourceType == typeof(DateTime) && targetType == typeof(TimeSpan))
+				mi = typeof(TypeConverterGenerator).GetMethod("SqlDateTimeToTimeSpan");
 
 			return mi;
 		}

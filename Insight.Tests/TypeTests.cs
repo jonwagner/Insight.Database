@@ -43,7 +43,16 @@ namespace Insight.Tests
 			{
 				// make sure we can send values up to SQL
 				// make sure we can deserialize properties and fields
-				var data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNullable=@p, PropertyNullable=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
+				var data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=CONVERT({0}, @p), Property=CONVERT({0}, @p), FieldNullable=CONVERT({0}, @p), PropertyNullable=CONVERT({0}, @p), FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
+				Assert.AreEqual(value, data.Field);
+				Assert.AreEqual(value, data.Property);
+				Assert.AreEqual(value, data.FieldNullable);
+				Assert.AreEqual(value, data.PropertyNullable);
+				Assert.IsNull(data.FieldNull);
+				Assert.IsNull(data.PropertyNull);
+
+				// test deserializing without conversions. This is to check for special cases for Time/DateTime conversions
+				data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNullable=@p, PropertyNullable=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
 				Assert.AreEqual(value, data.Field);
 				Assert.AreEqual(value, data.Property);
 				Assert.AreEqual(value, data.FieldNullable);
@@ -52,7 +61,7 @@ namespace Insight.Tests
 				Assert.IsNull(data.PropertyNull);
 
 				// make sure we can query with a null parameter to SQL
-				data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = (T?)null }).First();
+				data = connection.QuerySql<NullableData<T>>(String.Format("SELECT Field=CONVERT({0}, @p), Property=CONVERT({0}, @p), FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = (T?)null }).First();
 				Assert.AreEqual(default(T), data.Field);
 				Assert.AreEqual(default(T), data.Property);
 				Assert.IsNull(data.FieldNullable);
@@ -71,47 +80,48 @@ namespace Insight.Tests
 				data3 = connection.QuerySql<T?>(String.Format("SELECT CONVERT({0}, @p) UNION SELECT CONVERT({0}, @p)", sqlType), new { p = (T?)value });
 
 				// make sure that we can convert the type to an proc parameter
+				string procName = String.Format("InsightTestProc_{0}_{1}", sqlType.Split('(')[0], typeof(T).Name);
 				try
 				{
-					connection.ExecuteSql(String.Format("CREATE PROC InsightTestProc{1} @p {0} AS SELECT CONVERT({0}, @p)", sqlType, typeof(T).Name));
+					connection.ExecuteSql(String.Format("CREATE PROC {1} @p {0} AS SELECT CONVERT({0}, @p)", sqlType, procName));
 
 					// parameter as T => T
-					var data4 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (T)value });
+					var data4 = connection.Query<T>(procName, new { p = (T)value });
 					Assert.AreEqual(value, data4.First());
 
 					// parameter as (object)T => T
-					var data5 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (object)value });
+					var data5 = connection.Query<T>(procName, new { p = (object)value });
 					Assert.AreEqual(value.ToString(), data5.First().ToString());
 
 					// parameter as T?(value) => T
-					var data6 = connection.Query<T>("InsightTestProc" + typeof(T).Name, new { p = (T?)value });
+					var data6 = connection.Query<T>(procName, new { p = (T?)value });
 					Assert.AreEqual(value, data6.First());
 
 					// parameter as T(value) => T?
-					var data7 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T)value });
+					var data7 = connection.Query<T?>(procName, new { p = (T)value });
 					Assert.AreEqual(value.ToString(), data7.First().ToString());
 
 					// parameter as (object)T=value => T?
-					var data8 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (object)value });
+					var data8 = connection.Query<T?>(procName, new { p = (object)value });
 					Assert.AreEqual(value.ToString(), data8.First().ToString());
 
 					// parameter as T?(value) => T?
-					var data9 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T?)value });
+					var data9 = connection.Query<T?>(procName, new { p = (T?)value });
 					Assert.AreEqual(value.ToString(), data9.First().ToString());
 
 					// parameter as T?=null => T?
-					var data10 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (T?)null });
+					var data10 = connection.Query<T?>(procName, new { p = (T?)null });
 					Assert.IsNull(data10.First());
 
 					// parameter as (object)T=null => T?
-					var data11 = connection.Query<T?>("InsightTestProc" + typeof(T).Name, new { p = (object)null });
+					var data11 = connection.Query<T?>(procName, new { p = (object)null });
 					Assert.IsNull(data11.First());
 				}
 				finally
 				{
 					try
 					{
-						connection.ExecuteSql("DROP PROC InsightTestProc" + typeof(T).Name);
+						connection.ExecuteSql("DROP PROC " + procName);
 					}
 					catch{}
 				}
@@ -188,6 +198,7 @@ namespace Insight.Tests
 			NullableData<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
 			NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
 			NullableData<TimeSpan>.Test(TimeSpan.Parse("00:00:00"), _connection, "time");
+			NullableData<TimeSpan>.Test(TimeSpan.Parse("00:00:00"), _connection, "datetime");
 
 			// class types
 			Data<string>.Test("foo", _connection, "varchar(128)");
@@ -789,6 +800,54 @@ namespace Insight.Tests
 			Assert.AreEqual(4, results[0].Struct.Foo);
 		}
 		#endregion
+		#endregion
+
+		#region TimeSpan Tests
+		[Test]
+		public void TimeSpanShouldConvertProperlyToSqlTime()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC TimeInput @t [time] AS SELECT @t");
+
+				// one hour should work
+				TimeSpan oneHour = new TimeSpan(1, 0, 0);
+				var time = connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = oneHour });
+				Assert.AreEqual(oneHour, time);
+
+				// > 1 day should truncate the day portions
+				time = connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = new TimeSpan(1, 1, 0, 0) });
+				Assert.AreEqual(oneHour, time);
+			}
+		}
+
+		[Test]
+		public void TimeSpanShouldConvertProperlyToSqlDateTime()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC DateTimeInput @t [datetime] AS SELECT @t");
+
+				// this is the sql server base 'zero-datetime'
+				DateTime timeBase = DateTime.Parse("1/1/1900");
+				TimeSpan oneHour = new TimeSpan(1, 0, 0);
+				DateTime result;
+
+				// one hour should work - and come back based on 'zero-datetime'
+				result = connection.ExecuteScalar<DateTime>("DateTimeInput", new { t = oneHour });
+				Assert.AreEqual(oneHour, result - timeBase);
+
+				// one hour should work - and come back round-tripped
+				result = connection.ExecuteScalar<DateTime>("DateTimeInput", new { t = oneHour });
+				Assert.AreEqual(oneHour, result - timeBase);
+
+				TimeSpan oneDayAndOneMinute = new TimeSpan(1, 0, 0, 1);
+
+				// > 1 day should not fail because [datetime] is longer
+				result = connection.ExecuteScalar<DateTime>("DateTimeInput", new { t = oneDayAndOneMinute });
+				Assert.AreEqual(oneDayAndOneMinute, result - timeBase);
+			}
+		}
 		#endregion
 	}
 }

@@ -365,14 +365,6 @@ namespace Insight.Database.CodeGenerator
 								break;
 						}
 
-						// since time is broken, we treat it as a string
-						if (TypeConverterGenerator.SqlClientTimeIsBroken && sqlParameter.DbType == DbType.Time)
-						{
-							il.Emit(OpCodes.Dup);
-							il.Emit(OpCodes.Ldc_I4, -1);
-							il.Emit(OpCodes.Callvirt, _iDataParameterSetSize);
-						}
-
 						il.Emit(OpCodes.Callvirt, _iListAdd);						// stack => [parameters]
 						il.Emit(OpCodes.Pop);										// IList.Add returns the index, ignore it
 					}
@@ -437,16 +429,23 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Ldarg_1);												// push object							
 				prop.EmitGetValue(il);
 
-				if (prop.MemberType.IsValueType)
+				// jump right to the spot where we are ready to set the value
+				Label readyToSetLabel = il.DefineLabel();
+				Type underlyingType = Nullable.GetUnderlyingType(prop.MemberType);
+
+				// special conversions for timespan
+				if (sqlType == DbType.Time || sqlType == DbType.DateTime || sqlType == DbType.DateTime2 || sqlType == DbType.DateTimeOffset)
+				{
+					// if the value hasn't been boxed yet, do it so we can call the method
+					if (prop.MemberType.IsValueType)
+						il.Emit(OpCodes.Box, prop.MemberType);
+					il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("ObjectToSqlTime"));
+				}
+				else if (prop.MemberType.IsValueType)
 				{
 					// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
 					il.Emit(OpCodes.Box, prop.MemberType);
 				}
-
-				// jump right to the spot where we are ready to set the value
-				Label readyToSetLabel = il.DefineLabel();
-
-				Type underlyingType = Nullable.GetUnderlyingType(prop.MemberType);
 
 				// if it's class type, boxed value type (in an object), or nullable, then we have to check for null
 				if (!prop.MemberType.IsValueType || underlyingType != null)
@@ -475,12 +474,6 @@ namespace Insight.Database.CodeGenerator
 
 					// we know the value is not null
 					il.MarkLabel(notNull);
-				}
-
-				// .NET doesn't like timespan so convert to strings
-				if (TypeConverterGenerator.SqlClientTimeIsBroken && ((underlyingType ?? prop.MemberType) == typeof(TimeSpan)))
-				{
-					il.Emit(OpCodes.Callvirt, typeof(Object).GetMethod("ToString", new Type[] { }));
 				}
 
 				///////////////////////////////////////////////////////////////
@@ -532,10 +525,6 @@ namespace Insight.Database.CodeGenerator
 				{
 					// if the type supports IConvertible, then let SQL convert it
 					// if the type is object, we can't do anything, so let SQL attempt to convert it
-
-					// The timespan type isn't liked by .NET and TimeSpan isn't convertible to a string, so convert it manually
-					if (TypeConverterGenerator.SqlClientTimeIsBroken && sqlType == DbType.Time)
-						il.Emit(OpCodes.Callvirt, typeof(Object).GetMethod("ToString", new Type[] { }));
 				}
 				else if (!TypeHelper.IsAtomicType(prop.MemberType))
 				{
@@ -638,12 +627,6 @@ namespace Insight.Database.CodeGenerator
 			///////////////////////////////////////////////////////////////
 			// p.DbType = DbType
 			///////////////////////////////////////////////////////////////
-			if (TypeConverterGenerator.SqlClientTimeIsBroken && dbType == DbType.Time)
-			{
-				// treat as object
-				dbType = DbType.String;
-			}
-
 			il.Emit(OpCodes.Dup);													// dup parameter
 			IlHelper.EmitLdInt32(il, (int)dbType);									// push dbtype
 			il.Emit(OpCodes.Callvirt, _iDataParameterSetDbType);					// call settype

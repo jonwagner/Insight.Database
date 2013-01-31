@@ -155,6 +155,7 @@ namespace Insight.Tests
 			ReturnTypeTest<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
 			ReturnTypeTest<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
 			ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
+			ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
 
 			ReturnTypeTest<Nullable<byte>>.Test(1, _connection, "tinyint");
 			ReturnTypeTest<Nullable<short>>.Test(-2, _connection, "smallint");
@@ -170,6 +171,7 @@ namespace Insight.Tests
 			ReturnTypeTest<Nullable<DateTime>>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
 			ReturnTypeTest<Nullable<DateTimeOffset>>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
 			ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
+			ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
 
 			// enums
 			ReturnTypeTest<TestEnum>.Test(TestEnum.Two, _connection, "int");
