@@ -867,6 +867,8 @@ namespace Insight.Tests
 		[Test]
 		public void TimeSpanMathShouldWorkOnBothSides()
 		{
+			// This seems to require SQL2012 SP1 - 11.0.3000
+			// Fails on 11.0.2100
 			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
 				connection.ExecuteSql("CREATE PROC TimeAdd @t [datetime], @add [time] AS SELECT @t + @add");
