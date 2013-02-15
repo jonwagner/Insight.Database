@@ -406,7 +406,7 @@ namespace Insight.Database.CodeGenerator
 
 				return TimeSpanToSqlDateTime(timeSpan);
 			}
-			if (o is TimeSpan?)
+			else if (o is TimeSpan?)
 			{
 				TimeSpan timeSpan = ((TimeSpan?)o).Value;
 
