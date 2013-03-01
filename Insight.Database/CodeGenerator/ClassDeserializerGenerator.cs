@@ -144,6 +144,7 @@ namespace Insight.Database.CodeGenerator
 			il.DeclareLocal(typeof(int));					// loc.0 = index
 			il.DeclareLocal(type);						    // loc.1 = result
 			il.DeclareLocal(typeof(string));				// loc.2 = string (for enum processing)
+			il.DeclareLocal(typeof(object));				// loc.3 = current value from the data reader
 
 			// initialize index = 0
 			il.Emit(OpCodes.Ldc_I4_0);						// push 0
@@ -185,6 +186,10 @@ namespace Insight.Database.CodeGenerator
 				if (method == null || !method.CanSetMember)
 					continue;
 
+				// store the value as a local variable in case type conversion fails
+				il.Emit(OpCodes.Ldnull);
+				il.Emit(OpCodes.Stloc_3);
+
 				// load the address of the object we are working on
 				if (isStruct)
 					il.Emit(OpCodes.Ldloca_S, (int)1);				// push pointer to object
@@ -199,6 +204,9 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Stloc_0);							// pop loc.0 (index), stack => [target][reader][index]
 				// now call it
 				il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);		// call getItem, stack => [target][value-as-object]
+				// store the value as a local variable in case type conversion fails
+				il.Emit(OpCodes.Dup);
+				il.Emit(OpCodes.Stloc_3);
 
 				// determine the type of the object in the recordset
 				Type sourceType = reader.GetFieldType(index + startColumn);
@@ -227,6 +235,7 @@ namespace Insight.Database.CodeGenerator
 			il.BeginCatchBlock(typeof(Exception));						// stack => [Exception]
 			il.Emit(OpCodes.Ldloc_0);									// push loc.0, stack => [Exception][index]
 			il.Emit(OpCodes.Ldarg_0);									// push arg.0, stack => [Exception][index][reader]
+			il.Emit(OpCodes.Ldloc_3);									// push loc.3, stack => [Exception][index][reader][value]
 			il.Emit(OpCodes.Call, TypeConverterGenerator.CreateDataExceptionMethod);
 			il.Emit(OpCodes.Throw);									// stack => DataException
 			il.EndExceptionBlock();

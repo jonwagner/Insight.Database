@@ -259,20 +259,19 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="ex">The inner exception.</param>
 		/// <param name="index">The index of the column.</param>
 		/// <param name="reader">The data reader.</param>
+		/// <param name="value">The value read from the reader.</param>
 		/// <returns>An exception that can be thrown.</returns>
-		public static Exception CreateDataException(Exception ex, int index, IDataReader reader)
+		public static Exception CreateDataException(Exception ex, int index, IDataReader reader, object value)
 		{
 			string name = "n/a";
-			string value = "n/a";
 
 			if (reader != null && !reader.IsClosed && index >= 0 && index < reader.FieldCount)
 			{
 				name = reader.GetName(index);
-				object val = reader.GetValue(index);
-				if (val == null || val is DBNull)
+				if (value == null || value is DBNull)
 					value = "<null>";
 				else
-					value = val.ToString() + " - " + Type.GetTypeCode(val.GetType());
+					value = value.ToString() + " - " + Type.GetTypeCode(value.GetType());
 			}
 
 			return new DataException(string.Format(CultureInfo.InvariantCulture, "Error parsing column {0} ({1}={2})", index, name, value), ex);
