@@ -53,6 +53,7 @@ namespace Insight.Database.CodeGenerator
 		static DbReaderDeserializer()
 		{
 			// pre-initialize all of the simple serializers for known types so they can be quickly returned.
+			_simpleDeserializers.TryAdd(typeof(object), GetDynamicDeserializer<FastExpando>());
 			_simpleDeserializers.TryAdd(typeof(FastExpando), GetDynamicDeserializer<FastExpando>());
 			_simpleDeserializers.TryAdd(typeof(ExpandoObject), GetDynamicDeserializer<ExpandoObject>());
 			_simpleDeserializers.TryAdd(typeof(XmlDocument), GetXmlDocumentDeserializer());

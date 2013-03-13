@@ -74,6 +74,25 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void TestThatDynamicImpliesFastExpando()
+		{
+			var list = _connection.QuerySql<dynamic>("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(2, list.Count);
+
+			var item = list[0];
+			Assert.IsNotNull(item);
+			Assert.AreEqual(1, item.Int);
+			Assert.AreEqual("foo", item.String);
+
+			item = list[1];
+			Assert.IsNotNull(item);
+			Assert.AreEqual(2, item.Int);
+			Assert.AreEqual("moo", item.String);
+		}
+
+		[Test]
 		public void TestMultipleDynamicObjectQueriesAgainstReader()
 		{
 			// this failed at one point because the expando converter was holding onto a reader in a closure and calling the wrong one.

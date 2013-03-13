@@ -50,6 +50,22 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Results with Dynamic Tests
+		[Test]
+		public void ResultWithDynamicCreatesFastExpando()
+		{
+			// Results<dynamic> gets compiled as Results<object>
+			// Insight will assume that if you want an object, you are really saying dynamic
+			// Because, seriously, why would you just want an object back from the database?
+			var results = _connection.QueryResultsSql<Results<dynamic>>("SELECT x=1, y=2");
+			
+			Assert.AreEqual(1, results.Set1.Count);
+			var item = results.Set1[0];
+			Assert.AreEqual(1, item.X);
+			Assert.AreEqual(2, item.Y);
+		}
+		#endregion
+
 		#region Derived Recordsets Tests
 		class PageData
 		{
