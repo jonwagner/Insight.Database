@@ -22,7 +22,6 @@ namespace Insight.Database.CodeGenerator
 	class InterfaceGenerator
 	{
 		#region Private Fields
-		private static readonly MethodInfo _typeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
 		private static readonly Type[] _idbConnectionParameterTypes = new Type[] { typeof(IDbConnection) };
 		private static readonly Type[] _executeParameterTypes = new Type[]
 		{
@@ -197,12 +196,9 @@ namespace Insight.Database.CodeGenerator
 						if (EmitSpecialParameter(mIL, "withGraph", parameters, executeParameters))
 							break;
 
+						// if the defaultgraph attribute is on the method, use that
 						if (graphAttribute != null)
-						{
-							// if the defaultgraph attribute is on the method, use that
-							mIL.Emit(OpCodes.Ldtoken, graphAttribute.GraphTypes[0]);
-							mIL.Emit(OpCodes.Call, _typeGetTypeFromHandle);
-						}
+							mIL.EmitLoadType(graphAttribute.GraphTypes[0]);
 						else
 							mIL.Emit(OpCodes.Ldnull);
 						break;

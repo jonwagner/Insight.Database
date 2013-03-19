@@ -71,21 +71,17 @@ namespace Insight.Database.CodeGenerator
 					var il = dm.GetILGenerator();
 
 					// convert the object reference to the desired type
+					il.Emit(OpCodes.Ldarg_0);
 					if (type.IsValueType)
 					{
 						// access the field/property of a value type
 						var valueHolder = il.DeclareLocal(type);
-						il.Emit(OpCodes.Ldarg_0);
 						il.Emit(OpCodes.Unbox_Any, type);
 						il.Emit(OpCodes.Stloc, valueHolder);
 						il.Emit(OpCodes.Ldloca_S, valueHolder);
 					}
 					else
-					{
-						// access the field/property of a reference type
-						il.Emit(OpCodes.Ldarg_0);						// push object argument
 						il.Emit(OpCodes.Isinst, type);					// cast object -> type
-					}
 
 					// get the value from the object
 					propInfo.EmitGetValue(il);
@@ -123,32 +119,17 @@ namespace Insight.Database.CodeGenerator
 					// if the provider type is Xml, then serialize the value
 					if (!sourceType.IsValueType && providerTargetType == typeof(SqlXml))
 					{
-						il.Emit(OpCodes.Ldtoken, sourceType);
-						il.Emit(OpCodes.Call, TypeHelper.TypeGetTypeFromHandle);
+						il.EmitLoadType(sourceType);
 						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", new Type[] { typeof(object), typeof(Type) }));
 					}
 					else
 					{
-						// see if there is an conversion operator on either the source or target types
-						MethodInfo mi = TypeConverterGenerator.FindConversionMethod(sourceType, targetType);
-						if (mi != null)
-						{
-							// convert the object's member type to the target member type and box it
-							il.Emit(mi.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, mi);
+						// attempt to convert the value
+						// either way, we are putting it in an object variable, so box it
+						if (TypeConverterGenerator.EmitConversionOrCoersion(il, sourceType, targetType))
 							il.Emit(OpCodes.Box, targetType);
-						}
-						else if (TypeConverterGenerator.EmitCoersion(il, sourceType, targetType))
-						{
-							// we convert primitives to the proper type
-							// now we box it as a target object
-							if (targetType.IsValueType)
-								il.Emit(OpCodes.Box, targetType);
-						}
 						else
-						{
-							// wrap the object as its source type
 							il.Emit(OpCodes.Box, sourceType);
-						}
 					}
 
 					il.Emit(OpCodes.Ret);

@@ -27,7 +27,6 @@ namespace Insight.Database.CodeGenerator
 		internal static readonly MethodInfo CreateDataExceptionMethod = typeof(TypeConverterGenerator).GetMethod("CreateDataException");
 		private static readonly MethodInfo _enumParse = typeof(Enum).GetMethod("Parse", new Type[] { typeof(Type), typeof(string), typeof(bool) });
 		private static readonly ConstructorInfo _linqBinaryCtor = typeof(System.Data.Linq.Binary).GetConstructor(new Type[] { typeof(byte[]) });
-		private static readonly MethodInfo _typeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
 		private static readonly MethodInfo _readChar = typeof(TypeConverterGenerator).GetMethod("ReadChar");
 		private static readonly MethodInfo _readNullableChar = typeof(TypeConverterGenerator).GetMethod("ReadNullableChar");
 		private static readonly MethodInfo _readXmlDocument = typeof(TypeConverterGenerator).GetMethod("ReadXmlDocument");
@@ -83,7 +82,6 @@ namespace Insight.Database.CodeGenerator
 			// sourceType - this is the type of the data in the data set
 			Type targetType = method.MemberType;
 			Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-			Type rawTargetType = underlyingTargetType.IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
 
 			// some labels that we need
 			Label isDbNullLabel = il.DefineLabel();
@@ -140,8 +138,7 @@ namespace Insight.Database.CodeGenerator
 				// assume the column is an xml data type and that we want to deserialize it
 
 				// before: stack => [target][object-value]
-				il.Emit(OpCodes.Ldtoken, targetType);
-				il.Emit(OpCodes.Call, typeof(Type).GetMethod("GetTypeFromHandle"));
+				il.EmitLoadType(targetType);
 
 				// after: stack => [target][object-value][memberType]
 				il.Emit(OpCodes.Call, _deserializeXml);
@@ -157,11 +154,8 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Stloc, localString);				// pop loc.2 (enum), stack => [target]
 
 				// call enum.parse (type, value, true)
-				il.Emit(OpCodes.Ldtoken, underlyingTargetType);				// push type-token, stack => [target][enum-type-token]
-				il.EmitCall(OpCodes.Call, _typeGetTypeFromHandle, null);
-
-				// call GetType, stack => [target][enum-type]
-				il.Emit(OpCodes.Ldloc, localString);							// push enum, stack => [target][enum-type][string]
+				il.EmitLoadType(underlyingTargetType);
+				il.Emit(OpCodes.Ldloc, localString);				// push enum, stack => [target][enum-type][string]
 				il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
 				il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
 
@@ -191,15 +185,8 @@ namespace Insight.Database.CodeGenerator
 				}
 				else
 				{
-					// see if there is an conversion operator on either the source or target types
-					MethodInfo mi = FindConversionMethod(sourceType, targetType);
-
-					// either emit the call to the conversion operator or try another strategy
-					if (mi != null)
-					{
-						il.Emit(mi.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, mi);
-					}
-					else if (!TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType))
+					// attempt to convert the value to the target type
+					if (!EmitConversionOrCoersion(il, sourceType, targetType))
 					{
 						if (sourceType != targetType)
 						{
@@ -443,12 +430,47 @@ namespace Insight.Database.CodeGenerator
 
 		#region Code Generation Helpers
 		/// <summary>
+		/// Emit a conversion or coersion from the source type to the target type.
+		/// </summary>
+		/// <param name="il">The IL generator to use.</param>
+		/// <param name="sourceType">The source type.</param>
+		/// <param name="targetType">The target type.</param>
+		/// <returns>True if a conversion was emitted, false if one could not be found.</returns>
+		internal static bool EmitConversionOrCoersion(ILGenerator il, Type sourceType, Type targetType)
+		{
+			if (TypeConverterGenerator.EmitConversion(il, sourceType, targetType))
+				return true;
+
+			Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+			Type rawTargetType = underlyingTargetType.IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
+
+			return TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType);
+		}
+
+		/// <summary>
+		/// Emit a conversion from the source type to the target type.
+		/// </summary>
+		/// <param name="il">The IL generator to use.</param>
+		/// <param name="sourceType">The source type.</param>
+		/// <param name="targetType">The target type.</param>
+		/// <returns>True if a conversion was emitted, false if one could not be found.</returns>
+		private static bool EmitConversion(ILGenerator il, Type sourceType, Type targetType)
+		{
+			MethodInfo mi = FindConversionMethod(sourceType, targetType);
+			if (mi == null)
+				return false;
+
+			il.Emit(mi.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, mi);
+			return true;
+		}
+
+		/// <summary>
 		/// Attempt to find a valid conversion method.
 		/// </summary>
 		/// <param name="sourceType">The source type for the conversion.</param>
 		/// <param name="targetType">The target type for the conversion.</param>
 		/// <returns>A conversion method or null if none could be found.</returns>
-		internal static MethodInfo FindConversionMethod(Type sourceType, Type targetType)
+		private static MethodInfo FindConversionMethod(Type sourceType, Type targetType)
 		{
 			// if the types match, then there is no conversion
 			if (sourceType == targetType)
@@ -484,7 +506,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="sourceType">The source type for the conversion.</param>
 		/// <param name="targetType">The target type for the conversion.</param>
 		/// <returns>A conversion method or null if none could be found.</returns>
-		internal static MethodInfo FindConversionMethod(string methodName, Type searchType, Type sourceType, Type targetType)
+		private static MethodInfo FindConversionMethod(string methodName, Type searchType, Type sourceType, Type targetType)
 		{
 			var members = searchType.FindMembers(
 				MemberTypes.Method,
@@ -512,7 +534,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="sourceType">The source type of data.</param>
 		/// <param name="targetType">The type to coerce to.</param>
 		/// <returns>True if a coersion was emitted, false otherwise.</returns>
-		internal static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
+		private static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
 		{
 			// support auto-converting strings to other types by parsing
 			if (sourceType == typeof(string))

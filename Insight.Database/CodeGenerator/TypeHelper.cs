@@ -16,11 +16,6 @@ namespace Insight.Database.CodeGenerator
 	static class TypeHelper
 	{
 		/// <summary>
-		/// The Type.GetTypeFromHandle method.
-		/// </summary>
-		internal static readonly MethodInfo TypeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
-
-		/// <summary>
 		/// Determines whether the given type is is an atomic type that does not have members.
 		/// </summary>
 		/// <param name="type">The type to check.</param>

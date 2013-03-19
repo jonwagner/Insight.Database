@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 
@@ -11,6 +12,11 @@ namespace Insight.Database.CodeGenerator
 	/// </summary>
 	static class IlHelper
 	{
+		/// <summary>
+		/// The Type.GetTypeFromHandle method.
+		/// </summary>
+		internal static readonly MethodInfo TypeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
+
 		/// <summary>
 		/// Emit an opcode to load an Int32.
 		/// </summary>
@@ -87,6 +93,17 @@ namespace Insight.Database.CodeGenerator
 
 			il.Emit(OpCodes.Callvirt, typeof(object).GetMethod("ToString", Type.EmptyTypes));
 			il.MarkLabel(isNull);
+		}
+
+		/// <summary>
+		/// Emits the code to load a type onto the stack.
+		/// </summary>
+		/// <param name="il">The IL generator to use.</param>
+		/// <param name="type">The type to load.</param>
+		public static void EmitLoadType(this ILGenerator il, Type type)
+		{
+			il.Emit(OpCodes.Ldtoken, type);
+			il.Emit(OpCodes.Call, TypeGetTypeFromHandle);
 		}
 	}
 }

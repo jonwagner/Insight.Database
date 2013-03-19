@@ -396,11 +396,10 @@ namespace Insight.Database.CodeGenerator
 					if (tableTypeName.Count(c => c == '.') > 1)
 						tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
 					il.Emit(OpCodes.Ldstr, tableTypeName);
+					il.EmitLoadType(listType);
 
-					il.Emit(OpCodes.Ldtoken, listType);									// push listType
-					il.Emit(OpCodes.Call, TypeHelper.TypeGetTypeFromHandle);
-
-					il.Emit(OpCodes.Ldarg_1);											// push object
+					// get the value from the object
+					il.Emit(OpCodes.Ldarg_1);
 					prop.EmitGetValue(il);
 
 					if (prop.MemberType.IsValueType)								// box value types before calling object parameter
@@ -532,8 +531,7 @@ namespace Insight.Database.CodeGenerator
 					if (sqlParameter.DbType == DbType.Xml)
 					{
 						// we have an object and it is expecting an xml parameter. let's serialize the object.
-						il.Emit(OpCodes.Ldtoken, prop.MemberType);
-						il.Emit(OpCodes.Call, TypeHelper.TypeGetTypeFromHandle);
+						il.EmitLoadType(prop.MemberType);
 						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(object), typeof(Type) }, null));
 					}
 					else
