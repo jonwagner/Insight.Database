@@ -53,13 +53,12 @@ namespace Insight.Database.CodeGenerator
 			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "ExpandoGenerator-{0}", type.FullName), typeof(FastExpando), new[] { typeof(object) }, typeof(ExpandoGenerator), true);
 
 			var il = dm.GetILGenerator();
-			il.DeclareLocal(type);                                          // loc.0 = input type properly cast
-			il.DeclareLocal(typeof(FastExpando));                           // loc.1 = return value
+			var source = il.DeclareLocal(type);
 
 			// load the parameter object onto the stack and convert it into the local variable
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Castclass, type);
-			il.Emit(OpCodes.Stloc_0);
+			il.Emit(OpCodes.Stloc, source);
 
 			// new instance of fastexpando                                  // top of stack
 			il.Emit(OpCodes.Newobj, _constructor);
@@ -71,9 +70,8 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Ldstr, accessor.Name);						// push name
 
 				// get the value of the field or property
-				il.Emit(OpCodes.Ldloc_0);									// push loc.0 (typed object)
-				accessor.EmitGetValue(il);									// get the value
-				// stack: [expando] [name] [value]
+				il.Emit(OpCodes.Ldloc, source);
+				accessor.EmitGetValue(il);
 
 				// value types need to be boxed
 				if (accessor.MemberType.IsValueType)

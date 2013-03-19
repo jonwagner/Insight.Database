@@ -58,5 +58,35 @@ namespace Insight.Database.CodeGenerator
 					break;
 			}
 		}
+
+		/// <summary>
+		/// Assuming the top of the stack is an object of sourceType,
+		/// emits the code required to convert the object ToString.
+		/// Null values are converted to null.
+		/// </summary>
+		/// <param name="il">The generator to use.</param>
+		/// <param name="sourceType">The type of the object on the stack.</param>
+		public static void EmitToStringOrNull(ILGenerator il, Type sourceType)
+		{
+			var isNull = il.DefineLabel();
+
+			if (sourceType.IsValueType)
+			{
+				// convert values to a pointer we can call on
+				var local = il.DeclareLocal(sourceType);
+				il.Emit(OpCodes.Stloc, local);
+				il.Emit(OpCodes.Ldloca, local);
+				il.Emit(OpCodes.Constrained, sourceType);
+			}
+			else
+			{
+				// null check for references
+				il.Emit(OpCodes.Dup);
+				il.Emit(OpCodes.Brfalse, isNull);
+			}
+
+			il.Emit(OpCodes.Callvirt, typeof(object).GetMethod("ToString", Type.EmptyTypes));
+			il.MarkLabel(isNull);
+		}
 	}
 }

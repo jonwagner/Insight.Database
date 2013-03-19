@@ -141,14 +141,13 @@ namespace Insight.Database.CodeGenerator
 
 			// get the il generator and put some local variables on the stack
 			var il = dm.GetILGenerator();
-			il.DeclareLocal(typeof(int));					// loc.0 = index
-			il.DeclareLocal(type);						    // loc.1 = result
-			il.DeclareLocal(typeof(string));				// loc.2 = string (for enum processing)
-			il.DeclareLocal(typeof(object));				// loc.3 = current value from the data reader
+			var localIndex = il.DeclareLocal(typeof(int));
+			var localResult = il.DeclareLocal(type);
+			var localValue = il.DeclareLocal(typeof(object));
 
 			// initialize index = 0
-			il.Emit(OpCodes.Ldc_I4_0);						// push 0
-			il.Emit(OpCodes.Stloc_0);						// loc.0 (index) = 0
+			il.Emit(OpCodes.Ldc_I4_0);
+			il.Emit(OpCodes.Stloc, localIndex);
 
 			// emit a call to the constructor of the object
 			il.BeginExceptionBlock();
@@ -159,13 +158,13 @@ namespace Insight.Database.CodeGenerator
 			{
 				if (createNewObject)
 				{
-					il.Emit(OpCodes.Ldloca_S, (int)1);		// load the pointer to the result on the stack
+					il.Emit(OpCodes.Ldloca_S, localResult);	// load the pointer to the result on the stack
 					il.Emit(OpCodes.Initobj, type);			// initialize the object on the stack
 				}
 				else
 				{
 					il.Emit(OpCodes.Ldarg_1);				// store arg.1 => loc.1
-					il.Emit(OpCodes.Stloc_1);
+					il.Emit(OpCodes.Stloc, localResult);
 				}
 			}
 			else
@@ -175,7 +174,7 @@ namespace Insight.Database.CodeGenerator
 				else
 					il.Emit(OpCodes.Ldarg_1);				// push arg.1 (T), stack => [target]
 
-				il.Emit(OpCodes.Stloc_1);					// pop loc.1 (result), stack => [empty]
+				il.Emit(OpCodes.Stloc, localResult);		// pop loc.1 (result), stack => [empty]
 			}
 
 			for (int index = 0; index < columnCount; index++)
@@ -188,25 +187,25 @@ namespace Insight.Database.CodeGenerator
 
 				// store the value as a local variable in case type conversion fails
 				il.Emit(OpCodes.Ldnull);
-				il.Emit(OpCodes.Stloc_3);
+				il.Emit(OpCodes.Stloc, localValue);
 
 				// load the address of the object we are working on
 				if (isStruct)
-					il.Emit(OpCodes.Ldloca_S, (int)1);				// push pointer to object
+					il.Emit(OpCodes.Ldloca_S, localResult);			// push pointer to object
 				else
-					il.Emit(OpCodes.Ldloc_1);						// push loc.1 (target), stack => [target]
+					il.Emit(OpCodes.Ldloc, localResult);			// push loc.1 (target), stack => [target]
 
 				// need to call IDataReader.GetItem to get the value of the field
 				il.Emit(OpCodes.Ldarg_0);							// push arg.0 (reader), stack => [target][reader]
 				IlHelper.EmitLdInt32(il, index + startColumn);		// push index, stack => [target][reader][index]
 				// before we call it, put the current index into the index local variable
 				il.Emit(OpCodes.Dup);								// dup index, stack => [target][reader][index][index]
-				il.Emit(OpCodes.Stloc_0);							// pop loc.0 (index), stack => [target][reader][index]
+				il.Emit(OpCodes.Stloc, localIndex);					// pop loc.0 (index), stack => [target][reader][index]
 				// now call it
 				il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);		// call getItem, stack => [target][value-as-object]
 				// store the value as a local variable in case type conversion fails
 				il.Emit(OpCodes.Dup);
-				il.Emit(OpCodes.Stloc_3);
+				il.Emit(OpCodes.Stloc, localValue);
 
 				// determine the type of the object in the recordset
 				Type sourceType = reader.GetFieldType(index + startColumn);
@@ -220,7 +219,7 @@ namespace Insight.Database.CodeGenerator
 				if (startColumn > 0 && index == 0)
 				{
 					il.Emit(OpCodes.Ldnull);							// push null
-					il.Emit(OpCodes.Stloc_1);							// store null => loc.1 (target)
+					il.Emit(OpCodes.Stloc, localResult);				// store null => loc.1 (target)
 				}
 
 				/////////////////////////////////////////////////////////////////////
@@ -233,9 +232,9 @@ namespace Insight.Database.CodeGenerator
 			// catch exceptions and rethrow
 			/////////////////////////////////////////////////////////////////////
 			il.BeginCatchBlock(typeof(Exception));						// stack => [Exception]
-			il.Emit(OpCodes.Ldloc_0);									// push loc.0, stack => [Exception][index]
+			il.Emit(OpCodes.Ldloc, localIndex);							// push loc.0, stack => [Exception][index]
 			il.Emit(OpCodes.Ldarg_0);									// push arg.0, stack => [Exception][index][reader]
-			il.Emit(OpCodes.Ldloc_3);									// push loc.3, stack => [Exception][index][reader][value]
+			il.Emit(OpCodes.Ldloc, localValue);							// push loc.3, stack => [Exception][index][reader][value]
 			il.Emit(OpCodes.Call, TypeConverterGenerator.CreateDataExceptionMethod);
 			il.Emit(OpCodes.Throw);									// stack => DataException
 			il.EndExceptionBlock();
@@ -243,7 +242,7 @@ namespace Insight.Database.CodeGenerator
 			/////////////////////////////////////////////////////////////////////
 			// load the return value from the local variable
 			/////////////////////////////////////////////////////////////////////
-			il.Emit(OpCodes.Ldloc_1);									// ld loc.1 (target), stack => [target]
+			il.Emit(OpCodes.Ldloc, localResult);						// ld loc.1 (target), stack => [target]
 			il.Emit(OpCodes.Ret);
 
 			// create the function
@@ -275,7 +274,7 @@ namespace Insight.Database.CodeGenerator
 				new[] { typeof(IDataReader) },
 				true);
 			var il = dm.GetILGenerator();
-			il.DeclareLocal(type);				// loc.0
+			var localObject = il.DeclareLocal(type);
 
 			///////////////////////////////////////////////////
 			// emit the method
@@ -290,9 +289,9 @@ namespace Insight.Database.CodeGenerator
 				if (i > 0)
 				{
 					if (isStruct)
-						il.Emit(OpCodes.Ldloca_S, (int)0);
+						il.Emit(OpCodes.Ldloca_S, localObject);
 					else
-						il.Emit(OpCodes.Ldloc_0);
+						il.Emit(OpCodes.Ldloc, localObject);
 				}
 
 				// if we don't have a callback, then we are going to store the value directly into the field on T or one of the subobjects
@@ -329,7 +328,7 @@ namespace Insight.Database.CodeGenerator
 				if (i == 0)
 				{
 					// store root object in loc.0
-					il.Emit(OpCodes.Stloc_0);
+					il.Emit(OpCodes.Stloc, localObject);
 				}
 				else
 				{
@@ -341,7 +340,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// return the object from loc.0
-			il.Emit(OpCodes.Ldloc_0);
+			il.Emit(OpCodes.Ldloc, localObject);
 			il.Emit(OpCodes.Ret);
 
 			// convert the dynamic method to a delegate
@@ -387,7 +386,7 @@ namespace Insight.Database.CodeGenerator
 			var il = dm.GetILGenerator();
 
 			// we have a callback function to call with our objects, so set up the delegate and the array
-			il.DeclareLocal(type);                                          // store the result
+			var localObject = il.DeclareLocal(type);                        // store the result
 			il.Emit(OpCodes.Ldarg_1);                                       // push the delegate
 			il.Emit(OpCodes.Ldc_I4, deserializers.Length);                  // create a new array
 			il.Emit(OpCodes.Newarr, typeof(object));
@@ -408,7 +407,7 @@ namespace Insight.Database.CodeGenerator
 				if (i == 0)
 				{
 					il.Emit(OpCodes.Dup);
-					il.Emit(OpCodes.Stloc_0);
+					il.Emit(OpCodes.Stloc, localObject);
 				}
 
 				il.Emit(OpCodes.Stelem, typeof(object));                    // store the element in the array
@@ -418,7 +417,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Call, typeof(Action<object[]>).GetMethod("Invoke"));        // invoke the delegate
 
 			// return the result
-			il.Emit(OpCodes.Ldloc_0);                                                   // put the root object back in for return
+			il.Emit(OpCodes.Ldloc, localObject);							// put the root object back in for return
 			il.Emit(OpCodes.Ret);
 
 			// convert the dynamic method to a delegate

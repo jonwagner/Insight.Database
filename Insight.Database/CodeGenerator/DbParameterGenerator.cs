@@ -318,7 +318,7 @@ namespace Insight.Database.CodeGenerator
 			var il = dm.GetILGenerator();
 
 			// start the standard serialization method
-			il.DeclareLocal(typeof(Int32));											// loc.0 = string.length
+			var stringLength = il.DeclareLocal(typeof(Int32));
 			il.Emit(OpCodes.Ldarg_0);												// push arg.0 (command), stack => [command]
 			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
 
@@ -466,7 +466,7 @@ namespace Insight.Database.CodeGenerator
 					if (IsDbTypeAString(sqlType))
 					{
 						IlHelper.EmitLdInt32(il, 0);
-						il.Emit(OpCodes.Stloc_0);
+						il.Emit(OpCodes.Stloc, stringLength);
 					}
 
 					// value is set to null. ready to set the property.
@@ -514,12 +514,12 @@ namespace Insight.Database.CodeGenerator
 
 					// it is longer than 4000, so store -1
 					il.MarkLabel(isLong);
-					IlHelper.EmitLdInt32(il, -1);						// [string] [-1]
+					IlHelper.EmitLdInt32(il, -1);							// [string] [-1]
 
 					il.MarkLabel(lenDone);
 
-					// store the length of the string in loc.1 so we can stick it in the parameter
-					il.Emit(OpCodes.Stloc_0);								// [string]   
+					// store the length of the string in local so we can stick it in the parameter
+					il.Emit(OpCodes.Stloc, stringLength);					// [string]
 				}
 				else if (prop.MemberType.GetInterfaces().Contains(typeof(IConvertible)) || prop.MemberType == typeof(object))
 				{
@@ -572,12 +572,12 @@ namespace Insight.Database.CodeGenerator
 					var endOfSize = il.DefineLabel();
 
 					// don't set if 0
-					il.Emit(OpCodes.Ldloc_0);
+					il.Emit(OpCodes.Ldloc, stringLength);
 					il.Emit(OpCodes.Brfalse_S, endOfSize);
 
 					// parameter.setsize = string.length
 					il.Emit(OpCodes.Dup);
-					il.Emit(OpCodes.Ldloc_0);
+					il.Emit(OpCodes.Ldloc, stringLength);
 					il.Emit(OpCodes.Callvirt, _iDataParameterSetSize);
 
 					il.MarkLabel(endOfSize);
@@ -703,18 +703,12 @@ namespace Insight.Database.CodeGenerator
 			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "CreateOutputParameters-{0}", Guid.NewGuid()), null, new[] { typeof(IDbCommand), typeof(object) }, typeOwner, true);
 			var il = dm.GetILGenerator();
 
-			il.DeclareLocal(typeof(IDataParameterCollection));						// loc.0 = parameters
-			il.DeclareLocal(type);						                            // loc.1 = target as correct type (not object)
+			var localParameters = il.DeclareLocal(typeof(IDataParameterCollection));
 
 			// get the parameters collection from the command into loc.0
 			il.Emit(OpCodes.Ldarg_0);												// push arg.0 (command), stack => [command]
 			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
-			il.Emit(OpCodes.Stloc_0);
-
-			// get the object as the right type into loc.1
-			il.Emit(OpCodes.Ldarg_1);
-			il.Emit(OpCodes.Isinst, type);
-			il.Emit(OpCodes.Stloc_1);
+			il.Emit(OpCodes.Stloc, localParameters);
 
 			foreach (var prop in ClassPropInfo.GetMappingForType(type))
 			{
@@ -731,7 +725,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Ldarg_1);
 
 				// get the parameter out of the collection
-				il.Emit(OpCodes.Ldloc_0);                                        // push [parameters]
+				il.Emit(OpCodes.Ldloc, localParameters);
 				il.Emit(OpCodes.Ldstr, parameter.ParameterName);                 // push (parametername)
 				il.Emit(OpCodes.Callvirt, _iDataParameterCollectionGetItem);
 

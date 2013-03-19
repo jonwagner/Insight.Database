@@ -219,10 +219,7 @@ namespace Insight.Database.CodeGenerator
 
 			var il = dm.GetILGenerator();
 			Label isNull = il.DefineLabel();
-			if (type.IsValueType)
-				il.DeclareLocal(type);
-			if (underlyingType != null)
-				il.DeclareLocal(underlyingType);
+			var result = il.DeclareLocal(type);
 
 			// get the value from the reader
 			il.Emit(OpCodes.Ldarg_0);
@@ -246,15 +243,16 @@ namespace Insight.Database.CodeGenerator
 			{
 				// a nullable type, so unbox to the underlying type
 				il.Emit(OpCodes.Unbox_Any, underlyingType);
-				il.Emit(OpCodes.Stloc_1);
+				var temp = il.DeclareLocal(underlyingType);
+				il.Emit(OpCodes.Stloc, temp);
 
 				// now create the nullable
-				il.Emit(OpCodes.Ldloca_S, (byte)0);
-				il.Emit(OpCodes.Ldloc_1);
+				il.Emit(OpCodes.Ldloca, result);
+				il.Emit(OpCodes.Ldloc, temp);
 				il.Emit(OpCodes.Call, type.GetConstructor(new Type[] { underlyingType }));
 
 				// return the nullable
-				il.Emit(OpCodes.Ldloc_0);
+				il.Emit(OpCodes.Ldloc, result);
 			}
 			else
 			{
@@ -270,9 +268,9 @@ namespace Insight.Database.CodeGenerator
 			if (type.IsValueType)
 			{
 				// return default(T)
-				il.Emit(OpCodes.Ldloca_S, (byte)0);
+				il.Emit(OpCodes.Ldloca, result);
 				il.Emit(OpCodes.Initobj, type);
-				il.Emit(OpCodes.Ldloc_0);
+				il.Emit(OpCodes.Ldloc, result);
 			}
 			else
 			{

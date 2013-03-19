@@ -149,17 +149,19 @@ namespace Insight.Database.CodeGenerator
 			}
 			else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
 			{
+				var localString = il.DeclareLocal(typeof(string));
+
 				// if we are converting a string to an enum, then parse it.
 				// see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
 				il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][string]
-				il.Emit(OpCodes.Stloc_2);							// pop loc.2 (enum), stack => [target]
+				il.Emit(OpCodes.Stloc, localString);				// pop loc.2 (enum), stack => [target]
 
 				// call enum.parse (type, value, true)
 				il.Emit(OpCodes.Ldtoken, underlyingTargetType);				// push type-token, stack => [target][enum-type-token]
 				il.EmitCall(OpCodes.Call, _typeGetTypeFromHandle, null);
 
 				// call GetType, stack => [target][enum-type]
-				il.Emit(OpCodes.Ldloc_2);							// push enum, stack => [target][enum-type][string]
+				il.Emit(OpCodes.Ldloc, localString);							// push enum, stack => [target][enum-type][string]
 				il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
 				il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
 
@@ -512,22 +514,12 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if a coersion was emitted, false otherwise.</returns>
 		internal static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
 		{
-			// support auto-converting strings to other types
+			// support auto-converting strings to other types by parsing
 			if (sourceType == typeof(string))
 			{
-				if (targetType == typeof(TimeSpan))
+				if (targetType == typeof(TimeSpan) || targetType == typeof(DateTime) || targetType == typeof(DateTimeOffset))
 				{
-					il.Emit(OpCodes.Call, typeof(TimeSpan).GetMethod("Parse", new Type[] { typeof(string) }));
-					return true;
-				}
-				else if (targetType == typeof(DateTime))
-				{
-					il.Emit(OpCodes.Call, typeof(DateTime).GetMethod("Parse", new Type[] { typeof(string) }));
-					return true;
-				}
-				else if (targetType == typeof(DateTimeOffset))
-				{
-					il.Emit(OpCodes.Call, typeof(DateTimeOffset).GetMethod("Parse", new Type[] { typeof(string) }));
+					il.Emit(OpCodes.Call, targetType.GetMethod("Parse", new Type[] { typeof(string) }));
 					return true;
 				}
 			}
@@ -535,25 +527,7 @@ namespace Insight.Database.CodeGenerator
 			// if we are converting to a string, use the default ToString on the object
 			if (targetType == typeof(string))
 			{
-				var isNull = il.DefineLabel();
-
-				if (sourceType.IsValueType)
-				{
-					// convert values to a pointer we can call on
-					var local = il.DeclareLocal(sourceType);
-					il.Emit(OpCodes.Stloc, local);
-					il.Emit(OpCodes.Ldloca, local);
-					il.Emit(OpCodes.Constrained, sourceType);
-				}
-				else
-				{
-					// null check for references
-					il.Emit(OpCodes.Dup);
-					il.Emit(OpCodes.Brfalse, isNull);
-				}
-
-				il.Emit(OpCodes.Callvirt, typeof(object).GetMethod("ToString", Type.EmptyTypes));
-				il.MarkLabel(isNull);
+				IlHelper.EmitToStringOrNull(il, sourceType);
 				return true;
 			}
 

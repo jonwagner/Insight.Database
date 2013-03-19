@@ -137,8 +137,6 @@ namespace Insight.Database.CodeGenerator
 			// start a new method
 			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual, interfaceMethod.ReturnType, parameterTypes);
 			ILGenerator mIL = m.GetILGenerator();
-			mIL.DeclareLocal(typeof(int?)); // loc.0
-			mIL.DeclareLocal(typeof(CancellationToken?)); // loc.1
 
 			var executeParameters = executeMethod.GetParameters();
 			for (int i = 0; i < executeParameters.Length; i++)
@@ -255,9 +253,10 @@ namespace Insight.Database.CodeGenerator
 						if (EmitSpecialParameter(mIL, "commandTimeout", parameters, executeParameters))
 							break;
 
-						mIL.Emit(OpCodes.Ldloca_S, (int)0);
+						var commandTimeout = mIL.DeclareLocal(typeof(int?));
+						mIL.Emit(OpCodes.Ldloca_S, commandTimeout);
 						mIL.Emit(OpCodes.Initobj, typeof(int?));
-						mIL.Emit(OpCodes.Ldloc_0);
+						mIL.Emit(OpCodes.Ldloc, commandTimeout);
 						break;
 
 					case "transaction":
@@ -271,9 +270,10 @@ namespace Insight.Database.CodeGenerator
 						if (EmitSpecialParameter(mIL, "cancellationToken", parameters, executeParameters))
 							break;
 
-						mIL.Emit(OpCodes.Ldloca_S, (int)1);
+						var cancellationToken = mIL.DeclareLocal(typeof(CancellationToken?));
+						mIL.Emit(OpCodes.Ldloca_S, cancellationToken);
 						mIL.Emit(OpCodes.Initobj, typeof(CancellationToken?));
-						mIL.Emit(OpCodes.Ldloc_1);
+						mIL.Emit(OpCodes.Ldloc, cancellationToken);
 						break;
 
 					default:
