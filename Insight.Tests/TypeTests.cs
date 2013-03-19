@@ -237,6 +237,18 @@ namespace Insight.Tests
 		[Test]
 		public void TypeCoersions()
 		{
+			// string tests
+			Assert.AreEqual(Guid.Empty.ToString(), _connection.QuerySql<TypeContainer<string>>(String.Format("SELECT Value=CONVERT(uniqueidentifier, '{0}')", Guid.Empty.ToString())).FirstOrDefault().Value);
+
+			Assert.AreEqual("1", _connection.QuerySql<TypeContainer<string>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual("1", _connection.QuerySql<TypeContainer<string>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual("1", _connection.QuerySql<TypeContainer<string>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);
+			Assert.AreEqual("1", _connection.QuerySql<TypeContainer<string>>("SELECT Value=CONVERT(bigint, 1)").FirstOrDefault().Value);
+			Assert.AreEqual("1", _connection.QuerySql<TypeContainer<string>>("SELECT Value=CONVERT(varchar(100), '1')").FirstOrDefault().Value);
+			Assert.AreEqual("1", _connection.QuerySql<TypeContainer<string>>("SELECT Value=CONVERT(nvarchar(100), '1')").FirstOrDefault().Value);
+			Assert.AreEqual("1", _connection.QuerySql<TypeContainer<string>>("SELECT Value=CONVERT(decimal, 1)").FirstOrDefault().Value);
+
+			// enum tests
 			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(tinyint, 1)").FirstOrDefault().Value);
 			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(smallint, 1)").FirstOrDefault().Value);
 			Assert.AreEqual(Int64Enum.One, _connection.QuerySql<TypeContainer<Int64Enum>>("SELECT Value=CONVERT(int, 1)").FirstOrDefault().Value);

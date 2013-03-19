@@ -50,7 +50,6 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _stringGetLength = typeof(string).GetProperty("Length").GetGetMethod();
 		private static readonly MethodInfo _linqBinaryToArray = typeof(System.Data.Linq.Binary).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Instance);
 		private static readonly MethodInfo _listParameterHelperAddEnumerableParameters = typeof(ListParameterHelper).GetMethod("AddEnumerableParameters");
-		private static readonly MethodInfo _typeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
 		private static readonly MethodInfo _iDataParameterGetValue = typeof(IDataParameter).GetProperty("Value").GetGetMethod();
 
 		/// <summary>
@@ -399,7 +398,7 @@ namespace Insight.Database.CodeGenerator
 					il.Emit(OpCodes.Ldstr, tableTypeName);
 
 					il.Emit(OpCodes.Ldtoken, listType);									// push listType
-					il.Emit(OpCodes.Call, _typeGetTypeFromHandle);
+					il.Emit(OpCodes.Call, TypeHelper.TypeGetTypeFromHandle);
 
 					il.Emit(OpCodes.Ldarg_1);											// push object
 					prop.EmitGetValue(il);
@@ -534,7 +533,7 @@ namespace Insight.Database.CodeGenerator
 					{
 						// we have an object and it is expecting an xml parameter. let's serialize the object.
 						il.Emit(OpCodes.Ldtoken, prop.MemberType);
-						il.Emit(OpCodes.Call, _typeGetTypeFromHandle);
+						il.Emit(OpCodes.Call, TypeHelper.TypeGetTypeFromHandle);
 						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(object), typeof(Type) }, null));
 					}
 					else

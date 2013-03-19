@@ -195,7 +195,7 @@ namespace Insight.Database.CodeGenerator
 					// either emit the call to the conversion operator or try another strategy
 					if (mi != null)
 					{
-						il.Emit(OpCodes.Call, mi);
+						il.Emit(mi.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, mi);
 					}
 					else if (!TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType))
 					{
@@ -448,27 +448,30 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A conversion method or null if none could be found.</returns>
 		internal static MethodInfo FindConversionMethod(Type sourceType, Type targetType)
 		{
-			MethodInfo mi = null;
-			if (mi == null)
-				mi = FindConversionMethod("op_Explicit", targetType, sourceType, targetType);
-			if (mi == null)
-				mi = FindConversionMethod("op_Implicit", targetType, sourceType, targetType);
-			if (mi == null)
-				mi = FindConversionMethod("op_Explicit", sourceType, sourceType, targetType);
-			if (mi == null)
-				mi = FindConversionMethod("op_Implicit", sourceType, sourceType, targetType);
+			// if the types match, then there is no conversion
+			if (sourceType == targetType)
+				return null;
 
-			// if the target type is an enum or nullable, try converting to that
-			if (mi == null && Nullable.GetUnderlyingType(targetType) != null)
-				mi = FindConversionMethod(sourceType, Nullable.GetUnderlyingType(targetType));
-			if (mi == null && targetType.IsEnum)
+			// look at conversion operators
+			MethodInfo mi =
+				FindConversionMethod("op_Explicit", targetType, sourceType, targetType) ??
+				FindConversionMethod("op_Implicit", targetType, sourceType, targetType) ??
+				FindConversionMethod("op_Explicit", sourceType, sourceType, targetType) ??
+				FindConversionMethod("op_Implicit", sourceType, sourceType, targetType);
+			if (mi != null)
+				return mi;
+
+			// if the target type is an enum or nullable, try converting to one of those
+			if (Nullable.GetUnderlyingType(targetType) != null)
+				return FindConversionMethod(sourceType, Nullable.GetUnderlyingType(targetType));
+			if (targetType.IsEnum)
 				return FindConversionMethod(sourceType, Enum.GetUnderlyingType(targetType));
 
 			// handle converting sql datetime to timespan
 			if (sourceType == typeof(DateTime) && targetType == typeof(TimeSpan))
-				mi = typeof(TypeConverterGenerator).GetMethod("SqlDateTimeToTimeSpan");
+				return typeof(TypeConverterGenerator).GetMethod("SqlDateTimeToTimeSpan");
 
-			return mi;
+			return null;
 		}
 
 		/// <summary>
@@ -527,6 +530,31 @@ namespace Insight.Database.CodeGenerator
 					il.Emit(OpCodes.Call, typeof(DateTimeOffset).GetMethod("Parse", new Type[] { typeof(string) }));
 					return true;
 				}
+			}
+
+			// if we are converting to a string, use the default ToString on the object
+			if (targetType == typeof(string))
+			{
+				var isNull = il.DefineLabel();
+
+				if (sourceType.IsValueType)
+				{
+					// convert values to a pointer we can call on
+					var local = il.DeclareLocal(sourceType);
+					il.Emit(OpCodes.Stloc, local);
+					il.Emit(OpCodes.Ldloca, local);
+					il.Emit(OpCodes.Constrained, sourceType);
+				}
+				else
+				{
+					// null check for references
+					il.Emit(OpCodes.Dup);
+					il.Emit(OpCodes.Brfalse, isNull);
+				}
+
+				il.Emit(OpCodes.Callvirt, typeof(object).GetMethod("ToString", Type.EmptyTypes));
+				il.MarkLabel(isNull);
+				return true;
 			}
 
 			if (!sourceType.IsPrimitive) return false;

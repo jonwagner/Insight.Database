@@ -16,6 +16,11 @@ namespace Insight.Database.CodeGenerator
 	static class TypeHelper
 	{
 		/// <summary>
+		/// The Type.GetTypeFromHandle method.
+		/// </summary>
+		internal static readonly MethodInfo TypeGetTypeFromHandle = typeof(Type).GetMethod("GetTypeFromHandle");
+
+		/// <summary>
 		/// Determines whether the given type is is an atomic type that does not have members.
 		/// </summary>
 		/// <param name="type">The type to check.</param>
@@ -61,6 +66,12 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The serialized xml.</returns>
 		public static string SerializeObjectToXml(object o, Type type)
 		{
+			if (o == null)
+				return null;
+
+			if (type == null)
+				type = o.GetType();
+
 			// serialize the parameters
 			StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
 

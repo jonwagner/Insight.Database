@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlTypes;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -93,6 +94,7 @@ namespace Insight.Database.CodeGenerator
 					// if the type is nullable, handle nulls
 					Type sourceType = propInfo.MemberType;
 					Type targetType = (Type)SchemaTable.Rows[i]["DataType"];
+					Type providerTargetType = (Type)SchemaTable.Rows[i]["ProviderSpecificDataType"];
 					Type underlyingType = Nullable.GetUnderlyingType(sourceType);
 					if (underlyingType != null)
 					{
@@ -118,24 +120,35 @@ namespace Insight.Database.CodeGenerator
 						sourceType = underlyingType;
 					}
 
-					// see if there is an conversion operator on either the source or target types
-					MethodInfo mi = TypeConverterGenerator.FindConversionMethod(sourceType, targetType);
-					if (mi != null)
+					// if the provider type is Xml, then serialize the value
+					if (!sourceType.IsValueType && providerTargetType == typeof(SqlXml))
 					{
-						// convert the object's member type to the target member type and box it
-						il.Emit(OpCodes.Call, mi);
-						il.Emit(OpCodes.Box, targetType);
-					}
-					else if (TypeConverterGenerator.EmitCoersion(il, sourceType, targetType))
-					{
-						// we convert primitives to the proper type
-						// now we box it aas a target object
-						il.Emit(OpCodes.Box, targetType);
+						il.Emit(OpCodes.Ldtoken, sourceType);
+						il.Emit(OpCodes.Call, TypeHelper.TypeGetTypeFromHandle);
+						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", new Type[] { typeof(object), typeof(Type) }));
 					}
 					else
 					{
-						// wrap the object as its source type
-						il.Emit(OpCodes.Box, sourceType);
+						// see if there is an conversion operator on either the source or target types
+						MethodInfo mi = TypeConverterGenerator.FindConversionMethod(sourceType, targetType);
+						if (mi != null)
+						{
+							// convert the object's member type to the target member type and box it
+							il.Emit(mi.IsVirtual ? OpCodes.Callvirt : OpCodes.Call, mi);
+							il.Emit(OpCodes.Box, targetType);
+						}
+						else if (TypeConverterGenerator.EmitCoersion(il, sourceType, targetType))
+						{
+							// we convert primitives to the proper type
+							// now we box it as a target object
+							if (targetType.IsValueType)
+								il.Emit(OpCodes.Box, targetType);
+						}
+						else
+						{
+							// wrap the object as its source type
+							il.Emit(OpCodes.Box, sourceType);
+						}
 					}
 
 					il.Emit(OpCodes.Ret);

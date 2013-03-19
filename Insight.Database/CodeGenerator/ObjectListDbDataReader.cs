@@ -164,21 +164,7 @@ namespace Insight.Database.CodeGenerator
 			if (ordinal != _currentStringOrdinal)
 			{
 				_currentStringOrdinal = ordinal;
-
-				// convert the current value to a string
-				object value = GetValue(ordinal);
-				_currentStringValue = value as string;
-
-				// if it's not a string and 
-				if (_currentStringValue == null && value != null)
-				{
-					// if the string is a value type, then convert it directly
-					// otherwise we serialize the type to xml
-					if (value.GetType().IsValueType)
-						_currentStringValue = value.ToString();
-					else
-						_currentStringValue = TypeHelper.SerializeObjectToXml(value, _objectReader.MemberTypes[ordinal]);
-				}
+				_currentStringValue = GetValue(ordinal) as string;
 			}
 
 			return _currentStringValue;
