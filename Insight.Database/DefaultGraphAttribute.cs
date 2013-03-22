@@ -9,7 +9,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Specified the default object graph to use when deserializing the class from a database.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments"), AttributeUsage(AttributeTargets.Class | AttributeTargets.Method, AllowMultiple = false, Inherited = true)]
 	public sealed class DefaultGraphAttribute : Attribute
 	{
 		/// <summary>

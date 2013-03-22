@@ -47,6 +47,8 @@ namespace Insight.Database
 		/// <param name="e">The ColumnMappingEventArgs to process.</param>
 		public void HandleColumnMapping(object sender, ColumnMappingEventArgs e)
 		{
+			if (e == null) throw new ArgumentNullException("e");
+
 			// if we aren't mapping the current type, just continue
 			if (e.TargetType != typeof(T) && !e.TargetType.IsSubclassOf(typeof(T)))
 				return;

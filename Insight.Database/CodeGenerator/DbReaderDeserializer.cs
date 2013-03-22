@@ -50,6 +50,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Initializes static members of the DbReaderDeserializer class.
 		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
 		static DbReaderDeserializer()
 		{
 			// pre-initialize all of the simple serializers for known types so they can be quickly returned.

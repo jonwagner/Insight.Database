@@ -20,6 +20,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Extension methods for DbConnection to make it easier to call the database.
 	/// </summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
 	public static partial class DBConnectionExtensions
 	{
 		#region Private Fields
@@ -80,6 +81,8 @@ namespace Insight.Database
 		/// <returns>The connection implementing the interface.</returns>
 		public static T OpenAs<T>(this IDbConnection connection) where T : class, IDbConnection
 		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
 			connection.Open();
 			return connection.As<T>();
 		}
@@ -91,10 +94,29 @@ namespace Insight.Database
 		/// <param name="connection">The connection to open.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning the connection and interface when the connection is opened.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
 		public static Task<T> OpenAsAsync<T>(this IDbConnection connection, CancellationToken? cancellationToken = null) where T : class, IDbConnection
 		{
 			return OpenConnectionAsync(connection, cancellationToken)
-					.ContinueWith(t => t.Result.As<T>(), TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+					.ContinueWith(
+						t =>
+						{
+							// need to catch and close the connection if the As<T> cast fails.
+							var c = t.Result;
+							var disposable = connection;
+							try
+							{
+								var result = c.As<T>();
+								disposable = null;
+								return result;
+							}
+							finally
+							{
+								if (disposable != null)
+									disposable.Dispose();
+							}
+						},
+						TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		/// <summary>
@@ -116,9 +138,12 @@ namespace Insight.Database
 		/// <typeparam name="T">The interface to implement.</typeparam>
 		/// <param name="connection">The connection to open.</param>
 		/// <returns>A wrapper for the database connection.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
 		public static T OpenWithTransactionAs<T>(this T connection) where T : class, IDbConnection, IDbTransaction
 		{
 			// connection is already a T, so pass it in unwrapped
+			// a connection won't leak from this code because the connection is already a T and should come back as a T
+			// and there is no code between the construction and the return other than the cast
 			return (T)(object)((IDbConnection)connection).OpenWithTransaction();
 		}
 
@@ -141,13 +166,31 @@ namespace Insight.Database
 		/// <param name="connection">The connection to open.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
 		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this IDbConnection connection, CancellationToken? cancellationToken = null)
 		{
 			CancellationToken ct = cancellationToken ?? CancellationToken.None;
 
 			return DbConnectionWrapper.Wrap(connection)
 				.OpenConnectionAsync(ct)
-				.ContinueWith(t => t.Result.BeginAutoTransaction(), TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+				.ContinueWith(
+					t =>
+					{
+						// since beginautotransaction can fail, we may need to clean up the connection
+						var disposable = t.Result;
+						try
+						{
+							var result = disposable.BeginAutoTransaction();
+							disposable = null;
+							return result;
+						}
+						finally
+						{
+							if (disposable != null)
+								disposable.Dispose();
+						}
+					},
+					TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		/// <summary>
@@ -157,11 +200,29 @@ namespace Insight.Database
 		/// <param name="connection">The connection to open.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
 		public static Task<T> OpenWithTransactionAsAsync<T>(this T connection, CancellationToken? cancellationToken = null) where T : class, IDbConnection, IDbTransaction
 		{
 			// connection is already a T, so just pass it in
 			return OpenWithTransactionAsync((IDbConnection)connection, cancellationToken)
-					.ContinueWith(t => t.Result.As<T>(), TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+					.ContinueWith(
+						t =>
+						{
+							// since c.As<T> can fail, we may need to clean up the connection
+							var disposable = t.Result;
+							try
+							{
+								var result = disposable.As<T>();
+								disposable = null;
+								return result;
+							}
+							finally
+							{
+								if (disposable != null)
+									disposable.Dispose();
+							}
+						},
+						TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
 		}
 
 		/// <summary>
@@ -189,6 +250,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">Optinal command timeout to use.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <returns>An IDbCommand that can be executed on the connection.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
 		public static IDbCommand CreateCommand(
 			this IDbConnection connection,
 			string sql,
@@ -197,6 +259,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
 			// create a db command
 			IDbCommand cmd = connection.CreateCommand();
 			cmd.CommandType = commandType;
@@ -255,7 +319,11 @@ namespace Insight.Database
 		{
 			return connection.ExecuteAndAutoClose(
 				c => null,
-				(_, __) => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteNonQuery(),
+				(_, __) =>
+				{
+					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
+						return cmd.ExecuteNonQuery();
+				},
 				closeConnection);
 		}
 
@@ -305,7 +373,11 @@ namespace Insight.Database
 		{
 			return connection.ExecuteAndAutoClose(
 				c => null,
-				(_, __) => (T)connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteScalar(),
+				(_, __) =>
+				{
+					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
+						return (T)cmd.ExecuteScalar();
+				},
 				closeConnection);
 		}
 
@@ -353,7 +425,8 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
-			return connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).ExecuteReader(commandBehavior);
+			using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
+				return cmd.ExecuteReader(commandBehavior);
 		}
 
 		/// <summary>
@@ -1072,29 +1145,32 @@ namespace Insight.Database
 				DetectAutoOpen(connection, ref closeConnection);
 
 				// create a bulk copier
-				SqlBulkCopy bulk = new SqlBulkCopy(sqlConnection, options, transaction);
-				bulk.DestinationTableName = tableName;
-				if (batchSize != null)
-					bulk.BatchSize = batchSize.Value;
+				using (SqlBulkCopy bulk = new SqlBulkCopy(sqlConnection, options, transaction))
+				{
+					bulk.DestinationTableName = tableName;
+					if (batchSize != null)
+						bulk.BatchSize = batchSize.Value;
 
-				// see if we already have a mapping for the given table name and type
-				// we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
-				var key = Tuple.Create<string, Type>(tableName, typeof(T));
-				ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
-					key,
-					t =>
+					// see if we already have a mapping for the given table name and type
+					// we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
+					var key = Tuple.Create<string, Type>(tableName, typeof(T));
+					ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
+						key,
+						t =>
+						{
+							// select a 0 row result set so we can determine the schema of the table
+							string sql = String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
+							using (var sqlReader = connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly))
+								return ObjectReader.GetObjectReader(sqlReader, typeof(T));
+						});
+
+					// create a reader for the list
+					using (ObjectListDbDataReader reader = new ObjectListDbDataReader(fieldReaderData, list))
 					{
-						// select a 0 row result set so we can determine the schema of the table
-						string sql = String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
-						using (var sqlReader = connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly))
-							return ObjectReader.GetObjectReader(sqlReader, typeof(T));
-					});
-
-				// create a reader for the list
-				ObjectListDbDataReader reader = new ObjectListDbDataReader(fieldReaderData, list);
-
-				// write the data to the server
-				bulk.WriteToServer(reader);
+						// write the data to the server
+						bulk.WriteToServer(reader);
+					}
+				}
 			}
 			finally
 			{
@@ -1110,6 +1186,7 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
 		/// <returns>A DynamicConnection using the given connection.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "This method is intended to return a connection")]
 		public static dynamic Dynamic(this IDbConnection connection)
 		{
 			return new DynamicConnection(connection);
@@ -1121,6 +1198,7 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <typeparam name="T">The type of object to return from queries.</typeparam>
 		/// <returns>A DynamicConnection using the given connection.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "This method is intended to return a connection")]
 		public static dynamic Dynamic<T>(this IDbConnection connection)
 		{
 			return new DynamicConnection<T>(connection);

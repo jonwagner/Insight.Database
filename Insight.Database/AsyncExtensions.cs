@@ -1204,31 +1204,6 @@ namespace Insight.Database
 			// the command doesn't support async so stick it in a dumb task
 			return Task<IDataReader>.Factory.StartNew(() => command.ExecuteReader(commandBehavior), cancellationToken);
 		}
-
-		/// <summary>
-		/// Create a command and execute it. This method does not support auto-open.
-		/// </summary>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>
-		private static Task<IDataReader> GetReaderAsync(
-			this IDbConnection connection,
-			CancellationToken cancellationToken,
-			string sql,
-			object parameters = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null)
-		{
-			return connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction).GetReaderAsync(commandBehavior, cancellationToken);
-		}
 		#endregion
 
 		#region Helper Methods

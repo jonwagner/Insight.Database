@@ -13,6 +13,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,6 +34,8 @@
     <WarningLevel>4</WarningLevel>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <Prefer32Bit>false</Prefer32Bit>
+    <RunCodeAnalysis>true</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>CodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -62,6 +65,7 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="SqlAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />
@@ -108,19 +112,20 @@
     <None Include="CodeSnippets\InsightRepository.snippet">
       <SubType>Designer</SubType>
     </None>
-    <None Include="FxCop.FxCop" />
     <None Include="Insight.Database.nuspec">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
     <None Include="Settings.StyleCop" />
   </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="CustomDictionary.xml" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
-  <Import Project="..\packages\BuildTools.FxCop.1.0.17.47\tools\FxCop.targets" />
   <Import Project="..\packages\BuildTools.StyleCop.1.0.17.47\tools\StyleCop.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -69,15 +69,24 @@ namespace Insight.Database.CodeGenerator
 
 			// serialize the parameters
 			StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.OmitXmlDeclaration = true;
-			using (XmlWriter xw = XmlWriter.Create(sw, settings))
+			StringWriter disposable = sw;
+			try
 			{
-				new DataContractSerializer(type).WriteObject(xw, o);
-			}
+				XmlWriterSettings settings = new XmlWriterSettings();
+				settings.OmitXmlDeclaration = true;
+				using (XmlWriter xw = XmlWriter.Create(sw, settings))
+				{
+					disposable = null;
+					new DataContractSerializer(type).WriteObject(xw, o);
+				}
 
-			return sw.ToString();
+				return sw.ToString();
+			}
+			finally
+			{
+				if (disposable != null)
+					disposable.Dispose();
+			}
 		}
 		#endregion
 	}

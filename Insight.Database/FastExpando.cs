@@ -13,7 +13,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Implements a fast Expando object that does not support INotifyPropertyChanged.
 	/// </summary>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "This is an interface imlpementation")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"), SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "This is an interface imlpementation")]
 	public sealed class FastExpando : DynamicObject, IDictionary<string, object>
 	{
 		#region Private Fields
@@ -44,6 +44,8 @@ namespace Insight.Database
 		/// <returns>True if the value was set.</returns>
 		public override bool TrySetMember(System.Dynamic.SetMemberBinder binder, object value)
 		{
+			if (binder == null) throw new ArgumentNullException("binder");
+
 			data[binder.Name.ToUpperInvariant()] = value;
 			return true;
 		}
@@ -56,6 +58,8 @@ namespace Insight.Database
 		/// <returns>True if a member was returned.</returns>
 		public override bool TryGetMember(System.Dynamic.GetMemberBinder binder, out object result)
 		{
+			if (binder == null) throw new ArgumentNullException("binder");
+
 			return data.TryGetValue(binder.Name.ToUpperInvariant(), out result);
 		}
 		#endregion
@@ -68,6 +72,8 @@ namespace Insight.Database
 		/// <returns>This expanded FastExpando.</returns>
 		public FastExpando Expand(FastExpando expando)
 		{
+			if (expando == null) throw new ArgumentNullException("expando");
+
 			foreach (var pair in expando)
 				data[pair.Key.ToUpperInvariant()] = pair.Value;
 
@@ -81,6 +87,8 @@ namespace Insight.Database
 		/// <returns>This expanded FastExpando.</returns>
 		public FastExpando Expand(object other)
 		{
+			if (other == null) throw new ArgumentNullException("other");
+
 			return Expand(FastExpando.FromObject(other));
 		}
 		#endregion
@@ -95,11 +103,15 @@ namespace Insight.Database
 		{
 			get
 			{
+				if (key == null) throw new ArgumentNullException("key");
+
 				return data[key.ToUpperInvariant()];
 			}
 
 			set
 			{
+				if (key == null) throw new ArgumentNullException("key");
+
 				data[key.ToUpperInvariant()] = value;
 			}
 		}
@@ -111,6 +123,8 @@ namespace Insight.Database
 		/// <param name="value">The value to add.</param>
 		void IDictionary<string, object>.Add(string key, object value)
 		{
+			if (key == null) throw new ArgumentNullException("key");
+
 			data[key.ToUpperInvariant()] = value;
 		}
 
@@ -121,6 +135,8 @@ namespace Insight.Database
 		/// <returns>True if the key is in the expando.</returns>
 		bool IDictionary<string, object>.ContainsKey(string key)
 		{
+			if (key == null) throw new ArgumentNullException("key");
+
 			return data.ContainsKey(key.ToUpperInvariant());
 		}
 
@@ -139,6 +155,8 @@ namespace Insight.Database
 		/// <returns>True if the item existed.</returns>
 		bool IDictionary<string, object>.Remove(string key)
 		{
+			if (key == null) throw new ArgumentNullException("key");
+
 			return data.Remove(key.ToUpperInvariant());
 		}
 
@@ -150,6 +168,8 @@ namespace Insight.Database
 		/// <returns>True if an item was found.</returns>
 		bool IDictionary<string, object>.TryGetValue(string key, out object value)
 		{
+			if (key == null) throw new ArgumentNullException("key");
+
 			return data.TryGetValue(key.ToUpperInvariant(), out value);
 		}
 
@@ -256,6 +276,8 @@ namespace Insight.Database
 		/// <param name="map">The map of input fields to output fields.</param>
 		public void Mutate(IDictionary<string, string> map)
 		{
+			if (map == null) throw new ArgumentNullException("map");
+
 			foreach (KeyValuePair<string, string> pair in map)
 			{
 				string key = pair.Key.ToUpperInvariant();

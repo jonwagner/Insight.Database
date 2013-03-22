@@ -31,6 +31,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="identity">The schema identity to analyze.</param>
 		/// <param name="reader">The reader that contains the schema.</param>
 		/// <returns>A list of accessor functions to get values from the type.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
 		private ObjectReader(SchemaMappingIdentity identity, IDataReader reader)
 		{
 			// SQL Server tells us the precision of the columns

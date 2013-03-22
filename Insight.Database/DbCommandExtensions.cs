@@ -63,6 +63,8 @@ namespace Insight.Database
 		/// <returns>The object that was filled in.</returns>
 		public static T OutputParameters<T>(this IDbCommand command, T result)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
 			// if there is no output object, don't attempt to fill it in
 			if (result == null)
 				return result;
@@ -116,6 +118,8 @@ namespace Insight.Database
 			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
 			return command.Connection.ExecuteAndAutoClose(
 				c => command,
 				(cmd, r) => r.ToList<TResult>(withGraph),
@@ -138,6 +142,8 @@ namespace Insight.Database
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default) where T : Results, new()
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
 			return command.Connection.ExecuteAndAutoClose(
 				c => command,
 				(cmd, r) =>

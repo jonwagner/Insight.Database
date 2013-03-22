@@ -368,6 +368,8 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null)
 		{
+			if (task == null) throw new ArgumentNullException("task");
+
 			return task.ContinueWith(reader => reader.ToListAsync<TResult>(withGraph)).Unwrap();
 		}
 

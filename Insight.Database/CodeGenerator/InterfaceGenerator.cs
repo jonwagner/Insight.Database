@@ -118,6 +118,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="mb">The ModuleBuilder to emit to.</param>
 		/// <param name="tb">The TypeBuilder to emit to.</param>
 		/// <param name="interfaceMethod">The interface method to implement.</param>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod)
 		{
 			// look at the parameters on the interface
@@ -292,6 +293,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="method">The interface method to analyze.</param>
 		/// <returns>The extension method that can implement the given method.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static MethodInfo GetExecuteMethod(MethodInfo method)
 		{
 			// if returntype is null

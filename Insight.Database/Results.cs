@@ -299,7 +299,7 @@ namespace Insight.Database
 	/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
 	/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
 	/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance"), SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public class Results<T1, T2, T3, T4, T5> : Results<T1, T2, T3, T4>
 	{
 		/// <summary>

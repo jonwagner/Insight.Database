@@ -505,6 +505,9 @@ namespace Insight.Database
 		/// </remarks>
 		public static T Merge<T>(this IDataReader reader, T item)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+			if (item == null) throw new ArgumentNullException("item");
+
 			var merger = DbReaderDeserializer.GetMerger<T>(reader);
 
 			// read the identities from the recordset and merge it into the object
@@ -527,6 +530,9 @@ namespace Insight.Database
 		/// <returns>The list of merged objects.</returns>
 		public static IEnumerable<T> Merge<T>(this IDataReader reader, IEnumerable<T> items)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+			if (items == null) throw new ArgumentNullException("items");
+
 			bool moreResults = false;
 
 			try

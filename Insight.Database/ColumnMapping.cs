@@ -80,35 +80,35 @@ namespace Insight.Database
 		/// Adds a removal operation that uses a Regex to determine the text to remove.
 		/// </summary>
 		/// <typeparam name="T">The type of objects to apply this operation to.</typeparam>
-		/// <param name="text">The text of the regex.</param>
+		/// <param name="pattern">The text of the regex.</param>
 		/// <param name="replacement">The text to use as a replacement.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping ReplaceRegex<T>(string text, string replacement)
+		public ColumnMapping ReplaceRegex<T>(string pattern, string replacement)
 		{
-			return AddHandler(new RegexReplaceMappingHandler<T>(text, replacement));
+			return AddHandler(new RegexReplaceMappingHandler<T>(pattern, replacement));
 		}
 
 		/// <summary>
 		/// Adds a removal operation that uses a Regex to determine the text to remove.
 		/// This applies to all types of objects.
 		/// </summary>
-		/// <param name="text">The text of the regex.</param>
+		/// <param name="pattern">The text of the regex.</param>
 		/// <param name="replacement">The text to use as a replacement.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping ReplaceRegex(string text, string replacement)
+		public ColumnMapping ReplaceRegex(string pattern, string replacement)
 		{
-			return ReplaceRegex<object>(text, replacement);
+			return ReplaceRegex<object>(pattern, replacement);
 		}
 
 		/// <summary>
 		/// Adds a removal operation that uses a Regex to determine the text to remove.
 		/// </summary>
 		/// <typeparam name="T">The type of objects to apply this operation to.</typeparam>
-		/// <param name="text">The text of the regex.</param>
+		/// <param name="pattern">The text of the regex.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping RemoveRegex<T>(string text)
+		public ColumnMapping RemoveRegex<T>(string pattern)
 		{
-			return AddHandler(new RegexReplaceMappingHandler<T>(text, String.Empty));
+			return AddHandler(new RegexReplaceMappingHandler<T>(pattern, String.Empty));
 		}
 
 		/// <summary>
@@ -126,66 +126,66 @@ namespace Insight.Database
 		/// Adds a removal operation that replaces any occurence of a specified string.
 		/// </summary>
 		/// <typeparam name="T">The type of objects to apply this operation to.</typeparam>
-		/// <param name="text">The text to remove from the column names.</param>
+		/// <param name="pattern">The text to remove from the column names.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping RemoveStrings<T>(string text)
+		public ColumnMapping RemoveStrings<T>(string pattern)
 		{
-			return AddHandler(new RegexReplaceMappingHandler<T>(text, String.Empty));
+			return AddHandler(new RegexReplaceMappingHandler<T>(pattern, String.Empty));
 		}
 
 		/// <summary>
 		/// Adds a removal operation that replaces any occurence of a specified string.
 		/// </summary>
 		/// This applies to all types of objects.
-		/// <param name="text">The text to remove from the column names.</param>
+		/// <param name="pattern">The text to remove from the column names.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping RemoveStrings(string text)
+		public ColumnMapping RemoveStrings(string pattern)
 		{
-			return RemoveStrings<object>(text);
+			return RemoveStrings<object>(pattern);
 		}
 
 		/// <summary>
 		/// Adds a removal operation that replaces any occurence of a specified string at the beginning of a column name.
 		/// </summary>
 		/// <typeparam name="T">The type of objects to apply this operation to.</typeparam>
-		/// <param name="text">The text to remove from the column names.</param>
+		/// <param name="prefix">The text to remove from the column names.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping RemovePrefixes<T>(string text)
+		public ColumnMapping RemovePrefixes<T>(string prefix)
 		{
-			return RemoveStrings("^" + text);
+			return RemoveStrings("^" + prefix);
 		}
 
 		/// <summary>
 		/// Adds a removal operation that replaces any occurence of a specified string at the beginning of a column name.
 		/// </summary>
 		/// This applies to all types of objects.
-		/// <param name="text">The text to remove from the column names.</param>
+		/// <param name="prefix">The text to remove from the column names.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping RemovePrefixes(string text)
+		public ColumnMapping RemovePrefixes(string prefix)
 		{
-			return RemovePrefixes<object>(text);
+			return RemovePrefixes<object>(prefix);
 		}
 
 		/// <summary>
 		/// Adds a removal operation that replaces any occurence of a specified string at the end of a column name.
 		/// </summary>
 		/// <typeparam name="T">The type of objects to apply this operation to.</typeparam>
-		/// <param name="text">The text to remove from the column names.</param>
+		/// <param name="suffix">The text to remove from the column names.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping RemoveSuffixes<T>(string text)
+		public ColumnMapping RemoveSuffixes<T>(string suffix)
 		{
-			return RemoveStrings(text + "$");
+			return RemoveStrings(suffix + "$");
 		}
 
 		/// <summary>
 		/// Adds a removal operation that replaces any occurence of a specified string at the end of a column name.
 		/// </summary>
 		/// This applies to all types of objects.
-		/// <param name="text">The text to remove from the column names.</param>
+		/// <param name="suffix">The text to remove from the column names.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping RemoveSuffixes(string text)
+		public ColumnMapping RemoveSuffixes(string suffix)
 		{
-			return RemoveSuffixes<object>(text);
+			return RemoveSuffixes<object>(suffix);
 		}
 		#endregion
 

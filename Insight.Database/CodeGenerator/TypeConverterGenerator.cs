@@ -43,6 +43,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Initializes static members of the TypeConverterGenerator class.
 		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
 		static TypeConverterGenerator()
 		{
 			// check to see whether setting DbType to Time is broken. In .NET 4.5, it gets set to DateTime when you set it to Time.
@@ -332,8 +333,19 @@ namespace Insight.Database.CodeGenerator
 			DataContractSerializer serializer = new DataContractSerializer(type);
 
 			StringReader reader = new StringReader(value.ToString());
-			XmlTextReader xr = new XmlTextReader(reader);
-			return serializer.ReadObject(xr);
+			try
+			{
+				using (XmlTextReader xr = new XmlTextReader(reader))
+				{
+					reader = null;
+					return serializer.ReadObject(xr);
+				}
+			}
+			finally
+			{
+				if (reader != null)
+					reader.Dispose();
+			}
 		}
 		#endregion
 
@@ -534,6 +546,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="sourceType">The source type of data.</param>
 		/// <param name="targetType">The type to coerce to.</param>
 		/// <returns>True if a coersion was emitted, false otherwise.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static bool EmitCoersion(ILGenerator il, Type sourceType, Type targetType)
 		{
 			// support auto-converting strings to other types by parsing

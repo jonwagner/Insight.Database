@@ -1,0 +1,19 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<Dictionary>
+	<Words>
+		<Recognized>
+			<Word>DefaultMappingHandler</Word>
+			<Word>GetProperty</Word>
+			<Word>IDictionary</Word>
+			<Word>SetProperty</Word>
+			<Word>SqlCommand</Word>
+		</Recognized>
+		<DiscreteExceptions>
+			<Term>DefaultMappingHandler</Term>
+			<Term>GetProperty</Term>
+			<Term>IDictionary</Term>
+			<Term>SetProperty</Term>
+			<Term>SqlCommand</Term>
+		</DiscreteExceptions>
+	</Words>
+</Dictionary>

@@ -94,8 +94,12 @@ namespace Insight.Database
 		/// <param name="args">The arguments to the method.</param>
 		/// <param name="returnType">The default type of object to return if no type parameter is specified.</param>
 		/// <returns>The results of the stored procedure call.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
 		protected internal object DoInvokeMember(InvokeMemberBinder binder, object[] args, Type returnType)
 		{
+			if (binder == null) throw new ArgumentNullException("binder");
+			if (args == null) throw new ArgumentNullException("args");
+
 			bool doAsync = false;
 			IDbCommand cmd = null;
 			int specialParameters = 0;
@@ -154,87 +158,95 @@ namespace Insight.Database
 				}
 			}
 
-			// if there is exactly one unnamed parameter, and the named parameters are all special parameters, and it's a reference type (and not a string)
-			// then we will attempt to use the object's fields as the parameter values
-			// this is so you can send an entire object to an insert method
-			if (unnamedParameterCount == 1 &&
-				(callInfo.ArgumentNames.Count == specialParameters) &&
-				!args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
+			try
 			{
-				cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
-			}
-			else
-			{
-				// this isn't a single-object parameter, so we are going to map the parameters by position and by name
-
-				// create a command
-				cmd = _connection.CreateCommand();
-				cmd.CommandType = CommandType.StoredProcedure;
-				cmd.CommandText = procName;
-				if (transaction != null)
-					cmd.Transaction = DBConnectionExtensions.UnwrapDbTransaction(transaction);
-
-				// fill in the parameters for the command object
-				// we will do the values next
-				DeriveParameters(cmd);
-
-				// look at the unnamed parameters first. we will add them by position.
-				for (int i = 0; i < unnamedParameterCount; i++)
+				// if there is exactly one unnamed parameter, and the named parameters are all special parameters, and it's a reference type (and not a string)
+				// then we will attempt to use the object's fields as the parameter values
+				// this is so you can send an entire object to an insert method
+				if (unnamedParameterCount == 1 &&
+					(callInfo.ArgumentNames.Count == specialParameters) &&
+					!args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
 				{
-					// add the unnamed parameters by index
-					IDbDataParameter p = (IDbDataParameter)cmd.Parameters[i];
-					p.Value = args[i];
+					cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
 				}
-
-				// go through all of the named arguments next. Note that they may overwrite indexed parameters.
-				for (int i = unnamedParameterCount; i < callInfo.ArgumentNames.Count; i++)
-				{
-					string argumentName = callInfo.ArgumentNames[i];
-
-					// ignore out special parameters
-					if (argumentName == "cancellationToken" ||
-						argumentName == "transaction" ||
-						argumentName == "commandTimeout" ||
-						argumentName == "returnType" ||
-						argumentName == "withGraph" ||
-						argumentName == "withGraphs")
-						continue;
-
-					string parameterName = "@" + argumentName;
-					IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
-					p.Value = args[i];
-				}
-			}
-
-			// if type was not specified, but withGraph was specified, then use the first item in the graph as the type
-			if (returnType == null && withGraph != null)
-			{
-				Type withGraphType = withGraph as Type;
-				if (withGraphType != null && withGraphType.IsSubclassOf(typeof(Graph)))
-				{
-					returnType = withGraphType.GetGenericArguments()[0];
-				}
-			}
-
-			// if we don't have a type, use FastExpando
-			if (returnType == null)
-				returnType = typeof(FastExpando);
-
-			// get the proper query method to call based on whether we are doing this async and whether there is a single or multiple result set
-			// the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
-			if (returnType.IsSubclassOf(typeof(Results)))
-			{
-				if (doAsync)
-					return CallQueryResultsAsync(returnType, cmd, withGraph, cancellationToken);
 				else
-					return CallQueryResults(returnType, cmd, withGraph);
-			}
-			else
-			{
-				if (doAsync)
-					return CallQueryAsync(returnType, cmd, withGraph, cancellationToken);
+				{
+					// this isn't a single-object parameter, so we are going to map the parameters by position and by name
+
+					// create a command
+					cmd = _connection.CreateCommand();
+					cmd.CommandType = CommandType.StoredProcedure;
+					cmd.CommandText = procName;
+					if (transaction != null)
+						cmd.Transaction = DBConnectionExtensions.UnwrapDbTransaction(transaction);
+
+					// fill in the parameters for the command object
+					// we will do the values next
+					DeriveParameters(cmd);
+
+					// look at the unnamed parameters first. we will add them by position.
+					for (int i = 0; i < unnamedParameterCount; i++)
+					{
+						// add the unnamed parameters by index
+						IDbDataParameter p = (IDbDataParameter)cmd.Parameters[i];
+						p.Value = args[i];
+					}
+
+					// go through all of the named arguments next. Note that they may overwrite indexed parameters.
+					for (int i = unnamedParameterCount; i < callInfo.ArgumentNames.Count; i++)
+					{
+						string argumentName = callInfo.ArgumentNames[i];
+
+						// ignore out special parameters
+						if (argumentName == "cancellationToken" ||
+							argumentName == "transaction" ||
+							argumentName == "commandTimeout" ||
+							argumentName == "returnType" ||
+							argumentName == "withGraph" ||
+							argumentName == "withGraphs")
+							continue;
+
+						string parameterName = "@" + argumentName;
+						IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
+						p.Value = args[i];
+					}
+				}
+
+				// if type was not specified, but withGraph was specified, then use the first item in the graph as the type
+				if (returnType == null && withGraph != null)
+				{
+					Type withGraphType = withGraph as Type;
+					if (withGraphType != null && withGraphType.IsSubclassOf(typeof(Graph)))
+					{
+						returnType = withGraphType.GetGenericArguments()[0];
+					}
+				}
+
+				// if we don't have a type, use FastExpando
+				if (returnType == null)
+					returnType = typeof(FastExpando);
+
+				// get the proper query method to call based on whether we are doing this async and whether there is a single or multiple result set
+				// the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
+				if (returnType.IsSubclassOf(typeof(Results)))
+				{
+					if (doAsync)
+						return CallQueryResultsAsync(returnType, cmd, withGraph, cancellationToken);
+					else
+						return CallQueryResults(returnType, cmd, withGraph);
+				}
 				else
-					return CallQuery(returnType, cmd, withGraph);
+				{
+					if (doAsync)
+						return CallQueryAsync(returnType, cmd, withGraph, cancellationToken);
+					else
+						return CallQuery(returnType, cmd, withGraph);
+				}
+			}
+			finally
+			{
+				if (cmd != null)
+					cmd.Dispose();
 			}
 		}
 

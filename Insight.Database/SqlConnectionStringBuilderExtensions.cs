@@ -24,9 +24,22 @@ namespace Insight.Database
 		/// <returns>A closed SqlConnection.</returns>
 		public static SqlConnection Connection(this SqlConnectionStringBuilder builder)
 		{
-			SqlConnection connection = new SqlConnection();
-			connection.ConnectionString = builder.ConnectionString;
-			return connection;
+			if (builder == null) throw new ArgumentNullException("builder");
+
+			SqlConnection disposable = null;
+			try
+			{
+				SqlConnection connection = new SqlConnection();
+				disposable = connection;
+				connection.ConnectionString = builder.ConnectionString;
+				disposable = null;
+				return connection;
+			}
+			finally
+			{
+				if (disposable != null)
+					disposable.Dispose();
+			}
 		}
 
 		/// <summary>

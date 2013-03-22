@@ -130,6 +130,7 @@ namespace Insight.Database.Reliable
 			InnerCommand.Cancel();
 		}
 
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
 		public override string CommandText
 		{
 			get

@@ -169,8 +169,6 @@ namespace Insight.Database
 					InnerConnection.Dispose();
 					InnerConnection = null;
 				}
-
-				base.Dispose(disposing);
 			}
 			finally
 			{

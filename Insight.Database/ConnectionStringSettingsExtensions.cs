@@ -27,17 +27,29 @@ namespace Insight.Database
 			if (settings == null)
 				throw new ArgumentNullException("settings");
 
-			DbConnection connection;
+			DbConnection disposable = null;
+			try
+			{
+				DbConnection connection = null;
 
-			// if there is a provider on the connection string, use that to create the connection
-			// otherwise use a sql connection
-			if (String.IsNullOrEmpty(settings.ProviderName))
-				connection = new SqlConnection();
-			else
-				connection = DbProviderFactories.GetFactory(settings.ProviderName).CreateConnection();
+				// if there is a provider on the connection string, use that to create the connection
+				// otherwise use a sql connection
+				if (String.IsNullOrEmpty(settings.ProviderName))
+					connection = new SqlConnection();
+				else
+					connection = DbProviderFactories.GetFactory(settings.ProviderName).CreateConnection();
 
-			connection.ConnectionString = settings.ConnectionString;
-			return connection;
+				disposable = connection;
+				connection.ConnectionString = settings.ConnectionString;
+				disposable = null;
+
+				return connection;
+			}
+			finally
+			{
+				if (disposable != null)
+					disposable.Dispose();
+			}
 		}
 
 		/// <summary>

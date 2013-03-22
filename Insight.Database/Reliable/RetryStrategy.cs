@@ -85,6 +85,8 @@ namespace Insight.Database.Reliable
 		/// <returns>The result of the function.</returns>
 		public TResult ExecuteWithRetry<TResult>(IDbCommand commandContext, Func<TResult> func)
 		{
+			if (func == null) throw new ArgumentNullException("func");
+
 			int attempt = 0;
 			TimeSpan delay = MinBackOff;
 
@@ -183,6 +185,7 @@ namespace Insight.Database.Reliable
 		/// <param name="func">The function to execute.</param>
 		/// <param name="attempt">The number of the previous attempt. 0 is the first attempt.</param>
 		/// <param name="delay">The current delay in between retry attempts.</param>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
 		private void CheckAsyncResult<TResult>(IDbCommand commandContext, TaskCompletionSource<TResult> tcs, Func<Task<TResult>> func, int attempt, TimeSpan delay)
 		{
 			try

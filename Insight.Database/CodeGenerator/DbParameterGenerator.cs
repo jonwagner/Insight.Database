@@ -25,7 +25,7 @@ namespace Insight.Database.CodeGenerator
 	/// <summary>
 	/// A code generator to create methods to serialize an object into sql parameters.
 	/// </summary>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	static class DbParameterGenerator
 	{
 		#region Private Members
@@ -255,7 +255,7 @@ namespace Insight.Database.CodeGenerator
 				transaction: command.Transaction);
 
 			var parameters = command.Parameters.OfType<SqlParameter>();
-			string missingParameter = parameterNames.FirstOrDefault(n => !parameters.Any(p => String.Compare(p.ParameterName, n, ignoreCase: true) == 0));
+			string missingParameter = parameterNames.FirstOrDefault(n => !parameters.Any(p => String.Compare(p.ParameterName, n, StringComparison.OrdinalIgnoreCase) == 0));
 			if (missingParameter != null)
 				throw new InvalidOperationException(String.Format(
 					CultureInfo.InvariantCulture,
@@ -287,6 +287,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="command">The command to analyze.</param>
 		/// <param name="type">The type of object to parameterize.</param>
 		/// <returns>A method that serializes parameters to values.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
 			// get the parameters
@@ -844,6 +845,7 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="command">The command to add parameters to.</param>
 			/// <param name="parameterName">The name of the parameter.</param>
 			/// <param name="list">The list of objects to add.</param>
+			[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
 			private static void AddEnumerableValueParameters(IDbCommand command, string parameterName, IEnumerable list)
 			{
 				var count = 0;

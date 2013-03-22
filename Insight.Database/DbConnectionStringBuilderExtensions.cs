@@ -24,22 +24,36 @@ namespace Insight.Database
 		/// <returns>A closed DbConnection.</returns>
 		public static DbConnection Connection(this DbConnectionStringBuilder builder)
 		{
+			if (builder == null) throw new ArgumentNullException("builder");
+
 			DbConnection connection = null;
+			DbConnection disposable = null;
 
-			// get the connection from the provider
-			// if the provider is not specified, then attempt to get the type
-			if (builder is SqlConnectionStringBuilder)
-				connection = new SqlConnection();
-			else if (builder is OdbcConnectionStringBuilder)
-				connection = new OdbcConnection();
-			else if (builder is OleDbConnectionStringBuilder)
-				connection = new OleDbConnection();
+			try
+			{
+				// get the connection from the provider
+				// if the provider is not specified, then attempt to get the type
+				if (builder is SqlConnectionStringBuilder)
+					connection = new SqlConnection();
+				else if (builder is OdbcConnectionStringBuilder)
+					connection = new OdbcConnection();
+				else if (builder is OleDbConnectionStringBuilder)
+					connection = new OleDbConnection();
+				disposable = connection;
 
-			if (connection == null)
-				throw new ArgumentException("Cannot determine the type of connection from the ConnectionStringBuilder", "builder");
+				if (connection == null)
+					throw new ArgumentException("Cannot determine the type of connection from the ConnectionStringBuilder", "builder");
 
-			connection.ConnectionString = builder.ConnectionString;
-			return connection;
+				connection.ConnectionString = builder.ConnectionString;
+
+				disposable = null;
+				return connection;
+			}
+			finally
+			{
+				if (disposable != null)
+					disposable.Dispose();
+			}
 		}
 
 		/// <summary>

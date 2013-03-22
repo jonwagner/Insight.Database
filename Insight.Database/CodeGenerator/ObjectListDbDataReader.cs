@@ -304,7 +304,6 @@ namespace Insight.Database.CodeGenerator
 
 		public override void Close()
 		{
-			throw new NotImplementedException();
 		}
 
 		public override int Depth
