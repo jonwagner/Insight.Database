@@ -123,7 +123,6 @@ namespace Insight.Database
 		/// <summary>
 		/// Converts an IDataReader to an enumerable. The reader is closed after all records are read.
 		/// </summary>
-		/// <typeparam name="T">The expected type of the object.</typeparam>
 		/// <param name="reader">The data reader.</param>
 		/// <returns>An enumerable over the return results.</returns>
 		/// <remarks>

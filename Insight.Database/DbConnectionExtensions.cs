@@ -162,7 +162,6 @@ namespace Insight.Database
 		/// <summary>
 		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
-		/// <typeparam name="T">The interface to implement.</typeparam>
 		/// <param name="connection">The connection to open.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
@@ -1358,7 +1357,6 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="connection">The connection to unwrap.</param>
 		/// <returns>The inner SqlConnection.</returns>
-		/// <typeparam name="T">The type of connection to unwrap to.</typeparam>
 		internal static DbConnection UnwrapDbConnection(this IDbConnection connection)
 		{
 			// if we have a DbConnection, use it

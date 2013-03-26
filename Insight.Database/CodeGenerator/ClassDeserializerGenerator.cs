@@ -26,7 +26,6 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Creates a deserializer to deserialize an object from an IDataReader.
 		/// </summary>
-		/// <typeparam name="T">The type of object to be returned from the function.</typeparam>
 		/// <param name="reader">The reader to analyze.</param>
 		/// <param name="type">The type of object to deserialize from the IDataReader.</param>
 		/// <param name="withGraph">The type of the graph of object to be returned, or null/typeof(T) to deserialize just the top-level object.</param>
@@ -254,7 +253,6 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Creates a deserializer for a graph of objects.
 		/// </summary>
-		/// <typeparam name="T">The type of the root object to return.</typeparam>
 		/// <param name="subTypes">The types of the subobjects.</param>
 		/// <param name="reader">The reader to analyze.</param>
 		/// <param name="idColumns">An optional mapping of type to Id columns used for splitting.</param>
@@ -365,7 +363,6 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Creates a deserializer for a graph of objects. The objects are allocated to an array of objects and passed to a callback that assembles the objects.
 		/// </summary>
-		/// <typeparam name="T">The type of the root object to return.</typeparam>
 		/// <param name="subTypes">The types of the subobjects.</param>
 		/// <param name="reader">The reader to analyze.</param>
 		/// <param name="idColumns">An optional mapping of type to Id columns used for splitting.</param>
@@ -466,8 +463,8 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The end boundary for the current object.</returns>
 		private static int DetectEndColumn(IDataReader reader, Dictionary<Type, string> idColumns, int columnIndex, Type[] types, int typeIndex)
 		{
-			Type tCurrent = types[typeIndex];
-			Type tNext = (typeIndex + 1 < types.Length) ? types[typeIndex + 1] : typeof(object);
+			Type currentType = types[typeIndex];
+			Type nextType = (typeIndex + 1 < types.Length) ? types[typeIndex + 1] : typeof(object);
 
 			// if the caller specified columns to split on then use that
 			if (idColumns != null)
@@ -493,7 +490,7 @@ namespace Insight.Database.CodeGenerator
 			// for the next set, we want to find all applicable matches, so we can detect the transition to the next object
 			int fieldCount = reader.FieldCount;
 			int columnsLeft = fieldCount - columnIndex;
-			var currentSetters = ColumnMapping.Tables.CreateMapping(tCurrent, reader, null, null, null, columnIndex, columnsLeft, uniqueMatches: true);
+			var currentSetters = ColumnMapping.Tables.CreateMapping(currentType, reader, null, null, null, columnIndex, columnsLeft, uniqueMatches: true);
 
 			// go through the remaining types to see if anything will claim the column
 			int i = 0;

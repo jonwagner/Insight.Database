@@ -174,7 +174,6 @@ namespace Insight.Database
 		/// <summary>
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
-		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
@@ -343,7 +342,6 @@ namespace Insight.Database
 		/// Run a command asynchronously and return a list of objects as FastExpandos. This method supports auto-open.
 		/// The Connection property of the command should be initialized before calling this method.
 		/// </summary>
-		/// <typeparam name="T">The type of objects to return.</typeparam>
 		/// <param name="command">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
