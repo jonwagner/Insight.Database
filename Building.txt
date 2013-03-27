@@ -1,5 +1,4 @@
 Notes for Building Insight.Database
 ===================================
 
-* Release builds require StyleCop and FXCop 10.0 be installed on your system.
-* Packaging the assembly requires that NuGet.exe be in your path.
+* Building requires Psake - you can get it from http://nuget.org/packages/psake/
