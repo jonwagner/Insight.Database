@@ -12,10 +12,6 @@ properties {
     $version = git describe --abbrev=0 --tags
     $changeset = (git log -1 $version --pretty=format:%H)
 
-    # assemblyversion is the version of the assembly that this build is compatible with
-    # change this when there is a breaking change to the assembly
-    $assemblyversion = (Get-Content $baseDir\assemblyversion.txt)
-
     $outputDir = "$baseDir\Build\Output"
     $net40Path = "$baseDir\Insight.Database\bin\NET40"
 
@@ -36,7 +32,7 @@ function Replace-Version {
     )
 
     (Get-Content $Path) |
-		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } |
+		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$version`")]" } |
 		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$version`")]" } |
 		Set-Content $Path
 }
