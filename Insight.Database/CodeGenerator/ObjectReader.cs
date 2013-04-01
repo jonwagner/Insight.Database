@@ -22,6 +22,21 @@ namespace Insight.Database.CodeGenerator
 		/// Global cache of accessors.
 		/// </summary>
 		private static ConcurrentDictionary<SchemaMappingIdentity, ObjectReader> _readerDataCache = new ConcurrentDictionary<SchemaMappingIdentity, ObjectReader>();
+
+		/// <summary>
+		/// Gets an array containing the types of the members of the given type.
+		/// </summary>
+		private string[] _memberNames;
+
+		/// <summary>
+		/// Gets an array containing the types of the members of the given type.
+		/// </summary>
+		private Type[] _memberTypes;
+
+		/// <summary>
+		/// Gets an array of methods that can be called to access private members of the given type.
+		/// </summary>
+		private Func<object, object>[] _accessors;
 		#endregion
 
 		#region Constructors
@@ -50,16 +65,17 @@ namespace Insight.Database.CodeGenerator
 					row["NumericScale"] = 0;
 			}
 
+			// get the type we are binding to
+			Type type = identity.Graph.IsSubclassOf(typeof(Graph)) ? identity.Graph.GetGenericArguments()[0] : identity.Graph;
+
 			IsAtomicType = TypeHelper.IsAtomicType(identity.Graph);
 			if (!IsAtomicType)
 			{
-				// get the type we are binding to
-				Type type = identity.Graph.IsSubclassOf(typeof(Graph)) ? identity.Graph.GetGenericArguments()[0] : identity.Graph;
-
 				var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, uniqueMatches: true);
 
-				Accessors = new Func<object, object>[mapping.Length];
-				MemberTypes = new Type[mapping.Length];
+				_accessors = new Func<object, object>[mapping.Length];
+				_memberNames = new string[mapping.Length];
+				_memberTypes = new Type[mapping.Length];
 
 				for (int i = 0; i < mapping.Length; i++)
 				{
@@ -135,24 +151,22 @@ namespace Insight.Database.CodeGenerator
 
 					il.Emit(OpCodes.Ret);
 
-					MemberTypes[i] = propInfo.MemberType;
-					Accessors[i] = (Func<object, object>)dm.CreateDelegate(typeof(Func<object, object>));
+					_memberNames[i] = propInfo.Name;
+					_memberTypes[i] = propInfo.MemberType;
+					_accessors[i] = (Func<object, object>)dm.CreateDelegate(typeof(Func<object, object>));
 				}
+			}
+			else
+			{
+				// we are working off a single-column atomic type
+				_memberNames = new string[1] { "value" };
+				_memberTypes = new Type[1] { type };
+				_accessors = new Func<object, object>[] { o => o };
 			}
 		}
 		#endregion
 
 		#region Properties
-		/// <summary>
-		/// Gets an array of methods that can be called to access private members of the given type.
-		/// </summary>
-		public Func<object, object>[] Accessors { get; private set; }
-
-		/// <summary>
-		/// Gets an array containing the types of the members of the given type.
-		/// </summary>
-		public Type[] MemberTypes { get; private set; }
-
 		/// <summary>
 		/// Gets a DataTable containing the expected schema for the type.
 		/// </summary>
@@ -176,6 +190,52 @@ namespace Insight.Database.CodeGenerator
 			SchemaMappingIdentity mappingIdentity = new SchemaMappingIdentity(schemaIdentity, type, null, SchemaMappingType.ExistingObject);
 
 			return _readerDataCache.GetOrAdd(mappingIdentity, i => new ObjectReader(i, reader));
+		}
+
+		/// <summary>
+		/// Returns the name of the column with the given ordinal.
+		/// </summary>
+		/// <param name="ordinal">The ordinal to look up.</param>
+		/// <returns>The name of the column, or null if there is no mapping.</returns>
+		public string GetName(int ordinal)
+		{
+			return _memberNames[ordinal];
+		}
+
+		/// <summary>
+		/// Returns the ordinal of the first column with the given name.
+		/// </summary>
+		/// <param name="name">The name to look up.</param>
+		/// <returns>The matching ordinal.</returns>
+		public int GetOrdinal(string name)
+		{
+			for (int i = 0; i < _memberNames.Length; i++)
+			{
+				if (String.Compare(name, _memberNames[i], StringComparison.OrdinalIgnoreCase) == 0)
+					return i;
+			}
+
+			return -1;
+		}
+
+		/// <summary>
+		/// Returns the type of the column with the given ordinal.
+		/// </summary>
+		/// <param name="ordinal">The ordinal to look up.</param>
+		/// <returns>The type of the column, or null if there is no mapping.</returns>
+		public Type GetType(int ordinal)
+		{
+			return _memberTypes[ordinal];
+		}
+
+		/// <summary>
+		/// Returns a delegate that can access the given data point on an object.
+		/// </summary>
+		/// <param name="ordinal">The ordinal to look up.</param>
+		/// <returns>A delegate that can return the given column.</returns>
+		public Func<object, object> GetAccessor(int ordinal)
+		{
+			return _accessors[ordinal];
 		}
 	}
 }

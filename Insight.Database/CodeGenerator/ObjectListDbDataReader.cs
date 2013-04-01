@@ -31,7 +31,12 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// The list of objects to enumerate through.
 		/// </summary>
-		private IEnumerator _list;
+		private IEnumerable _enumerable;
+
+		/// <summary>
+		/// The current position in the list of objects.
+		/// </summary>
+		private IEnumerator _enumerator;
 
 		/// <summary>
 		/// The object at the current position.
@@ -74,7 +79,8 @@ namespace Insight.Database.CodeGenerator
 		{
 			_objectReader = objectReader;
 			_schemaTable = objectReader.SchemaTable;
-			_list = list.GetEnumerator();
+			_enumerable = list;
+			_enumerator = list.GetEnumerator();
 		}
 		#endregion
 
@@ -95,10 +101,10 @@ namespace Insight.Database.CodeGenerator
 		public override bool Read()
 		{
 			// move the enumerator to the next item
-			bool hasItems = _list.MoveNext();
+			bool hasItems = _enumerator.MoveNext();
 			if (hasItems)
 			{
-				_current = _list.Current;
+				_current = _enumerator.Current;
 
 				// reset the column that we are currently reading
 				_currentOrdinal = -1;
@@ -127,26 +133,15 @@ namespace Insight.Database.CodeGenerator
 			{
 				_currentOrdinal = ordinal;
 
-				// if we are reading IEnumerable<ValueType>, then there is one column and the value just needs to be converted
-				if (_objectReader.IsAtomicType)
-				{
-					if (ordinal == 0)
-						_currentValue = _current;
-					else
-						throw new ArgumentOutOfRangeException("ordinal");
-				}
+				// we are reading IEnumerable<ObjectType>, so look up the accessor and call it
+				// if there is no accessor, that means the mapper could not find an appropriate column, so make it null
+				// note that the accessor has code in it that converts to the target schema type (see objectreader)
+				// this is much better than letting sql do it later
+				var accessor = _objectReader.GetAccessor(ordinal);
+				if (accessor != null)
+					_currentValue = accessor(_current);
 				else
-				{
-					// we are reading IEnumerable<ObjectType>, so look up the accessor and call it
-					// if there is no accessor, that means the mapper could not find an appropriate column, so make it null
-					// note that the accessor has code in it that converts to the target schema type (see objectreader)
-					// this is much better than letting sql do it later
-					var accessor = _objectReader.Accessors[ordinal];
-					if (accessor != null)
-						_currentValue = accessor(_current);
-					else
-						_currentValue = null;
-				}
+					_currentValue = null;
 			}
 
 			// update the current ordinal and return the value
@@ -185,8 +180,10 @@ namespace Insight.Database.CodeGenerator
 			if (dataOffset > Int32.MaxValue)
 				throw new ArgumentOutOfRangeException("dataOffset");
 
-			// if the value is not a string and not a primitive type, then serialize it as xml
+			// make sure that the value we retrieve is a string value
 			string value = GetString(ordinal);
+			if (value == null)
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Invalid attempt to convert column {0} - {1} to a string", ordinal, GetName(ordinal)));
 
 			// if the buffer is null, then just return the length
 			if (buffer == null)
@@ -294,12 +291,12 @@ namespace Insight.Database.CodeGenerator
 		#region Not Implemented Members
 		public override string GetName(int ordinal)
 		{
-			throw new NotImplementedException();
+			return _objectReader.GetName(ordinal);
 		}
 
 		public override int GetOrdinal(string name)
 		{
-			throw new NotImplementedException();
+			return _objectReader.GetOrdinal(name);
 		}
 
 		public override void Close()
@@ -308,7 +305,7 @@ namespace Insight.Database.CodeGenerator
 
 		public override int Depth
 		{
-			get { throw new NotImplementedException(); }
+			get { return 0; }
 		}
 
 		public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
@@ -327,7 +324,11 @@ namespace Insight.Database.CodeGenerator
 			// if this is not a byte array, we will have to add additional implementations
 			byte[] array = value as byte[];
 			if (array == null)
-				throw new NotImplementedException();
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Invalid attempt to convert column {0} - {1} to a byte array", ordinal, GetName(ordinal)));
+
+			// if the buffer is null, then just return the length
+			if (buffer == null)
+				return array.Length;
 
 			// finally copy the data
 			length = Math.Min((int)length, array.Length - (int)dataOffset);
@@ -339,42 +340,53 @@ namespace Insight.Database.CodeGenerator
 
 		public override string GetDataTypeName(int ordinal)
 		{
-			throw new NotImplementedException();
+			var type = GetFieldType(ordinal);
+			if (type == null)
+				return "unmapped";
+			else
+				return type.Name;
 		}
 
 		public override IEnumerator GetEnumerator()
 		{
-			throw new NotImplementedException();
+			return _enumerable.GetEnumerator();
 		}
 
 		public override Type GetFieldType(int ordinal)
 		{
-			throw new NotImplementedException();
+			return _objectReader.GetType(ordinal);
 		}
 
 		public override int GetValues(object[] values)
 		{
-			throw new NotImplementedException();
+			if (values == null) throw new ArgumentNullException("values");
+
+			int length = Math.Min(values.Length, FieldCount);
+
+			for (int i = 0; i < length; i++)
+				values[i] = GetValue(i);
+
+			return length;
 		}
 
 		public override bool HasRows
 		{
-			get { throw new NotImplementedException(); }
+			get { return _enumerable.GetEnumerator().MoveNext(); }
 		}
 
 		public override bool IsClosed
 		{
-			get { throw new NotImplementedException(); }
+			get { return false; }
 		}
 
 		public override int RecordsAffected
 		{
-			get { throw new NotImplementedException(); }
+			get { return -1; }
 		}
 
 		public override object this[string name]
 		{
-			get { throw new NotImplementedException(); }
+			get { return GetValue(GetOrdinal(name)); }
 		}
 		#endregion
 	}

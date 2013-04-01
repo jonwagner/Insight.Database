@@ -228,6 +228,11 @@ namespace Insight.Tests
 		public void TestReadingClassTypesFromObjects()
 		{
 			TestReadingClassType<byte[]>("varbinary(MAX)", new byte[10], "bytearray");
+			TestReadingClassType<string>("varchar(MAX)", "", "string");
+
+			// type mismatches should throw
+			Assert.Throws<NullReferenceException>(() => TestReadingClassType<byte[]>("varchar(MAX)", new byte[10], "string"));
+			Assert.Throws<InvalidOperationException>(() => TestReadingClassType<string>("varbinary(MAX)", "", "bytearray"));
 		}
 
 		private void TestReadingClassType<T>(string sqlType, T value, string tableBaseName) where T : class
