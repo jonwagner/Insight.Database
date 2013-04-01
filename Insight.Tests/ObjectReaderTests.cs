@@ -19,7 +19,7 @@ namespace Insight.Tests
 		/// and sending it to a TVP column of a different type (say, a guid).
 		/// </summary>
 		[Test]
-		public void TestConvertToTypeWhileReadingObject()
+		public void TestConvertToTypeWhileReading()
 		{
 			TestConvertToTypeWhileReading<Guid>("uniqueidentifier", Guid.NewGuid());
 			TestConvertToTypeWhileReading<byte>("tinyint");
@@ -217,6 +217,43 @@ namespace Insight.Tests
 				_connection.ExecuteSql("DROP TYPE ObjectReader_IConvertibleTable");
 			}
 		}
+		#endregion
+
+		#region Reading Special Types
+		/// <summary>
+		/// Tests the conversion of types when reading a value from an object (say, as a string)
+		/// and sending it to a TVP column of a different type (say, a guid).
+		/// </summary>
+		[Test]
+		public void TestReadingClassTypesFromObjects()
+		{
+			TestReadingClassType<byte[]>("varbinary(MAX)", new byte[10], "bytearray");
+		}
+
+		private void TestReadingClassType<T>(string sqlType, T value, string tableBaseName) where T : class
+		{
+			List<T> list = new List<T>() { value };
+
+			string tableName = String.Format("ObjectReaderTable_{0}", tableBaseName);
+			string procName = String.Format("ObjectReaderProc_{0}", tableBaseName);
+
+			try
+			{
+				_connection.ExecuteSql(String.Format("CREATE TYPE {1} AS TABLE (value {0})", sqlType, tableName));
+
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					connection.ExecuteSql(String.Format("CREATE PROC {0} @values {1} READONLY AS SELECT value FROM @values", procName, tableName));
+
+					// convert a string value to the target type
+					connection.Execute(procName, list);
+				}
+			}
+			finally
+			{
+				_connection.ExecuteSql(String.Format("DROP TYPE {0}", tableName));
+			}
+		}		
 		#endregion
 	}
 }

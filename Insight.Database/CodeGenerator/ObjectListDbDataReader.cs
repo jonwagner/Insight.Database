@@ -313,7 +313,28 @@ namespace Insight.Database.CodeGenerator
 
 		public override long GetBytes(int ordinal, long dataOffset, byte[] buffer, int bufferOffset, int length)
 		{
-			throw new NotImplementedException();
+			// arrays can only have 32-bit indexing
+			if (dataOffset >= Int32.MaxValue)
+				throw new ArgumentException("dataOffset must be less than Int32.MaxValue", "dataOffset");
+			if (length >= Int32.MaxValue)
+				throw new ArgumentException("length must be less than Int32.MaxValue", "length");
+
+			// if this is called for a null value, don't copy any bytes
+			object value = GetValue(ordinal);
+			if (value == null)
+				return 0;
+
+			// if this is not a byte array, we will have to add additional implementations
+			byte[] array = value as byte[];
+			if (array == null)
+				throw new NotImplementedException();
+
+			// finally copy the data
+			length = Math.Min((int)length, array.Length - (int)dataOffset);
+			if (length > 0)
+				Array.Copy(array, dataOffset, buffer, bufferOffset, length);
+
+			return length;
 		}
 
 		public override string GetDataTypeName(int ordinal)
