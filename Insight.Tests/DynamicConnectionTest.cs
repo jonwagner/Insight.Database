@@ -339,5 +339,37 @@ namespace Insight.Tests
 				);
 			}
 		}
+
+		#region Dynamic Proc with Table Parameters
+		public class DynamicTableType
+		{
+			public int Value;
+		}
+
+		[Test]
+		public void DynamicProcCanHaveTableParameters()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TYPE Dynamic_Table AS TABLE (value int)");
+
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					connection.ExecuteSql("CREATE PROC DynamicProcWithTable (@i int = 0, @table Dynamic_Table READONLY, @j int = 0) AS SELECT * FROM @table");
+
+					Assert.AreEqual(0, connection.Dynamic().DynamicProcWithTable(new { Table = Parameters.EmptyList }).Count);
+					Assert.AreEqual(0, connection.Dynamic().DynamicProcWithTable(Table: Parameters.EmptyList).Count);
+
+					var results = connection.Dynamic().DynamicProcWithTable(Table: new List<DynamicTableType>() { new DynamicTableType() { Value = 9 } });
+					Assert.AreEqual(1, results.Count);
+					Assert.AreEqual(9, results[0].Value);
+				}
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP TYPE Dynamic_Table");
+			}
+		}
+		#endregion
 	}
 }

@@ -260,5 +260,56 @@ namespace Insight.Tests
 			}
 		}		
 		#endregion
+
+		#region Missing Table Tests
+		[Test]
+		public void ProcWithMissingTableParameterShouldThrow()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TYPE Missing_Table AS TABLE (value int)");
+
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					connection.ExecuteSql("CREATE PROC ProcWithMissingTable (@table Missing_Table READONLY) AS SELECT * FROM @table");
+
+					// sql will silently eat table parameters that are not specified, and that can be difficult to debug
+					Assert.Throws<InvalidOperationException>(() => connection.Query("ProcWithMissingTable"));
+
+					// so you should be able to specify an empty list
+					connection.Query("ProcWithMissingTable", new { Table = Parameters.EmptyList });
+				}
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP TYPE Missing_Table");
+			}
+		}
+
+		[Test]
+		public void DynamicProcWithMissingTableParameterShouldThrow()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TYPE Missing_Table AS TABLE (value int)");
+
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					connection.ExecuteSql("CREATE PROC ProcWithMissingTable (@table Missing_Table READONLY) AS SELECT * FROM @table");
+
+					// sql will silently eat table parameters that are not specified, and that can be difficult to debug
+					Assert.Throws<InvalidOperationException>(() => connection.Dynamic().ProcWithMissingTable());
+
+					// so you should be able to specify an empty list
+					connection.Dynamic().ProcWithMissingTable(new { Table = Parameters.EmptyList });
+					connection.Dynamic().ProcWithMissingTable(Table: Parameters.EmptyList);
+				}
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP TYPE Missing_Table");
+			}
+		}
+		#endregion
 	}
 }

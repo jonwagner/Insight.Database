@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
@@ -6,10 +7,12 @@ using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
+using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Text;
 using System.Threading;
+using Insight.Database.CodeGenerator;
 
 namespace Insight.Database
 {
@@ -197,7 +200,7 @@ namespace Insight.Database
 					{
 						string argumentName = callInfo.ArgumentNames[i];
 
-						// ignore out special parameters
+						// ignore our special parameters
 						if (argumentName == "cancellationToken" ||
 							argumentName == "transaction" ||
 							argumentName == "commandTimeout" ||
@@ -209,6 +212,22 @@ namespace Insight.Database
 						string parameterName = "@" + argumentName;
 						IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
 						p.Value = args[i];
+					}
+
+					// special handling for table parameters
+					foreach (SqlParameter p in cmd.Parameters.OfType<SqlParameter>().Where(p => p.SqlDbType == SqlDbType.Structured).ToList())
+					{
+						// if any parameters are missing table parameters, then alert the developer
+						if (p.Value == null)
+							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", p.ParameterName));
+
+						// swap out the parameter with something enumerable
+						cmd.Parameters.Remove(p);
+						Type listType = p.Value.GetType().GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+						if (listType == null)
+							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} expects an enumerable", p.ParameterName));
+						Type elementType = listType.GetGenericArguments()[0];
+						DbParameterGenerator.ListParameterHelper.AddEnumerableParameters(cmd, p.ParameterName, p.TypeName, elementType, p.Value);
 					}
 				}
 
@@ -364,6 +383,16 @@ namespace Insight.Database
 				p.ParameterName = parameter.ParameterName;
 				p.DbType = parameter.DbType;
 				p.Direction = parameter.Direction;
+
+				SqlParameter sp = p as SqlParameter;
+				if (sp != null)
+				{
+					SqlParameter sparameter = parameter as SqlParameter;
+
+					sp.SqlDbType = sparameter.SqlDbType;
+					sp.TypeName = sparameter.TypeName;					
+				}
+
 				cmd.Parameters.Add(p);
 			}
 		}

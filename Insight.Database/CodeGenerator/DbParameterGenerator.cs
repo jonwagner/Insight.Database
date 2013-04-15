@@ -306,12 +306,8 @@ namespace Insight.Database.CodeGenerator
 				typeOwner = typeArgs[0];
 
 				SqlParameter sqlParameter = parameters.Find(p => p.SqlDbType == SqlDbType.Structured);
-				string parameterName = sqlParameter.ParameterName;
-				string tableTypeName = sqlParameter.TypeName;
-				if (tableTypeName.Count(c => c == '.') > 1)
-					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
 
-				return (IDbCommand cmd, object o) => { ListParameterHelper.AddEnumerableParameters(cmd, parameterName, tableTypeName, typeOwner, o); };
+				return (IDbCommand cmd, object o) => { ListParameterHelper.AddEnumerableParameters(cmd, sqlParameter.ParameterName, sqlParameter.TypeName, typeOwner, o); };
 			}
 
 			// start creating a dynamic method
@@ -367,6 +363,11 @@ namespace Insight.Database.CodeGenerator
 
 						il.Emit(OpCodes.Callvirt, _iListAdd);						// stack => [parameters]
 						il.Emit(OpCodes.Pop);										// IList.Add returns the index, ignore it
+					}
+					else if (sqlParameter.SqlDbType == SqlDbType.Structured)
+					{
+						// sql will silently eat table parameters that are not specified, and that can be difficult to debug
+						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", sqlParameter.ParameterName));
 					}
 
 					continue;
@@ -808,7 +809,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Helps pack list parameters into a command.
 		/// </summary>
-		static class ListParameterHelper
+		internal static class ListParameterHelper
 		{
 			/// <summary>
 			/// Cache for Table-Valued Parameter schemas.
@@ -830,6 +831,10 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="value">The value of the parameter.</param>
 			public static void AddEnumerableParameters(IDbCommand command, string parameterName, string tableTypeName, Type listType, object value)
 			{
+				// trim any prefixes
+				if (tableTypeName.Count(c => c == '.') > 1)
+					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
+
 				// convert the value to an enumerable
 				IEnumerable list = (IEnumerable)value;
 
