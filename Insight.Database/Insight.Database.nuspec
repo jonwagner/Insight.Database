@@ -10,6 +10,7 @@
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
     <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
     <tags>Insight orm sql sqlserver micro-orm</tags>
+    <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
   </metadata>
   <files>
     <file src="\bin\Release\Insight.Database.dll" target="lib\NET45" />

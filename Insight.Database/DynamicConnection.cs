@@ -390,7 +390,7 @@ namespace Insight.Database
 					SqlParameter sparameter = parameter as SqlParameter;
 
 					sp.SqlDbType = sparameter.SqlDbType;
-					sp.TypeName = sparameter.TypeName;					
+					sp.TypeName = sparameter.TypeName;
 				}
 
 				cmd.Parameters.Add(p);
