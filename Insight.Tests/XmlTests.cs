@@ -218,8 +218,9 @@ namespace Insight.Tests
 			// clean up old stuff first
 			CleanupObjects();
 
-			_connection.ExecuteSql("CREATE TYPE [XmlDataTable] AS TABLE ([Data] [Xml])");
+			_connection.ExecuteSql("CREATE TYPE [XmlDataTable] AS TABLE ([id] int, [Data] [Xml])");
 			_connection.ExecuteSql("CREATE PROCEDURE [XmlTestProc] @p [XmlDataTable] READONLY AS SELECT * FROM @p");
+			_connection.ExecuteSql("CREATE PROCEDURE [XmlTestProc2] @p [XmlDataTable] READONLY AS SELECT CONVERT(varchar(MAX),Data) FROM @p");
 		}
 
 		[TestFixtureTearDown]
@@ -233,6 +234,10 @@ namespace Insight.Tests
 		private void CleanupObjects()
 		{
 			try
+			{
+				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'XmlTestProc2') DROP PROCEDURE [XmlTestProc2]");
+			}
+			catch { } try
 			{
 				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'XmlTestProc') DROP PROCEDURE [XmlTestProc]");
 			}
@@ -256,6 +261,18 @@ namespace Insight.Tests
 			var item = list[0];
 
 			Assert.AreEqual(r.Data.Text, item.Data.Text);
+		}
+
+		[Test]
+		public void StringXmlCanBeSentAndReturnedAsStrings()
+		{
+			string s = "<xml>text</xml>";
+			var input = new List<string>() { s };
+
+			var list = _connection.Query<string>("XmlTestProc2", new { p = input.Select(x => new { id=1, data=x }).ToList() });
+			var item = list[0];
+
+			Assert.AreEqual(s, item);
 		}
 	}
 }

@@ -67,6 +67,10 @@ namespace Insight.Database.CodeGenerator
 			if (type == null)
 				type = o.GetType();
 
+			// don't double-encode strings. assume the string is xml.
+			if (type == typeof(string))
+				return (string)o;
+
 			// serialize the parameters
 			StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
 			StringWriter disposable = sw;
