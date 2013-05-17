@@ -876,7 +876,7 @@ namespace Insight.Tests
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void TimeSpanMathShouldWorkOnBothSides()
 		{
 			// This seems to require SQL2012 SP1 - 11.0.3000

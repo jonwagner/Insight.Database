@@ -1134,6 +1134,39 @@ namespace Insight.Database
 			SqlBulkCopyOptions options = SqlBulkCopyOptions.Default,
 			SqlTransaction transaction = null)
 		{
+			connection.BulkCopy<T>(
+				tableName,
+				list,
+				bulk =>	
+				{
+					if (batchSize.HasValue)
+						bulk.BatchSize = batchSize.Value;
+				},
+				closeConnection,
+				options,
+				transaction);
+		}
+
+		/// <summary>
+		/// Bulk copy a list of objects to the server. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="T">The type of the objects.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="list">The list of objects.</param>
+		/// <param name="configure">An action that can be used to configure the bulk copy operation.</param>
+		/// <param name="closeConnection">True to close the connection when complete.</param>
+		/// <param name="options">The options to use for the bulk copy.</param>
+		/// <param name="transaction">An optional external transaction.</param>
+		public static void BulkCopy<T>(
+			this IDbConnection connection,
+			string tableName,
+			IEnumerable<T> list,
+			Action<SqlBulkCopy> configure,
+			bool closeConnection = false,
+			SqlBulkCopyOptions options = SqlBulkCopyOptions.Default,
+			SqlTransaction transaction = null)
+		{
 			// bulk copy only works for sql server
 			SqlConnection sqlConnection = connection as SqlConnection;
 			if (sqlConnection == null)
@@ -1147,8 +1180,8 @@ namespace Insight.Database
 				using (SqlBulkCopy bulk = new SqlBulkCopy(sqlConnection, options, transaction))
 				{
 					bulk.DestinationTableName = tableName;
-					if (batchSize != null)
-						bulk.BatchSize = batchSize.Value;
+					if (configure != null)
+						configure(bulk);
 
 					// see if we already have a mapping for the given table name and type
 					// we can't use the schema mapping cache because we don't have the schema yet, just the name of the table

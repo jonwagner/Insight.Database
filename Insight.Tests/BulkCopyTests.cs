@@ -71,5 +71,34 @@ namespace Insight.Tests
 				_connection.ExecuteSql("DELETE FROM InsightTestData");
 			}
 		}
+
+		[Test]
+		public void TestBulkLoadWithConfiguration()
+		{
+			const int ItemCount = 10;
+
+			// build test data
+			InsightTestData[] array = new InsightTestData[ItemCount];
+			for (int j = 0; j < ItemCount; j++)
+				array[j] = new InsightTestData() { Int = j };
+
+			// bulk load the data
+			long totalRows = 0;
+			_sqlConnection.BulkCopy("InsightTestData", array, configure: bulkCopy =>
+			{
+				bulkCopy.NotifyAfter = 1;
+				bulkCopy.SqlRowsCopied += (sender, args) => totalRows = args.RowsCopied;
+			});
+
+			// run the query
+			var items = _connection.QuerySql<InsightTestData>("SELECT * FROM InsightTestData");
+			Assert.IsNotNull(items);
+			Assert.AreEqual(ItemCount, items.Count);
+			Assert.AreEqual(ItemCount, totalRows);
+			for (int j = 0; j < ItemCount; j++)
+				Assert.AreEqual(j, items[j].Int);
+
+			_connection.ExecuteSql("DELETE FROM InsightTestData");
+		}
 	}
 }
