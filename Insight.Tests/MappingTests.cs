@@ -1,5 +1,8 @@
-﻿using Insight.Database;
+﻿using System.Data;
+using System.Data.SqlClient;
+using Insight.Database;
 using Insight.Tests.TestDataClasses;
+using Microsoft.SqlServer.Types;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -87,6 +90,7 @@ namespace Insight.Tests
 			_connection.ExecuteSql("CREATE PROCEDURE [TestProc] @p [InsightTestDataTable] READONLY AS SELECT * FROM @p");
 			_connection.ExecuteSql("CREATE TABLE [InsightTestDataTable2] ([IntParentX] [int], [IntX][int])");
 			_connection.ExecuteSql("CREATE PROCEDURE [TestProc2] @intParentX [int] AS SELECT @intParentX");
+			_connection.ExecuteSql("CREATE PROCEDURE [TestProc3] @geo [geography] AS SELECT @geo");
 		}
 
 		[TestFixtureTearDown]
@@ -101,6 +105,7 @@ namespace Insight.Tests
 
 		private void CleanupObjects()
 		{
+			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'TestProc3') DROP PROCEDURE [TestProc3]");
 			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'TestProc2') DROP PROCEDURE [TestProc2]");
 			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'TestProc') DROP PROCEDURE [TestProc]");
 			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataTable') DROP TYPE [InsightTestDataTable]");
@@ -163,6 +168,32 @@ namespace Insight.Tests
 			int data = results.First();
 
 			Assert.AreEqual(parentTestData.ParentX, data);
+		}
+
+		[Test]
+		public void GeographyParametersArePassedCorrectly()
+		{
+			var point = SqlGeography.Point(0, 0, 4326);
+
+			// The code below works, and demonstrates how
+			// geography parameters would have been passed manually
+//			using (var command = _connection.CreateCommand())
+//			{
+//				command.CommandType = CommandType.StoredProcedure;
+//				command.CommandText = "TestProc3";
+//				command.Parameters.Add(
+//					new SqlParameter("@geo", point)
+//					{
+//						SqlDbType = SqlDbType.Udt,
+//						UdtTypeName = "sys.geography"
+//					}
+//				);
+//				var r1 = (SqlGeography)command.ExecuteScalar();
+//				Assert.That(r1.STEquals(point).IsTrue);
+//			}
+
+			var results = _connection.Query<SqlGeography>("TestProc3", new { geo = point });
+			Assert.That(results[0].STEquals(point).IsTrue);
 		}
 	}
 }
