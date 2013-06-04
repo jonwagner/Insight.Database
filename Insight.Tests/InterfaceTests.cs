@@ -14,6 +14,7 @@ using System.Threading;
 
 namespace Insight.Tests
 {
+	#region Test Interfaces
 	interface ITest1 : IDbConnection, IDbTransaction
 	{
 		// all execution modes
@@ -80,6 +81,16 @@ namespace Insight.Tests
 		Task InsertMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
 		Task UpdateMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
 	}
+
+	interface ITestOutputParameters
+	{
+		void ExecuteWithOutputParameter(out int p);
+		int ExecuteScalarWithOutputParameter(out int p);
+		IList<int> QueryWithOutputParameter(out int p);
+		Results<TestDataClasses.ParentTestData, int> QueryResultsWithOutputParameter(out int p);
+		void InsertWithOutputParameter(IEnumerable<TestDataClasses.TestData> data, out int p);
+	}
+	#endregion
 
 	[TestFixture]
 	public class InterfaceTests : BaseDbTest
@@ -211,6 +222,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Test Insert as TVP
 		[Test]
 		public void TestInsert()
 		{
@@ -286,5 +298,64 @@ namespace Insight.Tests
 				_connection.ExecuteSql("DROP TYPE InsertTestDataTVP");
 			}
 		}
+		#endregion
+
+		#region Test Output Parameters
+		[Test]
+		public void TestOutputParameters()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TYPE InsertTestDataTVP AS TABLE (X [int], Z [int])");
+
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					connection.ExecuteSql("CREATE TABLE InsertTestDataTable (X [int] identity (5, 1), Z [int])");
+					connection.ExecuteSql("CREATE PROC ExecuteWithOutputParameter @p [int] = NULL OUTPUT AS SELECT @p=@p+1");
+					connection.ExecuteSql("CREATE PROC ExecuteScalarWithOutputParameter @p [int] = NULL OUTPUT AS SELECT @p=@p+1 SELECT 7");
+					connection.ExecuteSql("CREATE PROC QueryWithOutputParameter @p [int] = NULL OUTPUT AS SELECT @p=@p+1 SELECT 5");
+					connection.ExecuteSql("CREATE PROC QueryResultsWithOutputParameter @p int OUTPUT AS " + TestDataClasses.ParentTestData.Sql + " SELECT @p=@p+1 SELECT @p");
+					connection.ExecuteSql("CREATE PROC InsertWithOutputParameter @data [InsertTestDataTVP] READONLY, @p [int] OUTPUT AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X SELECT z FROM @data OUTPUT SELECT @p=@p+1");
+
+					var i = connection.As<ITestOutputParameters>();
+
+					// test execute with output parameter
+					int original = 2;
+					int p = original;
+					i.ExecuteWithOutputParameter(out p);
+					Assert.AreEqual(original + 1, p);
+
+					// test executescalar with output parameter
+					p = original;
+					var scalar = i.ExecuteScalarWithOutputParameter(out p);
+					Assert.AreEqual(original + 1, p);
+					Assert.AreEqual(7, scalar);
+
+					// test query with output parameters
+					p = original;
+					var results = i.QueryWithOutputParameter(out p);
+					Assert.AreEqual(original + 1, p);
+					Assert.AreEqual(1, results.Count);
+					Assert.AreEqual(5, results[0]);
+
+					// test query results with output parameters
+					p = original;
+					i.QueryResultsWithOutputParameter(out p);
+					Assert.AreEqual(original + 1, p);
+
+					// test insert with output parameters
+					TestDataClasses.TestData data = new TestDataClasses.TestData() { Z = 4 };
+					var list = new List<TestDataClasses.TestData>() { data };
+					p = original;
+					i.InsertWithOutputParameter(list, out p);
+					Assert.AreEqual(original + 1, p);
+				}
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP TYPE InsertTestDataTVP");
+			}
+		}
+		#endregion
 	}
 }

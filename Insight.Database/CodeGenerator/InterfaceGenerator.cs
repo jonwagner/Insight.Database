@@ -25,12 +25,12 @@ namespace Insight.Database.CodeGenerator
 		private static readonly Type[] _idbConnectionParameterTypes = new Type[] { typeof(IDbConnection) };
 		private static readonly Type[] _executeParameterTypes = new Type[]
 		{
-				typeof(IDbConnection), typeof(string), typeof(object), typeof(CommandType), typeof(bool), typeof(int?), typeof(IDbTransaction)
+				typeof(IDbConnection), typeof(string), typeof(object), typeof(CommandType), typeof(bool), typeof(int?), typeof(IDbTransaction), typeof(object)
 		};
 
 		private static readonly Type[] _queryParameterTypes = new Type[]
 		{
-				typeof(IDbConnection), typeof(string), typeof(object), typeof(Type), typeof(CommandType), typeof(CommandBehavior), typeof(int?), typeof(IDbTransaction)
+				typeof(IDbConnection), typeof(string), typeof(object), typeof(Type), typeof(CommandType), typeof(CommandBehavior), typeof(int?), typeof(IDbTransaction), typeof(object)
 		};
 
 		private static readonly Type[] _queryAsyncParameterTypes = new Type[]
@@ -138,6 +138,8 @@ namespace Insight.Database.CodeGenerator
 			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual, interfaceMethod.ReturnType, parameterTypes);
 			ILGenerator mIL = m.GetILGenerator();
 
+			LocalBuilder parameterWrapper = null;
+
 			var executeParameters = executeMethod.GetParameters();
 			for (int i = 0; i < executeParameters.Length; i++)
 			{
@@ -180,12 +182,25 @@ namespace Insight.Database.CodeGenerator
 						else
 						{
 							// create a class for the parameters and stick them in there
-							Type parameterWrapper = CreateParameterClass(mb, parameters);
+							Type parameterWrapperType = CreateParameterClass(mb, parameters);
 							for (int pi = 0; pi < parameters.Length; pi++)
 								mIL.Emit(OpCodes.Ldarg, pi + 1);
-							mIL.Emit(OpCodes.Newobj, parameterWrapper.GetConstructors()[0]);
+							mIL.Emit(OpCodes.Newobj, parameterWrapperType.GetConstructors()[0]);
+
+							// store the parameters in a local so we can unwrap output parameters
+							parameterWrapper = mIL.DeclareLocal(parameterWrapperType);
+							mIL.Emit(OpCodes.Dup);
+							mIL.Emit(OpCodes.Stloc, parameterWrapper);
 						}
 
+						break;
+
+					case "outputParameters":
+						// fill in the output parameters object with the temporary parameters object
+						if (parameterWrapper != null)
+							mIL.Emit(OpCodes.Ldloc, parameterWrapper.LocalIndex);
+						else
+							mIL.Emit(OpCodes.Ldnull);
 						break;
 
 					case "inserted":
@@ -285,7 +300,28 @@ namespace Insight.Database.CodeGenerator
 			if (interfaceMethod.ReturnType == typeof(void))
 				mIL.Emit(OpCodes.Pop);
 
+			// copy the output parameters from our parameter structure back to the output parameters
+			EmitOutputParameters(parameters, parameterWrapper, mIL);
+
 			mIL.Emit(OpCodes.Ret);
+		}
+
+		/// <summary>
+		/// Copies fields from the temporary output parameters structure to the output parameters object specified by the caller.
+		/// </summary>
+		/// <param name="parameters">The list of parameters.</param>
+		/// <param name="parameterWrapper">The local variable for the temporary object.</param>
+		/// <param name="mIL">The ILGenerator to use.</param>
+		private static void EmitOutputParameters(ParameterInfo[] parameters, LocalBuilder parameterWrapper, ILGenerator mIL)
+		{
+			foreach (var outputParameter in parameters.Where(p => p.IsOut))
+			{
+				mIL.Emit(OpCodes.Ldarg, outputParameter.Position + 1);
+				mIL.Emit(OpCodes.Ldloc, parameterWrapper.LocalIndex);
+				var fields = parameterWrapper.LocalType.GetFields();
+				mIL.Emit(OpCodes.Ldfld, fields[outputParameter.Position]);
+				mIL.Emit(OpCodes.Stobj, outputParameter.ParameterType.GetElementType());
+			}
 		}
 
 		/// <summary>
@@ -326,6 +362,32 @@ namespace Insight.Database.CodeGenerator
 			if (method.ReturnType.IsSubclassOf(typeof(Results)))
 				return _queryResultsMethod.MakeGenericMethod(method.ReturnType);
 
+			// check for async signatures
+			var asyncMethod = GetExecuteAsyncMethod(method);
+			if (asyncMethod != null)
+			{
+				// there is no way for us to return the output parameters before the results are retrieved
+				if (method.GetParameters().Any(p => p.ParameterType.IsByRef))
+					throw new InvalidOperationException("Ref and Out parameters are not permitted on asynchronous methods");
+
+				return asyncMethod;
+			}
+
+			// if returntype is an atomic object, then we call ExecuteScalar
+			if (TypeHelper.IsAtomicType(method.ReturnType))
+				return _executeScalarMethod.MakeGenericMethod(method.ReturnType);
+
+			// if returntype is not an atomic object, then we call Single
+			return _singleMethod.MakeGenericMethod(method.ReturnType);
+		}
+
+		/// <summary>
+		/// Determines the proper connection extension method to call to implement the interface method when the return type is a task.
+		/// </summary>
+		/// <param name="method">The interface method to analyze.</param>
+		/// <returns>The extension method that can implement the given method.</returns>
+		private static MethodInfo GetExecuteAsyncMethod(MethodInfo method)
+		{
 			// if returntype is Task
 			if (method.ReturnType == typeof(Task))
 			{
@@ -370,12 +432,7 @@ namespace Insight.Database.CodeGenerator
 				return _singleAsyncMethod.MakeGenericMethod(taskResultType);
 			}
 
-			// if returntype is an atomic object, then we call ExecuteScalar
-			if (TypeHelper.IsAtomicType(method.ReturnType))
-				return _executeScalarMethod.MakeGenericMethod(method.ReturnType);
-
-			// if returntype is not an atomic object, then we call Single
-			return _singleMethod.MakeGenericMethod(method.ReturnType);
+			return null;
 		}
 
 		/// <summary>
@@ -399,20 +456,24 @@ namespace Insight.Database.CodeGenerator
 			ILGenerator ctorIL = ctor.GetILGenerator();
 
 			// the constructor just copies the parameters into the internal fields
-			int i = 0;
 			foreach (ParameterInfo p in parameters)
 			{
-				i++;
-
 				// if the parameter is one of our special parameters, strip it out
 				if (IsSpecialParameter(p))
 					continue;
 
-				FieldBuilder fb = tb.DefineField(p.Name, p.ParameterType, FieldAttributes.Private);
+				// if we have a ref parameter, create a field of the base element type so we have a place to put values
+				var parameterType = p.ParameterType;
+				if (parameterType.IsByRef)
+					parameterType = parameterType.GetElementType();
 
-				ctorIL.Emit(OpCodes.Ldarg_0);			// this
-				ctorIL.Emit(OpCodes.Ldarg, (int)i);		// parameter (in order)
-				ctorIL.Emit(OpCodes.Stfld, fb);			// store to field
+				FieldBuilder fb = tb.DefineField(p.Name, parameterType, FieldAttributes.Public);
+
+				ctorIL.Emit(OpCodes.Ldarg_0);					// this
+				ctorIL.Emit(OpCodes.Ldarg, p.Position + 1);		// parameter (in order)
+				if (p.ParameterType.IsByRef)					// dereference the pointer if necessary
+					ctorIL.Emit(OpCodes.Ldobj, parameterType);
+				ctorIL.Emit(OpCodes.Stfld, fb);					// store to field
 			}
 
 			ctorIL.Emit(OpCodes.Ret);

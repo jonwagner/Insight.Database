@@ -37,6 +37,10 @@ namespace Insight.Database.CodeGenerator
 			if (type.IsEnum)
 				return true;
 
+			// value references are atomic
+			if (type.IsByRef)
+				return true;
+
 			// treat all references as non-atomic
 			if (!type.IsValueType)
 				return false;

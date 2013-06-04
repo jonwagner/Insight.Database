@@ -306,6 +306,7 @@ namespace Insight.Database
 		/// <param name="closeConnection">True to auto-close the connection on completion.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static int Execute(
 			this IDbConnection connection,
@@ -314,14 +315,20 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			bool closeConnection = false,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			return connection.ExecuteAndAutoClose(
 				c => null,
 				(_, __) =>
 				{
 					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
-						return cmd.ExecuteNonQuery();
+					{
+						var result = cmd.ExecuteNonQuery();
+						if (outputParameters != null)
+							cmd.OutputParameters(outputParameters);
+						return result;
+					}
 				},
 				closeConnection);
 		}
@@ -335,6 +342,7 @@ namespace Insight.Database
 		/// <param name="closeConnection">True to auto-close the connection when complete.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static int ExecuteSql(
 			this IDbConnection connection,
@@ -342,9 +350,10 @@ namespace Insight.Database
 			object parameters = null,
 			bool closeConnection = false,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Execute(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction);
+			return connection.Execute(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, outputParameters);
 		}
 		#endregion
 
@@ -360,6 +369,7 @@ namespace Insight.Database
 		/// <param name="closeConnection">True to auto-close the connection upon completion.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static T ExecuteScalar<T>(
 			this IDbConnection connection,
@@ -368,14 +378,20 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			bool closeConnection = false,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			return connection.ExecuteAndAutoClose(
 				c => null,
 				(_, __) =>
 				{
 					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
-						return (T)cmd.ExecuteScalar();
+					{
+						var result = (T)cmd.ExecuteScalar();
+						if (outputParameters != null)
+							cmd.OutputParameters(outputParameters);
+						return result;
+					}
 				},
 				closeConnection);
 		}
@@ -390,6 +406,7 @@ namespace Insight.Database
 		/// <param name="closeConnection">True to auto-close connection on completion.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static T ExecuteScalarSql<T>(
 			this IDbConnection connection,
@@ -397,9 +414,10 @@ namespace Insight.Database
 			object parameters = null,
 			bool closeConnection = false,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.ExecuteScalar<T>(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction);
+			return connection.ExecuteScalar<T>(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, outputParameters);
 		}
 		#endregion
 
@@ -462,6 +480,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<FastExpando> Query(
 			this IDbConnection connection,
@@ -470,9 +489,10 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Query<FastExpando>(sql, parameters, Graph.Null, commandType, commandBehavior, commandTimeout, transaction);
+			return connection.Query<FastExpando>(sql, parameters, Graph.Null, commandType, commandBehavior, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -487,6 +507,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> Query<TResult>(
 			this IDbConnection connection,
@@ -496,11 +517,18 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			return connection.ExecuteAndAutoClose(
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
-				(cmd, r) => r.ToList<TResult>(withGraph),
+				(cmd, r) =>
+				{
+					var result = r.ToList<TResult>(withGraph);
+					if (outputParameters != null)
+						cmd.OutputParameters(outputParameters);
+					return result;
+				},
 				commandBehavior);
 		}
 
@@ -513,6 +541,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<FastExpando> QuerySql(
 			this IDbConnection connection,
@@ -520,9 +549,10 @@ namespace Insight.Database
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Query<FastExpando>(sql, parameters, Graph.Null, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.Query<FastExpando>(sql, parameters, Graph.Null, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -536,6 +566,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static IList<TResult> QuerySql<TResult>(
 			this IDbConnection connection,
@@ -544,9 +575,10 @@ namespace Insight.Database
 			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Query<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.Query<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
 		}
 		#endregion
 
@@ -563,6 +595,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static TResult Single<TResult>(
 			this IDbConnection connection,
@@ -572,9 +605,10 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Query<TResult>(sql, parameters, withGraph, commandType, commandBehavior, commandTimeout, transaction).FirstOrDefault();
+			return connection.Query<TResult>(sql, parameters, withGraph, commandType, commandBehavior, commandTimeout, transaction, outputParameters).FirstOrDefault();
 		}
 
 		/// <summary>
@@ -588,6 +622,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static TResult SingleSql<TResult>(
 			this IDbConnection connection,
@@ -596,9 +631,10 @@ namespace Insight.Database
 			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Query<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction).FirstOrDefault();
+			return connection.Query<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters).FirstOrDefault();
 		}
 		#endregion
 
@@ -614,6 +650,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		public static void Query(
 			this IDbConnection connection,
 			string sql,
@@ -622,11 +659,18 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			connection.ExecuteAndAutoClose(
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
-				(cmd, r) => { read(r); return false; },
+				(cmd, r) =>
+				{
+					read(r);
+					if (outputParameters != null)
+						cmd.OutputParameters(outputParameters);
+					return false;
+				},
 				commandBehavior);
 		}
 
@@ -640,6 +684,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		public static void QuerySql(
 			this IDbConnection connection,
 			string sql,
@@ -647,9 +692,10 @@ namespace Insight.Database
 			Action<IDataReader> read,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			connection.Query(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			connection.Query(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -664,6 +710,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static T Query<T>(
 			this IDbConnection connection,
@@ -673,11 +720,18 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			return connection.ExecuteAndAutoClose(
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
-				(cmd, r) => read(r),
+				(cmd, r) =>
+				{
+					var result = read(r);
+					if (outputParameters != null)
+						cmd.OutputParameters(outputParameters);
+					return result;
+				},
 				commandBehavior);
 		}
 
@@ -692,6 +746,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command.</param>
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static T QuerySql<T>(
 			this IDbConnection connection,
@@ -700,9 +755,10 @@ namespace Insight.Database
 			Func<IDataReader, T> read,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Query(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction);
+			return connection.Query(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
 		}
 		#endregion
 
@@ -719,6 +775,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static T QueryResults<T>(
 			this IDbConnection connection,
@@ -728,7 +785,8 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null) where T : Results, new()
+			IDbTransaction transaction = null,
+			object outputParameters = null) where T : Results, new()
 		{
 			return connection.ExecuteAndAutoClose(
 				c => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
@@ -736,6 +794,8 @@ namespace Insight.Database
 				{
 					T results = new T();
 					results.Read(cmd, r, withGraphs);
+					if (outputParameters != null)
+						cmd.OutputParameters(outputParameters);
 
 					return results;
 				},
@@ -753,6 +813,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static T QueryResultsSql<T>(
 			this IDbConnection connection,
@@ -761,9 +822,10 @@ namespace Insight.Database
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null) where T : Results, new()
+			IDbTransaction transaction = null,
+			object outputParameters = null) where T : Results, new()
 		{
-			return connection.QueryResults<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -779,6 +841,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2> QueryResults<T1, T2>(
 			this IDbConnection connection,
@@ -788,9 +851,10 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -805,6 +869,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2> QueryResultsSql<T1, T2>(
 			this IDbConnection connection,
@@ -813,9 +878,10 @@ namespace Insight.Database
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -832,6 +898,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2, T3> QueryResults<T1, T2, T3>(
 			this IDbConnection connection,
@@ -841,9 +908,10 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -859,6 +927,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2, T3> QueryResultsSql<T1, T2, T3>(
 			this IDbConnection connection,
@@ -867,9 +936,10 @@ namespace Insight.Database
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -887,6 +957,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2, T3, T4> QueryResults<T1, T2, T3, T4>(
 			this IDbConnection connection,
@@ -896,9 +967,10 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -915,6 +987,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2, T3, T4> QueryResultsSql<T1, T2, T3, T4>(
 			this IDbConnection connection,
@@ -923,9 +996,10 @@ namespace Insight.Database
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -944,6 +1018,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2, T3, T4, T5> QueryResults<T1, T2, T3, T4, T5>(
 			this IDbConnection connection,
@@ -953,9 +1028,10 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -973,6 +1049,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Results<T1, T2, T3, T4, T5> QueryResultsSql<T1, T2, T3, T4, T5>(
 			this IDbConnection connection,
@@ -981,9 +1058,10 @@ namespace Insight.Database
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.QueryResults<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 		#endregion
 
@@ -1255,6 +1333,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The object after merging the results.</returns>
 		public static TResult Insert<TResult>(
 			this IDbConnection connection,
@@ -1264,11 +1343,18 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			connection.ExecuteAndAutoClose(
 				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
-				(cmd, r) => r.Merge(inserted),
+				(cmd, r) =>
+				{
+					var result = r.Merge(inserted);
+					if (outputParameters != null)
+						cmd.OutputParameters(outputParameters);
+					return result;
+				},
 				commandBehavior);
 
 			return inserted;
@@ -1290,6 +1376,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The object after merging the results.</returns>
 		public static TResult InsertSql<TResult>(
 			this IDbConnection connection,
@@ -1298,9 +1385,10 @@ namespace Insight.Database
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
-			return connection.Insert<TResult>(sql, inserted, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction);
+			return connection.Insert<TResult>(sql, inserted, parameters, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
 		/// <summary>
@@ -1320,6 +1408,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The list of objects after merging the results.</returns>
 		public static IEnumerable<TResult> InsertList<TResult>(
 			this IDbConnection connection,
@@ -1329,11 +1418,18 @@ namespace Insight.Database
 			CommandType commandType = CommandType.StoredProcedure,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			return connection.ExecuteAndAutoClose(
 				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
-				(cmd, r) => r.Merge(inserted),
+				(cmd, r) =>
+				{
+					var result = r.Merge(inserted);
+					if (outputParameters != null)
+						cmd.OutputParameters(outputParameters);
+					return result;
+				},
 				commandBehavior);
 		}
 
@@ -1353,6 +1449,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
 		/// <returns>The list of objects after merging the results.</returns>
 		public static IEnumerable<TResult> InsertListSql<TResult>(
 			this IDbConnection connection,
@@ -1361,11 +1458,18 @@ namespace Insight.Database
 			object parameters = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
-			IDbTransaction transaction = null)
+			IDbTransaction transaction = null,
+			object outputParameters = null)
 		{
 			return connection.ExecuteAndAutoClose(
 				c => c.CreateCommand(sql, parameters ?? inserted, CommandType.Text, commandTimeout, transaction),
-				(cmd, r) => r.Merge(inserted),
+				(cmd, r) =>
+				{
+					var result = r.Merge(inserted);
+					if (outputParameters != null)
+						cmd.OutputParameters(outputParameters);
+					return result;
+				},
 				commandBehavior);
 		}
 		#endregion
