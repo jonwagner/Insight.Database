@@ -25,17 +25,10 @@ namespace Insight.Database.CodeGenerator
 			// we convert nulls to dbnull. So if the type is nullable, then we look at the underlying type.
 			type = Nullable.GetUnderlyingType(type) ?? type;
 
-			// treat strings as atomic
-			if (type == typeof(string))
-				return true;
-
-			// arrays are atomic
-			if (type.IsArray)
-				return true;
-
-			// enums are atomic
-			if (type.IsEnum)
-				return true;
+			if (type == typeof(string))	return true;
+			if (type.IsArray) return true;
+			if (type.IsEnum) return true;
+			if (type.Name == "SqlGeography") return true;
 
 			// value references are atomic
 			if (type.IsByRef)

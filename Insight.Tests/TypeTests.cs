@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.SqlServer.Types;
 using NUnit.Framework;
 using Insight.Database;
 using System.Data.SqlClient;

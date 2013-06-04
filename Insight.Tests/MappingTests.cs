@@ -10,6 +10,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+#pragma warning disable 0649
+
 namespace Insight.Tests
 {
 	[TestFixture]
@@ -90,7 +92,7 @@ namespace Insight.Tests
 			_connection.ExecuteSql("CREATE PROCEDURE [TestProc] @p [InsightTestDataTable] READONLY AS SELECT * FROM @p");
 			_connection.ExecuteSql("CREATE TABLE [InsightTestDataTable2] ([IntParentX] [int], [IntX][int])");
 			_connection.ExecuteSql("CREATE PROCEDURE [TestProc2] @intParentX [int] AS SELECT @intParentX");
-			_connection.ExecuteSql("CREATE PROCEDURE [TestProc3] @geo [geography] AS SELECT @geo");
+			_connection.ExecuteSql("CREATE PROCEDURE [TestProc3] @geo [geography] AS SELECT GEO=@geo");
 		}
 
 		[TestFixtureTearDown]
@@ -170,29 +172,31 @@ namespace Insight.Tests
 			Assert.AreEqual(parentTestData.ParentX, data);
 		}
 
+		class TestGeography
+		{
+			public SqlGeography Geo;
+		}
+
 		[Test]
 		public void GeographyParametersArePassedCorrectly()
 		{
+			// single value query
 			var point = SqlGeography.Point(0, 0, 4326);
-
-			// The code below works, and demonstrates how
-			// geography parameters would have been passed manually
-//			using (var command = _connection.CreateCommand())
-//			{
-//				command.CommandType = CommandType.StoredProcedure;
-//				command.CommandText = "TestProc3";
-//				command.Parameters.Add(
-//					new SqlParameter("@geo", point)
-//					{
-//						SqlDbType = SqlDbType.Udt,
-//						UdtTypeName = "sys.geography"
-//					}
-//				);
-//				var r1 = (SqlGeography)command.ExecuteScalar();
-//				Assert.That(r1.STEquals(point).IsTrue);
-//			}
-
 			var results = _connection.Query<SqlGeography>("TestProc3", new { geo = point });
+			Assert.That(results[0].STEquals(point).IsTrue);
+
+			// class return value
+			var list = _connection.Query<TestGeography>("TestProc3", new { geo = point });
+			Assert.That(list[0].Geo.STEquals(point).IsTrue);
+
+			// dynamic parameter
+			dynamic p = new FastExpando();
+			p.Geo = point;
+			results = _connection.Query<SqlGeography>("TestProc3", (object)p);
+			Assert.That(results[0].STEquals(point).IsTrue);
+
+			// dynamic results
+			var dynamicList = _connection.Query("TestProc3", new { geo = point });
 			Assert.That(results[0].STEquals(point).IsTrue);
 		}
 	}

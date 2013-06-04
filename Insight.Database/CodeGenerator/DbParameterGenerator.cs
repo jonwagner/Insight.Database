@@ -35,6 +35,11 @@ namespace Insight.Database.CodeGenerator
 		private const DbType DbTypeEnumerable = (DbType)(-1);
 
 		/// <summary>
+		/// Special case for geography data types.
+		/// </summary>
+		private const DbType DbTypeGeography = (DbType)(-2);
+
+		/// <summary>
 		/// MethodInfos for methods that we are going to call.
 		/// </summary>
 		private static readonly FieldInfo _dbNullValue = typeof(DBNull).GetField("Value");
@@ -51,6 +56,8 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _linqBinaryToArray = typeof(System.Data.Linq.Binary).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Instance);
 		private static readonly MethodInfo _listParameterHelperAddEnumerableParameters = typeof(ListParameterHelper).GetMethod("AddEnumerableParameters");
 		private static readonly MethodInfo _iDataParameterGetValue = typeof(IDataParameter).GetProperty("Value").GetGetMethod();
+		private static readonly MethodInfo _iSqlParameterSetSqlDbType = typeof(SqlParameter).GetProperty("SqlDbType").GetSetMethod();
+		private static readonly MethodInfo _iSqlParameterSetUdtTypeName = typeof(SqlParameter).GetProperty("UdtTypeName").GetSetMethod();
 
 		/// <summary>
 		/// Mapping from object types to DbTypes.
@@ -536,7 +543,7 @@ namespace Insight.Database.CodeGenerator
 						il.EmitLoadType(prop.MemberType);
 						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(object), typeof(Type) }, null));
 					}
-					else
+					else if (sqlParameter.DbType != DbType.Object)
 					{
 						// it's not a system type and it's not IConvertible, so let's add it as a string and let the data engine convert it.
 						il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
@@ -627,9 +634,23 @@ namespace Insight.Database.CodeGenerator
 			///////////////////////////////////////////////////////////////
 			// p.DbType = DbType
 			///////////////////////////////////////////////////////////////
-			il.Emit(OpCodes.Dup);													// dup parameter
-			IlHelper.EmitLdInt32(il, (int)dbType);									// push dbtype
-			il.Emit(OpCodes.Callvirt, _iDataParameterSetDbType);					// call settype
+
+			if (dbType == DbTypeGeography)
+			{
+				il.Emit(OpCodes.Dup);												// dup parameter
+				IlHelper.EmitLdInt32(il, (int)SqlDbType.Udt);						// push dbtype
+				il.Emit(OpCodes.Callvirt, _iSqlParameterSetSqlDbType);				// call settype
+
+				il.Emit(OpCodes.Dup);												// dup parameter
+				il.Emit(OpCodes.Ldstr, "sys.geography");
+				il.Emit(OpCodes.Callvirt, _iSqlParameterSetUdtTypeName);			// call setUdtTypeName
+			}
+			else
+			{
+				il.Emit(OpCodes.Dup);													// dup parameter
+				IlHelper.EmitLdInt32(il, (int)dbType);									// push dbtype
+				il.Emit(OpCodes.Callvirt, _iDataParameterSetDbType);					// call settype
+			}
 		}
 
 		/// <summary>
@@ -647,10 +668,11 @@ namespace Insight.Database.CodeGenerator
 				foreach (SqlParameter template in parameters)
 				{
 					// create the parameter
-					IDbDataParameter p = command.CreateParameter();
+					SqlParameter p = (SqlParameter)command.CreateParameter();
 					p.ParameterName = template.ParameterName;
 					p.Direction = template.Direction;
-					p.DbType = template.DbType;
+					p.SqlDbType = template.SqlDbType;
+					p.UdtTypeName = template.UdtTypeName;
 
 					// make sure that we have a dictionary implementation
 					IDictionary<string, object> dyn = o as IDictionary<string, object>;
@@ -779,6 +801,10 @@ namespace Insight.Database.CodeGenerator
 				// use -1 to denote its a list, hacky but will work on any DB
 				return DbTypeEnumerable;
 			}
+
+			// we don't want to take an assembly dependency on the sql types, so check by name
+			if (type.Name == "SqlGeography")
+				return DbTypeGeography;
 
 			// let's see if the type can be directly converted to the parameter type
 			return parameterType;
