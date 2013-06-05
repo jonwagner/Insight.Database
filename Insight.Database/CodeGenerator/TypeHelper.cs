@@ -28,7 +28,10 @@ namespace Insight.Database.CodeGenerator
 			if (type == typeof(string))	return true;
 			if (type.IsArray) return true;
 			if (type.IsEnum) return true;
-			if (type.Name == "SqlGeography") return true;
+
+			// anything marked as a user-defined type is atomic for our purposes
+			if (type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute"))
+				return true;
 
 			// value references are atomic
 			if (type.IsByRef)

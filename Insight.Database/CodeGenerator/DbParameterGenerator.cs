@@ -35,11 +35,6 @@ namespace Insight.Database.CodeGenerator
 		private const DbType DbTypeEnumerable = (DbType)(-1);
 
 		/// <summary>
-		/// Special case for geography data types.
-		/// </summary>
-		private const DbType DbTypeGeography = (DbType)(-2);
-
-		/// <summary>
 		/// MethodInfos for methods that we are going to call.
 		/// </summary>
 		private static readonly FieldInfo _dbNullValue = typeof(DBNull).GetField("Value");
@@ -634,15 +629,15 @@ namespace Insight.Database.CodeGenerator
 			///////////////////////////////////////////////////////////////
 			// p.DbType = DbType
 			///////////////////////////////////////////////////////////////
-
-			if (dbType == DbTypeGeography)
+			SqlParameter sqlParameter = dbParameter as SqlParameter;
+			if (sqlParameter != null && sqlParameter.SqlDbType == SqlDbType.Udt)
 			{
 				il.Emit(OpCodes.Dup);												// dup parameter
-				IlHelper.EmitLdInt32(il, (int)SqlDbType.Udt);						// push dbtype
+				IlHelper.EmitLdInt32(il, (int)sqlParameter.SqlDbType);				// push dbtype
 				il.Emit(OpCodes.Callvirt, _iSqlParameterSetSqlDbType);				// call settype
 
 				il.Emit(OpCodes.Dup);												// dup parameter
-				il.Emit(OpCodes.Ldstr, "sys.geography");
+				il.Emit(OpCodes.Ldstr, sqlParameter.UdtTypeName);
 				il.Emit(OpCodes.Callvirt, _iSqlParameterSetUdtTypeName);			// call setUdtTypeName
 			}
 			else
@@ -801,10 +796,6 @@ namespace Insight.Database.CodeGenerator
 				// use -1 to denote its a list, hacky but will work on any DB
 				return DbTypeEnumerable;
 			}
-
-			// we don't want to take an assembly dependency on the sql types, so check by name
-			if (type.Name == "SqlGeography")
-				return DbTypeGeography;
 
 			// let's see if the type can be directly converted to the parameter type
 			return parameterType;
