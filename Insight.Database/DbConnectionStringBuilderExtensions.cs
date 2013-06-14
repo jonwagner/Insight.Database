@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Oracle.DataAccess.Client;
 
 namespace Insight.Database
 {
@@ -39,6 +40,10 @@ namespace Insight.Database
 					connection = new OdbcConnection();
 				else if (builder is OleDbConnectionStringBuilder)
 					connection = new OleDbConnection();
+#if ORACLE
+				else if (builder is OracleConnectionStringBuilder)
+					connection = new OracleConnection();
+#endif
 				disposable = connection;
 
 				if (connection == null)

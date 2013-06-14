@@ -19,6 +19,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Reliable;
+using Oracle.DataAccess.Client;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -190,7 +191,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="command">The command to derive.</param>
 		/// <returns>The list of parameter names.</returns>
-		private static List<SqlParameter> DeriveParameters(IDbCommand command)
+		private static List<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
 			string sql = command.CommandText;
 
@@ -201,11 +202,21 @@ namespace Insight.Database.CodeGenerator
 				SqlCommand sqlCommand = command.UnwrapSqlCommand();
 				if (sqlCommand != null)
 					return DeriveParametersFromSqlProcedure(sqlCommand);
+
+				OracleCommand oracleCommand = command as OracleCommand;
+				if (oracleCommand != null)
+				{
+					OracleCommandBuilder.DeriveParameters(oracleCommand);
+					List<DbParameter> parameters = command.Parameters.Cast<DbParameter>().ToList();
+					var foo = command.Parameters.Cast<IDbDataParameter>().ToList();
+					command.Parameters.Clear();
+					return foo;
+				}
 			}
 
 			// otherwise we have to look at the text
 			// the text can even contain the parameters in a comment (e.g. "myproc -- @p, @q")
-			return DeriveParametersFromSqlText(sql);
+			return DeriveParametersFromSqlText(command);
 		}
 
 		/// <summary>
@@ -213,7 +224,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="command">The command to derive.</param>
 		/// <returns>The list of stored procedures.</returns>
-		private static List<SqlParameter> DeriveParametersFromSqlProcedure(SqlCommand command)
+		private static List<IDbDataParameter> DeriveParametersFromSqlProcedure(SqlCommand command)
 		{
 			// call the server to get the parameters
 			command.Connection.ExecuteAndAutoClose(
@@ -228,7 +239,7 @@ namespace Insight.Database.CodeGenerator
 				CommandBehavior.Default);
 
 			// make the list of parameters
-			List<SqlParameter> parameters = command.Parameters.Cast<SqlParameter>().ToList();
+			List<IDbDataParameter> parameters = command.Parameters.Cast<IDbDataParameter>().ToList();
 			parameters.ForEach(p => p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant());
 
 			// clear the list so we can re-add them
@@ -269,15 +280,20 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Get a list of parameters from Sql text.
 		/// </summary>
-		/// <param name="sql">The sql to scan.</param>
+		/// <param name="command">The command to scan.</param>
 		/// <returns>A list of the detected parameters.</returns>
-		private static List<SqlParameter> DeriveParametersFromSqlText(string sql)
+		private static List<IDbDataParameter> DeriveParametersFromSqlText(IDbCommand command)
 		{
-			return _parameterRegex.Matches(sql)
+			return _parameterRegex.Matches(command.CommandText)
 				.Cast<Match>()
 				.Select(m => m.Groups[1].Value.ToUpperInvariant())
 				.Distinct()
-				.Select(p => new SqlParameter(p, null))
+				.Select(p =>
+					{
+						var dbParameter = command.CreateParameter();
+						dbParameter.ParameterName = p;
+						return dbParameter; 
+					})
 				.ToList();
 		}
 		#endregion
@@ -293,7 +309,7 @@ namespace Insight.Database.CodeGenerator
 		static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
 			// get the parameters
-			List<SqlParameter> parameters = DeriveParameters(command);
+			List<IDbDataParameter> parameters = DeriveParameters(command);
 
 			// create a dynamic method
 			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
@@ -307,7 +323,7 @@ namespace Insight.Database.CodeGenerator
 				Type[] typeArgs = type.GetGenericArguments();
 				typeOwner = typeArgs[0];
 
-				SqlParameter sqlParameter = parameters.Find(p => p.SqlDbType == SqlDbType.Structured);
+				SqlParameter sqlParameter = parameters.OfType<SqlParameter>().FirstOrDefault(p => p.SqlDbType == SqlDbType.Structured);
 
 				return (IDbCommand cmd, object o) => { ListParameterHelper.AddEnumerableParameters(cmd, sqlParameter.ParameterName, sqlParameter.TypeName, typeOwner, o); };
 			}
@@ -328,20 +344,20 @@ namespace Insight.Database.CodeGenerator
 			for (int i = 0; i < mapping.Length; i++)
 			{
 				var prop = mapping[i];
-				var sqlParameter = parameters[i];
+				var dbParameter = parameters[i];
 
 				// if there is no mapping for that parameter, then see if we need to add it as an output parameter
 				if (prop == null)
 				{
 					// if there is an unspecified output parameter, then we need to add a parameter for it
 					// this includes input/output parameters, as well as return values
-					if (sqlParameter.Direction.HasFlag(ParameterDirection.Output))
+					if (dbParameter.Direction.HasFlag(ParameterDirection.Output))
 					{
 						il.Emit(OpCodes.Dup);										// dup parameters
-						EmitCreateParameter(il, sqlParameter, sqlParameter.DbType);	// adds parameter to the stack
+						EmitCreateParameter(il, dbParameter, dbParameter.DbType);	// adds parameter to the stack
 
 						// for string fields, set the length
-						switch (sqlParameter.DbType)
+						switch (dbParameter.DbType)
 						{
 							case DbType.AnsiString:
 							case DbType.AnsiStringFixedLength:
@@ -355,10 +371,10 @@ namespace Insight.Database.CodeGenerator
 							case DbType.Decimal:
 							case DbType.VarNumeric:
 								il.Emit(OpCodes.Dup);
-								il.Emit(OpCodes.Ldc_I4, (Int32)sqlParameter.Precision);
+								il.Emit(OpCodes.Ldc_I4, (Int32)dbParameter.Precision);
 								il.Emit(OpCodes.Callvirt, typeof(SqlParameter).GetProperty("Precision").GetSetMethod());
 								il.Emit(OpCodes.Dup);
-								il.Emit(OpCodes.Ldc_I4, (Int32)sqlParameter.Scale);
+								il.Emit(OpCodes.Ldc_I4, (Int32)dbParameter.Scale);
 								il.Emit(OpCodes.Callvirt, typeof(SqlParameter).GetProperty("Scale").GetSetMethod());
 								break;
 						}
@@ -366,17 +382,17 @@ namespace Insight.Database.CodeGenerator
 						il.Emit(OpCodes.Callvirt, _iListAdd);						// stack => [parameters]
 						il.Emit(OpCodes.Pop);										// IList.Add returns the index, ignore it
 					}
-					else if (sqlParameter.SqlDbType == SqlDbType.Structured)
+					else if (dbParameter is SqlParameter && ((SqlParameter)dbParameter).SqlDbType == SqlDbType.Structured)
 					{
 						// sql will silently eat table parameters that are not specified, and that can be difficult to debug
-						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", sqlParameter.ParameterName));
+						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", dbParameter.ParameterName));
 					}
 
 					continue;
 				}
 
 				// look up the type of the parameters
-				DbType sqlType = LookupDbType(prop.MemberType, sqlParameter.DbType);
+				DbType sqlType = LookupDbType(prop.MemberType, dbParameter.DbType);
 
 				// stack => [parameters]
 
@@ -386,7 +402,7 @@ namespace Insight.Database.CodeGenerator
 				if (sqlType == DbTypeEnumerable)
 				{
 					il.Emit(OpCodes.Ldarg_0);											// push command
-					il.Emit(OpCodes.Ldstr, sqlParameter.ParameterName);					// push parameter name
+					il.Emit(OpCodes.Ldstr, dbParameter.ParameterName);					// push parameter name
 
 					// get the type of the contents of the list
 					Type listType = prop.MemberType;
@@ -396,7 +412,7 @@ namespace Insight.Database.CodeGenerator
 						listType = listType.GetGenericArguments()[0];
 
 					// emit the table type name, but not too many prefixes
-					string tableTypeName = sqlParameter.TypeName;
+					string tableTypeName = ((SqlParameter)dbParameter).TypeName;
 					if (tableTypeName.Count(c => c == '.') > 1)
 						tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
 					il.Emit(OpCodes.Ldstr, tableTypeName);
@@ -420,7 +436,7 @@ namespace Insight.Database.CodeGenerator
 				// duplicate parameters so we can call add later
 				il.Emit(OpCodes.Dup);													// dup parameters
 
-				EmitCreateParameter(il, sqlParameter, sqlType);							// adds parameter to the stack
+				EmitCreateParameter(il, dbParameter, sqlType);							// adds parameter to the stack
 
 				// duplicate the parameter so we can call setvalue later
 				il.Emit(OpCodes.Dup);													// dup parameter
@@ -441,7 +457,7 @@ namespace Insight.Database.CodeGenerator
 					// if the value hasn't been boxed yet, do it so we can call the method
 					if (prop.MemberType.IsValueType)
 						il.Emit(OpCodes.Box, prop.MemberType);
-					IlHelper.EmitLdInt32(il, (int)sqlParameter.DbType);
+					IlHelper.EmitLdInt32(il, (int)dbParameter.DbType);
 					il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("ObjectToSqlDateTime"));
 				}
 				else if (prop.MemberType.IsValueType)
@@ -532,13 +548,13 @@ namespace Insight.Database.CodeGenerator
 				else if (!TypeHelper.IsAtomicType(prop.MemberType))
 				{
 					// NOTE: at this point we know it's an object and the object reference is not null
-					if (sqlParameter.DbType == DbType.Xml)
+					if (dbParameter.DbType == DbType.Xml)
 					{
 						// we have an object and it is expecting an xml parameter. let's serialize the object.
 						il.EmitLoadType(prop.MemberType);
 						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", BindingFlags.Static | BindingFlags.Public, null, new Type[] { typeof(object), typeof(Type) }, null));
 					}
-					else if (sqlParameter.DbType != DbType.Object)
+					else if (dbParameter.DbType != DbType.Object)
 					{
 						// it's not a system type and it's not IConvertible, so let's add it as a string and let the data engine convert it.
 						il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
@@ -604,7 +620,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="il">The IL generator to emit the code.</param>
 		/// <param name="dbParameter">The SqlParameter to use as a template.</param>
 		/// <param name="dbType">The DbType to use as a template.</param>
-		private static void EmitCreateParameter(ILGenerator il, DbParameter dbParameter, DbType dbType)
+		private static void EmitCreateParameter(ILGenerator il, IDataParameter dbParameter, DbType dbType)
 		{
 			///////////////////////////////////////////////////////////////
 			// Create a new parameter
@@ -656,7 +672,7 @@ namespace Insight.Database.CodeGenerator
 		static Action<IDbCommand, object> CreateDynamicInputParameterGenerator(IDbCommand command)
 		{
 			// figure out what the parameters are
-			List<SqlParameter> parameters = DeriveParameters(command);
+			List<IDbDataParameter> parameters = DeriveParameters(command);
 
 			return (cmd, o) =>
 			{

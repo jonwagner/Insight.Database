@@ -152,6 +152,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
+#if !ORACLE
 		#region BulkCopy Tests
 		[Test]
 		public void MappingsAreAppliedToBulkCopy()
@@ -179,6 +180,7 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+#endif
 
 		[Test]
 		public void MappingsAreAppliedToParameters()

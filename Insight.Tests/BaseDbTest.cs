@@ -8,6 +8,7 @@ using System.Data.SqlClient;
 using System.Transactions;
 using System.Data;
 using System.Data.Common;
+using Oracle.DataAccess.Client;
 
 namespace Insight.Tests
 {
@@ -20,11 +21,17 @@ namespace Insight.Tests
 		[TestFixtureSetUp]
 		public virtual void SetUpFixture()
 		{
+#if ORACLE
+			_connectionStringBuilder = new OracleConnectionStringBuilder();
+			_connectionStringBuilder.ConnectionString = "Data Source = localhost; User Id = system; Password = Password1";
+			_connection = _connectionStringBuilder.Open();
+#else
 			// open the test connection
 			_connectionStringBuilder = new SqlConnectionStringBuilder();
 			_connectionStringBuilder.IntegratedSecurity = true;
 			_connectionStringBuilder.AsynchronousProcessing = true;
 			_connection = _connectionStringBuilder.Open();
+#endif
 		}
 
 		[TestFixtureTearDown]
@@ -48,9 +55,11 @@ namespace Insight.Tests
 				_connection.Close();
 		}
 
+#if !ORACLE
 		protected SqlConnection _sqlConnection { get { return _connection as SqlConnection; } }
+#endif
+		protected DbConnectionStringBuilder _connectionStringBuilder;
 
-		protected SqlConnectionStringBuilder _connectionStringBuilder;
 		protected DbConnection _connection;
 		protected TransactionScope _transaction;
 		#endregion

@@ -7,6 +7,7 @@ using Insight.Database;
 
 namespace Insight.Tests
 {
+#if !ORACLE
 	[TestFixture]
 	class BulkCopyTests : BaseDbTest
 	{
@@ -101,4 +102,5 @@ namespace Insight.Tests
 			_connection.ExecuteSql("DELETE FROM InsightTestData");
 		}
 	}
+#endif
 }
