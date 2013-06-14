@@ -129,6 +129,27 @@ namespace Insight.Tests
 			var results = _connection.Query<ParentTestData>("TestProc", original);
 			ParentTestData.Verify(results, false);
 		}
+
+		class ParentTestDataWithColumn
+		{
+			[Column("IntParentX")]
+			public int ParentX { get; set; }
+
+			[Column("IntX")]
+			public int X { get; set; }
+		}
+
+		[Test]
+		public void ColumnAttributesAreAppliedToTableValuedParameters()
+		{
+			var original = new ParentTestDataWithColumn() { ParentX = 5, X = 7 };
+			var list = new List<ParentTestDataWithColumn>() { original };
+
+			// send the object up to the server and get them back
+			var results = _connection.Query<ParentTestDataWithColumn>("TestProc", list).First();
+			Assert.AreEqual(original.ParentX, results.ParentX);
+			Assert.AreEqual(original.X, results.X);
+		}
 		#endregion
 
 		#region BulkCopy Tests
