@@ -20,6 +20,7 @@ using System.Xml.Linq;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Reliable;
 using Oracle.DataAccess.Client;
+using Insight.Database.Providers;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -144,7 +145,6 @@ namespace Insight.Database.CodeGenerator
 		/// Regex to detect parameters in sql text.
 		/// </summary>
 		private static Regex _parameterRegex = new Regex("[?@:]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
-		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 		#endregion
 
 		#region Code Cache Members
@@ -195,86 +195,13 @@ namespace Insight.Database.CodeGenerator
 		{
 			string sql = command.CommandText;
 
-			// for SqlServer stored procs, we can call the server to derive them
+			// for stored procs, can call the server to derive them
 			if (command.CommandType == CommandType.StoredProcedure)
-			{
-				// if we have a SqlCommand, use it
-				SqlCommand sqlCommand = command.UnwrapSqlCommand();
-				if (sqlCommand != null)
-					return DeriveParametersFromSqlProcedure(sqlCommand);
-
-				OracleCommand oracleCommand = command as OracleCommand;
-				if (oracleCommand != null)
-				{
-					OracleCommandBuilder.DeriveParameters(oracleCommand);
-					List<DbParameter> parameters = command.Parameters.Cast<DbParameter>().ToList();
-					var foo = command.Parameters.Cast<IDbDataParameter>().ToList();
-					command.Parameters.Clear();
-					return foo;
-				}
-			}
+				return InsightDbProvider.First(p => p.DeriveParameters(command));
 
 			// otherwise we have to look at the text
 			// the text can even contain the parameters in a comment (e.g. "myproc -- @p, @q")
 			return DeriveParametersFromSqlText(command);
-		}
-
-		/// <summary>
-		/// Derive the list of parameters from the stored procedure.
-		/// </summary>
-		/// <param name="command">The command to derive.</param>
-		/// <returns>The list of stored procedures.</returns>
-		private static List<IDbDataParameter> DeriveParametersFromSqlProcedure(SqlCommand command)
-		{
-			// call the server to get the parameters
-			command.Connection.ExecuteAndAutoClose(
-				_ =>
-				{
-					SqlCommandBuilder.DeriveParameters(command);
-					CheckForMissingParameters(command);
-
-					return null;
-				},
-				(_, __) => false,
-				CommandBehavior.Default);
-
-			// make the list of parameters
-			List<IDbDataParameter> parameters = command.Parameters.Cast<IDbDataParameter>().ToList();
-			parameters.ForEach(p => p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant());
-
-			// clear the list so we can re-add them
-			command.Parameters.Clear();
-
-			return parameters;
-		}
-
-		/// <summary>
-		/// Verify that DeriveParameters returned the correct parameters.
-		/// </summary>
-		/// <remarks>
-		/// If the current user doesn't have execute permissions the type of a parameter,
-		/// DeriveParameters won't return the parameter. This is very difficult to debug,
-		/// so we are going to check to make sure that we got all of the parameters.
-		/// </remarks>
-		/// <param name="command">The command to analyze.</param>
-		private static void CheckForMissingParameters(SqlCommand command)
-		{
-			// if the current user doesn't have execute permissions on the database
-			// DeriveParameters will just skip the parameter
-			// so we are going to check the list ourselves for anything missing
-			var parameterNames = command.Connection.QuerySql<string>(
-				"SELECT p.Name FROM sys.parameters p WHERE p.object_id = OBJECT_ID(@Name)",
-				new { Name = command.CommandText },
-				transaction: command.Transaction);
-
-			var parameters = command.Parameters.OfType<SqlParameter>();
-			string missingParameter = parameterNames.FirstOrDefault(n => !parameters.Any(p => String.Compare(p.ParameterName, n, StringComparison.OrdinalIgnoreCase) == 0));
-			if (missingParameter != null)
-				throw new InvalidOperationException(String.Format(
-					CultureInfo.InvariantCulture,
-					"{0} is missing parameter {1}. Check to see if the parameter is using a type that the current user does not have EXECUTE access to.",
-					command.CommandText,
-					missingParameter));
 		}
 
 		/// <summary>

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
+using Oracle.DataAccess.Client;
 
 namespace Insight.Tests.Oracle
 {
@@ -14,6 +15,14 @@ namespace Insight.Tests.Oracle
 	[TestFixture]
 	public class OracleTests : BaseDbTest
 	{
+		[TestFixtureSetUp]
+		public override void SetUpFixture()
+		{
+			_connectionStringBuilder = new OracleConnectionStringBuilder();
+			_connectionStringBuilder.ConnectionString = "Data Source = localhost; User Id = system; Password = Password1";
+			_connection = _connectionStringBuilder.Open();
+		}
+
 		[Test]
 		public void ExecuteSql()
 		{

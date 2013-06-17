@@ -25,7 +25,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;ORACLE</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
@@ -81,6 +81,7 @@
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Providers\InsightDbProvider.cs" />
     <Compile Include="SqlAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />

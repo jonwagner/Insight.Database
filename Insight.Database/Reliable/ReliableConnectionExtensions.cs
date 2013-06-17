@@ -4,6 +4,7 @@ using System.Configuration;
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
+using Insight.Database;
 
 namespace Insight.Database.Reliable
 {
@@ -18,12 +19,12 @@ namespace Insight.Database.Reliable
 		/// </summary>
 		/// <param name="settings">The ConnectionStringSettings containing the connection string.</param>
 		/// <returns>A closed SqlConnection.</returns>
-		public static ReliableConnection<SqlConnection> ReliableConnection(this ConnectionStringSettings settings)
+		public static ReliableConnection ReliableConnection(this ConnectionStringSettings settings)
 		{
 			if (settings == null)
 				throw new ArgumentNullException("settings", "ConnectionStringSettings cannot be null");
 
-			return new ReliableConnection<SqlConnection>(settings.ConnectionString);
+			return new ReliableConnection(settings.Connection());
 		}
 
 		/// <summary>
@@ -31,12 +32,12 @@ namespace Insight.Database.Reliable
 		/// </summary>
 		/// <param name="settings">The connection string to open and return.</param>
 		/// <returns>The opened connection.</returns>
-		public static ReliableConnection<SqlConnection> ReliableOpen(this ConnectionStringSettings settings)
+		public static ReliableConnection ReliableOpen(this ConnectionStringSettings settings)
 		{
 			if (settings == null)
 				throw new ArgumentNullException("settings", "ConnectionStringSettings cannot be null");
 
-			ReliableConnection<SqlConnection> connection = settings.ReliableConnection();
+			ReliableConnection connection = settings.ReliableConnection();
 			connection.Open();
 			return connection;
 		}

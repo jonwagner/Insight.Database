@@ -10,6 +10,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Oracle.DataAccess.Client;
+using Insight.Database.Providers;
 
 namespace Insight.Database
 {
@@ -33,17 +34,7 @@ namespace Insight.Database
 			try
 			{
 				// get the connection from the provider
-				// if the provider is not specified, then attempt to get the type
-				if (builder is SqlConnectionStringBuilder)
-					connection = new SqlConnection();
-				else if (builder is OdbcConnectionStringBuilder)
-					connection = new OdbcConnection();
-				else if (builder is OleDbConnectionStringBuilder)
-					connection = new OleDbConnection();
-#if ORACLE
-				else if (builder is OracleConnectionStringBuilder)
-					connection = new OracleConnection();
-#endif
+				connection = InsightDbProvider.First(p => p.GetDbConnection(builder));
 				disposable = connection;
 
 				if (connection == null)
