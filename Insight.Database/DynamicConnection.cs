@@ -351,10 +351,7 @@ namespace Insight.Database
 			// if not found, call the Server to get them.
 			var parameterList = _parameters.GetOrAdd(
 				cmd.CommandText,
-				name =>
-				{
-					return InsightDbProvider.First(p => p.DeriveParameters(cmd)).Where(p => p.Direction == ParameterDirection.Input).ToList();
-				});
+				name => InsightDbProvider.For(cmd).DeriveParameters(cmd).Where(p => p.Direction == ParameterDirection.Input).ToList());
 
 			// copy the parameter list
 			foreach (IDbDataParameter parameter in parameterList)

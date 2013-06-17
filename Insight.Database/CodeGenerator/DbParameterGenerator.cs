@@ -197,7 +197,7 @@ namespace Insight.Database.CodeGenerator
 
 			// for stored procs, can call the server to derive them
 			if (command.CommandType == CommandType.StoredProcedure)
-				return InsightDbProvider.First(p => p.DeriveParameters(command));
+				return InsightDbProvider.For(command).DeriveParameters(command);
 
 			// otherwise we have to look at the text
 			// the text can even contain the parameters in a comment (e.g. "myproc -- @p, @q")
@@ -873,9 +873,6 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="list">The list of objects.</param>
 			private static void AddEnumerableClassParameters(IDbCommand command, string parameterName, string tableTypeName, Type listType, IEnumerable list)
 			{
-				// table-valued parameters only work with sql
-				SqlCommand cmd = command.UnwrapSqlCommand();
-
 				// convert any nullable types to their underlying type
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;
 
@@ -888,24 +885,21 @@ namespace Insight.Database.CodeGenerator
 				var key = Tuple.Create<string, Type>(tableTypeName, listType);
 				ObjectReader objectReader = _tvpReaders.GetOrAdd(
 					key,
-					k => cmd.Connection.ExecuteAndAutoClose(
+					k => command.Connection.ExecuteAndAutoClose(
 						_ => null,
 						(_, __) =>
 						{
-							// select a 0 row result set so we can determine the schema of the table
-							string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
-							using (var sqlReader = cmd.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: cmd.Transaction))
-								return ObjectReader.GetObjectReader(sqlReader, listType);
+							using (var reader = InsightDbProvider.For(command).GetTableTypeSchema(command, tableTypeName))
+								return ObjectReader.GetObjectReader(reader, listType);
 						},
 						CommandBehavior.Default));
 
 				// create the structured parameter
-				SqlParameter p = new SqlParameter();
-				p.ParameterName = parameterName;
-				p.SqlDbType = SqlDbType.Structured;
-				p.TypeName = tableTypeName;
-				p.Value = new ObjectListDbDataReader(objectReader, list);
-				cmd.Parameters.Add(p);
+				var param = InsightDbProvider.For(command).CreateTableValuedParameter(command, parameterName, tableTypeName);
+				if (param == null)
+					throw new InvalidOperationException("Database provider does not support table-valued parameters");
+				param.Value = new ObjectListDbDataReader(objectReader, list);
+				command.Parameters.Add(param);
 			}
 		}
 		#endregion

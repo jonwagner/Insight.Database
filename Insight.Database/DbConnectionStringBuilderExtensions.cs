@@ -34,7 +34,7 @@ namespace Insight.Database
 			try
 			{
 				// get the connection from the provider
-				connection = InsightDbProvider.First(p => p.GetDbConnection(builder));
+				connection = InsightDbProvider.For(builder).GetDbConnection();
 				disposable = connection;
 
 				if (connection == null)

@@ -15,11 +15,7 @@ using System.Threading.Tasks;
 
 namespace Insight.Database.Providers
 {
-	// TODO: remove unwrapsqlcommand
-	// TODO: dynamicconnection sqlconnection use (convert to provider)
-	// TODO: table valued parameters
-
-	public class InsightDbProvider
+	public abstract class InsightDbProvider
 	{
 		static InsightDbProvider()
 		{
@@ -31,68 +27,141 @@ namespace Insight.Database.Providers
 			Providers.Add(new OracleInsightDbProvider());
 		}
 
-		public virtual DbConnection GetDbConnection(DbConnectionStringBuilder builder)
+		public abstract bool SupportsCommand(IDbCommand command);
+
+		public abstract bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder);
+
+		public virtual DbConnection GetDbConnection()
 		{
-			return null;
+			throw new NotImplementedException();
 		}
 
 		public virtual List<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
-			return null;
+			throw new NotImplementedException();
+		}
+
+		public virtual IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
+		{
+			throw new NotImplementedException();
+		}
+
+		public virtual IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
+		{
+			throw new NotImplementedException();
 		}
 
 		private static List<InsightDbProvider> Providers = new List<InsightDbProvider>();
 
-		public static T First<T>(Func<InsightDbProvider, T> function) where T : class
+		internal static InsightDbProvider For(IDbCommand command)
 		{
-			var result = Providers.Select(p => function(p)).Where(r => r != null).FirstOrDefault();
-			if (result == null)
-				throw new InvalidOperationException("No provider supported the operation");
+			var provider = Providers.Where(p => p.SupportsCommand(command)).FirstOrDefault();
+			if (provider == null)
+				throw new NotImplementedException("No Insight.Database provider supports the given type of command.");
 
-			return result;
+			return provider;
+		}
+
+		internal static InsightDbProvider For(DbConnectionStringBuilder builder)
+		{
+			var provider = Providers.Where(p => p.SupportsConnectionStringBuilder(builder)).FirstOrDefault();
+			if (provider == null)
+				throw new NotImplementedException("No Insight.Database provider supports the given type of connection string builder.");
+
+			return provider;
 		}
 	}
 
 	public class ReliableInsightDbProvider : InsightDbProvider
 	{
+		public override bool SupportsCommand(IDbCommand command)
+		{
+			return command is ReliableCommand;
+		}
+
+		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		{
+			return false;
+		}
+
 		public override List<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
 			ReliableCommand reliableCommand = command as ReliableCommand;
-			if (reliableCommand == null)
-				return base.DeriveParameters(command);
+			command = reliableCommand.InnerCommand;
+			return InsightDbProvider.For(command).DeriveParameters(command);
+		}
 
-			return InsightDbProvider.First(p => p.DeriveParameters(reliableCommand.InnerCommand));
+		public override IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
+		{
+			ReliableCommand reliableCommand = command as ReliableCommand;
+			command = reliableCommand.InnerCommand;
+
+			return InsightDbProvider.For(command).CreateTableValuedParameter(reliableCommand.InnerCommand, parameterName, tableTypeName);
+		}
+
+		public override IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
+		{
+			ReliableCommand reliableCommand = command as ReliableCommand;
+			command = reliableCommand.InnerCommand;
+
+			return InsightDbProvider.For(command).GetTableTypeSchema(command, tableTypeName);
 		}
 	}
 
 	public class ProfiledInsightDbProvider : InsightDbProvider
 	{
+		public override bool SupportsCommand(IDbCommand command)
+		{
+			return command.GetType().Name == "ProfiledDbCommand";
+		}
+
+		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		{
+			return false;
+		}
+
 		public override List<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
-			// if the command is not a SqlCommand, then maybe it is wrapped by something like MiniProfiler
-			if (command.GetType().Name != "ProfiledDbCommand")
-				return base.DeriveParameters(command);
-
 			dynamic dynamicCommand = command;
-			return InsightDbProvider.First(p => p.DeriveParameters(dynamicCommand.InternalCommand));
+			command = dynamicCommand.InternalCommand;
+			return InsightDbProvider.For(command).DeriveParameters(command);
+		}
+
+		public override IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
+		{
+			dynamic dynamicCommand = command;
+			command = dynamicCommand.InternalCommand;
+			return InsightDbProvider.For(command).CreateTableValuedParameter(dynamicCommand.InnerCommand, parameterName, tableTypeName);
+		}
+
+		public override IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
+		{
+			dynamic dynamicCommand = command;
+			command = dynamicCommand.InternalCommand;
+			return InsightDbProvider.For(command).GetTableTypeSchema(command, tableTypeName);
 		}
 	}
 
 	public class SqlInsightDbProvider : InsightDbProvider
 	{
-		public override DbConnection GetDbConnection(DbConnectionStringBuilder builder)
+		public override bool SupportsCommand(IDbCommand command)
 		{
-			if (builder is SqlConnectionStringBuilder)
-				return new SqlConnection();
+			return command is SqlCommand;
+		}
 
-			return base.GetDbConnection(builder);
+		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		{
+			return builder is SqlConnectionStringBuilder;
+		}
+
+		public override DbConnection GetDbConnection()
+		{
+			return new SqlConnection();
 		}
 
 		public override List<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
 			SqlCommand sqlCommand = command as SqlCommand;
-			if (sqlCommand == null)
-				return base.DeriveParameters(command);
 
 			// call the server to get the parameters
 			command.Connection.ExecuteAndAutoClose(
@@ -145,46 +214,85 @@ namespace Insight.Database.Providers
 					missingParameter));
 		}
 
+		public override IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
+		{
+			SqlCommand sqlCommand = command as SqlCommand;
+
+			// create the structured parameter
+			SqlParameter p = new SqlParameter();
+			p.SqlDbType = SqlDbType.Structured;
+			p.ParameterName = parameterName;
+			p.TypeName = tableTypeName;
+
+			return p;
+		}
+
+		public override IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
+		{
+			// select a 0 row result set so we can determine the schema of the table
+			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
+			return command.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: command.Transaction);
+		}
+	
 		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 	}
 
 	public class OdbcInsightDbProvider : InsightDbProvider
 	{
-		public override DbConnection GetDbConnection(DbConnectionStringBuilder builder)
+		public override bool SupportsCommand(IDbCommand command)
 		{
-			if (builder is OdbcConnectionStringBuilder)
-				return new OdbcConnection();
+			return command is OdbcCommand;
+		}
 
-			return base.GetDbConnection(builder);
+		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		{
+			return builder is OdbcConnectionStringBuilder;
+		}
+
+		public override DbConnection GetDbConnection()
+		{
+			return new OdbcConnection();
 		}
 	}
 
 	public class OleDbInsightDbProvider : InsightDbProvider
 	{
-		public override DbConnection GetDbConnection(DbConnectionStringBuilder builder)
+		public override bool SupportsCommand(IDbCommand command)
 		{
-			if (builder is OleDbConnectionStringBuilder)
-				return new OleDbConnection();
+			return command is OleDbCommand;
+		}
 
-			return base.GetDbConnection(builder);
+		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		{
+			return builder is OleDbConnectionStringBuilder;
+		}
+
+		public override DbConnection GetDbConnection()
+		{
+			return new OleDbConnection();
 		}
 	}
 
 	public class OracleInsightDbProvider : InsightDbProvider
 	{
-		public override DbConnection GetDbConnection(DbConnectionStringBuilder builder)
+		public override bool SupportsCommand(IDbCommand command)
 		{
-			if (builder is OracleConnectionStringBuilder)
-				return new OracleConnection();
+			return command is OracleCommand;
+		}
 
-			return base.GetDbConnection(builder);
+		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		{
+			return builder is OracleConnectionStringBuilder;
+		}
+
+		public override DbConnection GetDbConnection()
+		{
+			return new OracleConnection();
 		}
 
 		public override List<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
 			OracleCommand oracleCommand = command as OracleCommand;
-			if (oracleCommand == null)
-				return base.DeriveParameters(command);
 
 			// call the server to get the parameters
 			command.Connection.ExecuteAndAutoClose(
