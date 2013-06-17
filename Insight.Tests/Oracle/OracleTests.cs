@@ -24,13 +24,13 @@ namespace Insight.Tests.Oracle
 		}
 
 		[Test]
-		public void ExecuteSql()
+		public void TestExecuteSql()
 		{
 			_connection.QuerySql<decimal>("SELECT 1 as p FROM dual");
 		}
 
 		[Test]
-		public void ExecuteProcedure()
+		public void TestExecuteProcedure()
 		{
 			try
 			{
@@ -40,6 +40,21 @@ namespace Insight.Tests.Oracle
 			finally
 			{
 				_connection.ExecuteSql("DROP PROCEDURE OracleTestProc");
+			}
+		}
+
+		[Test]
+		public void TestDynamicExecute()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE OR REPLACE PROCEDURE InsightTestProc (Value int) IS BEGIN null; END;");
+
+				_connection.Dynamic().InsightTestProc(value: 5);
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP PROCEDURE InsightTestProc");
 			}
 		}
 	}

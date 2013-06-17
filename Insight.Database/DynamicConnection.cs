@@ -13,6 +13,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
 
 namespace Insight.Database
 {
@@ -209,8 +210,7 @@ namespace Insight.Database
 							argumentName == "withGraphs")
 							continue;
 
-						string parameterName = "@" + argumentName;
-						IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase));
+						IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, argumentName, StringComparison.OrdinalIgnoreCase));
 						p.Value = args[i];
 					}
 
@@ -348,32 +348,12 @@ namespace Insight.Database
 		private void DeriveParameters(IDbCommand cmd)
 		{
 			// look in the concurrent dictionary to find the parameters.
-			// if not found, call SQL Server to get them.
+			// if not found, call the Server to get them.
 			var parameterList = _parameters.GetOrAdd(
 				cmd.CommandText,
 				name =>
 				{
-					SqlConnection connection = (SqlConnection)cmd.Connection;
-					bool autoClose = connection.State != ConnectionState.Open;
-					if (autoClose)
-						connection.Open();
-
-					try
-					{
-						// call the server to get the parameters
-						SqlCommandBuilder.DeriveParameters((SqlCommand)cmd);
-					}
-					finally
-					{
-						if (autoClose)
-							connection.Close();
-					}
-
-					// copy the parameters so we can reuse them
-					List<IDbDataParameter> parameters = cmd.Parameters.Cast<IDbDataParameter>().Where(p => p.Direction == ParameterDirection.Input).ToList();
-					cmd.Parameters.Clear();
-
-					return parameters;
+					return InsightDbProvider.First(p => p.DeriveParameters(cmd)).Where(p => p.Direction == ParameterDirection.Input).ToList();
 				});
 
 			// copy the parameter list

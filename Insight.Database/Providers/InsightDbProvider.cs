@@ -17,6 +17,7 @@ namespace Insight.Database.Providers
 {
 	// TODO: remove unwrapsqlcommand
 	// TODO: dynamicconnection sqlconnection use (convert to provider)
+	// TODO: table valued parameters
 
 	public class InsightDbProvider
 	{
@@ -44,7 +45,11 @@ namespace Insight.Database.Providers
 
 		public static T First<T>(Func<InsightDbProvider, T> function) where T : class
 		{
-			return Providers.Select(p => function(p)).Where(result => result != null).FirstOrDefault();
+			var result = Providers.Select(p => function(p)).Where(r => r != null).FirstOrDefault();
+			if (result == null)
+				throw new InvalidOperationException("No provider supported the operation");
+
+			return result;
 		}
 	}
 
