@@ -80,6 +80,7 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="SqlDBConnectionExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Providers\InsightDbProvider.cs" />
     <Compile Include="SqlAttribute.cs" />

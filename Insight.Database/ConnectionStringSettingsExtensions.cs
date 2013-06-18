@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading;
@@ -35,7 +34,7 @@ namespace Insight.Database
 				// if there is a provider on the connection string, use that to create the connection
 				// otherwise use a sql connection
 				if (String.IsNullOrEmpty(settings.ProviderName))
-					connection = new SqlConnection();
+					connection = new System.Data.SqlClient.SqlConnection();
 				else
 					connection = DbProviderFactories.GetFactory(settings.ProviderName).CreateConnection();
 
