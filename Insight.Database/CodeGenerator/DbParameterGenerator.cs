@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
@@ -35,20 +34,14 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		private static readonly FieldInfo _dbNullValue = typeof(DBNull).GetField("Value");
 		private static readonly MethodInfo _iDbCommandGetParameters = typeof(IDbCommand).GetProperty("Parameters").GetGetMethod();
-		private static readonly MethodInfo _iDbCommandCreateParameter = typeof(IDbCommand).GetMethod("CreateParameter");
 		private static readonly MethodInfo _iDataParameterCollectionGetItem = typeof(IDataParameterCollection).GetProperty("Item").GetGetMethod();
-		private static readonly MethodInfo _iDataParameterSetParameterName = typeof(IDataParameter).GetProperty("ParameterName").GetSetMethod();
 		private static readonly MethodInfo _iDataParameterSetDbType = typeof(IDataParameter).GetProperty("DbType").GetSetMethod();
 		private static readonly MethodInfo _iDataParameterSetValue = typeof(IDataParameter).GetProperty("Value").GetSetMethod();
 		private static readonly MethodInfo _iDataParameterSetSize = typeof(IDbDataParameter).GetProperty("Size").GetSetMethod();
-		private static readonly MethodInfo _iDataParameterSetDirection = typeof(IDataParameter).GetProperty("Direction").GetSetMethod();
-		private static readonly MethodInfo _iListAdd = typeof(IList).GetMethod("Add");
 		private static readonly MethodInfo _stringGetLength = typeof(string).GetProperty("Length").GetGetMethod();
 		private static readonly MethodInfo _linqBinaryToArray = typeof(System.Data.Linq.Binary).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Instance);
 		private static readonly MethodInfo _listParameterHelperAddEnumerableParameters = typeof(ListParameterHelper).GetMethod("AddEnumerableParameters");
 		private static readonly MethodInfo _iDataParameterGetValue = typeof(IDataParameter).GetProperty("Value").GetGetMethod();
-		private static readonly MethodInfo _iSqlParameterSetSqlDbType = typeof(SqlParameter).GetProperty("SqlDbType").GetSetMethod();
-		private static readonly MethodInfo _iSqlParameterSetUdtTypeName = typeof(SqlParameter).GetProperty("UdtTypeName").GetSetMethod();
 
 		/// <summary>
 		/// Mapping from object types to DbTypes.
@@ -138,7 +131,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Regex to detect parameters in sql text.
 		/// </summary>
-		private static Regex _parameterRegex = new Regex("[?@:]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private static Regex _parameterRegex = new Regex("[?@]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 		#endregion
 
 		#region Code Cache Members
@@ -185,10 +178,8 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="command">The command to derive.</param>
 		/// <returns>The list of parameter names.</returns>
-		private static IList<IDbDataParameter> DeriveParameters(IDbCommand command)
+		internal static IList<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
-			string sql = command.CommandText;
-
 			// for stored procs, can call the server to derive them
 			if (command.CommandType == CommandType.StoredProcedure)
 				return InsightDbProvider.For(command).DeriveParameters(command);
@@ -205,6 +196,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A list of the detected parameters.</returns>
 		private static IList<IDbDataParameter> DeriveParametersFromSqlText(IDbCommand command)
 		{
+			// TODO: move this into providers
 			return _parameterRegex.Matches(command.CommandText)
 				.Cast<Match>()
 				.Select(m => m.Groups[1].Value.ToUpperInvariant())
@@ -229,94 +221,59 @@ namespace Insight.Database.CodeGenerator
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
-			// get the parameters
+			var provider = InsightDbProvider.For(command);
 			var parameters = DeriveParameters(command);
-
-			// create a dynamic method
-			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
 
 			// special case if the parameters object is an IEnumerable or Array
 			// look for the parameter that is a Structured object and pass the array to the TVP
 			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 			if (enumerable != null)
 			{
-				type = enumerable;
-				Type[] typeArgs = type.GetGenericArguments();
-				typeOwner = typeArgs[0];
-
-				SqlParameter sqlParameter = parameters.OfType<SqlParameter>().FirstOrDefault(p => p.SqlDbType == SqlDbType.Structured);
-
-				return (IDbCommand cmd, object o) => { ListParameterHelper.AddEnumerableParameters(cmd, sqlParameter.ParameterName, sqlParameter.TypeName, typeOwner, o); };
+				var tableParameter = parameters.OfType<IDbDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
+				return (IDbCommand cmd, object o) => 
+				{ 
+					ListParameterHelper.AddEnumerableParameters(
+						cmd,
+						tableParameter.ParameterName,
+						provider.GetTableParameterTypeName(command, tableParameter),
+						enumerable.GetGenericArguments()[0],
+						o);
+				};
 			}
 
+			// get the mapping of the properties for the type
+			var mapping = ColumnMapping.Parameters.CreateMapping(type, null, command.CommandText, command.CommandType, parameters, 0, parameters.Count, true);
+
 			// start creating a dynamic method
+			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
 			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "CreateInputParameters-{0}", Guid.NewGuid()), null, new[] { typeof(IDbCommand), typeof(object) }, typeOwner, true);
 			var il = dm.GetILGenerator();
 
-			// start the standard serialization method
 			var stringLength = il.DeclareLocal(typeof(Int32));
-			il.Emit(OpCodes.Ldarg_0);												// push arg.0 (command), stack => [command]
-			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
 
-			// get the properties for the type
-			var mapping = ColumnMapping.Parameters.CreateMapping(type, null, command.CommandText, command.CommandType, parameters, 0, parameters.Count, true);
+			// copy the parameters into the command object, returning the parameters list
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("CopyParameters", BindingFlags.Static | BindingFlags.NonPublic));
+			// stack => [parameters]
 
 			// go through all of the mappings
 			for (int i = 0; i < mapping.Length; i++)
 			{
 				var prop = mapping[i];
 				var dbParameter = parameters[i];
-				SqlParameter sqlParameter = dbParameter as SqlParameter;
 
-				// if there is no mapping for that parameter, then see if we need to add it as an output parameter
+				// if there is no mapping for that parameter, then continue
 				if (prop == null)
 				{
-					// if there is an unspecified output parameter, then we need to add a parameter for it
-					// this includes input/output parameters, as well as return values
-					if (dbParameter.Direction.HasFlag(ParameterDirection.Output))
-					{
-						il.Emit(OpCodes.Dup);										// dup parameters
-						EmitCreateParameter(il, dbParameter, dbParameter.DbType);	// adds parameter to the stack
-
-						// for string fields, set the length
-						switch (dbParameter.DbType)
-						{
-							case DbType.AnsiString:
-							case DbType.AnsiStringFixedLength:
-							case DbType.String:
-							case DbType.StringFixedLength:
-								il.Emit(OpCodes.Dup);
-								il.Emit(OpCodes.Ldc_I4, -1);
-								il.Emit(OpCodes.Callvirt, _iDataParameterSetSize);
-								break;
-
-							case DbType.Decimal:
-							case DbType.VarNumeric:
-								il.Emit(OpCodes.Dup);
-								il.Emit(OpCodes.Ldc_I4, (Int32)dbParameter.Precision);
-								il.Emit(OpCodes.Callvirt, typeof(SqlParameter).GetProperty("Precision").GetSetMethod());
-								il.Emit(OpCodes.Dup);
-								il.Emit(OpCodes.Ldc_I4, (Int32)dbParameter.Scale);
-								il.Emit(OpCodes.Callvirt, typeof(SqlParameter).GetProperty("Scale").GetSetMethod());
-								break;
-						}
-
-						il.Emit(OpCodes.Callvirt, _iListAdd);						// stack => [parameters]
-						il.Emit(OpCodes.Pop);										// IList.Add returns the index, ignore it
-					}
-					else if (sqlParameter != null && sqlParameter.SqlDbType == SqlDbType.Structured)
-					{
-						// sql will silently eat table parameters that are not specified, and that can be difficult to debug
+					// sql will silently eat table parameters that are not specified, and that can be difficult to debug
+					if (provider.IsTableValuedParameter(command, dbParameter))
 						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", dbParameter.ParameterName));
-					}
 
 					continue;
 				}
 
-				// look up the type of the parameters
+				// look up the best type to use for the parameter
 				DbType sqlType = LookupDbType(prop.MemberType, dbParameter.DbType);
-
-				// stack => [parameters]
 
 				///////////////////////////////////////////////////////////////
 				// Special case support for enumerables. If the type is -1 (our workaround, then call the list parameter method)
@@ -333,11 +290,8 @@ namespace Insight.Database.CodeGenerator
 					else if (listType.IsGenericType)
 						listType = listType.GetGenericArguments()[0];
 
-					// emit the table type name, but not too many prefixes
-					string tableTypeName = sqlParameter.TypeName;
-					if (tableTypeName.Count(c => c == '.') > 1)
-						tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
-					il.Emit(OpCodes.Ldstr, tableTypeName);
+					// emit the table type name and list type
+					il.Emit(OpCodes.Ldstr, provider.GetTableParameterTypeName(command, dbParameter));
 					il.EmitLoadType(listType);
 
 					// get the value from the object
@@ -347,6 +301,7 @@ namespace Insight.Database.CodeGenerator
 					if (prop.MemberType.IsValueType)								// box value types before calling object parameter
 						il.Emit(OpCodes.Box, prop.MemberType);
 
+					// TODO: the table type parameter is already on the stack, so eliminate the above code
 					il.Emit(OpCodes.Call, _listParameterHelperAddEnumerableParameters);
 					continue;
 				}
@@ -355,41 +310,44 @@ namespace Insight.Database.CodeGenerator
 				// Start handling all of the other types
 				///////////////////////////////////////////////////////////////
 
-				// duplicate parameters so we can call add later
-				il.Emit(OpCodes.Dup);													// dup parameters
+				// convert the parameters list to the parameter at the current index
+				il.Emit(OpCodes.Dup);
+				il.Emit(OpCodes.Ldc_I4, i);
+				il.Emit(OpCodes.Call, typeof(IList).GetProperty("Item").GetGetMethod());
+				il.Emit(OpCodes.Castclass, typeof(IDataParameter));
 
-				EmitCreateParameter(il, dbParameter, sqlType);							// adds parameter to the stack
+				// duplicate the parameter so we can call setvalue
+				il.Emit(OpCodes.Dup);
 
-				// duplicate the parameter so we can call setvalue later
-				il.Emit(OpCodes.Dup);													// dup parameter
+				// for non-stored procedures, we don't know the desired type, so we have to set the type of the parameter to the type of the value
+				if (command.CommandType != CommandType.StoredProcedure)
+				{
+					il.Emit(OpCodes.Dup);
+					il.Emit(OpCodes.Ldc_I4, (int)sqlType);
+					il.Emit(OpCodes.Call, _iDataParameterSetDbType);
+				}
 
 				///////////////////////////////////////////////////////////////
 				// Get the value from the object onto the stack
 				///////////////////////////////////////////////////////////////
-				il.Emit(OpCodes.Ldarg_1);												// push object							
+				il.Emit(OpCodes.Ldarg_1);
 				prop.EmitGetValue(il);
 
-				// jump right to the spot where we are ready to set the value
-				Label readyToSetLabel = il.DefineLabel();
-				Type underlyingType = Nullable.GetUnderlyingType(prop.MemberType);
+				// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
+				if (prop.MemberType.IsValueType)
+					il.Emit(OpCodes.Box, prop.MemberType);
 
-				// special conversions for timespan
-				if (sqlType == DbType.Time || sqlType == DbType.DateTime || sqlType == DbType.DateTime2 || sqlType == DbType.DateTimeOffset)
+				// special conversions for timespan to datetime
+				if ((sqlType == DbType.Time && dbParameter.DbType != DbType.Time) ||
+					(dbParameter.DbType == DbType.DateTime || dbParameter.DbType == DbType.DateTime2 || dbParameter.DbType == DbType.DateTimeOffset))
 				{
-					// if the value hasn't been boxed yet, do it so we can call the method
-					if (prop.MemberType.IsValueType)
-						il.Emit(OpCodes.Box, prop.MemberType);
 					IlHelper.EmitLdInt32(il, (int)dbParameter.DbType);
 					il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("ObjectToSqlDateTime"));
 				}
-				else if (prop.MemberType.IsValueType)
-				{
-					// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
-					il.Emit(OpCodes.Box, prop.MemberType);
-				}
 
 				// if it's class type, boxed value type (in an object), or nullable, then we have to check for null
-				if (!prop.MemberType.IsValueType || underlyingType != null)
+				Label readyToSetLabel = il.DefineLabel();
+				if (!prop.MemberType.IsValueType || Nullable.GetUnderlyingType(prop.MemberType) != null)
 				{
 					Label notNull = il.DefineLabel();
 
@@ -523,67 +481,15 @@ namespace Insight.Database.CodeGenerator
 					il.MarkLabel(endOfSize);
 				}
 
-				///////////////////////////////////////////////////////////////
-				// parameters.Add (p)
-				///////////////////////////////////////////////////////////////
-				il.Emit(OpCodes.Callvirt, _iListAdd);									// stack => [parameters]
-				il.Emit(OpCodes.Pop);													// IList.Add returns the new index (int); we don't care
+				il.Emit(OpCodes.Pop);					// pop (parameter)
 			}
 
-			il.Emit(OpCodes.Pop);						// pop (parameters)
+			// clean up any parameters that were not set
+			il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("CleanParameters", BindingFlags.Static | BindingFlags.NonPublic));
+
 			il.Emit(OpCodes.Ret);
 
 			return (Action<IDbCommand, object>)dm.CreateDelegate(typeof(Action<IDbCommand, object>));
-		}
-
-		/// <summary>
-		/// Emits a call to DbCommand.CreateParameter and initializes the parameter.
-		/// </summary>
-		/// <param name="il">The IL generator to emit the code.</param>
-		/// <param name="dbParameter">The SqlParameter to use as a template.</param>
-		/// <param name="dbType">The DbType to use as a template.</param>
-		private static void EmitCreateParameter(ILGenerator il, IDataParameter dbParameter, DbType dbType)
-		{
-			///////////////////////////////////////////////////////////////
-			// Create a new parameter
-			///////////////////////////////////////////////////////////////
-			il.Emit(OpCodes.Ldarg_0);												// push dbcommand
-			il.Emit(OpCodes.Callvirt, _iDbCommandCreateParameter);					// call createparameter
-
-			///////////////////////////////////////////////////////////////
-			// p.ParameterName = name
-			///////////////////////////////////////////////////////////////
-			il.Emit(OpCodes.Dup);													// dup parameter
-			il.Emit(OpCodes.Ldstr, dbParameter.ParameterName);						// push string
-			il.Emit(OpCodes.Callvirt, _iDataParameterSetParameterName);				// call setname
-
-			///////////////////////////////////////////////////////////////
-			// p.Direction = Direction
-			///////////////////////////////////////////////////////////////
-			il.Emit(OpCodes.Dup);
-			IlHelper.EmitLdInt32(il, (int)dbParameter.Direction);
-			il.Emit(OpCodes.Callvirt, _iDataParameterSetDirection);
-
-			///////////////////////////////////////////////////////////////
-			// p.DbType = DbType
-			///////////////////////////////////////////////////////////////
-			SqlParameter sqlParameter = dbParameter as SqlParameter;
-			if (sqlParameter != null && sqlParameter.SqlDbType == SqlDbType.Udt)
-			{
-				il.Emit(OpCodes.Dup);												// dup parameter
-				IlHelper.EmitLdInt32(il, (int)sqlParameter.SqlDbType);				// push dbtype
-				il.Emit(OpCodes.Callvirt, _iSqlParameterSetSqlDbType);				// call settype
-
-				il.Emit(OpCodes.Dup);												// dup parameter
-				il.Emit(OpCodes.Ldstr, sqlParameter.UdtTypeName);
-				il.Emit(OpCodes.Callvirt, _iSqlParameterSetUdtTypeName);			// call setUdtTypeName
-			}
-			else
-			{
-				il.Emit(OpCodes.Dup);													// dup parameter
-				IlHelper.EmitLdInt32(il, (int)dbType);									// push dbtype
-				il.Emit(OpCodes.Callvirt, _iDataParameterSetDbType);					// call settype
-			}
 		}
 
 		/// <summary>
@@ -593,24 +499,21 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An action that fills in the command parameters from a dynamic object.</returns>
 		static Action<IDbCommand, object> CreateDynamicInputParameterGenerator(IDbCommand command)
 		{
+			var provider = InsightDbProvider.For(command);
+
 			// figure out what the parameters are
 			var parameters = DeriveParameters(command);
 
 			return (cmd, o) =>
 			{
-				foreach (SqlParameter template in parameters)
-				{
-					// create the parameter
-					SqlParameter p = (SqlParameter)command.CreateParameter();
-					p.ParameterName = template.ParameterName;
-					p.Direction = template.Direction;
-					p.SqlDbType = template.SqlDbType;
-					p.UdtTypeName = template.UdtTypeName;
+				// make sure that we have a dictionary implementation
+				IDictionary<string, object> dyn = o as IDictionary<string, object>;
+				if (dyn == null)
+					throw new InvalidOperationException("Dynamic object must support IDictionary<string, object>.");
 
-					// make sure that we have a dictionary implementation
-					IDictionary<string, object> dyn = o as IDictionary<string, object>;
-					if (dyn == null)
-						throw new InvalidOperationException("Dynamic object must support IDictionary<string, object>.");
+				foreach (var template in parameters)
+				{
+					var p = provider.CloneParameter(command, template);
 
 					// get the value from the object, converting null to db null
 					// note that if the dictionary does not have the value, we leave the value null and then the parameter gets defaulted
@@ -632,6 +535,36 @@ namespace Insight.Database.CodeGenerator
 					cmd.Parameters.Add(p);
 				}
 			};
+		}
+
+		static IDataParameterCollection CopyParameters(IDbCommand command)
+		{
+			var provider = InsightDbProvider.For(command);
+
+			// TODO: cache this
+			var parameters = DbParameterGenerator.DeriveParameters(command);
+
+			var commandParameters = command.Parameters;
+
+			foreach (var p in parameters)
+				commandParameters.Add(provider.CloneParameter(command, p));
+
+			return commandParameters;
+		}
+
+		static void CleanParameters(IDataParameterCollection parameters)
+		{
+			// remove any input parameters that were not set
+			// and set the size on any unset string parameters to -1 to make them valid
+			for (int i = parameters.Count - 1; i >= 0; i--)
+			{
+				var p = (IDbDataParameter)parameters[i];
+
+				if (p.Direction == ParameterDirection.Input)
+					parameters.RemoveAt(i);
+				else if (IsDbTypeAString(p.DbType))
+					p.Size = -1;
+			}
 		}
 		#endregion
 
@@ -744,7 +677,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="dbType">The dbType to test.</param>
 		/// <returns>True if the type is a string type.</returns>
-		private static bool IsDbTypeAString(DbType dbType)
+		internal static bool IsDbTypeAString(DbType dbType)
 		{
 			switch (dbType)
 			{
@@ -868,6 +801,8 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="list">The list of objects.</param>
 			private static void AddEnumerableClassParameters(IDbCommand command, string parameterName, string tableTypeName, Type listType, IEnumerable list)
 			{
+				// TODO: make this method accept a parameter instead of variables
+
 				// convert any nullable types to their underlying type
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;
 

@@ -86,6 +86,26 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Clones a parameter so that it can be used with another command.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="parameter">The parameter to clone.</param>
+		/// <returns>The clone.</returns>
+		public override IDbDataParameter CloneParameter(IDbCommand command, IDbDataParameter parameter)
+		{
+			SqlParameter p = base.CloneParameter(command, parameter) as SqlParameter;
+
+			SqlParameter template = parameter as SqlParameter;
+			p.SqlDbType = template.SqlDbType;
+			p.TypeName = template.TypeName;
+			p.UdtTypeName = template.UdtTypeName;
+			p.Scale = template.Scale;
+			p.Size = template.Size;
+
+			return p;
+		}
+
+		/// <summary>
 		/// Creates a parameter for a table-valued parameter.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
@@ -119,6 +139,30 @@ namespace Insight.Database.Providers
 			// select a 0 row result set so we can determine the schema of the table
 			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
 			return command.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: command.Transaction);
+		}
+
+		/// <summary>
+		/// Determines if a parameter is a Table-valued parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>True if the parameter is a table-valued parameter.</returns>
+		public override bool IsTableValuedParameter(IDbCommand command, IDbDataParameter parameter)
+		{
+			SqlParameter p = parameter as SqlParameter;
+			return p.SqlDbType == SqlDbType.Structured;
+		}
+
+		/// <summary>
+		/// Calculates the table type name for a table parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>The name of the table parameter.</returns>
+		public override string GetTableParameterTypeName(IDbCommand command, IDbDataParameter parameter)
+		{
+			SqlParameter p = parameter as SqlParameter;
+			return p.TypeName;
 		}
 
 		/// <summary>

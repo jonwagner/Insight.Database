@@ -829,7 +829,7 @@ namespace Insight.Tests
 				Assert.AreEqual(oneHour, time);
 
 				// > 1 day should throw
-				Assert.Throws<InvalidOperationException>(() => connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = new TimeSpan(1, 1, 0, 0) }));
+				Assert.Throws<OverflowException>(() => connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = new TimeSpan(1, 1, 0, 0) }));
 			}
 		}
 

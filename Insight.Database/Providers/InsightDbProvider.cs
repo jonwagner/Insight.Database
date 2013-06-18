@@ -97,6 +97,25 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Clones a parameter so that it can be used with another command.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="parameter">The parameter to clone.</param>
+		/// <returns>The clone.</returns>
+		public virtual IDbDataParameter CloneParameter(IDbCommand command, IDbDataParameter parameter)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+			if (parameter == null) throw new ArgumentNullException("parameter");
+
+			IDbDataParameter p = command.CreateParameter();
+			p.ParameterName = parameter.ParameterName;
+			p.DbType = parameter.DbType;
+			p.Direction = parameter.Direction;
+
+			return p;
+		}
+
+		/// <summary>
 		/// Creates a parameter for a table-valued parameter.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
@@ -118,6 +137,28 @@ namespace Insight.Database.Providers
 		public virtual IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
 		{
 			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Determines if a parameter is a Table-valued parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>True if the parameter is a table-valued parameter.</returns>
+		public virtual bool IsTableValuedParameter(IDbCommand command, IDbDataParameter parameter)
+		{
+			return false;
+		}
+
+		/// <summary>
+		/// Calculates the table type name for a table parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>The name of the table parameter.</returns>
+		public virtual string GetTableParameterTypeName(IDbCommand command, IDbDataParameter parameter)
+		{
+			return null;
 		}
 		#endregion
 

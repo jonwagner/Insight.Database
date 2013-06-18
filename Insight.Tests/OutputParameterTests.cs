@@ -100,6 +100,7 @@ namespace Insight.Tests
 					Type underlyingType = Nullable.GetUnderlyingType(typeof(T));
 					if (underlyingType != null)
 						procName = "Nullable_" + underlyingType.Name;
+					procName += sqlType.Split(new char[] { '(' }, 2)[0];
 
 					connection.ExecuteSql(String.Format(
 						"CREATE PROCEDURE Insight_TestOutput_{2} @p {0} = NULL OUTPUT AS SET @p = CONVERT({0}, '{1}')",

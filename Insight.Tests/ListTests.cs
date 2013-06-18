@@ -339,8 +339,8 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql("DROP PROC TestMap");
-				_connection.ExecuteSql("DROP TYPE StringMapTable");
+				try { _connection.ExecuteSql("DROP PROC TestMap"); } catch { }
+				try { _connection.ExecuteSql("DROP TYPE StringMapTable"); } catch {}
 			}
 		}
 
@@ -375,8 +375,8 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql("DROP PROC TestMap");
-				_connection.ExecuteSql("DROP TYPE StringMapTable");
+				try { _connection.ExecuteSql("DROP PROC TestMap"); } catch { }
+				try { _connection.ExecuteSql("DROP TYPE StringMapTable"); } catch {}
 			}
 		}
 		#endregion
