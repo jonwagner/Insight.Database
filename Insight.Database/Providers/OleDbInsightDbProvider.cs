@@ -14,6 +14,9 @@ namespace Insight.Database.Providers
 	/// </summary>
 	class OleDbInsightDbProvider : InsightDbProvider
 	{
+		/// <summary>
+		/// Gets the type for the DbCommands supported by this provider.
+		/// </summary>
 		public override Type CommandType
 		{
 			get
@@ -22,6 +25,9 @@ namespace Insight.Database.Providers
 			}
 		}
 
+		/// <summary>
+		/// Gets the type for ConnectionStringBuilders supported by this provider.
+		/// </summary>
 		public override Type ConnectionStringBuilderType
 		{
 			get
@@ -30,6 +36,10 @@ namespace Insight.Database.Providers
 			}
 		}
 
+		/// <summary>
+		/// Creates a new DbConnection supported by this provider.
+		/// </summary>
+		/// <returns>A new DbConnection.</returns>
 		public override DbConnection CreateDbConnection()
 		{
 			return new OleDbConnection();

@@ -9,25 +9,51 @@ using Oracle.DataAccess.Client;
 
 namespace Insight.Database.Providers
 {
+	/// <summary>
+	/// Implements the Insight provider for Oracle ODP.NET connections.
+	/// </summary>
 	public class OracleInsightDbProvider : InsightDbProvider
 	{
-		public override bool SupportsCommand(IDbCommand command)
+		/// <summary>
+		/// Gets the type for the DbCommands supported by this provider.
+		/// </summary>
+		public override Type CommandType
 		{
-			return command is OracleCommand;
+			get
+			{
+				return typeof(OracleCommand);
+			}
 		}
 
-		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		/// <summary>
+		/// Gets the type for ConnectionStringBuilders supported by this provider.
+		/// </summary>
+		public override Type ConnectionStringBuilderType
 		{
-			return builder is OracleConnectionStringBuilder;
+			get
+			{
+				return typeof(OracleConnectionStringBuilder);
+			}
 		}
 
+		/// <summary>
+		/// Creates a new DbConnection supported by this provider.
+		/// </summary>
+		/// <returns>A new DbConnection.</returns>
 		public override DbConnection CreateDbConnection()
 		{
 			return new OracleConnection();
 		}
 
-		public override List<IDbDataParameter> DeriveParameters(IDbCommand command)
+		/// <summary>
+		/// Derives the parameter list for a given command.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <returns>The list of parameters for the command.</returns>
+		public override IList<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
 			var connection = command.Connection;
 			bool autoClose = false;
 
@@ -56,5 +82,4 @@ namespace Insight.Database.Providers
 			return parameters;
 		}
 	}
-
 }

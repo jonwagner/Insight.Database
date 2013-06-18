@@ -13,6 +13,9 @@ namespace Insight.Database.Providers
 	/// </summary>
 	public class MiniProfilerInsightDbProvider : WrappedInsightDbProvider
 	{
+		/// <summary>
+		/// Gets the type for the DbCommands supported by this provider.
+		/// </summary>
 		public override Type CommandType
 		{
 			get
@@ -21,6 +24,11 @@ namespace Insight.Database.Providers
 			}
 		}
 
+		/// <summary>
+		/// Unwraps the given command and returns the inner command.
+		/// </summary>
+		/// <param name="command">The outer command.</param>
+		/// <returns>The inner command.</returns>
 		public override IDbCommand GetInnerCommand(IDbCommand command)
 		{
 			if (command == null) throw new ArgumentNullException("command");

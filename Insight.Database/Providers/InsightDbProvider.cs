@@ -15,18 +15,55 @@ namespace Insight.Database.Providers
 	/// </summary>
 	public class InsightDbProvider
 	{
-		private static List<InsightDbProvider> _providers = new List<InsightDbProvider>();
+		#region Fields
+		/// <summary>
+		/// The map from object types to providers. This includes DbCommand and DbConnectionString types.
+		/// </summary>
 		private static Dictionary<Type, InsightDbProvider> _providerMap = new Dictionary<Type, InsightDbProvider>();
+		#endregion
 
+		#region Constructors
+		/// <summary>
+		/// Initializes static members of the InsightDbProvider class.
+		/// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
 		static InsightDbProvider()
 		{
+			// only automatically initialize providers that are built into the framework
 			new SqlInsightDbProvider().Register();
 			new ReliableInsightDbProvider().Register();
 			new OdbcInsightDbProvider().Register();
 			new OleDbInsightDbProvider().Register();
 		}
+		#endregion
 
+		#region Properties
+		/// <summary>
+		/// Gets the type for the DbCommands supported by this provider.
+		/// </summary>
+		public virtual Type CommandType
+		{
+			get
+			{
+				return null;
+			}
+		}
+
+		/// <summary>
+		/// Gets the type for ConnectionStringBuilders supported by this provider.
+		/// </summary>
+		public virtual Type ConnectionStringBuilderType
+		{
+			get
+			{
+				return null;
+			}
+		}
+		#endregion
+
+		/// <summary>
+		/// Registers this provider.
+		/// </summary>
 		public void Register()
 		{
 			lock (_providerMap)
@@ -37,53 +74,58 @@ namespace Insight.Database.Providers
 				if (ConnectionStringBuilderType != null)
 					_providerMap[ConnectionStringBuilderType] = this;
 			}
-
-			lock (_providers)
-			{
-				// we only need one provider of a given type
-				if (_providers.Any(p => p.GetType() == GetType()))
-					return;
-
-				_providers.Add(this);
-			}
 		}
 
-		public virtual Type CommandType
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		public virtual Type ConnectionStringBuilderType
-		{
-			get
-			{
-				return null;
-			}
-		}
-
+		#region Overrideables
+		/// <summary>
+		/// Creates a new DbConnection supported by this provider.
+		/// </summary>
+		/// <returns>A new DbConnection.</returns>
 		public virtual DbConnection CreateDbConnection()
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <summary>
+		/// Derives the parameter list for a given command.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <returns>The list of parameters for the command.</returns>
 		public virtual IList<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <summary>
+		/// Creates a parameter for a table-valued parameter.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="parameterName">The name of the parameter.</param>
+		/// <param name="tableTypeName">The name of the table type.</param>
+		/// <returns>An initialized parameter for the table.</returns>
 		public virtual IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
 		{
 			throw new NotImplementedException();
 		}
 
+		/// <summary>
+		/// Gets the schema for a given user-defined table type.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="tableTypeName">The name of the table type.</param>
+		/// <returns>An open reader with the schema.</returns>
+		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
 		public virtual IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
 		{
 			throw new NotImplementedException();
 		}
+		#endregion
 
+		/// <summary>
+		/// Gets the provider that supports the given object.
+		/// </summary>
+		/// <param name="o">The object to inspect.</param>
+		/// <returns>The provider for the object.</returns>
 		internal static InsightDbProvider For(object o)
 		{
 			InsightDbProvider provider;
