@@ -52,7 +52,7 @@ namespace Insight.Database
 
 #if NODBASYNC
 					// Only SqlCommand supports execute async
-					SqlCommand sqlCommand = command as SqlCommand;
+					var sqlCommand = command as System.Data.SqlClient.SqlCommand;
 					if (sqlCommand != null)
 						return Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
 					else
@@ -1183,7 +1183,7 @@ namespace Insight.Database
 		{
 #if NODBASYNC
 			// Only SqlCommand supports async
-			SqlCommand sqlCommand = command as SqlCommand;
+			var sqlCommand = command as System.Data.SqlClient.SqlCommand;
 			if (sqlCommand != null)
 				return Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
 

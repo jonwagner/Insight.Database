@@ -70,19 +70,22 @@ namespace Insight.Database.Reliable
 		/// <returns>A task that provides an IDataReader of the results when complete.</returns>
 		internal Task<IDataReader> GetReaderAsync(CommandBehavior commandBehavior, CancellationToken cancellationToken)
 		{
-			// start the sql command executing
-			SqlCommand sqlCommand = InnerCommand as SqlCommand;
-			if (sqlCommand == null)
-				throw new InvalidOperationException("Cannot perform an async query on a command that is not a SqlCommand");
-
 			// fallback to calling execute reader in a blocking task
-			return ExecuteWithRetryAsync(() => Task<IDataReader>.Factory.StartNew(
+			return ExecuteWithRetryAsync(() =>
+			{
+				// start the sql command executing
+				var sqlCommand = InnerCommand as System.Data.SqlClient.SqlCommand;
+				if (sqlCommand != null)
+					return Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
+
+				return Task<IDataReader>.Factory.StartNew(
 				() =>
 				{
 					cancellationToken.ThrowIfCancellationRequested();
 
 					return InnerCommand.ExecuteReader(commandBehavior);
-				}));
+				});
+			});
 		}
 #endif
 
