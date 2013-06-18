@@ -35,6 +35,18 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Clones a parameter so that it can be used with another command.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="parameter">The parameter to clone.</param>
+		/// <returns>The clone.</returns>
+		public override IDbDataParameter CloneParameter(IDbCommand command, IDbDataParameter parameter)
+		{
+			command = GetInnerCommand(command);
+			return InsightDbProvider.For(command).CloneParameter(command, parameter);
+		}
+
+		/// <summary>
 		/// Creates a parameter for a table-valued parameter.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
@@ -58,6 +70,30 @@ namespace Insight.Database.Providers
 		{
 			command = GetInnerCommand(command);
 			return InsightDbProvider.For(command).GetTableTypeSchema(command, tableTypeName);
+		}
+
+		/// <summary>
+		/// Determines if a parameter is a Table-valued parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>True if the parameter is a table-valued parameter.</returns>
+		public override bool IsTableValuedParameter(IDbCommand command, IDbDataParameter parameter)
+		{
+			command = GetInnerCommand(command);
+			return InsightDbProvider.For(command).IsTableValuedParameter(command, parameter);
+		}
+
+		/// <summary>
+		/// Calculates the table type name for a table parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>The name of the table parameter.</returns>
+		public override string GetTableParameterTypeName(IDbCommand command, IDbDataParameter parameter)
+		{
+			command = GetInnerCommand(command);
+			return InsightDbProvider.For(command).GetTableParameterTypeName(command, parameter);
 		}
 	}
 }

@@ -98,7 +98,7 @@ namespace Insight.Database
 		/// <param name="args">The arguments to the method.</param>
 		/// <param name="returnType">The default type of object to return if no type parameter is specified.</param>
 		/// <returns>The results of the stored procedure call.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
 		protected internal object DoInvokeMember(InvokeMemberBinder binder, object[] args, Type returnType)
 		{
 			if (binder == null) throw new ArgumentNullException("binder");
@@ -191,10 +191,11 @@ namespace Insight.Database
 					DeriveParameters(cmd);
 
 					// look at the unnamed parameters first. we will add them by position.
+					var inputParameters = cmd.Parameters.OfType<IDbDataParameter>().Where(p => p.Direction.HasFlag(ParameterDirection.Input)).ToList();
 					for (int i = 0; i < unnamedParameterCount; i++)
 					{
 						// add the unnamed parameters by index
-						IDbDataParameter p = (IDbDataParameter)cmd.Parameters[i];
+						IDbDataParameter p = (IDbDataParameter)inputParameters[i];
 						p.Value = args[i];
 					}
 
@@ -217,7 +218,8 @@ namespace Insight.Database
 					}
 
 					// special handling for table parameters
-					foreach (SqlParameter p in cmd.Parameters.OfType<SqlParameter>().Where(p => p.SqlDbType == SqlDbType.Structured).ToList())
+					var provider = InsightDbProvider.For(cmd);
+					foreach (var p in cmd.Parameters.OfType<IDbDataParameter>().Where(p => provider.IsTableValuedParameter(cmd, p)).ToList())
 					{
 						// if any parameters are missing table parameters, then alert the developer
 						if (p.Value == null)
@@ -229,7 +231,8 @@ namespace Insight.Database
 						if (listType == null)
 							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} expects an enumerable", p.ParameterName));
 						Type elementType = listType.GetGenericArguments()[0];
-						DbParameterGenerator.ListParameterHelper.AddEnumerableParameters(cmd, p.ParameterName, p.TypeName, elementType, p.Value);
+
+						DbParameterGenerator.ListParameterHelper.AddEnumerableParameters(cmd, p.ParameterName, provider.GetTableParameterTypeName(cmd, p), elementType, p.Value);
 					}
 				}
 
@@ -349,31 +352,17 @@ namespace Insight.Database
 		/// <param name="cmd">The command to execute.</param>
 		private void DeriveParameters(IDbCommand cmd)
 		{
+			var provider = InsightDbProvider.For(cmd);
+
 			// look in the concurrent dictionary to find the parameters.
 			// if not found, call the Server to get them.
 			var parameterList = _parameters.GetOrAdd(
 				cmd.CommandText,
-				name => InsightDbProvider.For(cmd).DeriveParameters(cmd).Where(p => p.Direction == ParameterDirection.Input).ToList());
+				name => provider.DeriveParameters(cmd).ToList());
 
 			// copy the parameter list
 			foreach (IDbDataParameter parameter in parameterList)
-			{
-				IDbDataParameter p = cmd.CreateParameter();
-				p.ParameterName = parameter.ParameterName;
-				p.DbType = parameter.DbType;
-				p.Direction = parameter.Direction;
-
-				SqlParameter sp = p as SqlParameter;
-				if (sp != null)
-				{
-					SqlParameter sparameter = parameter as SqlParameter;
-
-					sp.SqlDbType = sparameter.SqlDbType;
-					sp.TypeName = sparameter.TypeName;
-				}
-
-				cmd.Parameters.Add(p);
-			}
+				cmd.Parameters.Add(provider.CloneParameter(cmd, parameter));
 		}
 		#endregion
 

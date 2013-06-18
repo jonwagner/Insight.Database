@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.IO;
@@ -47,7 +46,7 @@ namespace Insight.Database.CodeGenerator
 		static TypeConverterGenerator()
 		{
 			// check to see whether setting DbType to Time is broken. In .NET 4.5, it gets set to DateTime when you set it to Time.
-			SqlParameter p = new SqlParameter("p", new TimeSpan());
+			var p = new System.Data.SqlClient.SqlParameter("p", new TimeSpan());
 			p.DbType = DbType.Time;
 			if (p.DbType != DbType.Time)
 				SqlClientTimeIsBroken = true;

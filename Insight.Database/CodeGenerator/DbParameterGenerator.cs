@@ -229,6 +229,8 @@ namespace Insight.Database.CodeGenerator
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
+			var provider = InsightDbProvider.For(command);
+
 			// get the parameters
 			var parameters = DeriveParameters(command);
 
@@ -244,9 +246,8 @@ namespace Insight.Database.CodeGenerator
 				Type[] typeArgs = type.GetGenericArguments();
 				typeOwner = typeArgs[0];
 
-				SqlParameter sqlParameter = parameters.OfType<SqlParameter>().FirstOrDefault(p => p.SqlDbType == SqlDbType.Structured);
-
-				return (IDbCommand cmd, object o) => { ListParameterHelper.AddEnumerableParameters(cmd, sqlParameter.ParameterName, sqlParameter.TypeName, typeOwner, o); };
+				var tableParameter = parameters.OfType<IDbDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
+				return (IDbCommand cmd, object o) => { ListParameterHelper.AddEnumerableParameters(cmd, tableParameter.ParameterName, provider.GetTableParameterTypeName(command, tableParameter), typeOwner, o); };
 			}
 
 			// start creating a dynamic method
@@ -266,7 +267,6 @@ namespace Insight.Database.CodeGenerator
 			{
 				var prop = mapping[i];
 				var dbParameter = parameters[i];
-				SqlParameter sqlParameter = dbParameter as SqlParameter;
 
 				// if there is no mapping for that parameter, then see if we need to add it as an output parameter
 				if (prop == null)
@@ -304,7 +304,7 @@ namespace Insight.Database.CodeGenerator
 						il.Emit(OpCodes.Callvirt, _iListAdd);						// stack => [parameters]
 						il.Emit(OpCodes.Pop);										// IList.Add returns the index, ignore it
 					}
-					else if (sqlParameter != null && sqlParameter.SqlDbType == SqlDbType.Structured)
+					else if (provider.IsTableValuedParameter(command, dbParameter))
 					{
 						// sql will silently eat table parameters that are not specified, and that can be difficult to debug
 						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", dbParameter.ParameterName));
@@ -333,11 +333,8 @@ namespace Insight.Database.CodeGenerator
 					else if (listType.IsGenericType)
 						listType = listType.GetGenericArguments()[0];
 
-					// emit the table type name, but not too many prefixes
-					string tableTypeName = sqlParameter.TypeName;
-					if (tableTypeName.Count(c => c == '.') > 1)
-						tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
-					il.Emit(OpCodes.Ldstr, tableTypeName);
+					// emit the table type name and list type
+					il.Emit(OpCodes.Ldstr, provider.GetTableParameterTypeName(command, dbParameter));
 					il.EmitLoadType(listType);
 
 					// get the value from the object
@@ -593,19 +590,16 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An action that fills in the command parameters from a dynamic object.</returns>
 		static Action<IDbCommand, object> CreateDynamicInputParameterGenerator(IDbCommand command)
 		{
+			var provider = InsightDbProvider.For(command);
+
 			// figure out what the parameters are
 			var parameters = DeriveParameters(command);
 
 			return (cmd, o) =>
 			{
-				foreach (SqlParameter template in parameters)
+				foreach (var template in parameters)
 				{
-					// create the parameter
-					SqlParameter p = (SqlParameter)command.CreateParameter();
-					p.ParameterName = template.ParameterName;
-					p.Direction = template.Direction;
-					p.SqlDbType = template.SqlDbType;
-					p.UdtTypeName = template.UdtTypeName;
+					var p = provider.CloneParameter(command, template);
 
 					// make sure that we have a dictionary implementation
 					IDictionary<string, object> dyn = o as IDictionary<string, object>;
