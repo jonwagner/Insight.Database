@@ -22,6 +22,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{630EF5
 		.nuget\NuGet.exe = .nuget\NuGet.exe
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.Oracle", "Insight.Tests.Oracle\Insight.Tests.Oracle.csproj", "{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -62,6 +64,16 @@ Global
 		{89533C41-533A-47BD-BCF3-51C7AA1B8718}.Release|Mixed Platforms.Build.0 = Release|x86
 		{89533C41-533A-47BD-BCF3-51C7AA1B8718}.Release|x86.ActiveCfg = Release|x86
 		{89533C41-533A-47BD-BCF3-51C7AA1B8718}.Release|x86.Build.0 = Release|x86
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6FD8179C-95CF-4053-A3A3-E47C1D8BC268}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
