@@ -1,5 +1,4 @@
-﻿using Insight.Database.Reliable;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -11,45 +10,66 @@ using System.Threading.Tasks;
 
 namespace Insight.Database.Providers
 {
+	/// <summary>
+	/// Provides the infrastructure to access advanced features of database connections so Insight can do its magic.
+	/// </summary>
 	public class InsightDbProvider
 	{
+		private static List<InsightDbProvider> _providers = new List<InsightDbProvider>();
+		private static Dictionary<Type, InsightDbProvider> _providerMap = new Dictionary<Type, InsightDbProvider>();
+
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
 		static InsightDbProvider()
 		{
 			new SqlInsightDbProvider().Register();
 			new ReliableInsightDbProvider().Register();
 			new OdbcInsightDbProvider().Register();
 			new OleDbInsightDbProvider().Register();
-			new MiniProfilerInsightDbProvider().Register();
 		}
 
 		public void Register()
 		{
-			lock (Providers)
+			lock (_providerMap)
+			{
+				if (CommandType != null)
+					_providerMap[CommandType] = this;
+
+				if (ConnectionStringBuilderType != null)
+					_providerMap[ConnectionStringBuilderType] = this;
+			}
+
+			lock (_providers)
 			{
 				// we only need one provider of a given type
-				if (Providers.Any(p => p.GetType() == GetType()))
+				if (_providers.Any(p => p.GetType() == GetType()))
 					return;
 
-				Providers.Add(this);
+				_providers.Add(this);
 			}
 		}
 
-		public virtual bool SupportsCommand(IDbCommand command)
+		public virtual Type CommandType
 		{
-			return false;
+			get
+			{
+				return null;
+			}
 		}
 
-		public virtual bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		public virtual Type ConnectionStringBuilderType
 		{
-			return false;
+			get
+			{
+				return null;
+			}
 		}
 
-		public virtual DbConnection GetDbConnection()
+		public virtual DbConnection CreateDbConnection()
 		{
 			throw new NotImplementedException();
 		}
 
-		public virtual List<IDbDataParameter> DeriveParameters(IDbCommand command)
+		public virtual IList<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
 			throw new NotImplementedException();
 		}
@@ -64,22 +84,12 @@ namespace Insight.Database.Providers
 			throw new NotImplementedException();
 		}
 
-		private static List<InsightDbProvider> Providers = new List<InsightDbProvider>();
-
-		internal static InsightDbProvider For(IDbCommand command)
+		internal static InsightDbProvider For(object o)
 		{
-			var provider = Providers.Where(p => p.SupportsCommand(command)).FirstOrDefault();
-			if (provider == null)
+			InsightDbProvider provider;
+			
+			if (!_providerMap.TryGetValue(o.GetType(), out provider) || provider == null)
 				throw new NotImplementedException("No Insight.Database provider supports the given type of command.");
-
-			return provider;
-		}
-
-		internal static InsightDbProvider For(DbConnectionStringBuilder builder)
-		{
-			var provider = Providers.Where(p => p.SupportsConnectionStringBuilder(builder)).FirstOrDefault();
-			if (provider == null)
-				throw new NotImplementedException("No Insight.Database provider supports the given type of connection string builder.");
 
 			return provider;
 		}

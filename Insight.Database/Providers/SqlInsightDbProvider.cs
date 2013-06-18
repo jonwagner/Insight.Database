@@ -11,25 +11,38 @@ using System.Threading.Tasks;
 
 namespace Insight.Database.Providers
 {
+	/// <summary>
+	/// Implements the Insight provider for Sql connections.
+	/// </summary>
 	class SqlInsightDbProvider : InsightDbProvider
 	{
-		public override bool SupportsCommand(IDbCommand command)
+		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+		public override Type CommandType
 		{
-			return command is SqlCommand;
+			get
+			{
+				return typeof(SqlCommand);
+			}
 		}
 
-		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		public override Type ConnectionStringBuilderType
 		{
-			return builder is SqlConnectionStringBuilder;
+			get
+			{
+				return typeof(SqlConnectionStringBuilder);
+			}
 		}
 
-		public override DbConnection GetDbConnection()
+		public override DbConnection CreateDbConnection()
 		{
 			return new SqlConnection();
 		}
 
-		public override List<IDbDataParameter> DeriveParameters(IDbCommand command)
+		public override IList<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
 			SqlCommand sqlCommand = command as SqlCommand;
 
 			// call the server to get the parameters
@@ -52,6 +65,28 @@ namespace Insight.Database.Providers
 			command.Parameters.Clear();
 
 			return parameters;
+		}
+
+		public override IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
+		{
+			SqlCommand sqlCommand = command as SqlCommand;
+
+			// create the structured parameter
+			SqlParameter p = new SqlParameter();
+			p.SqlDbType = SqlDbType.Structured;
+			p.ParameterName = parameterName;
+			p.TypeName = tableTypeName;
+
+			return p;
+		}
+
+		public override IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+
+			// select a 0 row result set so we can determine the schema of the table
+			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
+			return command.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: command.Transaction);
 		}
 
 		/// <summary>
@@ -82,27 +117,5 @@ namespace Insight.Database.Providers
 					command.CommandText,
 					missingParameter));
 		}
-
-		public override IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
-		{
-			SqlCommand sqlCommand = command as SqlCommand;
-
-			// create the structured parameter
-			SqlParameter p = new SqlParameter();
-			p.SqlDbType = SqlDbType.Structured;
-			p.ParameterName = parameterName;
-			p.TypeName = tableTypeName;
-
-			return p;
-		}
-
-		public override IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
-		{
-			// select a 0 row result set so we can determine the schema of the table
-			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
-			return command.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: command.Transaction);
-		}
-
-		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 	}
 }

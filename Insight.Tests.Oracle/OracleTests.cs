@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
-using Insight.Database.Providers.Oracle;
+using Insight.Database.Providers;
 using NUnit.Framework;
 using Oracle.DataAccess.Client;
 

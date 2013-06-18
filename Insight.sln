@@ -26,6 +26,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.Oracle", "Ins
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.Oracle", "Insight.Database.Providers.Oracle\Insight.Database.Providers.Oracle.csproj", "{20B9BD95-F125-4BCA-A06F-9CB7C91AD882}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.MiniProfiler", "Insight.Database.Providers.MiniProfiler\Insight.Database.Providers.MiniProfiler.csproj", "{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -86,6 +88,16 @@ Global
 		{20B9BD95-F125-4BCA-A06F-9CB7C91AD882}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{20B9BD95-F125-4BCA-A06F-9CB7C91AD882}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{20B9BD95-F125-4BCA-A06F-9CB7C91AD882}.Release|x86.ActiveCfg = Release|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

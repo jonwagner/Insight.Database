@@ -9,19 +9,28 @@ using System.Threading.Tasks;
 
 namespace Insight.Database.Providers
 {
+	/// <summary>
+	/// Implements the Insight provider for OleDb connections.
+	/// </summary>
 	class OleDbInsightDbProvider : InsightDbProvider
 	{
-		public override bool SupportsCommand(IDbCommand command)
+		public override Type CommandType
 		{
-			return command is OleDbCommand;
+			get
+			{
+				return typeof(OleDbCommand);
+			}
 		}
 
-		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		public override Type ConnectionStringBuilderType
 		{
-			return builder is OleDbConnectionStringBuilder;
+			get
+			{
+				return typeof(OleDbConnectionStringBuilder);
+			}
 		}
 
-		public override DbConnection GetDbConnection()
+		public override DbConnection CreateDbConnection()
 		{
 			return new OleDbConnection();
 		}

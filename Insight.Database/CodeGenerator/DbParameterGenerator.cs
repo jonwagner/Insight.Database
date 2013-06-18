@@ -3,22 +3,17 @@ using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.Common;
 using System.Data.SqlClient;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
 using System.Globalization;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Runtime.Serialization;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
-using Insight.Database.CodeGenerator;
-using Insight.Database.Reliable;
 using Insight.Database.Providers;
 
 namespace Insight.Database.CodeGenerator
@@ -190,7 +185,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="command">The command to derive.</param>
 		/// <returns>The list of parameter names.</returns>
-		private static List<IDbDataParameter> DeriveParameters(IDbCommand command)
+		private static IList<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
 			string sql = command.CommandText;
 
@@ -208,7 +203,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="command">The command to scan.</param>
 		/// <returns>A list of the detected parameters.</returns>
-		private static List<IDbDataParameter> DeriveParametersFromSqlText(IDbCommand command)
+		private static IList<IDbDataParameter> DeriveParametersFromSqlText(IDbCommand command)
 		{
 			return _parameterRegex.Matches(command.CommandText)
 				.Cast<Match>()
@@ -235,7 +230,7 @@ namespace Insight.Database.CodeGenerator
 		static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
 			// get the parameters
-			List<IDbDataParameter> parameters = DeriveParameters(command);
+			var parameters = DeriveParameters(command);
 
 			// create a dynamic method
 			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
@@ -271,6 +266,7 @@ namespace Insight.Database.CodeGenerator
 			{
 				var prop = mapping[i];
 				var dbParameter = parameters[i];
+				SqlParameter sqlParameter = dbParameter as SqlParameter;
 
 				// if there is no mapping for that parameter, then see if we need to add it as an output parameter
 				if (prop == null)
@@ -308,7 +304,7 @@ namespace Insight.Database.CodeGenerator
 						il.Emit(OpCodes.Callvirt, _iListAdd);						// stack => [parameters]
 						il.Emit(OpCodes.Pop);										// IList.Add returns the index, ignore it
 					}
-					else if (dbParameter is SqlParameter && ((SqlParameter)dbParameter).SqlDbType == SqlDbType.Structured)
+					else if (sqlParameter != null && sqlParameter.SqlDbType == SqlDbType.Structured)
 					{
 						// sql will silently eat table parameters that are not specified, and that can be difficult to debug
 						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", dbParameter.ParameterName));
@@ -338,7 +334,7 @@ namespace Insight.Database.CodeGenerator
 						listType = listType.GetGenericArguments()[0];
 
 					// emit the table type name, but not too many prefixes
-					string tableTypeName = ((SqlParameter)dbParameter).TypeName;
+					string tableTypeName = sqlParameter.TypeName;
 					if (tableTypeName.Count(c => c == '.') > 1)
 						tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
 					il.Emit(OpCodes.Ldstr, tableTypeName);
@@ -598,7 +594,7 @@ namespace Insight.Database.CodeGenerator
 		static Action<IDbCommand, object> CreateDynamicInputParameterGenerator(IDbCommand command)
 		{
 			// figure out what the parameters are
-			List<IDbDataParameter> parameters = DeriveParameters(command);
+			var parameters = DeriveParameters(command);
 
 			return (cmd, o) =>
 			{

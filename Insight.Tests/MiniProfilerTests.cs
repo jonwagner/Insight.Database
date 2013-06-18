@@ -5,6 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using Insight.Database;
+using Insight.Database.Providers;
 using NUnit.Framework;
 using StackExchange.Profiling;
 using StackExchange.Profiling.Data;
@@ -17,6 +18,13 @@ namespace Insight.Tests
 	[TestFixture]
 	class MiniProfilerTests : BaseDbTest
 	{
+		public override void SetUpFixture()
+		{
+			new MiniProfilerInsightDbProvider().Register();
+
+			base.SetUpFixture();
+		}
+
 		[Test]
 		public void TestProfiledSqlQuery()
 		{

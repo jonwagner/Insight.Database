@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Oracle.DataAccess.Client;
 
-namespace Insight.Database.Providers.Oracle
+namespace Insight.Database.Providers
 {
 	public class OracleInsightDbProvider : InsightDbProvider
 	{
@@ -21,7 +21,7 @@ namespace Insight.Database.Providers.Oracle
 			return builder is OracleConnectionStringBuilder;
 		}
 
-		public override DbConnection GetDbConnection()
+		public override DbConnection CreateDbConnection()
 		{
 			return new OracleConnection();
 		}

@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Insight.Database._providers.Oracle")]
+[assembly: AssemblyTitle("Insight,Database.Providers.MiniProfiler")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Insight.Database._providers.Oracle")]
+[assembly: AssemblyProduct("Insight,Database.Providers.MiniProfiler")]
 [assembly: AssemblyCopyright("Copyright ©  2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("27c7cc16-86b4-4f23-bd15-45d508318832")]
+[assembly: Guid("1c22bbdc-ee5f-48de-854f-4c376660e70e")]
 
 // Version information for an assembly consists of the following four values:
 //

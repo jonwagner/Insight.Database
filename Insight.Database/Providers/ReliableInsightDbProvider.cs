@@ -8,11 +8,17 @@ using Insight.Database.Reliable;
 
 namespace Insight.Database.Providers
 {
+	/// <summary>
+	/// Implements the Insight provider for Reliable connections.
+	/// </summary>
 	class ReliableInsightDbProvider : WrappedInsightDbProvider
 	{
-		public override bool SupportsCommand(IDbCommand command)
+		public override Type CommandType
 		{
-			return command is ReliableCommand;
+			get
+			{
+				return typeof(ReliableCommand);
+			}
 		}
 
 		public override IDbCommand GetInnerCommand(IDbCommand command)

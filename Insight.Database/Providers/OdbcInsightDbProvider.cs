@@ -9,19 +9,28 @@ using System.Threading.Tasks;
 
 namespace Insight.Database.Providers
 {
+	/// <summary>
+	/// Implements the Insight provider for Odbc connections.
+	/// </summary>
 	class OdbcInsightDbProvider : InsightDbProvider
 	{
-		public override bool SupportsCommand(IDbCommand command)
+		public override Type CommandType
 		{
-			return command is OdbcCommand;
+			get
+			{
+				return typeof(OdbcCommand);
+			}
 		}
 
-		public override bool SupportsConnectionStringBuilder(DbConnectionStringBuilder builder)
+		public override Type ConnectionStringBuilderType
 		{
-			return builder is OdbcConnectionStringBuilder;
+			get
+			{
+				return typeof(OdbcConnectionStringBuilder);
+			}
 		}
 
-		public override DbConnection GetDbConnection()
+		public override DbConnection CreateDbConnection()
 		{
 			return new OdbcConnection();
 		}

@@ -79,7 +79,6 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
-    <Compile Include="Providers\MiniProfilerInsightDbProvider.cs" />
     <Compile Include="Providers\OdbcInsightDbProvider.cs" />
     <Compile Include="Providers\OleDbInsightDbProvider.cs" />
     <Compile Include="Providers\ReliableInsightDbProvider.cs" />
