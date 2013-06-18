@@ -263,6 +263,8 @@ namespace Insight.Database
 			IDbCommand cmd = connection.CreateCommand();
 			cmd.CommandType = commandType;
 			cmd.CommandText = sql;
+
+			// unwrap the transaction because the transaction has to match the command and connection
 			if (transaction != null)
 				cmd.Transaction = UnwrapDbTransaction(transaction);
 			if (commandTimeout != null)
@@ -1389,29 +1391,6 @@ namespace Insight.Database
 		#endregion
 
 		#region Unwrap Methods
-		/// <summary>
-		/// Unwraps an IDbConnection to determine its inner DbConnection to use with advanced features.
-		/// </summary>
-		/// <param name="connection">The connection to unwrap.</param>
-		/// <returns>The inner SqlConnection.</returns>
-		internal static DbConnection UnwrapDbConnection(this IDbConnection connection)
-		{
-			// if we have a DbConnection, use it
-			DbConnection dbConnection = connection as DbConnection;
-			if (dbConnection != null)
-				return dbConnection;
-
-			// if the command is not a SqlConnection, then maybe it is wrapped by something like MiniProfiler
-			if (connection.GetType().Name == "ProfiledDbConnection")
-			{
-				dynamic dynamicConnection = connection;
-				return UnwrapDbConnection(dynamicConnection.InnerConnection);
-			}
-
-			// there is no inner sql connection
-			return null;
-		}
-
 		/// <summary>
 		/// Unwraps an IDbTransaction to determine its inner DbTransaction to use with advanced features.
 		/// </summary>

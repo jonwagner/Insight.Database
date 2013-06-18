@@ -1307,7 +1307,7 @@ namespace Insight.Database
 
 #if !NODBASYNC
 			// open the connection and plan to close it
-			DbConnection dbConnection = connection.UnwrapDbConnection();
+			DbConnection dbConnection = connection as DbConnection;
 			if (dbConnection != null)
 			{
 				return dbConnection.OpenAsync(cancellationToken).ContinueWith(

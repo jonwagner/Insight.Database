@@ -181,6 +181,8 @@ namespace Insight.Database
 					cmd = _connection.CreateCommand();
 					cmd.CommandType = CommandType.StoredProcedure;
 					cmd.CommandText = procName;
+
+					// unwrap the transaction because the transaction has to match the command and connection
 					if (transaction != null)
 						cmd.Transaction = DBConnectionExtensions.UnwrapDbTransaction(transaction);
 
