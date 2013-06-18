@@ -49,9 +49,7 @@ namespace Insight.Tests
 				_connection.Close();
 		}
 
-#if !ORACLE
 		protected SqlConnection _sqlConnection { get { return _connection as SqlConnection; } }
-#endif
 		protected DbConnectionStringBuilder _connectionStringBuilder;
 
 		protected DbConnection _connection;
