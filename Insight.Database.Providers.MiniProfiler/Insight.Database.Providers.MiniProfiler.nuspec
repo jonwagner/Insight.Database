@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Insight.Database.Providers.MiniProfiler</id>
+    <version>3.0.0</version>
+    <title>Insight.Database.Providers.MiniProfiler</title>
+    <authors>Jon Wagner</authors>
+	  <description>
+		An Insight.Database provider for MiniProfiler so the two can play together nicely.
+	  </description>
+	  <language>en-US</language>
+    <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
+    <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
+    <tags>Insight orm sql sqlserver micro-orm profiler miniprofiler</tags>
+    <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
+	<dependencies>
+		<dependency id="Insight.Database" version="3.0.0"></dependency>
+		<dependency id="MiniProfiler" version="2.0.0"></dependency>
+	</dependencies>
+  </metadata>
+  <files>
+    <file src="\bin\Release\Insight.Database.Providers.MiniProfiler.dll" target="lib" />
+    <file src="\bin\Release\Insight.Database.Providers.MiniProfiler.pdb" target="lib" />
+  </files>
+</package>

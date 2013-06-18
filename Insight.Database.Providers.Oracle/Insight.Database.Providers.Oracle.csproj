@@ -68,6 +68,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="CodeAnalysisRules.ruleset" />
+    <None Include="Insight.Database.Providers.Oracle.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="packages.config" />
     <None Include="Settings.StyleCop" />
   </ItemGroup>

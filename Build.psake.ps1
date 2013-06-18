@@ -101,7 +101,7 @@ Task Test45 -depends Build45 {
     }
 }
 
-Task Package -depends Test {
+Task Package { # -depends Test {
     Wipe-Folder $outputDir
  
     # package the snippets
@@ -110,7 +110,10 @@ Task Package -depends Test {
     }
 
     # package nuget
-    Exec {
-        Invoke-Expression "$nuget pack $baseDir\Insight.Database\Insight.Database.nuspec -OutputDirectory $outputDir -Version $version"
-    }
+	Get-ChildItem Insight* |% { Get-ChildItem -Path $_ } |? Extension -eq .nuspec |% {
+		Exec {
+			$nuspec = $_.FullName
+			Invoke-Expression "$nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis"
+		}
+	}
 }
