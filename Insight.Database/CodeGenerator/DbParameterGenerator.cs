@@ -19,7 +19,6 @@ using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Reliable;
-using Oracle.DataAccess.Client;
 using Insight.Database.Providers;
 
 namespace Insight.Database.CodeGenerator

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
+using Insight.Database.Providers.Oracle;
 using NUnit.Framework;
 using Oracle.DataAccess.Client;
 
@@ -18,6 +19,8 @@ namespace Insight.Tests.Oracle
 		[TestFixtureSetUp]
 		public override void SetUpFixture()
 		{
+			new OracleInsightDbProvider().Register();
+
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
 			_connectionStringBuilder.ConnectionString = "Data Source = localhost; User Id = system; Password = Password1";
 			_connection = _connectionStringBuilder.Open();

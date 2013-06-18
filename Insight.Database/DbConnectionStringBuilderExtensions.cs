@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using Oracle.DataAccess.Client;
 using Insight.Database.Providers;
 
 namespace Insight.Database
