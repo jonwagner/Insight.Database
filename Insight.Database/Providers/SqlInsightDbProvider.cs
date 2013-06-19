@@ -112,28 +112,6 @@ namespace Insight.Database.Providers
 			p.SqlDbType = template.SqlDbType;
 			p.TypeName = template.TypeName;
 			p.UdtTypeName = template.UdtTypeName;
-			p.Scale = template.Scale;
-			p.Size = template.Size;
-
-			return p;
-		}
-
-		/// <summary>
-		/// Creates a parameter for a table-valued parameter.
-		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <param name="parameterName">The name of the parameter.</param>
-		/// <param name="tableTypeName">The name of the table type.</param>
-		/// <returns>An initialized parameter for the table.</returns>
-		public override IDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
-		{
-			SqlCommand sqlCommand = command as SqlCommand;
-
-			// create the structured parameter
-			SqlParameter p = new SqlParameter();
-			p.SqlDbType = SqlDbType.Structured;
-			p.ParameterName = parameterName;
-			p.TypeName = tableTypeName;
 
 			return p;
 		}
@@ -142,15 +120,16 @@ namespace Insight.Database.Providers
 		/// Gets the schema for a given user-defined table type.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
-		/// <param name="tableTypeName">The name of the table type.</param>
+		/// <param name="parameter">The parameter to use.</param>
 		/// <returns>An open reader with the schema.</returns>
 		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
-		public override IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
+		public override IDataReader GetTableTypeSchema(IDbCommand command, IDataParameter parameter)
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
 			// select a 0 row result set so we can determine the schema of the table
-			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", tableTypeName);
+			SqlParameter p = (SqlParameter)parameter;
+			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", p.TypeName);
 			return command.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: command.Transaction);
 		}
 
@@ -172,9 +151,15 @@ namespace Insight.Database.Providers
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <returns>The name of the table parameter.</returns>
-		public override string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter)
+		public override string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
 		{
 			SqlParameter p = parameter as SqlParameter;
+
+			if (String.IsNullOrEmpty(p.TypeName))
+			{
+				p.SqlDbType = SqlDbType.Structured;
+				p.TypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
+			}
 
 			return p.TypeName;
 		}

@@ -131,31 +131,16 @@ namespace Insight.Database.Providers
 			p.DbType = parameter.DbType;
 			p.Direction = parameter.Direction;
 
+			IDbDataParameter dp = p as IDbDataParameter;
+			if (dp != null)
+			{
+				IDbDataParameter dbParameter = parameter as IDbDataParameter;
+				dp.Size = dbParameter.Size;
+				dp.Scale = dbParameter.Scale;
+				dp.Precision = dbParameter.Precision;
+			}
+
 			return p;
-		}
-
-		/// <summary>
-		/// Creates a parameter for a table-valued parameter.
-		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <param name="parameterName">The name of the parameter.</param>
-		/// <param name="tableTypeName">The name of the table type.</param>
-		/// <returns>An initialized parameter for the table.</returns>
-		public virtual IDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <summary>
-		/// Gets the schema for a given user-defined table type.
-		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <param name="tableTypeName">The name of the table type.</param>
-		/// <returns>An open reader with the schema.</returns>
-		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
-		public virtual IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
-		{
-			throw new NotImplementedException();
 		}
 
 		/// <summary>
@@ -175,9 +160,21 @@ namespace Insight.Database.Providers
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <returns>The name of the table parameter.</returns>
-		public virtual string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter)
+		public virtual string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
 		{
 			return null;
+		}
+
+		/// <summary>
+		/// Gets the schema for a given user-defined table type.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="parameter">The parameter to use.</param>
+		/// <returns>An open reader with the schema.</returns>
+		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
+		public virtual IDataReader GetTableTypeSchema(IDbCommand command, IDataParameter parameter)
+		{
+			throw new NotImplementedException();
 		}
 		#endregion
 

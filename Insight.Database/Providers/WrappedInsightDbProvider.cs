@@ -47,29 +47,16 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Creates a parameter for a table-valued parameter.
-		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <param name="parameterName">The name of the parameter.</param>
-		/// <param name="tableTypeName">The name of the table type.</param>
-		/// <returns>An initialized parameter for the table.</returns>
-		public override IDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
-		{
-			command = GetInnerCommand(command);
-			return InsightDbProvider.For(command).CreateTableValuedParameter(command, parameterName, tableTypeName);
-		}
-
-		/// <summary>
 		/// Gets the schema for a given user-defined table type.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
-		/// <param name="tableTypeName">The name of the table type.</param>
+		/// <param name="parameter">The parameter to use.</param>
 		/// <returns>An open reader with the schema.</returns>
 		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
-		public override IDataReader GetTableTypeSchema(IDbCommand command, string tableTypeName)
+		public override IDataReader GetTableTypeSchema(IDbCommand command, IDataParameter parameter)
 		{
 			command = GetInnerCommand(command);
-			return InsightDbProvider.For(command).GetTableTypeSchema(command, tableTypeName);
+			return InsightDbProvider.For(command).GetTableTypeSchema(command, parameter);
 		}
 
 		/// <summary>
@@ -90,10 +77,10 @@ namespace Insight.Database.Providers
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <returns>The name of the table parameter.</returns>
-		public override string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter)
+		public override string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
 		{
 			command = GetInnerCommand(command);
-			return InsightDbProvider.For(command).GetTableParameterTypeName(command, parameter);
+			return InsightDbProvider.For(command).GetTableParameterTypeName(command, parameter, listType);
 		}
 	}
 }

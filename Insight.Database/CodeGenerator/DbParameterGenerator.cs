@@ -796,10 +796,8 @@ namespace Insight.Database.CodeGenerator
 			{
 				var provider = InsightDbProvider.For(command);
 
-				// if the table type name is null, then default to the name of the class
-				string tableTypeName = provider.GetTableParameterTypeName(command, parameter);
-				if (String.IsNullOrWhiteSpace(tableTypeName))
-					tableTypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
+				// allow the provider to make sure the table parameter is set up properly
+				string tableTypeName = provider.GetTableParameterTypeName(command, parameter, listType);
 
 				// see if we already have a reader for the given type and table type name
 				// we can't use the schema cache because we don't have a schema yet
@@ -810,18 +808,13 @@ namespace Insight.Database.CodeGenerator
 						_ => null,
 						(_, __) =>
 						{
-							using (var reader = provider.GetTableTypeSchema(command, tableTypeName))
+							using (var reader = provider.GetTableTypeSchema(command, parameter))
 								return ObjectReader.GetObjectReader(reader, listType);
 						},
 						CommandBehavior.Default));
 
 				// create the structured parameter
 				parameter.Value = new ObjectListDbDataReader(objectReader, list as IEnumerable);
-
-				// TODO: if this is not a stored proc call, then need the provider to create the table parameter
-				var sqlP = (System.Data.SqlClient.SqlParameter)parameter;
-				sqlP.SqlDbType = SqlDbType.Structured;
-				sqlP.TypeName = tableTypeName;
 			}
 		}
 		#endregion

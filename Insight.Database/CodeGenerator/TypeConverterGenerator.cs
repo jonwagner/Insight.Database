@@ -38,28 +38,6 @@ namespace Insight.Database.CodeGenerator
 		private static readonly long SqlZeroTime = new DateTime(1900, 1, 1, 0, 0, 0).Ticks;
 		#endregion
 
-		#region Constructors
-		/// <summary>
-		/// Initializes static members of the TypeConverterGenerator class.
-		/// </summary>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
-		static TypeConverterGenerator()
-		{
-			// check to see whether setting DbType to Time is broken. In .NET 4.5, it gets set to DateTime when you set it to Time.
-			var p = new System.Data.SqlClient.SqlParameter("p", new TimeSpan());
-			p.DbType = DbType.Time;
-			if (p.DbType != DbType.Time)
-				SqlClientTimeIsBroken = true;
-		}
-		#endregion
-
-		#region Properties
-		/// <summary>
-		/// Gets a value indicating whether this version of .NET does not properly set DbType to Time.
-		/// </summary>
-		internal static bool SqlClientTimeIsBroken { get; private set; }
-		#endregion
-
 		#region Code Generation Members
 		/// <summary>
 		/// Emit the IL to convert the current value on the stack and set the value of the object.
@@ -164,10 +142,6 @@ namespace Insight.Database.CodeGenerator
 			}
 			else
 			{
-				// if timespan is broken and we have an object, then it's probably a timespan
-				if (SqlClientTimeIsBroken && sourceType == typeof(object) && underlyingTargetType == typeof(TimeSpan))
-					sourceType = typeof(TimeSpan);
-
 				// this isn't a system value type, so unbox to the type the reader is giving us (this is a system type, hopefully)
 				// now we have an unboxed sourceType
 				il.Emit(OpCodes.Unbox_Any, sourceType);
