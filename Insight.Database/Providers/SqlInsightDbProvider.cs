@@ -77,7 +77,16 @@ namespace Insight.Database.Providers
 
 			// make the list of parameters
 			List<IDbDataParameter> parameters = command.Parameters.Cast<IDbDataParameter>().ToList();
-			parameters.ForEach(p => p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant());
+			foreach (var p in parameters.OfType<SqlParameter>())
+			{
+				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant();
+
+				// trim any prefixes from type names
+				string tableTypeName = p.TypeName;
+				if (tableTypeName.Count(c => c == '.') > 1)
+					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
+				p.TypeName = tableTypeName;
+			}
 
 			// clear the list so we can re-add them
 			command.Parameters.Clear();
@@ -162,6 +171,7 @@ namespace Insight.Database.Providers
 		public override string GetTableParameterTypeName(IDbCommand command, IDbDataParameter parameter)
 		{
 			SqlParameter p = parameter as SqlParameter;
+
 			return p.TypeName;
 		}
 

@@ -225,14 +225,8 @@ namespace Insight.Database
 						if (p.Value == null)
 							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", p.ParameterName));
 
-						// swap out the parameter with something enumerable
-						cmd.Parameters.Remove(p);
-						Type listType = p.Value.GetType().GetInterfaces().First(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-						if (listType == null)
-							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} expects an enumerable", p.ParameterName));
-						Type elementType = listType.GetGenericArguments()[0];
-
-						DbParameterGenerator.ListParameterHelper.AddEnumerableParameters(cmd, p.ParameterName, provider.GetTableParameterTypeName(cmd, p), elementType, p.Value);
+						// convert the value to an objectreader
+						DbParameterGenerator.ListParameterHelper.AddListParameter(p, p.Value, cmd);
 					}
 				}
 

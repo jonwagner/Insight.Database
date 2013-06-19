@@ -40,7 +40,6 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _iDataParameterSetSize = typeof(IDbDataParameter).GetProperty("Size").GetSetMethod();
 		private static readonly MethodInfo _stringGetLength = typeof(string).GetProperty("Length").GetGetMethod();
 		private static readonly MethodInfo _linqBinaryToArray = typeof(System.Data.Linq.Binary).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Instance);
-		private static readonly MethodInfo _listParameterHelperAddEnumerableParameters = typeof(ListParameterHelper).GetMethod("AddEnumerableParameters");
 		private static readonly MethodInfo _iDataParameterGetValue = typeof(IDataParameter).GetProperty("Value").GetGetMethod();
 
 		/// <summary>
@@ -229,15 +228,11 @@ namespace Insight.Database.CodeGenerator
 			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 			if (enumerable != null)
 			{
-				var tableParameter = parameters.OfType<IDbDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
 				return (IDbCommand cmd, object o) => 
-				{ 
-					ListParameterHelper.AddEnumerableParameters(
-						cmd,
-						tableParameter.ParameterName,
-						provider.GetTableParameterTypeName(command, tableParameter),
-						enumerable.GetGenericArguments()[0],
-						o);
+				{
+					CopyParameters(cmd);
+					var tableParameter = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
+					ListParameterHelper.AddListParameter(tableParameter, o, cmd);
 				};
 			}
 
@@ -276,37 +271,6 @@ namespace Insight.Database.CodeGenerator
 				DbType sqlType = LookupDbType(prop.MemberType, dbParameter.DbType);
 
 				///////////////////////////////////////////////////////////////
-				// Special case support for enumerables. If the type is -1 (our workaround, then call the list parameter method)
-				///////////////////////////////////////////////////////////////
-				if (sqlType == DbTypeEnumerable)
-				{
-					il.Emit(OpCodes.Ldarg_0);											// push command
-					il.Emit(OpCodes.Ldstr, dbParameter.ParameterName);					// push parameter name
-
-					// get the type of the contents of the list
-					Type listType = prop.MemberType;
-					if (listType.IsArray)
-						listType = listType.GetElementType();
-					else if (listType.IsGenericType)
-						listType = listType.GetGenericArguments()[0];
-
-					// emit the table type name and list type
-					il.Emit(OpCodes.Ldstr, provider.GetTableParameterTypeName(command, dbParameter));
-					il.EmitLoadType(listType);
-
-					// get the value from the object
-					il.Emit(OpCodes.Ldarg_1);
-					prop.EmitGetValue(il);
-
-					if (prop.MemberType.IsValueType)								// box value types before calling object parameter
-						il.Emit(OpCodes.Box, prop.MemberType);
-
-					// TODO: the table type parameter is already on the stack, so eliminate the above code
-					il.Emit(OpCodes.Call, _listParameterHelperAddEnumerableParameters);
-					continue;
-				}
-
-				///////////////////////////////////////////////////////////////
 				// Start handling all of the other types
 				///////////////////////////////////////////////////////////////
 
@@ -320,7 +284,8 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Dup);
 
 				// for non-stored procedures, we don't know the desired type, so we have to set the type of the parameter to the type of the value
-				if (command.CommandType != CommandType.StoredProcedure)
+				// exception: enumerables, which we handle just below
+				if (command.CommandType != CommandType.StoredProcedure && sqlType != DbTypeEnumerable)
 				{
 					il.Emit(OpCodes.Dup);
 					il.Emit(OpCodes.Ldc_I4, (int)sqlType);
@@ -332,6 +297,20 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				il.Emit(OpCodes.Ldarg_1);
 				prop.EmitGetValue(il);
+
+				///////////////////////////////////////////////////////////////
+				// Special case support for enumerables. If the type is -1 (our workaround, then call the list parameter method)
+				///////////////////////////////////////////////////////////////
+				if (sqlType == DbTypeEnumerable)
+				{
+					// we have the parameter and the value as object, add the command
+					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(OpCodes.Call, typeof(ListParameterHelper).GetMethod("AddListParameter", BindingFlags.Static | BindingFlags.NonPublic));
+
+					// pop the extra parameter for continue
+					il.Emit(OpCodes.Pop);
+					continue;
+				}
 
 				// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
 				if (prop.MemberType.IsValueType)
@@ -714,24 +693,28 @@ namespace Insight.Database.CodeGenerator
 			/// <summary>
 			/// Converts an IEnumerable to a list of parameters, and updates the SQL command to support them.
 			/// </summary>
-			/// <param name="command">The command to add to.</param>
-			/// <param name="parameterName">The name of the parameter.</param>
-			/// <param name="tableTypeName">The name of the table type or null to assume TypeTable.</param>
-			/// <param name="listType">The type of the list to parameterize.</param>
 			/// <param name="value">The value of the parameter.</param>
-			public static void AddEnumerableParameters(IDbCommand command, string parameterName, string tableTypeName, Type listType, object value)
+			/// <param name="command">The command to add to.</param>
+			internal static void AddListParameter(IDataParameter parameter, object value, IDbCommand command)
 			{
-				// trim any prefixes
-				if (tableTypeName.Count(c => c == '.') > 1)
-					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
-
 				// convert the value to an enumerable
 				IEnumerable list = (IEnumerable)value;
 
-				if (command.CommandType == CommandType.Text && (listType.IsValueType || listType == typeof(string)))
-					AddEnumerableValueParameters(command, parameterName, list);
+				Type listType = list.GetType();
+				if (listType.IsArray)
+					listType = listType.GetElementType();
 				else
-					AddEnumerableClassParameters(command, parameterName, tableTypeName, listType, list);
+				{
+					listType = listType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					if (listType.IsGenericType)
+						listType = listType.GetGenericArguments()[0];
+				}
+				listType = Nullable.GetUnderlyingType(listType) ?? listType;
+
+				if (command.CommandType == CommandType.Text && (listType.IsValueType || listType == typeof(string)))
+					AddListParameterByValue(parameter, list, command);
+				else
+					AddListParameterByClass(parameter, list, command, listType);
 			}
 
 			/// <summary>
@@ -740,9 +723,12 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="command">The command to add parameters to.</param>
 			/// <param name="parameterName">The name of the parameter.</param>
 			/// <param name="list">The list of objects to add.</param>
-			[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
-			private static void AddEnumerableValueParameters(IDbCommand command, string parameterName, IEnumerable list)
+			private static void AddListParameterByValue(IDataParameter parameter, IEnumerable list, IDbCommand command)
 			{
+				// we are going to replace the current parameter with a list of new parameters
+				command.Parameters.Remove(parameter);
+
+				string parameterName = parameter.ParameterName;
 				var count = 0;
 				bool isString = list is IEnumerable<string>;
 
@@ -801,14 +787,12 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="tableTypeName">The name of the table type or null to assume TypeTable.</param>
 			/// <param name="listType">The type that the list contains.</param>
 			/// <param name="list">The list of objects.</param>
-			private static void AddEnumerableClassParameters(IDbCommand command, string parameterName, string tableTypeName, Type listType, IEnumerable list)
+			private static void AddListParameterByClass(IDataParameter parameter, IEnumerable list, IDbCommand command, Type listType)
 			{
-				// TODO: make this method accept a parameter instead of variables
-
-				// convert any nullable types to their underlying type
-				listType = Nullable.GetUnderlyingType(listType) ?? listType;
+				var provider = InsightDbProvider.For(command);
 
 				// if the table type name is null, then default to the name of the class
+				string tableTypeName = provider.GetTableParameterTypeName(command, parameter as IDbDataParameter);
 				if (String.IsNullOrWhiteSpace(tableTypeName))
 					tableTypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
 
@@ -821,17 +805,18 @@ namespace Insight.Database.CodeGenerator
 						_ => null,
 						(_, __) =>
 						{
-							using (var reader = InsightDbProvider.For(command).GetTableTypeSchema(command, tableTypeName))
+							using (var reader = provider.GetTableTypeSchema(command, tableTypeName))
 								return ObjectReader.GetObjectReader(reader, listType);
 						},
 						CommandBehavior.Default));
 
 				// create the structured parameter
-				var param = InsightDbProvider.For(command).CreateTableValuedParameter(command, parameterName, tableTypeName);
-				if (param == null)
-					throw new InvalidOperationException("Database provider does not support table-valued parameters");
-				param.Value = new ObjectListDbDataReader(objectReader, list);
-				command.Parameters.Add(param);
+				parameter.Value = new ObjectListDbDataReader(objectReader, list as IEnumerable);
+
+				// TODO: if this is not a stored proc call, then need the provider to create the table parameter
+				var sqlP = (System.Data.SqlClient.SqlParameter)parameter;
+				sqlP.SqlDbType = SqlDbType.Structured;
+				sqlP.TypeName = tableTypeName;
 			}
 		}
 		#endregion
