@@ -61,6 +61,10 @@ namespace Insight.Database.Providers
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
+			// we only know how to do stored procedures
+			if (command.CommandType != System.Data.CommandType.StoredProcedure)
+				return base.DeriveParameters(command);
+
 			SqlCommand sqlCommand = command as SqlCommand;
 
 			// call the server to get the parameters

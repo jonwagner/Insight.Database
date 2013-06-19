@@ -126,11 +126,6 @@ namespace Insight.Database.CodeGenerator
 		/// The cache for the deserializers (output parameters).
 		/// </summary>
 		private static ConcurrentDictionary<QueryIdentity, Action<IDbCommand, object>> _deserializers = new ConcurrentDictionary<QueryIdentity, Action<IDbCommand, object>>();
-
-		/// <summary>
-		/// Regex to detect parameters in sql text.
-		/// </summary>
-		private static Regex _parameterRegex = new Regex("[?@]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 		#endregion
 
 		#region Code Cache Members
@@ -171,45 +166,6 @@ namespace Insight.Database.CodeGenerator
 		}
 		#endregion
 
-		#region Parameter Detection Members
-		/// <summary>
-		/// Derive the parameters for a command.
-		/// </summary>
-		/// <param name="command">The command to derive.</param>
-		/// <returns>The list of parameter names.</returns>
-		internal static IList<IDbDataParameter> DeriveParameters(IDbCommand command)
-		{
-			// for stored procs, can call the server to derive them
-			if (command.CommandType == CommandType.StoredProcedure)
-				return InsightDbProvider.For(command).DeriveParameters(command);
-
-			// otherwise we have to look at the text
-			// the text can even contain the parameters in a comment (e.g. "myproc -- @p, @q")
-			return DeriveParametersFromSqlText(command);
-		}
-
-		/// <summary>
-		/// Get a list of parameters from Sql text.
-		/// </summary>
-		/// <param name="command">The command to scan.</param>
-		/// <returns>A list of the detected parameters.</returns>
-		private static IList<IDbDataParameter> DeriveParametersFromSqlText(IDbCommand command)
-		{
-			// TODO: move this into providers
-			return _parameterRegex.Matches(command.CommandText)
-				.Cast<Match>()
-				.Select(m => m.Groups[1].Value.ToUpperInvariant())
-				.Distinct()
-				.Select(p =>
-					{
-						var dbParameter = command.CreateParameter();
-						dbParameter.ParameterName = p;
-						return dbParameter; 
-					})
-				.ToList();
-		}
-		#endregion
-
 		#region Input Parameter Code Generation Members
 		/// <summary>
 		/// Create the Parameter generator method.
@@ -221,7 +177,7 @@ namespace Insight.Database.CodeGenerator
 		static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
 			var provider = InsightDbProvider.For(command);
-			var parameters = DeriveParameters(command);
+			var parameters = provider.DeriveParameters(command);
 
 			// special case if the parameters object is an IEnumerable or Array
 			// look for the parameter that is a Structured object and pass the array to the TVP
@@ -230,11 +186,14 @@ namespace Insight.Database.CodeGenerator
 			{
 				return (IDbCommand cmd, object o) => 
 				{
-					CopyParameters(cmd);
+					CopyParameters(cmd, parameters);
 					var tableParameter = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
 					ListParameterHelper.AddListParameter(tableParameter, o, cmd);
 				};
 			}
+
+			// store the list of parameters in the static field of a class so we don't have to call the server again
+			var parameterTemplateField = CreateParameterTemplateStorage(parameters);
 
 			// get the mapping of the properties for the type
 			var mapping = ColumnMapping.Parameters.CreateMapping(type, null, command.CommandText, command.CommandType, parameters, 0, parameters.Count, true);
@@ -248,6 +207,7 @@ namespace Insight.Database.CodeGenerator
 
 			// copy the parameters into the command object, returning the parameters list
 			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldsfld, parameterTemplateField);
 			il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("CopyParameters", BindingFlags.Static | BindingFlags.NonPublic));
 			// stack => [parameters]
 
@@ -280,10 +240,11 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Call, typeof(IList).GetProperty("Item").GetGetMethod());
 				il.Emit(OpCodes.Castclass, typeof(IDataParameter));
 
-				// duplicate the parameter so we can call setvalue
+				// duplicate the parameter so we can call setvalue later
 				il.Emit(OpCodes.Dup);
 
-				// for non-stored procedures, we don't know the desired type, so we have to set the type of the parameter to the type of the value
+				// for non-stored procedures, we don't know the desired type
+				// so we have to set the type of the parameter to the type of the value
 				// exception: enumerables, which we handle just below
 				if (command.CommandType != CommandType.StoredProcedure && sqlType != DbTypeEnumerable)
 				{
@@ -307,7 +268,7 @@ namespace Insight.Database.CodeGenerator
 					il.Emit(OpCodes.Ldarg_0);
 					il.Emit(OpCodes.Call, typeof(ListParameterHelper).GetMethod("AddListParameter", BindingFlags.Static | BindingFlags.NonPublic));
 
-					// pop the extra parameter for continue
+					// pop the extra parameter before continuing
 					il.Emit(OpCodes.Pop);
 					continue;
 				}
@@ -479,9 +440,7 @@ namespace Insight.Database.CodeGenerator
 		static Action<IDbCommand, object> CreateDynamicInputParameterGenerator(IDbCommand command)
 		{
 			var provider = InsightDbProvider.For(command);
-
-			// figure out what the parameters are
-			var parameters = DeriveParameters(command);
+			var parameters = provider.DeriveParameters(command);
 
 			return (cmd, o) =>
 			{
@@ -516,12 +475,41 @@ namespace Insight.Database.CodeGenerator
 			};
 		}
 
-		static IDataParameterCollection CopyParameters(IDbCommand command)
+		/// <summary>
+		/// Stores a parameter template in the static field of a hidden class so we can use it in our reader.
+		/// </summary>
+		/// <param name="parameters">The parameter template to store.</param>
+		/// <returns>A FieldInfo that can be used to get the parameter list later.</returns>
+		static FieldInfo CreateParameterTemplateStorage(IList<IDbDataParameter> parameters)
+		{
+			// create a new assembly
+			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
+			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
+
+			// create a type based on DbConnectionWrapper and call the default constructor
+			TypeBuilder tb = mb.DefineType(Guid.NewGuid().ToString());
+			tb.DefineField("_parameters", typeof(IList<IDbDataParameter>), FieldAttributes.Static | FieldAttributes.Private);
+			Type t = tb.CreateType();
+
+			var field = t.GetField("_parameters", BindingFlags.Static | BindingFlags.NonPublic);
+			field.SetValue(null, parameters);
+
+			return field;
+		}
+		#endregion
+
+		#region Parameter Members
+		/// <summary>
+		/// Copies a parameter template into a command.
+		/// </summary>
+		/// <param name="command">The command to add to.</param>
+		/// <param name="parameters">The parameter template to use.</param>
+		/// <returns>The parameters collection.</returns>
+		/// <remarks>The parameters collection is returned so the IL routine can use it directly.</remarks>
+		static IDataParameterCollection CopyParameters(IDbCommand command, IList<IDbDataParameter> parameters)
 		{
 			var provider = InsightDbProvider.For(command);
-
-			// TODO: cache this
-			var parameters = DbParameterGenerator.DeriveParameters(command);
 
 			var commandParameters = command.Parameters;
 
@@ -531,10 +519,19 @@ namespace Insight.Database.CodeGenerator
 			return commandParameters;
 		}
 
+		/// <summary>
+		/// Cleans up the parameter list after values have been set.
+		/// </summary>
+		/// <param name="parameters">The parameter list to clean.</param>
+		/// <remarks>
+		/// If no mapping was detected between a parameter and field, then Value will be null (not DbNull).
+		/// This means the code did not intend to send the parameter.
+		/// </remarks>
 		static void CleanParameters(IDataParameterCollection parameters)
 		{
 			// remove any input parameters that were not set
-			// and set the size on any unset string parameters to -1 to make them valid
+			// for output parameters, we have to keep them, but
+			// set the size on any unset string parameters to -1 to make them valid
 			for (int i = parameters.Count - 1; i >= 0; i--)
 			{
 				var p = (IDbDataParameter)parameters[i];

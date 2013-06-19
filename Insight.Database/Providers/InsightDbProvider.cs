@@ -20,6 +20,11 @@ namespace Insight.Database.Providers
 		/// The map from object types to providers. This includes DbCommand and DbConnectionString types.
 		/// </summary>
 		private static Dictionary<Type, InsightDbProvider> _providerMap = new Dictionary<Type, InsightDbProvider>();
+
+		/// <summary>
+		/// Regex to detect parameters in sql text.
+		/// </summary>
+		private static Regex _parameterRegex = new Regex("[?@]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 		#endregion
 
 		#region Constructors
@@ -93,7 +98,21 @@ namespace Insight.Database.Providers
 		/// <returns>The list of parameters for the command.</returns>
 		public virtual IList<IDbDataParameter> DeriveParameters(IDbCommand command)
 		{
-			throw new NotImplementedException();
+			// we only support pure text
+			if (command.CommandType != System.Data.CommandType.Text)
+				throw new NotImplementedException();
+
+			return _parameterRegex.Matches(command.CommandText)
+				.Cast<Match>()
+				.Select(m => m.Groups[1].Value.ToUpperInvariant())
+				.Distinct()
+				.Select(p =>
+				{
+					var dbParameter = command.CreateParameter();
+					dbParameter.ParameterName = p;
+					return dbParameter;
+				})
+				.ToList();
 		}
 
 		/// <summary>
