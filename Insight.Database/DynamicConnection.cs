@@ -208,11 +208,12 @@ namespace Insight.Database
 							argumentName == "withGraphs")
 							continue;
 
-						IDataParameter p = cmd.Parameters.OfType<IDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, argumentName, StringComparison.OrdinalIgnoreCase));
+						IDataParameter p = cmd.Parameters.OfType<IDataParameter>().First(parameter => String.Equals(parameter.ParameterName, argumentName, StringComparison.OrdinalIgnoreCase));
 						p.Value = args[i];
 					}
 
-					// special handling for table parameters
+					// special handling for table parameters - replace them with list parameters
+					// note that we may be modifying the parameters collection, so we copy the list here
 					var provider = InsightDbProvider.For(cmd);
 					foreach (var p in cmd.Parameters.OfType<IDataParameter>().Where(p => provider.IsTableValuedParameter(cmd, p)).ToList())
 					{
@@ -230,9 +231,7 @@ namespace Insight.Database
 				{
 					Type withGraphType = withGraph as Type;
 					if (withGraphType != null && withGraphType.IsSubclassOf(typeof(Graph)))
-					{
 						returnType = withGraphType.GetGenericArguments()[0];
-					}
 				}
 
 				// if we don't have a type, use FastExpando

@@ -37,7 +37,7 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _iDataParameterCollectionGetItem = typeof(IDataParameterCollection).GetProperty("Item").GetGetMethod();
 		private static readonly MethodInfo _iDataParameterSetDbType = typeof(IDataParameter).GetProperty("DbType").GetSetMethod();
 		private static readonly MethodInfo _iDataParameterSetValue = typeof(IDataParameter).GetProperty("Value").GetSetMethod();
-		private static readonly MethodInfo _iDataParameterSetSize = typeof(IDbDataParameter).GetProperty("Size").GetSetMethod();
+		private static readonly MethodInfo _iDbDataParameterSetSize = typeof(IDbDataParameter).GetProperty("Size").GetSetMethod();
 		private static readonly MethodInfo _stringGetLength = typeof(string).GetProperty("Length").GetGetMethod();
 		private static readonly MethodInfo _linqBinaryToArray = typeof(System.Data.Linq.Binary).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Instance);
 		private static readonly MethodInfo _iDataParameterGetValue = typeof(IDataParameter).GetProperty("Value").GetGetMethod();
@@ -406,7 +406,7 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// p.Size = string.length
 				///////////////////////////////////////////////////////////////
-				if (IsDbTypeAString(sqlType))
+				if (IsDbTypeAString(sqlType) && dbParameter is IDbDataParameter)
 				{
 					var endOfSize = il.DefineLabel();
 
@@ -417,7 +417,7 @@ namespace Insight.Database.CodeGenerator
 					// parameter.setsize = string.length
 					il.Emit(OpCodes.Dup);
 					il.Emit(OpCodes.Ldloc, stringLength);
-					il.Emit(OpCodes.Callvirt, _iDataParameterSetSize);
+					il.Emit(OpCodes.Callvirt, _iDbDataParameterSetSize);
 
 					il.MarkLabel(endOfSize);
 				}
