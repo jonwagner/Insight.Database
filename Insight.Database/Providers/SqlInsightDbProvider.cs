@@ -150,9 +150,13 @@ namespace Insight.Database.Providers
 		/// </summary>
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
+		/// <param name="listType">The type of object being stored in the table.</param>
 		/// <returns>The name of the table parameter.</returns>
 		public override string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
 		{
+			if (parameter == null) throw new ArgumentNullException("parameter");
+			if (listType == null) throw new ArgumentNullException("listType");
+
 			SqlParameter p = parameter as SqlParameter;
 
 			if (String.IsNullOrEmpty(p.TypeName))

@@ -98,6 +98,8 @@ namespace Insight.Database.Providers
 		/// <returns>The list of parameters for the command.</returns>
 		public virtual IList<IDataParameter> DeriveParameters(IDbCommand command)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
 			// we only support pure text
 			if (command.CommandType != System.Data.CommandType.Text)
 				throw new NotImplementedException();
@@ -159,6 +161,7 @@ namespace Insight.Database.Providers
 		/// </summary>
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
+		/// <param name="listType">The type of object being stored in the table.</param>
 		/// <returns>The name of the table parameter.</returns>
 		public virtual string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
 		{

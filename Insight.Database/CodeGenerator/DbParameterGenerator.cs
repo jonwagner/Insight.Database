@@ -209,6 +209,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ldsfld, parameterTemplateField);
 			il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("CopyParameters", BindingFlags.Static | BindingFlags.NonPublic));
+
 			// stack => [parameters]
 
 			// go through all of the mappings
@@ -663,7 +664,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="dbType">The dbType to test.</param>
 		/// <returns>True if the type is a string type.</returns>
-		internal static bool IsDbTypeAString(DbType dbType)
+		private static bool IsDbTypeAString(DbType dbType)
 		{
 			switch (dbType)
 			{
@@ -698,6 +699,7 @@ namespace Insight.Database.CodeGenerator
 			/// <summary>
 			/// Converts an IEnumerable to a list of parameters, and updates the SQL command to support them.
 			/// </summary>
+			/// <param name="parameter">The parameter to modify.</param>
 			/// <param name="value">The value of the parameter.</param>
 			/// <param name="command">The command to add to.</param>
 			internal static void AddListParameter(IDataParameter parameter, object value, IDbCommand command)
@@ -714,6 +716,7 @@ namespace Insight.Database.CodeGenerator
 					if (listType.IsGenericType)
 						listType = listType.GetGenericArguments()[0];
 				}
+
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;
 
 				if (command.CommandType == CommandType.Text && (listType.IsValueType || listType == typeof(string)))
@@ -725,9 +728,10 @@ namespace Insight.Database.CodeGenerator
 			/// <summary>
 			/// Add strings and value parameters (non-table-types).
 			/// </summary>
-			/// <param name="command">The command to add parameters to.</param>
-			/// <param name="parameterName">The name of the parameter.</param>
+			/// <param name="parameter">The parameter to modify.</param>
 			/// <param name="list">The list of objects to add.</param>
+			/// <param name="command">The command to add parameters to.</param>
+			[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
 			private static void AddListParameterByValue(IDataParameter parameter, IEnumerable list, IDbCommand command)
 			{
 				// we are going to replace the current parameter with a list of new parameters
@@ -787,11 +791,10 @@ namespace Insight.Database.CodeGenerator
 			/// <summary>
 			/// Add a list of objects as a table-valued parameter.
 			/// </summary>
+			/// <param name="parameter">The parameter to modify.</param>
+			/// <param name="list">The list to add to the parameter.</param>
 			/// <param name="command">The command to add parameters to.</param>
-			/// <param name="parameterName">The name of the parameter.</param>
-			/// <param name="tableTypeName">The name of the table type or null to assume TypeTable.</param>
 			/// <param name="listType">The type that the list contains.</param>
-			/// <param name="list">The list of objects.</param>
 			private static void AddListParameterByClass(IDataParameter parameter, IEnumerable list, IDbCommand command, Type listType)
 			{
 				var provider = InsightDbProvider.For(command);
