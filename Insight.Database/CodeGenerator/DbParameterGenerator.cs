@@ -187,7 +187,7 @@ namespace Insight.Database.CodeGenerator
 				return (IDbCommand cmd, object o) => 
 				{
 					CopyParameters(cmd, parameters);
-					var tableParameter = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
+					var tableParameter = cmd.Parameters.OfType<IDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
 					ListParameterHelper.AddListParameter(tableParameter, o, cmd);
 				};
 			}
@@ -461,13 +461,17 @@ namespace Insight.Database.CodeGenerator
 					p.Value = value;
 
 					// if it's a string, fill in the length
-					string s = value as string;
-					if (s != null)
+					IDbDataParameter dbDataParameter = p as IDbDataParameter;
+					if (dbDataParameter != null)
 					{
-						int length = s.Length;
-						if (length > 4000)
-							length = -1;
-						p.Size = length;
+						string s = value as string;
+						if (s != null)
+						{
+							int length = s.Length;
+							if (length > 4000)
+								length = -1;
+							dbDataParameter.Size = length;
+						}
 					}
 
 					cmd.Parameters.Add(p);
@@ -480,7 +484,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="parameters">The parameter template to store.</param>
 		/// <returns>A FieldInfo that can be used to get the parameter list later.</returns>
-		static FieldInfo CreateParameterTemplateStorage(IList<IDbDataParameter> parameters)
+		static FieldInfo CreateParameterTemplateStorage(IList<IDataParameter> parameters)
 		{
 			// create a new assembly
 			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
@@ -489,7 +493,7 @@ namespace Insight.Database.CodeGenerator
 
 			// create a type based on DbConnectionWrapper and call the default constructor
 			TypeBuilder tb = mb.DefineType(Guid.NewGuid().ToString());
-			tb.DefineField("_parameters", typeof(IList<IDbDataParameter>), FieldAttributes.Static | FieldAttributes.Private);
+			tb.DefineField("_parameters", typeof(IList<IDataParameter>), FieldAttributes.Static | FieldAttributes.Private);
 			Type t = tb.CreateType();
 
 			var field = t.GetField("_parameters", BindingFlags.Static | BindingFlags.NonPublic);
@@ -507,7 +511,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="parameters">The parameter template to use.</param>
 		/// <returns>The parameters collection.</returns>
 		/// <remarks>The parameters collection is returned so the IL routine can use it directly.</remarks>
-		static IDataParameterCollection CopyParameters(IDbCommand command, IList<IDbDataParameter> parameters)
+		static IDataParameterCollection CopyParameters(IDbCommand command, IList<IDataParameter> parameters)
 		{
 			var provider = InsightDbProvider.For(command);
 
@@ -534,14 +538,18 @@ namespace Insight.Database.CodeGenerator
 			// set the size on any unset string parameters to -1 to make them valid
 			for (int i = parameters.Count - 1; i >= 0; i--)
 			{
-				var p = (IDbDataParameter)parameters[i];
+				var p = (IDataParameter)parameters[i];
 				if (p.Value != null)
 					continue;
 
 				if (p.Direction == ParameterDirection.Input)
 					parameters.RemoveAt(i);
-				else if (IsDbTypeAString(p.DbType))
-					p.Size = -1;
+				else
+				{
+					IDbDataParameter dbDataParameter = p as IDbDataParameter;
+					if (dbDataParameter != null && IsDbTypeAString(dbDataParameter.DbType))
+						dbDataParameter.Size = -1;
+				}
 			}
 		}
 		#endregion
@@ -789,7 +797,7 @@ namespace Insight.Database.CodeGenerator
 				var provider = InsightDbProvider.For(command);
 
 				// if the table type name is null, then default to the name of the class
-				string tableTypeName = provider.GetTableParameterTypeName(command, parameter as IDbDataParameter);
+				string tableTypeName = provider.GetTableParameterTypeName(command, parameter);
 				if (String.IsNullOrWhiteSpace(tableTypeName))
 					tableTypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
 

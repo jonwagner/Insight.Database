@@ -57,7 +57,7 @@ namespace Insight.Database.Providers
 		/// </summary>
 		/// <param name="command">The command to use.</param>
 		/// <returns>The list of parameters for the command.</returns>
-		public override IList<IDbDataParameter> DeriveParameters(IDbCommand command)
+		public override IList<IDataParameter> DeriveParameters(IDbCommand command)
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
@@ -80,7 +80,7 @@ namespace Insight.Database.Providers
 				CommandBehavior.Default);
 
 			// make the list of parameters
-			List<IDbDataParameter> parameters = command.Parameters.Cast<IDbDataParameter>().ToList();
+			List<IDataParameter> parameters = command.Parameters.Cast<IDataParameter>().ToList();
 			foreach (var p in parameters.OfType<SqlParameter>())
 			{
 				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant();
@@ -104,7 +104,7 @@ namespace Insight.Database.Providers
 		/// <param name="command">The command to use.</param>
 		/// <param name="parameter">The parameter to clone.</param>
 		/// <returns>The clone.</returns>
-		public override IDbDataParameter CloneParameter(IDbCommand command, IDbDataParameter parameter)
+		public override IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
 		{
 			SqlParameter p = base.CloneParameter(command, parameter) as SqlParameter;
 
@@ -125,7 +125,7 @@ namespace Insight.Database.Providers
 		/// <param name="parameterName">The name of the parameter.</param>
 		/// <param name="tableTypeName">The name of the table type.</param>
 		/// <returns>An initialized parameter for the table.</returns>
-		public override IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
+		public override IDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
 		{
 			SqlCommand sqlCommand = command as SqlCommand;
 
@@ -160,7 +160,7 @@ namespace Insight.Database.Providers
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <returns>True if the parameter is a table-valued parameter.</returns>
-		public override bool IsTableValuedParameter(IDbCommand command, IDbDataParameter parameter)
+		public override bool IsTableValuedParameter(IDbCommand command, IDataParameter parameter)
 		{
 			SqlParameter p = parameter as SqlParameter;
 			return p.SqlDbType == SqlDbType.Structured;
@@ -172,7 +172,7 @@ namespace Insight.Database.Providers
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <returns>The name of the table parameter.</returns>
-		public override string GetTableParameterTypeName(IDbCommand command, IDbDataParameter parameter)
+		public override string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter)
 		{
 			SqlParameter p = parameter as SqlParameter;
 

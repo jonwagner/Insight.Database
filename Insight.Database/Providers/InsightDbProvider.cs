@@ -96,7 +96,7 @@ namespace Insight.Database.Providers
 		/// </summary>
 		/// <param name="command">The command to use.</param>
 		/// <returns>The list of parameters for the command.</returns>
-		public virtual IList<IDbDataParameter> DeriveParameters(IDbCommand command)
+		public virtual IList<IDataParameter> DeriveParameters(IDbCommand command)
 		{
 			// we only support pure text
 			if (command.CommandType != System.Data.CommandType.Text)
@@ -108,7 +108,7 @@ namespace Insight.Database.Providers
 				.Distinct()
 				.Select(p =>
 				{
-					var dbParameter = command.CreateParameter();
+					var dbParameter = (IDataParameter)command.CreateParameter();
 					dbParameter.ParameterName = p;
 					return dbParameter;
 				})
@@ -121,12 +121,12 @@ namespace Insight.Database.Providers
 		/// <param name="command">The command to use.</param>
 		/// <param name="parameter">The parameter to clone.</param>
 		/// <returns>The clone.</returns>
-		public virtual IDbDataParameter CloneParameter(IDbCommand command, IDbDataParameter parameter)
+		public virtual IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
 		{
 			if (command == null) throw new ArgumentNullException("command");
 			if (parameter == null) throw new ArgumentNullException("parameter");
 
-			IDbDataParameter p = command.CreateParameter();
+			IDataParameter p = command.CreateParameter();
 			p.ParameterName = parameter.ParameterName;
 			p.DbType = parameter.DbType;
 			p.Direction = parameter.Direction;
@@ -141,7 +141,7 @@ namespace Insight.Database.Providers
 		/// <param name="parameterName">The name of the parameter.</param>
 		/// <param name="tableTypeName">The name of the table type.</param>
 		/// <returns>An initialized parameter for the table.</returns>
-		public virtual IDbDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
+		public virtual IDataParameter CreateTableValuedParameter(IDbCommand command, string parameterName, string tableTypeName)
 		{
 			throw new NotImplementedException();
 		}
@@ -164,7 +164,7 @@ namespace Insight.Database.Providers
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <returns>True if the parameter is a table-valued parameter.</returns>
-		public virtual bool IsTableValuedParameter(IDbCommand command, IDbDataParameter parameter)
+		public virtual bool IsTableValuedParameter(IDbCommand command, IDataParameter parameter)
 		{
 			return false;
 		}
@@ -175,7 +175,7 @@ namespace Insight.Database.Providers
 		/// <param name="command">The related command object.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <returns>The name of the table parameter.</returns>
-		public virtual string GetTableParameterTypeName(IDbCommand command, IDbDataParameter parameter)
+		public virtual string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter)
 		{
 			return null;
 		}

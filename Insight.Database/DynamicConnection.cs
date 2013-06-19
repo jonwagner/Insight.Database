@@ -57,7 +57,7 @@ namespace Insight.Database
 		/// <summary>
 		/// The internal cache for parameters to stored procedures.
 		/// </summary>
-		private ConcurrentDictionary<string, List<IDbDataParameter>> _parameters = new ConcurrentDictionary<string, List<IDbDataParameter>>();
+		private ConcurrentDictionary<string, List<IDataParameter>> _parameters = new ConcurrentDictionary<string, List<IDataParameter>>();
 
 		/// <summary>
 		/// The connection to use to connect to the database.
@@ -191,13 +191,9 @@ namespace Insight.Database
 					DeriveParameters(cmd);
 
 					// look at the unnamed parameters first. we will add them by position.
-					var inputParameters = cmd.Parameters.OfType<IDbDataParameter>().Where(p => p.Direction.HasFlag(ParameterDirection.Input)).ToList();
+					var inputParameters = cmd.Parameters.OfType<IDataParameter>().Where(p => p.Direction.HasFlag(ParameterDirection.Input)).ToList();
 					for (int i = 0; i < unnamedParameterCount; i++)
-					{
-						// add the unnamed parameters by index
-						IDbDataParameter p = (IDbDataParameter)inputParameters[i];
-						p.Value = args[i];
-					}
+						inputParameters[i].Value = args[i];
 
 					// go through all of the named arguments next. Note that they may overwrite indexed parameters.
 					for (int i = unnamedParameterCount; i < callInfo.ArgumentNames.Count; i++)
@@ -213,13 +209,13 @@ namespace Insight.Database
 							argumentName == "withGraphs")
 							continue;
 
-						IDbDataParameter p = cmd.Parameters.OfType<IDbDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, argumentName, StringComparison.OrdinalIgnoreCase));
+						IDataParameter p = cmd.Parameters.OfType<IDataParameter>().FirstOrDefault(parameter => String.Equals(parameter.ParameterName, argumentName, StringComparison.OrdinalIgnoreCase));
 						p.Value = args[i];
 					}
 
 					// special handling for table parameters
 					var provider = InsightDbProvider.For(cmd);
-					foreach (var p in cmd.Parameters.OfType<IDbDataParameter>().Where(p => provider.IsTableValuedParameter(cmd, p)).ToList())
+					foreach (var p in cmd.Parameters.OfType<IDataParameter>().Where(p => provider.IsTableValuedParameter(cmd, p)).ToList())
 					{
 						// if any parameters are missing table parameters, then alert the developer
 						if (p.Value == null)
@@ -355,7 +351,7 @@ namespace Insight.Database
 				name => provider.DeriveParameters(cmd).ToList());
 
 			// copy the parameter list
-			foreach (IDbDataParameter parameter in parameterList)
+			foreach (IDataParameter parameter in parameterList)
 				cmd.Parameters.Add(provider.CloneParameter(cmd, parameter));
 		}
 		#endregion

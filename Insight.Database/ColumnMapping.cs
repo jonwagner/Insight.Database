@@ -217,7 +217,7 @@ namespace Insight.Database
 		/// <param name="columnCount">The number of columns to map.</param>
 		/// <param name="uniqueMatches">True to only return the first match per field, false to return all matches per field.</param>
 		/// <returns>An array of setters.</returns>
-		internal ClassPropInfo[] CreateMapping(Type type, IDataReader reader, string commandText, CommandType? commandType, IList<IDbDataParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
+		internal ClassPropInfo[] CreateMapping(Type type, IDataReader reader, string commandText, CommandType? commandType, IList<IDataParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
 		{
 			ClassPropInfo[] mapping = new ClassPropInfo[columnCount];
 

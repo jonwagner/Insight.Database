@@ -50,9 +50,13 @@ namespace Insight.Database.Providers
 		/// </summary>
 		/// <param name="command">The command to use.</param>
 		/// <returns>The list of parameters for the command.</returns>
-		public override IList<IDbDataParameter> DeriveParameters(IDbCommand command)
+		public override IList<IDataParameter> DeriveParameters(IDbCommand command)
 		{
 			if (command == null) throw new ArgumentNullException("command");
+
+			// we only support stored procedures
+			if (command.CommandType != System.Data.CommandType.StoredProcedure)
+				return base.DeriveParameters(command);
 
 			var connection = command.Connection;
 			bool autoClose = false;
@@ -74,7 +78,7 @@ namespace Insight.Database.Providers
 			}
 
 			// make the list of parameters
-			List<IDbDataParameter> parameters = command.Parameters.Cast<IDbDataParameter>().ToList();
+			List<IDataParameter> parameters = command.Parameters.Cast<IDataParameter>().ToList();
 
 			// clear the list so we can re-add them
 			command.Parameters.Clear();
