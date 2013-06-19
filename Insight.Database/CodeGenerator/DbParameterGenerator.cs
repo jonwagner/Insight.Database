@@ -559,6 +559,8 @@ namespace Insight.Database.CodeGenerator
 			for (int i = parameters.Count - 1; i >= 0; i--)
 			{
 				var p = (IDbDataParameter)parameters[i];
+				if (p.Value != null)
+					continue;
 
 				if (p.Direction == ParameterDirection.Input)
 					parameters.RemoveAt(i);
