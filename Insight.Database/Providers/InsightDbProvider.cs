@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Insight.Database.CodeGenerator;
 
 namespace Insight.Database.Providers
 {
@@ -137,9 +138,13 @@ namespace Insight.Database.Providers
 			if (dp != null)
 			{
 				IDbDataParameter dbParameter = parameter as IDbDataParameter;
-				dp.Size = dbParameter.Size;
 				dp.Scale = dbParameter.Scale;
 				dp.Precision = dbParameter.Precision;
+
+				if (dbParameter.Direction != ParameterDirection.Input && TypeHelper.IsDbTypeAString(dbParameter.DbType))
+					dp.Size = -1;
+				else
+					dp.Size = dbParameter.Size;
 			}
 
 			return p;
@@ -194,6 +199,20 @@ namespace Insight.Database.Providers
 				throw new NotImplementedException("No Insight.Database provider supports the given type of command.");
 
 			return provider;
+		}
+
+		/// <summary>
+		/// Copies a single parameter by index and adds it to the command.
+		/// </summary>
+		/// <param name="command">The command to copy into.</param>
+		/// <param name="parameters">The parameter template to copy from.</param>
+		/// <param name="index">The index of the parameter to copy.</param>
+		/// <returns>The new parameter.</returns>
+		internal IDataParameter CopyParameter(IDbCommand command, IList<IDataParameter> parameters, int index)
+		{
+			var p = CloneParameter(command, parameters[index]);
+			command.Parameters.Add(p);
+			return p;
 		}
 	}
 }

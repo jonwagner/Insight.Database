@@ -186,14 +186,14 @@ namespace Insight.Database.CodeGenerator
 			{
 				return (IDbCommand cmd, object o) => 
 				{
-					CopyParameters(cmd, parameters);
-					var tableParameter = cmd.Parameters.OfType<IDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p));
+					var tableParameter = provider.CloneParameter(cmd, parameters.OfType<IDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p)));
+					cmd.Parameters.Add(tableParameter);
 					ListParameterHelper.AddListParameter(tableParameter, o, cmd);
 				};
 			}
 
 			// store the list of parameters in the static field of a class so we don't have to call the server again
-			var parameterTemplateField = CreateParameterTemplateStorage(parameters);
+			var parameterTemplate = new ParameterTemplateStorage(provider, parameters);
 
 			// get the mapping of the properties for the type
 			var mapping = ColumnMapping.Parameters.CreateMapping(type, null, command.CommandText, command.CommandType, parameters, 0, parameters.Count, true);
@@ -205,26 +205,35 @@ namespace Insight.Database.CodeGenerator
 
 			var stringLength = il.DeclareLocal(typeof(Int32));
 
-			// copy the parameters into the command object, returning the parameters list
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Ldsfld, parameterTemplateField);
-			il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("CopyParameters", BindingFlags.Static | BindingFlags.NonPublic));
-
-			// stack => [parameters]
-
 			// go through all of the mappings
 			for (int i = 0; i < mapping.Length; i++)
 			{
 				var prop = mapping[i];
 				var dbParameter = parameters[i];
 
-				// if there is no mapping for that parameter, then continue
+				// if there is no mapping for the parameter
 				if (prop == null)
 				{
 					// sql will silently eat table parameters that are not specified, and that can be difficult to debug
 					if (provider.IsTableValuedParameter(command, dbParameter))
 						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", dbParameter.ParameterName));
 
+					// unspecified input parameters get skipped
+					if (dbParameter.Direction == ParameterDirection.Input)
+						continue;
+				}
+
+				// copy the parameters into the command object, returning the parameters list
+				il.Emit(OpCodes.Ldsfld, parameterTemplate.ProviderField);
+				il.Emit(OpCodes.Ldarg_0);
+				il.Emit(OpCodes.Ldsfld, parameterTemplate.ParameterField);
+				il.Emit(OpCodes.Ldc_I4, i);
+				il.Emit(OpCodes.Call, typeof(InsightDbProvider).GetMethod("CopyParameter", BindingFlags.NonPublic | BindingFlags.Instance));
+
+				// if we made it this far and prop is null, then we have an output parameter that we should just leave alone
+				if (prop == null)
+				{
+					il.Emit(OpCodes.Pop);
 					continue;
 				}
 
@@ -232,14 +241,8 @@ namespace Insight.Database.CodeGenerator
 				DbType sqlType = LookupDbType(prop.MemberType, dbParameter.DbType);
 
 				///////////////////////////////////////////////////////////////
-				// Start handling all of the other types
+				// We have a parameter, start handling all of the other types
 				///////////////////////////////////////////////////////////////
-
-				// convert the parameters list to the parameter at the current index
-				il.Emit(OpCodes.Dup);
-				il.Emit(OpCodes.Ldc_I4, i);
-				il.Emit(OpCodes.Call, typeof(IList).GetProperty("Item").GetGetMethod());
-				il.Emit(OpCodes.Castclass, typeof(IDataParameter));
 
 				// duplicate the parameter so we can call setvalue later
 				il.Emit(OpCodes.Dup);
@@ -303,7 +306,7 @@ namespace Insight.Database.CodeGenerator
 					///////////////////////////////////////////////////////////////
 					// if this is a string, set the local length variable to 0
 					///////////////////////////////////////////////////////////////
-					if (IsDbTypeAString(sqlType))
+					if (TypeHelper.IsDbTypeAString(sqlType))
 					{
 						IlHelper.EmitLdInt32(il, 0);
 						il.Emit(OpCodes.Stloc, stringLength);
@@ -406,7 +409,7 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// p.Size = string.length
 				///////////////////////////////////////////////////////////////
-				if (IsDbTypeAString(sqlType) && dbParameter is IDbDataParameter)
+				if (TypeHelper.IsDbTypeAString(sqlType) && dbParameter is IDbDataParameter)
 				{
 					var endOfSize = il.DefineLabel();
 
@@ -424,9 +427,6 @@ namespace Insight.Database.CodeGenerator
 
 				il.Emit(OpCodes.Pop);					// pop (parameter)
 			}
-
-			// clean up any parameters that were not set
-			il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("CleanParameters", BindingFlags.Static | BindingFlags.NonPublic));
 
 			il.Emit(OpCodes.Ret);
 
@@ -478,80 +478,6 @@ namespace Insight.Database.CodeGenerator
 					cmd.Parameters.Add(p);
 				}
 			};
-		}
-
-		/// <summary>
-		/// Stores a parameter template in the static field of a hidden class so we can use it in our reader.
-		/// </summary>
-		/// <param name="parameters">The parameter template to store.</param>
-		/// <returns>A FieldInfo that can be used to get the parameter list later.</returns>
-		static FieldInfo CreateParameterTemplateStorage(IList<IDataParameter> parameters)
-		{
-			// create a new assembly
-			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
-
-			// create a type based on DbConnectionWrapper and call the default constructor
-			TypeBuilder tb = mb.DefineType(Guid.NewGuid().ToString());
-			tb.DefineField("_parameters", typeof(IList<IDataParameter>), FieldAttributes.Static | FieldAttributes.Private);
-			Type t = tb.CreateType();
-
-			var field = t.GetField("_parameters", BindingFlags.Static | BindingFlags.NonPublic);
-			field.SetValue(null, parameters);
-
-			return field;
-		}
-		#endregion
-
-		#region Parameter Members
-		/// <summary>
-		/// Copies a parameter template into a command.
-		/// </summary>
-		/// <param name="command">The command to add to.</param>
-		/// <param name="parameters">The parameter template to use.</param>
-		/// <returns>The parameters collection.</returns>
-		/// <remarks>The parameters collection is returned so the IL routine can use it directly.</remarks>
-		static IDataParameterCollection CopyParameters(IDbCommand command, IList<IDataParameter> parameters)
-		{
-			var provider = InsightDbProvider.For(command);
-
-			var commandParameters = command.Parameters;
-
-			foreach (var p in parameters)
-				commandParameters.Add(provider.CloneParameter(command, p));
-
-			return commandParameters;
-		}
-
-		/// <summary>
-		/// Cleans up the parameter list after values have been set.
-		/// </summary>
-		/// <param name="parameters">The parameter list to clean.</param>
-		/// <remarks>
-		/// If no mapping was detected between a parameter and field, then Value will be null (not DbNull).
-		/// This means the code did not intend to send the parameter.
-		/// </remarks>
-		static void CleanParameters(IDataParameterCollection parameters)
-		{
-			// remove any input parameters that were not set
-			// for output parameters, we have to keep them, but
-			// set the size on any unset string parameters to -1 to make them valid
-			for (int i = parameters.Count - 1; i >= 0; i--)
-			{
-				var p = (IDataParameter)parameters[i];
-				if (p.Value != null)
-					continue;
-
-				if (p.Direction == ParameterDirection.Input)
-					parameters.RemoveAt(i);
-				else
-				{
-					IDbDataParameter dbDataParameter = p as IDbDataParameter;
-					if (dbDataParameter != null && IsDbTypeAString(dbDataParameter.DbType))
-						dbDataParameter.Size = -1;
-				}
-			}
 		}
 		#endregion
 
@@ -657,26 +583,6 @@ namespace Insight.Database.CodeGenerator
 
 			// let's see if the type can be directly converted to the parameter type
 			return parameterType;
-		}
-
-		/// <summary>
-		/// Determines if a given DbType represents a string.
-		/// </summary>
-		/// <param name="dbType">The dbType to test.</param>
-		/// <returns>True if the type is a string type.</returns>
-		private static bool IsDbTypeAString(DbType dbType)
-		{
-			switch (dbType)
-			{
-				case DbType.AnsiString:
-				case DbType.AnsiStringFixedLength:
-				case DbType.String:
-				case DbType.StringFixedLength:
-					return true;
-
-				default:
-					return false;
-			}
 		}
 		#endregion
 
@@ -819,6 +725,44 @@ namespace Insight.Database.CodeGenerator
 				// create the structured parameter
 				parameter.Value = new ObjectListDbDataReader(objectReader, list as IEnumerable);
 			}
+		}
+		#endregion
+
+		#region ParameterTemplateStorage Class
+		/// <summary>
+		/// Allows storage of the information needed to copy a parameter template.
+		/// </summary>
+		/// <remarks>
+		/// We store the information in the static fields of a class because it is easy to access them
+		/// in the IL of a DynamicMethod.
+		/// We can't use this class for the mapper code because we require a DynamicMethod to access private methods.
+		/// I suppose that we could just use DynamicMethod for prop.EmitGetValue/SetValue, but that is a refactor for another day.
+		/// </remarks>
+		class ParameterTemplateStorage
+		{
+			public ParameterTemplateStorage(InsightDbProvider provider, IList<IDataParameter> parameters)
+			{
+				// create a new assembly
+				AssemblyName an = Assembly.GetExecutingAssembly().GetName();
+				AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+				ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
+
+				// create a type based on DbConnectionWrapper and call the default constructor
+				TypeBuilder tb = mb.DefineType(Guid.NewGuid().ToString());
+				tb.DefineField("_provider", typeof(InsightDbProvider), FieldAttributes.Static | FieldAttributes.Private);
+				tb.DefineField("_parameters", typeof(IList<IDataParameter>), FieldAttributes.Static | FieldAttributes.Private);
+				Type t = tb.CreateType();
+
+				ProviderField = t.GetField("_provider", BindingFlags.Static | BindingFlags.NonPublic);
+				ProviderField.SetValue(null, provider);
+
+				ParameterField = t.GetField("_parameters", BindingFlags.Static | BindingFlags.NonPublic);
+				ParameterField.SetValue(null, parameters);
+			}
+
+			public FieldInfo ParameterField { get; private set; }
+
+			public FieldInfo ProviderField { get; private set; }
 		}
 		#endregion
 	}

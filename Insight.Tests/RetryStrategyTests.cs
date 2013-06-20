@@ -158,9 +158,9 @@ namespace Insight.Tests
 
 				using (IDbTransaction t = retry.BeginTransaction())
 				{
-					retry.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
+					retry.ExecuteSql("CREATE PROC ReliableInsightTestProc (@Value int = 5) AS SELECT Value=@Value", transaction: t);
 
-					int result = retry.Query<int>("InsightTestProc", new { Value = 1 }, transaction: t).First();
+					int result = retry.Query<int>("ReliableInsightTestProc", new { Value = 1 }, transaction: t).First();
 
 					Assert.AreEqual(1, result);
 				}

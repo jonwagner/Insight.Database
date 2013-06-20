@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -50,6 +51,26 @@ namespace Insight.Database.CodeGenerator
 
 			// all of the primitive types, array, etc. are atomic
 			return type.IsPrimitive;
+		}
+
+		/// <summary>
+		/// Determines if a given DbType represents a string.
+		/// </summary>
+		/// <param name="dbType">The dbType to test.</param>
+		/// <returns>True if the type is a string type.</returns>
+		public static bool IsDbTypeAString(DbType dbType)
+		{
+			switch (dbType)
+			{
+				case DbType.AnsiString:
+				case DbType.AnsiStringFixedLength:
+				case DbType.String:
+				case DbType.StringFixedLength:
+					return true;
+
+				default:
+					return false;
+			}
 		}
 
 		#region Xml Serialization Helpers
