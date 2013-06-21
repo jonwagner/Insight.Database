@@ -101,21 +101,26 @@ namespace Insight.Database.Providers
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
-			// we only support pure text
-			if (command.CommandType != System.Data.CommandType.Text)
-				throw new NotImplementedException();
-
-			return _parameterRegex.Matches(command.CommandText)
-				.Cast<Match>()
-				.Select(m => m.Groups[1].Value.ToUpperInvariant())
-				.Distinct()
-				.Select(p =>
+			// call the server to get the parameters
+			command.Connection.ExecuteAndAutoClose(
+				_ => 
 				{
-					var dbParameter = (IDataParameter)command.CreateParameter();
-					dbParameter.ParameterName = p;
-					return dbParameter;
-				})
-				.ToList();
+					if (command.CommandType == System.Data.CommandType.Text)
+						DeriveParametersFromSqlText(command);
+					else if (command.CommandType == System.Data.CommandType.StoredProcedure)
+						DeriveParametersFromStoredProcedure(command);
+					else
+						throw new InvalidOperationException("Cannot derive parameters from this command");
+
+					return null;
+				},
+				(_, __) => false,
+				CommandBehavior.Default);
+
+			// remove the parameters from the command so they are unbound from it
+			var parameters = command.Parameters.Cast<IDataParameter>().ToList();
+			command.Parameters.Clear();
+			return parameters;
 		}
 
 		/// <summary>
@@ -213,6 +218,36 @@ namespace Insight.Database.Providers
 			var p = CloneParameter(command, parameters[index]);
 			command.Parameters.Add(p);
 			return p;
+		}
+
+		/// <summary>
+		/// Derives the parameter list from a stored procedure command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		protected virtual void DeriveParametersFromStoredProcedure(IDbCommand command)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Derives the parameter list from a sql text command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		protected virtual void DeriveParametersFromSqlText(IDbCommand command)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+
+			foreach (var p in _parameterRegex.Matches(command.CommandText)
+				.Cast<Match>()
+				.Select(m => m.Groups[1].Value.ToUpperInvariant())
+				.Distinct()
+				.Select(p =>
+				{
+					var dbParameter = (IDataParameter)command.CreateParameter();
+					dbParameter.ParameterName = p;
+					return dbParameter;
+				}))
+				command.Parameters.Add(p);
 		}
 	}
 }

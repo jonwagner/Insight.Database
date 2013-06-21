@@ -53,52 +53,6 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Derives the parameter list for a given command.
-		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <returns>The list of parameters for the command.</returns>
-		public override IList<IDataParameter> DeriveParameters(IDbCommand command)
-		{
-			if (command == null) throw new ArgumentNullException("command");
-
-			// we only know how to do stored procedures
-			if (command.CommandType != System.Data.CommandType.StoredProcedure)
-				return base.DeriveParameters(command);
-
-			SqlCommand sqlCommand = command as SqlCommand;
-
-			// call the server to get the parameters
-			command.Connection.ExecuteAndAutoClose(
-				_ =>
-				{
-					SqlCommandBuilder.DeriveParameters(sqlCommand);
-					CheckForMissingParameters(sqlCommand);
-
-					return null;
-				},
-				(_, __) => false,
-				CommandBehavior.Default);
-
-			// make the list of parameters
-			List<IDataParameter> parameters = command.Parameters.Cast<IDataParameter>().ToList();
-			foreach (var p in parameters.OfType<SqlParameter>())
-			{
-				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant();
-
-				// trim any prefixes from type names
-				string tableTypeName = p.TypeName;
-				if (tableTypeName.Count(c => c == '.') > 1)
-					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
-				p.TypeName = tableTypeName;
-			}
-
-			// clear the list so we can re-add them
-			command.Parameters.Clear();
-
-			return parameters;
-		}
-
-		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
@@ -166,6 +120,31 @@ namespace Insight.Database.Providers
 			}
 
 			return p.TypeName;
+		}
+
+		/// <summary>
+		/// Derives the parameter list from a stored procedure command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		protected override void DeriveParametersFromStoredProcedure(IDbCommand command)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+
+			SqlCommand sqlCommand = command as SqlCommand;
+			SqlCommandBuilder.DeriveParameters(sqlCommand);
+			CheckForMissingParameters(sqlCommand);
+
+			foreach (var p in command.Parameters.OfType<SqlParameter>())
+			{
+				// remove the @ from any parameters
+				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant();
+
+				// trim any prefixes from type names
+				string tableTypeName = p.TypeName;
+				if (tableTypeName.Count(c => c == '.') > 1)
+					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
+				p.TypeName = tableTypeName;
+			}
 		}
 
 		/// <summary>

@@ -44,5 +44,14 @@ namespace Insight.Database.Providers
 		{
 			return new OdbcConnection();
 		}
+
+		/// <summary>
+		/// Derives the parameter list from a stored procedure command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		protected override void DeriveParametersFromStoredProcedure(IDbCommand command)
+		{
+			OdbcCommandBuilder.DeriveParameters(command as OdbcCommand);
+		}
 	}
 }

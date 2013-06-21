@@ -46,44 +46,12 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Derives the parameter list for a given command.
+		/// Derives the parameter list from a stored procedure command.
 		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <returns>The list of parameters for the command.</returns>
-		public override IList<IDataParameter> DeriveParameters(IDbCommand command)
+		/// <param name="command">The command to derive.</param>
+		protected override void DeriveParametersFromStoredProcedure(IDbCommand command)
 		{
-			if (command == null) throw new ArgumentNullException("command");
-
-			// we only support stored procedures
-			if (command.CommandType != System.Data.CommandType.StoredProcedure)
-				return base.DeriveParameters(command);
-
-			var connection = command.Connection;
-			bool autoClose = false;
-
-			try
-			{
-				if (connection.State != ConnectionState.Open)
-				{
-					autoClose = true;
-					connection.Open();
-				}
-
-				OracleCommandBuilder.DeriveParameters(command as OracleCommand);
-			}
-			finally
-			{
-				if (autoClose)
-					connection.Close();
-			}
-
-			// make the list of parameters
-			List<IDataParameter> parameters = command.Parameters.Cast<IDataParameter>().ToList();
-
-			// clear the list so we can re-add them
-			command.Parameters.Clear();
-
-			return parameters;
+			OracleCommandBuilder.DeriveParameters(command as OracleCommand);
 		}
 	}
 }
