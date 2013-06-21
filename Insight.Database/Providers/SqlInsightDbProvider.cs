@@ -60,9 +60,9 @@ namespace Insight.Database.Providers
 		/// <returns>The clone.</returns>
 		public override IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
 		{
-			SqlParameter p = base.CloneParameter(command, parameter) as SqlParameter;
+			SqlParameter p = (SqlParameter)base.CloneParameter(command, parameter);
 
-			SqlParameter template = parameter as SqlParameter;
+			SqlParameter template = (SqlParameter)parameter;
 			p.SqlDbType = template.SqlDbType;
 			p.TypeName = template.TypeName;
 			p.UdtTypeName = template.UdtTypeName;

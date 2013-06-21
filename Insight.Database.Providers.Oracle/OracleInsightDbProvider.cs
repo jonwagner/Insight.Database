@@ -46,6 +46,19 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Clones a parameter so that it can be used with another command.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="parameter">The parameter to clone.</param>
+		/// <returns>The clone.</returns>
+		public override IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
+		{
+			// thank you, oracle
+			OracleParameter p = (OracleParameter)parameter;
+			return (IDataParameter)p.Clone();
+		}
+
+		/// <summary>
 		/// Derives the parameter list from a stored procedure command.
 		/// </summary>
 		/// <param name="command">The command to derive.</param>

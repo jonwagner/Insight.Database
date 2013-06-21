@@ -37,8 +37,24 @@ namespace Insight.Tests.Oracle
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE PROCEDURE OracleTestProc (i int) IS BEGIN null; END;");
-				_connection.Execute("OracleTestProc", new { i = 5 });
+				_connection.ExecuteSql("CREATE PROCEDURE OracleTestExecute (i int) IS BEGIN null; END;");
+				var result = _connection.Execute("OracleTestExecute", new { i = 5 });
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP PROCEDURE OracleTestExecute");
+			}
+		}
+
+		[Test]
+		public void TestQueryProcedure()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE PROCEDURE OracleTestProc (i int, r out sys_refcursor) IS BEGIN open r for select i as p from dual; END;");
+				var result = _connection.Query<decimal>("OracleTestProc", new { i = 5 });
+				Assert.AreEqual(1, result.Count);
+				Assert.AreEqual(5, result[0]);
 			}
 			finally
 			{
