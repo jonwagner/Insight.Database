@@ -372,7 +372,7 @@ namespace Insight.Database.CodeGenerator
 				else if (!TypeHelper.IsAtomicType(prop.MemberType))
 				{
 					// NOTE: at this point we know it's an object and the object reference is not null
-					if (dbParameter.DbType == DbType.Xml)
+					if (provider.IsXmlParameter(command, dbParameter))
 					{
 						// we have an object and it is expecting an xml parameter. let's serialize the object.
 						il.EmitLoadType(prop.MemberType);
@@ -671,7 +671,8 @@ namespace Insight.Database.CodeGenerator
 
 				if (count == 0)
 				{
-					command.CommandText = Regex.Replace(command.CommandText, _parameterPrefixRegex + Regex.Escape(parameterName), "SELECT NULL WHERE 1 = 0", RegexOptions.IgnoreCase);
+					var emptyRows = InsightDbProvider.For(command).GenerateEmptySql();
+					command.CommandText = Regex.Replace(command.CommandText, _parameterPrefixRegex + Regex.Escape(parameterName), emptyRows, RegexOptions.IgnoreCase);
 				}
 				else
 				{

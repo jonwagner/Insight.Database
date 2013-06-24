@@ -25,7 +25,7 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Regex to detect parameters in sql text.
 		/// </summary>
-		private static Regex _parameterRegex = new Regex("[?@]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private static Regex _parameterRegex = new Regex("[?@:]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 		#endregion
 
 		#region Constructors
@@ -153,6 +153,28 @@ namespace Insight.Database.Providers
 			}
 
 			return p;
+		}
+
+		/// <summary>
+		/// Returns a string that represents selecting an empty recordset with a single column.
+		/// </summary>
+		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
+		public virtual string GenerateEmptySql()
+		{
+			return "SELECT NULL WHERE 1 = 0";
+		}
+
+		/// <summary>
+		/// Determines if a parameter is an XML type parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>True if the parameter is an XML parameter.</returns>
+		public virtual bool IsXmlParameter(IDbCommand command, IDataParameter parameter)
+		{
+			if (parameter == null) throw new ArgumentNullException("parameter");
+
+			return parameter.DbType == DbType.Xml;
 		}
 
 		/// <summary>

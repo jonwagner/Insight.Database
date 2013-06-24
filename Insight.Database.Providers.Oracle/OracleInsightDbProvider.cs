@@ -59,6 +59,29 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Returns a string that represents selecting an empty recordset with a single column.
+		/// </summary>
+		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
+		public override string GenerateEmptySql()
+		{
+			return "SELECT * FROM dual WHERE 1 = 0";
+		}
+
+		/// <summary>
+		/// Determines if a parameter is an XML type parameter.
+		/// </summary>
+		/// <param name="command">The related command object.</param>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <returns>True if the parameter is an XML parameter.</returns>
+		public override bool IsXmlParameter(IDbCommand command, IDataParameter parameter)
+		{
+			if (parameter == null) throw new ArgumentNullException("parameter");
+
+			var op = (OracleParameter)parameter;
+			return op.OracleDbType == OracleDbType.XmlType;
+		}
+
+		/// <summary>
 		/// Derives the parameter list from a stored procedure command.
 		/// </summary>
 		/// <param name="command">The command to derive.</param>
