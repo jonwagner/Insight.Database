@@ -14,24 +14,14 @@ namespace Insight.Database.Providers
 	public class MiniProfilerInsightDbProvider : WrappedInsightDbProvider
 	{
 		/// <summary>
-		/// Gets the type for the DbCommands supported by this provider.
+		/// Gets the types of objects that this provider supports.
+		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
-		public override Type CommandType
+		public override IEnumerable<Type> SupportedTypes
 		{
 			get
 			{
-				return typeof(ProfiledDbCommand);
-			}
-		}
-
-		/// <summary>
-		/// Gets the type for Connections supported by this provider.
-		/// </summary>
-		public override Type ConnectionType
-		{
-			get
-			{
-				return typeof(ProfiledDbConnection);
+				return new Type[] { typeof(ProfiledDbConnection), typeof(ProfiledDbCommand), typeof(ProfiledDbDataReader) };
 			}
 		}
 

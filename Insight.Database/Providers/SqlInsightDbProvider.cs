@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
+using System.Data.SqlTypes;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -22,35 +23,14 @@ namespace Insight.Database.Providers
 		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
 
 		/// <summary>
-		/// Gets the type for the DbCommands supported by this provider.
+		/// Gets the types of objects that this provider supports.
+		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
-		public override Type CommandType
+		public override IEnumerable<Type> SupportedTypes
 		{
 			get
 			{
-				return typeof(SqlCommand);
-			}
-		}
-
-		/// <summary>
-		/// Gets the type for ConnectionStringBuilders supported by this provider.
-		/// </summary>
-		public override Type ConnectionStringBuilderType
-		{
-			get
-			{
-				return typeof(SqlConnectionStringBuilder);
-			}
-		}
-
-		/// <summary>
-		/// Gets the type for Connections supported by this provider.
-		/// </summary>
-		public override Type ConnectionType
-		{
-			get
-			{
-				return typeof(SqlConnection);
+				return new Type[] { typeof(SqlConnectionStringBuilder), typeof(SqlConnection), typeof(SqlCommand), typeof(SqlDataReader) };
 			}
 		}
 
@@ -142,6 +122,19 @@ namespace Insight.Database.Providers
 		public override string GetTableSchemaSql(IDbConnection connection, string tableName)
 		{
 			return String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
+		}
+
+		/// <summary>
+		/// Determines if the given column in the schema table is an XML column.
+		/// </summary>
+		/// <param name="schemaTable">The schema table to analyze.</param>
+		/// <param name="index">The index of the column.</param>
+		/// <returns>True if the column is an XML column.</returns>
+		public override bool IsXmlColumn(DataTable schemaTable, int index)
+		{
+			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
+
+			return ((Type)schemaTable.Rows[index]["ProviderSpecificDataType"]) == typeof(SqlXml);
 		}
 
 		/// <summary>

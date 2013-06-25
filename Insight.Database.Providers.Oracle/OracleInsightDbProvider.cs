@@ -16,35 +16,14 @@ namespace Insight.Database.Providers
 	public class OracleInsightDbProvider : InsightDbProvider
 	{
 		/// <summary>
-		/// Gets the type for the DbCommands supported by this provider.
+		/// Gets the types of objects that this provider supports.
+		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
-		public override Type CommandType
+		public override IEnumerable<Type> SupportedTypes
 		{
 			get
 			{
-				return typeof(OracleCommand);
-			}
-		}
-
-		/// <summary>
-		/// Gets the type for ConnectionStringBuilders supported by this provider.
-		/// </summary>
-		public override Type ConnectionStringBuilderType
-		{
-			get
-			{
-				return typeof(OracleConnectionStringBuilder);
-			}
-		}
-
-		/// <summary>
-		/// Gets the type for Connections supported by this provider.
-		/// </summary>
-		public override Type ConnectionType
-		{
-			get
-			{
-				return typeof(OracleConnection);
+				return new Type[] { typeof(OracleConnectionStringBuilder), typeof(OracleConnection), typeof(OracleCommand), typeof(OracleDataReader) };
 			}
 		}
 
@@ -102,6 +81,19 @@ namespace Insight.Database.Providers
 		public override string GetTableSchemaSql(IDbConnection connection, string tableName)
 		{
 			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} WHERE rownum = 0", tableName);
+		}
+
+		/// <summary>
+		/// Determines if the given column in the schema table is an XML column.
+		/// </summary>
+		/// <param name="schemaTable">The schema table to analyze.</param>
+		/// <param name="index">The index of the column.</param>
+		/// <returns>True if the column is an XML column.</returns>
+		public override bool IsXmlColumn(DataTable schemaTable, int index)
+		{
+			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
+
+			return ((OracleDbType)schemaTable.Rows[index]["ProviderType"]) == OracleDbType.XmlType;
 		}
 
 		/// <summary>

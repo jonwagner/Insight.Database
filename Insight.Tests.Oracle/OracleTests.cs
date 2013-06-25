@@ -19,6 +19,7 @@ namespace Insight.Tests.Oracle
 		public class ParentTestData
 		{
 			public int ID;
+			public decimal Dec;
 			public TestData TestData;
 		}
 
@@ -182,24 +183,30 @@ namespace Insight.Tests.Oracle
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE TABLE InsightTestData (X int, Z int)");
+				// NOTE: I have not been able to get the xmltype to bulk copy. It throws "unsupported column datatype".
+				// Insight will store the value of the object as a string in the bulk copy
+				//_connection.ExecuteSql("CREATE TABLE InsightTestData (ID int, Dec Decimal, TestData xmltype)");
+				_connection.ExecuteSql("CREATE TABLE InsightTestData (ID int, Dec Decimal)");
 
 				for (int i = 0; i < 3; i++)
 				{
 					// build test data
-					TestData[] array = new TestData[i];
+					ParentTestData[] array = new ParentTestData[i];
 					for (int j = 0; j < i; j++)
-						array[j] = new TestData() { X = i, Z = j };
+						array[j] = new ParentTestData() { ID = j, Dec = j, TestData = new TestData() };
 
 					// bulk load the data
 					_connection.BulkCopy("InsightTestData", array);
 
 					// run the query
-					var items = _connection.QuerySql<TestData>("SELECT * FROM InsightTestData");
+					var items = _connection.QuerySql<ParentTestData>("SELECT * FROM InsightTestData");
 					Assert.IsNotNull(items);
 					Assert.AreEqual(i, items.Count);
 					for (int j = 0; j < i; j++)
-						Assert.AreEqual(j, items[j].Z);
+					{
+						Assert.AreEqual(j, items[j].ID);
+						Assert.AreEqual(j, items[j].Dec);
+					}
 
 					_connection.ExecuteSql("DELETE FROM InsightTestData");
 				}

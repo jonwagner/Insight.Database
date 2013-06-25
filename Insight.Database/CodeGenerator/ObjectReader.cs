@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database.Providers;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -49,6 +50,8 @@ namespace Insight.Database.CodeGenerator
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
 		private ObjectReader(SchemaMappingIdentity identity, IDataReader reader)
 		{
+			var provider = InsightDbProvider.For(reader);
+
 			SchemaTable = reader.GetSchemaTable();
 
 			// SQL Server tells us the precision of the columns
@@ -137,10 +140,7 @@ namespace Insight.Database.CodeGenerator
 					}
 
 					// if the provider type is Xml, then serialize the value
-					Type providerTargetType = null;
-					if (SchemaTable.Columns.Contains("ProviderSpecificDataType"))
-						providerTargetType = (Type)SchemaTable.Rows[i]["ProviderSpecificDataType"];
-					if (!sourceType.IsValueType && providerTargetType == typeof(SqlXml))
+					if (!sourceType.IsValueType && provider.IsXmlColumn(SchemaTable, i))
 					{
 						il.EmitLoadType(sourceType);
 						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", new Type[] { typeof(object), typeof(Type) }));

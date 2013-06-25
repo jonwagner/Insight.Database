@@ -45,31 +45,10 @@ namespace Insight.Database.Providers
 
 		#region Properties
 		/// <summary>
-		/// Gets the type for the DbCommands supported by this provider.
+		/// Gets the types of objects that this provider supports.
+		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
-		public virtual Type CommandType
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Gets the type for ConnectionStringBuilders supported by this provider.
-		/// </summary>
-		public virtual Type ConnectionStringBuilderType
-		{
-			get
-			{
-				return null;
-			}
-		}
-
-		/// <summary>
-		/// Gets the type for Connections supported by this provider.
-		/// </summary>
-		public virtual Type ConnectionType
+		public virtual IEnumerable<Type> SupportedTypes
 		{
 			get
 			{
@@ -83,16 +62,14 @@ namespace Insight.Database.Providers
 		/// </summary>
 		public void Register()
 		{
+			var supportedTypes = SupportedTypes;
+			if (supportedTypes == null)
+				return;
+
 			lock (_providerMap)
 			{
-				if (CommandType != null)
-					_providerMap[CommandType] = this;
-
-				if (ConnectionStringBuilderType != null)
-					_providerMap[ConnectionStringBuilderType] = this;
-
-				if (ConnectionType != null)
-					_providerMap[ConnectionType] = this;
+				foreach (var type in supportedTypes)
+					_providerMap[type] = this;
 			}
 		}
 
@@ -233,6 +210,17 @@ namespace Insight.Database.Providers
 		/// <param name="tableName">The name of the table to query.</param>
 		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
 		public virtual string GetTableSchemaSql(IDbConnection connection, string tableName)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Determines if the given column in the schema table is an XML column.
+		/// </summary>
+		/// <param name="schemaTable">The schema table to analyze.</param>
+		/// <param name="index">The index of the column.</param>
+		/// <returns>True if the column is an XML column.</returns>
+		public virtual bool IsXmlColumn(DataTable schemaTable, int index)
 		{
 			throw new NotImplementedException();
 		}
