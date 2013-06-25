@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
 using Insight.Database.Reliable;
 
 namespace Insight.Database
@@ -1390,6 +1391,83 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region Bulk Copy Members
+		/// <summary>
+		/// Bulk copy a list of objects to the server. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="T">The type of the objects.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="list">The list of objects.</param>
+		/// <param name="configure">A callback for initialization of the BulkCopy object. The object is provider-dependent.</param>
+		/// <param name="closeConnection">True to close the connection when complete.</param>
+		/// <param name="options">The options to use for the bulk copy.</param>
+		/// <param name="transaction">An optional external transaction.</param>
+		public static void BulkCopy<T>(
+			this IDbConnection connection,
+			string tableName,
+			IEnumerable<T> list,
+			Action<object> configure = null,
+			bool closeConnection = false,
+			int? options = null,
+			IDbTransaction transaction = null)
+		{
+			var provider = InsightDbProvider.For(connection);
+
+			try
+			{
+				connection.DetectAutoOpen(ref closeConnection);
+
+				// see if we already have a mapping for the given table name and type
+				// we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
+				var key = Tuple.Create<string, Type>(tableName, typeof(T));
+				ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
+					key,
+					t =>
+					{
+						// select a 0 row result set so we can determine the schema of the table
+						using (var sqlReader = connection.GetReaderSql(provider.GetTableSchemaSql(connection, tableName), commandBehavior: CommandBehavior.SchemaOnly))
+							return ObjectReader.GetObjectReader(sqlReader, typeof(T));
+					});
+
+				// create a reader for the list
+				using (var reader = new ObjectListDbDataReader(fieldReaderData, list))
+				{
+					provider.BulkCopy(connection, tableName, reader, configure, options, transaction);
+				}
+			}
+			finally
+			{
+				if (closeConnection)
+					connection.Close();
+			}
+		}
+
+		/// <summary>
+		/// Bulk copy a list of objects to the server. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="T">The type of the objects.</typeparam>
+		/// <typeparam name="TBulkCopy">The type of the bulk copy object to configure.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="list">The list of objects.</param>
+		/// <param name="configure">A callback for initialization of the BulkCopy object. The object is provider-dependent.</param>
+		/// <param name="closeConnection">True to close the connection when complete.</param>
+		/// <param name="options">The options to use for the bulk copy.</param>
+		/// <param name="transaction">An optional external transaction.</param>
+		public static void BulkCopy<T, TBulkCopy>(
+			this IDbConnection connection,
+			string tableName,
+			IEnumerable<T> list,
+			Action<TBulkCopy> configure,
+			bool closeConnection = false,
+			int? options = null,
+			IDbTransaction transaction = null)
+		{
+			connection.BulkCopy(tableName, list, o => configure((TBulkCopy)o), closeConnection, options, transaction);
+		}
+		#endregion
+
 		#region Unwrap Methods
 		/// <summary>
 		/// Unwraps an IDbTransaction to determine its inner DbTransaction to use with advanced features.
@@ -1422,7 +1500,7 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="connection">The connection to test.</param>
 		/// <param name="closeConnection">The closeConnection parameter to modify.</param>
-		internal static void DetectAutoOpen(IDbConnection connection, ref bool closeConnection)
+		internal static void DetectAutoOpen(this IDbConnection connection, ref bool closeConnection)
 		{
 			if (connection.State != ConnectionState.Open)
 			{

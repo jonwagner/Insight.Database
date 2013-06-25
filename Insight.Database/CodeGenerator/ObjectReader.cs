@@ -49,20 +49,24 @@ namespace Insight.Database.CodeGenerator
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
 		private ObjectReader(SchemaMappingIdentity identity, IDataReader reader)
 		{
+			SchemaTable = reader.GetSchemaTable();
+
 			// SQL Server tells us the precision of the columns
 			// but the TDS parser doesn't like the ones set on money, smallmoney and date
 			// so we have to override them
-			SchemaTable = reader.GetSchemaTable();
-			SchemaTable.Columns["NumericScale"].ReadOnly = false;
-			foreach (DataRow row in SchemaTable.Rows)
+			if (SchemaTable.Columns.Contains("DataTypeName"))
 			{
-				string dataType = row["DataTypeName"].ToString();
-				if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
-					row["NumericScale"] = 4;
-				else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
-					row["NumericScale"] = 4;
-				else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
-					row["NumericScale"] = 0;
+				SchemaTable.Columns["NumericScale"].ReadOnly = false;
+				foreach (DataRow row in SchemaTable.Rows)
+				{
+					string dataType = row["DataTypeName"].ToString();
+					if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
+						row["NumericScale"] = 4;
+					else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
+						row["NumericScale"] = 4;
+					else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
+						row["NumericScale"] = 0;
+				}
 			}
 
 			// get the type we are binding to
@@ -106,7 +110,6 @@ namespace Insight.Database.CodeGenerator
 					// if the type is nullable, handle nulls
 					Type sourceType = propInfo.MemberType;
 					Type targetType = (Type)SchemaTable.Rows[i]["DataType"];
-					Type providerTargetType = (Type)SchemaTable.Rows[i]["ProviderSpecificDataType"];
 					Type underlyingType = Nullable.GetUnderlyingType(sourceType);
 					if (underlyingType != null)
 					{
@@ -134,6 +137,9 @@ namespace Insight.Database.CodeGenerator
 					}
 
 					// if the provider type is Xml, then serialize the value
+					Type providerTargetType = null;
+					if (SchemaTable.Columns.Contains("ProviderSpecificDataType"))
+						providerTargetType = (Type)SchemaTable.Rows[i]["ProviderSpecificDataType"];
 					if (!sourceType.IsValueType && providerTargetType == typeof(SqlXml))
 					{
 						il.EmitLoadType(sourceType);

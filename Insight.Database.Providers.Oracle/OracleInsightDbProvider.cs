@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,6 +34,17 @@ namespace Insight.Database.Providers
 			get
 			{
 				return typeof(OracleConnectionStringBuilder);
+			}
+		}
+
+		/// <summary>
+		/// Gets the type for Connections supported by this provider.
+		/// </summary>
+		public override Type ConnectionType
+		{
+			get
+			{
+				return typeof(OracleConnection);
 			}
 		}
 
@@ -79,6 +91,43 @@ namespace Insight.Database.Providers
 
 			var op = (OracleParameter)parameter;
 			return op.OracleDbType == OracleDbType.XmlType;
+		}
+
+		/// <summary>
+		/// Returns SQL that queries a table for the schema only, no rows.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table to query.</param>
+		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
+		public override string GetTableSchemaSql(IDbConnection connection, string tableName)
+		{
+			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} WHERE rownum = 0", tableName);
+		}
+
+		/// <summary>
+		/// Bulk copies a set of objects to the server.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="reader">The reader to read objects from.</param>
+		/// <param name="configure">A callback method to configure the bulk copy object.</param>
+		/// <param name="options">Options for initializing the bulk copy object.</param>
+		/// <param name="transaction">An optional transaction to participate in.</param>
+		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<object> configure, int? options, IDbTransaction transaction)
+		{
+			if (transaction != null)
+				throw new ArgumentException("OracleProvider does not support external transactions for bulk copy", "transaction");
+
+			if (options == null)
+				options = (int)OracleBulkCopyOptions.Default;
+
+			using (var bulk = new OracleBulkCopy((OracleConnection)connection, (OracleBulkCopyOptions)options))
+			{
+				bulk.DestinationTableName = tableName;
+				if (configure != null)
+					configure(bulk);
+				bulk.WriteToServer(reader);
+			}
 		}
 
 		/// <summary>

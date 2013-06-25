@@ -44,6 +44,17 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Gets the type for Connections supported by this provider.
+		/// </summary>
+		public override Type ConnectionType
+		{
+			get
+			{
+				return typeof(SqlConnection);
+			}
+		}
+
+		/// <summary>
 		/// Creates a new DbConnection supported by this provider.
 		/// </summary>
 		/// <returns>A new DbConnection.</returns>
@@ -120,6 +131,40 @@ namespace Insight.Database.Providers
 			}
 
 			return p.TypeName;
+		}
+
+		/// <summary>
+		/// Returns SQL that queries a table for the schema only, no rows.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table to query.</param>
+		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
+		public override string GetTableSchemaSql(IDbConnection connection, string tableName)
+		{
+			return String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
+		}
+
+		/// <summary>
+		/// Bulk copies a set of objects to the server.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="reader">The reader to read objects from.</param>
+		/// <param name="configure">A callback method to configure the bulk copy object.</param>
+		/// <param name="options">Options for initializing the bulk copy object.</param>
+		/// <param name="transaction">An optional transaction to participate in.</param>
+		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<object> configure, int? options, IDbTransaction transaction)
+		{
+			if (options == null)
+				options = (int)SqlBulkCopyOptions.Default;
+
+			using (SqlBulkCopy bulk = new SqlBulkCopy((SqlConnection)connection, (SqlBulkCopyOptions)options, (SqlTransaction)transaction))
+			{
+				bulk.DestinationTableName = tableName;
+				if (configure != null)
+					configure(bulk);
+				bulk.WriteToServer(reader);
+			}
 		}
 
 		/// <summary>

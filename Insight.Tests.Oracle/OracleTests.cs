@@ -176,5 +176,38 @@ namespace Insight.Tests.Oracle
 				try { _connection.ExecuteSql("DROP PROCEDURE OracleXmlTableProc"); } catch {}
 			}
 		}
+
+		[Test]
+		public void TestBulkLoad()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TABLE InsightTestData (X int, Z int)");
+
+				for (int i = 0; i < 3; i++)
+				{
+					// build test data
+					TestData[] array = new TestData[i];
+					for (int j = 0; j < i; j++)
+						array[j] = new TestData() { X = i, Z = j };
+
+					// bulk load the data
+					_connection.BulkCopy("InsightTestData", array);
+
+					// run the query
+					var items = _connection.QuerySql<TestData>("SELECT * FROM InsightTestData");
+					Assert.IsNotNull(items);
+					Assert.AreEqual(i, items.Count);
+					for (int j = 0; j < i; j++)
+						Assert.AreEqual(j, items[j].Z);
+
+					_connection.ExecuteSql("DELETE FROM InsightTestData");
+				}
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP TABLE InsightTestData"); } catch { }
+			}
+		}
 	}
 }

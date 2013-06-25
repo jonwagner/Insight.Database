@@ -65,6 +65,17 @@ namespace Insight.Database.Providers
 				return null;
 			}
 		}
+
+		/// <summary>
+		/// Gets the type for Connections supported by this provider.
+		/// </summary>
+		public virtual Type ConnectionType
+		{
+			get
+			{
+				return null;
+			}
+		}
 		#endregion
 
 		/// <summary>
@@ -79,6 +90,9 @@ namespace Insight.Database.Providers
 
 				if (ConnectionStringBuilderType != null)
 					_providerMap[ConnectionStringBuilderType] = this;
+
+				if (ConnectionType != null)
+					_providerMap[ConnectionType] = this;
 			}
 		}
 
@@ -208,6 +222,31 @@ namespace Insight.Database.Providers
 		/// <returns>An open reader with the schema.</returns>
 		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
 		public virtual IDataReader GetTableTypeSchema(IDbCommand command, IDataParameter parameter)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Returns SQL that queries a table for the schema only, no rows.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table to query.</param>
+		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
+		public virtual string GetTableSchemaSql(IDbConnection connection, string tableName)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Bulk copies a set of objects to the server.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="reader">The reader to read objects from.</param>
+		/// <param name="configure">A callback method to configure the bulk copy object.</param>
+		/// <param name="options">Options for initializing the bulk copy object.</param>
+		/// <param name="transaction">An optional transaction to participate in.</param>
+		public virtual void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<object> configure, int? options, IDbTransaction transaction)
 		{
 			throw new NotImplementedException();
 		}

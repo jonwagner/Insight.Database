@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using Insight.Database;
+using System.Data.SqlClient;
 
 namespace Insight.Tests
 {
@@ -84,7 +85,7 @@ namespace Insight.Tests
 
 			// bulk load the data
 			long totalRows = 0;
-			_sqlConnection.BulkCopy("InsightTestData", array, configure: bulkCopy =>
+			_sqlConnection.BulkCopy("InsightTestData", array, configure: (SqlBulkCopy bulkCopy) =>
 			{
 				bulkCopy.NotifyAfter = 1;
 				bulkCopy.SqlRowsCopied += (sender, args) => totalRows = args.RowsCopied;

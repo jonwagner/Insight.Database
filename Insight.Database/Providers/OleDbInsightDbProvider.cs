@@ -37,6 +37,17 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Gets the type for Connections supported by this provider.
+		/// </summary>
+		public override Type ConnectionType
+		{
+			get
+			{
+				return typeof(OleDbConnection);
+			}
+		}
+
+		/// <summary>
 		/// Creates a new DbConnection supported by this provider.
 		/// </summary>
 		/// <returns>A new DbConnection.</returns>

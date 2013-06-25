@@ -83,7 +83,6 @@
     <Compile Include="Providers\OleDbInsightDbProvider.cs" />
     <Compile Include="Providers\ReliableInsightDbProvider.cs" />
     <Compile Include="Providers\WrappedInsightDbProvider.cs" />
-    <Compile Include="SqlDBConnectionExtensions.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Providers\InsightDbProvider.cs" />
     <Compile Include="SqlAttribute.cs" />

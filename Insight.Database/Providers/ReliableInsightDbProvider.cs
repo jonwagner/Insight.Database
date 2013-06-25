@@ -25,6 +25,17 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Gets the type for Connections supported by this provider.
+		/// </summary>
+		public override Type ConnectionType
+		{
+			get
+			{
+				return typeof(ReliableConnection);
+			}
+		}
+
+		/// <summary>
 		/// Unwraps the given command and returns the inner command.
 		/// </summary>
 		/// <param name="command">The outer command.</param>
