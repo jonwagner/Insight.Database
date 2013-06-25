@@ -23,7 +23,7 @@ namespace Insight.Database.Providers
 		{
 			get
 			{
-				return new Type[] { typeof(OracleConnectionStringBuilder), typeof(OracleConnection), typeof(OracleCommand), typeof(OracleDataReader) };
+				return new Type[] { typeof(OracleConnectionStringBuilder), typeof(OracleConnection), typeof(OracleCommand), typeof(OracleDataReader), typeof(OracleException) };
 			}
 		}
 
@@ -131,6 +131,38 @@ namespace Insight.Database.Providers
 					configure(bulk);
 				bulk.WriteToServer(reader);
 			}
+		}
+
+		/// <summary>
+		/// Determines if a database exception is a transient exception and if the operation could be retried.
+		/// </summary>
+		/// <param name="exception">The exception to test.</param>
+		/// <returns>True if the exception is transient.</returns>
+		public override bool IsTransientException(Exception exception)
+		{
+			OracleException oracleException = (OracleException)exception;
+
+			// there may be more error codes that we need but there are so many to go through....
+			// http://docs.oracle.com/cd/B19306_01/server.102/b14219.pdf
+			switch (oracleException.Number)
+			{
+				case 51:					// timeout waiting for a resource
+				case 12150:					// TNS:unable to send data
+				case 12153:					// TNS:not connected
+				case 12154:					// TNS:could not resolve the connect identifier specified
+				case 12157:					// TNS:internal network communication error
+				case 12161:					// TNS:internal error: partial data received
+				case 12170:					// TNS:connect timeout occurred
+				case 12171:					// TNS:could not resolve connect identifier
+				case 12203:					// TNS:could not connect to destination
+				case 12224:					// TNS:no listener
+				case 12225:					// TNS:destination host unreachable
+				case 12541:					// TNS:no listener
+				case 12543:					// TNS:destination host unreachable
+					return true;
+			}
+
+			return false;
 		}
 	}
 }

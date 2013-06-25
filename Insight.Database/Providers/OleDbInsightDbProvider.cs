@@ -22,7 +22,7 @@ namespace Insight.Database.Providers
 		{
 			get
 			{
-				return new Type[] { typeof(OleDbConnectionStringBuilder), typeof(OleDbConnection), typeof(OleDbCommand), typeof(OleDbDataReader) };
+				return new Type[] { typeof(OleDbConnectionStringBuilder), typeof(OleDbConnection), typeof(OleDbCommand), typeof(OleDbDataReader), typeof(OleDbException) };
 			}
 		}
 

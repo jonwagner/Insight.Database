@@ -270,6 +270,16 @@ namespace Insight.Database.Providers
 		{
 			throw new NotImplementedException();
 		}
+
+		/// <summary>
+		/// Determines if a database exception is a transient exception and if the operation could be retried.
+		/// </summary>
+		/// <param name="exception">The exception to test.</param>
+		/// <returns>True if the exception is transient.</returns>
+		public virtual bool IsTransientException(Exception exception)
+		{
+			return false;
+		}
 		#endregion
 
 		/// <summary>

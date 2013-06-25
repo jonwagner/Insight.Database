@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Providers;
+using Insight.Database.Reliable;
+using Moq;
 using NUnit.Framework;
 using Oracle.DataAccess.Client;
 
@@ -215,6 +217,30 @@ namespace Insight.Tests.Oracle
 			{
 				try { _connection.ExecuteSql("DROP TABLE InsightTestData"); } catch { }
 			}
+		}
+
+		[Test]
+		public void TestReliableConnection()
+		{
+			int retries = 0;
+			var retryStrategy = new RetryStrategy();
+			retryStrategy.MaxRetryCount = 1;
+			retryStrategy.Retrying += (sender, re) => { Console.WriteLine("Retrying. Attempt {0}", re.Attempt); retries++; };
+
+			try
+			{
+				var builder = new OracleConnectionStringBuilder(_connectionStringBuilder.ConnectionString);
+				builder.DataSource = "localhost:9999";
+				using (var reliable = new ReliableConnection<OracleConnection>(builder.ConnectionString, retryStrategy))
+				{
+					reliable.Open();
+				}
+			}
+			catch
+			{
+			}
+
+			Assert.AreEqual(1, retries);
 		}
 	}
 }

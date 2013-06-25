@@ -22,7 +22,7 @@ namespace Insight.Database.Providers
 		{
 			get
 			{
-				return new Type[] { typeof(OdbcConnectionStringBuilder), typeof(OdbcConnection), typeof(OdbcCommand), typeof(OdbcDataReader) };
+				return new Type[] { typeof(OdbcConnectionStringBuilder), typeof(OdbcConnection), typeof(OdbcCommand), typeof(OdbcDataReader), typeof(OdbcException) };
 			}
 		}
 
