@@ -36,6 +36,15 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Derives the parameter list from a stored procedure command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		public override void DeriveParametersFromStoredProcedure(IDbCommand command)
+		{
+			OleDbCommandBuilder.DeriveParameters(command as OleDbCommand);
+		}
+
+		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
@@ -49,15 +58,6 @@ namespace Insight.Database.Providers
 			p.OleDbType = template.OleDbType;
 
 			return p;
-		}
-
-		/// <summary>
-		/// Derives the parameter list from a stored procedure command.
-		/// </summary>
-		/// <param name="command">The command to derive.</param>
-		protected override void DeriveParametersFromStoredProcedure(IDbCommand command)
-		{
-			OleDbCommandBuilder.DeriveParameters(command as OleDbCommand);
 		}
 	}
 }

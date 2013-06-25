@@ -671,7 +671,7 @@ namespace Insight.Database.CodeGenerator
 
 				if (count == 0)
 				{
-					var emptyRows = InsightDbProvider.For(command).GenerateEmptySql();
+					var emptyRows = InsightDbProvider.For(command).GenerateEmptySql(command);
 					command.CommandText = Regex.Replace(command.CommandText, _parameterPrefixRegex + Regex.Escape(parameterName), emptyRows, RegexOptions.IgnoreCase);
 				}
 				else
@@ -719,7 +719,7 @@ namespace Insight.Database.CodeGenerator
 						(_, __) =>
 						{
 							using (var reader = provider.GetTableTypeSchema(command, parameter))
-								return ObjectReader.GetObjectReader(reader, listType);
+								return ObjectReader.GetObjectReader(command, reader, listType);
 						},
 						CommandBehavior.Default));
 

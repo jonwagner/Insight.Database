@@ -44,13 +44,14 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Initializes a new instance of the ObjectReader class.
 		/// </summary>
+		/// <param name="command">The command associated with the reader.</param>
 		/// <param name="identity">The schema identity to analyze.</param>
 		/// <param name="reader">The reader that contains the schema.</param>
 		/// <returns>A list of accessor functions to get values from the type.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-		private ObjectReader(SchemaMappingIdentity identity, IDataReader reader)
+		private ObjectReader(IDbCommand command, SchemaMappingIdentity identity, IDataReader reader)
 		{
-			var provider = InsightDbProvider.For(reader);
+			var provider = InsightDbProvider.For(command);
 
 			SchemaTable = reader.GetSchemaTable();
 
@@ -140,7 +141,7 @@ namespace Insight.Database.CodeGenerator
 					}
 
 					// if the provider type is Xml, then serialize the value
-					if (!sourceType.IsValueType && provider.IsXmlColumn(SchemaTable, i))
+					if (!sourceType.IsValueType && provider.IsXmlColumn(command, SchemaTable, i))
 					{
 						il.EmitLoadType(sourceType);
 						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", new Type[] { typeof(object), typeof(Type) }));
@@ -187,15 +188,16 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Returns an object reader for the given type that matches the given schema.
 		/// </summary>
+		/// <param name="command">The command associated with the reader.</param>
 		/// <param name="reader">The reader containing the schema to analyze.</param>
 		/// <param name="type">The type to analyze.</param>
 		/// <returns>An ObjectReader for the schema and type.</returns>
-		public static ObjectReader GetObjectReader(IDataReader reader, Type type)
+		public static ObjectReader GetObjectReader(IDbCommand command, IDataReader reader, Type type)
 		{
 			SchemaIdentity schemaIdentity = new SchemaIdentity(reader);
 			SchemaMappingIdentity mappingIdentity = new SchemaMappingIdentity(schemaIdentity, type, null, SchemaMappingType.ExistingObject);
 
-			return _readerDataCache.GetOrAdd(mappingIdentity, i => new ObjectReader(i, reader));
+			return _readerDataCache.GetOrAdd(mappingIdentity, i => new ObjectReader(command, i, reader));
 		}
 
 		/// <summary>

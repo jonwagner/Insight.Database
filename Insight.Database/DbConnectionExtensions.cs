@@ -1427,7 +1427,7 @@ namespace Insight.Database
 					{
 						// select a 0 row result set so we can determine the schema of the table
 						using (var sqlReader = connection.GetReaderSql(provider.GetTableSchemaSql(connection, tableName), commandBehavior: CommandBehavior.SchemaOnly))
-							return ObjectReader.GetObjectReader(sqlReader, typeof(T));
+							return ObjectReader.GetObjectReader(connection.CreateCommand(), sqlReader, typeof(T));
 					});
 
 				// create a reader for the list

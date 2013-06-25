@@ -26,13 +26,24 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Unwraps the given connection and returns the inner command.
+		/// </summary>
+		/// <param name="connection">The outer connection.</param>
+		/// <returns>The inner connection.</returns>
+		public override IDbConnection GetInnerConnection(IDbConnection connection)
+		{
+			ReliableConnection reliableConnection = (ReliableConnection)connection;
+			return reliableConnection.InnerConnection;
+		}
+
+		/// <summary>
 		/// Unwraps the given command and returns the inner command.
 		/// </summary>
 		/// <param name="command">The outer command.</param>
 		/// <returns>The inner command.</returns>
 		public override IDbCommand GetInnerCommand(IDbCommand command)
 		{
-			ReliableCommand reliableCommand = command as ReliableCommand;
+			ReliableCommand reliableCommand = (ReliableCommand)command;
 			return reliableCommand.InnerCommand;
 		}
 	}

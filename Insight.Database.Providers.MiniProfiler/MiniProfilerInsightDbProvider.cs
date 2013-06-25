@@ -21,8 +21,19 @@ namespace Insight.Database.Providers
 		{
 			get
 			{
-				return new Type[] { typeof(ProfiledDbConnection), typeof(ProfiledDbCommand), typeof(ProfiledDbDataReader) };
+				return new Type[] { typeof(ProfiledDbConnection), typeof(ProfiledDbCommand) };
 			}
+		}
+
+		/// <summary>
+		/// Unwraps the given connection and returns the inner connection.
+		/// </summary>
+		/// <param name="connection">The outer connection.</param>
+		/// <returns>The inner connection.</returns>
+		public override IDbConnection GetInnerConnection(IDbConnection connection)
+		{
+			ProfiledDbConnection profiledConnection = (ProfiledDbConnection)connection;
+			return profiledConnection.InnerConnection;
 		}
 
 		/// <summary>
@@ -34,7 +45,7 @@ namespace Insight.Database.Providers
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
-			ProfiledDbCommand profiledCommand = command as ProfiledDbCommand;
+			ProfiledDbCommand profiledCommand = (ProfiledDbCommand)command;
 			return profiledCommand.InternalCommand;
 		}
 	}

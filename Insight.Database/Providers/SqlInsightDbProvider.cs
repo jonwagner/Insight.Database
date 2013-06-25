@@ -44,6 +44,31 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Derives the parameter list from a stored procedure command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		public override void DeriveParametersFromStoredProcedure(IDbCommand command)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+
+			SqlCommand sqlCommand = command as SqlCommand;
+			SqlCommandBuilder.DeriveParameters(sqlCommand);
+			CheckForMissingParameters(sqlCommand);
+
+			foreach (var p in command.Parameters.OfType<SqlParameter>())
+			{
+				// remove the @ from any parameters
+				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant();
+
+				// trim any prefixes from type names
+				string tableTypeName = p.TypeName;
+				if (tableTypeName.Count(c => c == '.') > 1)
+					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
+				p.TypeName = tableTypeName;
+			}
+		}
+
+		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
@@ -127,10 +152,11 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Determines if the given column in the schema table is an XML column.
 		/// </summary>
+		/// <param name="command">The command associated with the reader.</param>
 		/// <param name="schemaTable">The schema table to analyze.</param>
 		/// <param name="index">The index of the column.</param>
 		/// <returns>True if the column is an XML column.</returns>
-		public override bool IsXmlColumn(DataTable schemaTable, int index)
+		public override bool IsXmlColumn(IDbCommand command, DataTable schemaTable, int index)
 		{
 			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
 
@@ -157,31 +183,6 @@ namespace Insight.Database.Providers
 				if (configure != null)
 					configure(bulk);
 				bulk.WriteToServer(reader);
-			}
-		}
-
-		/// <summary>
-		/// Derives the parameter list from a stored procedure command.
-		/// </summary>
-		/// <param name="command">The command to derive.</param>
-		protected override void DeriveParametersFromStoredProcedure(IDbCommand command)
-		{
-			if (command == null) throw new ArgumentNullException("command");
-
-			SqlCommand sqlCommand = command as SqlCommand;
-			SqlCommandBuilder.DeriveParameters(sqlCommand);
-			CheckForMissingParameters(sqlCommand);
-
-			foreach (var p in command.Parameters.OfType<SqlParameter>())
-			{
-				// remove the @ from any parameters
-				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant();
-
-				// trim any prefixes from type names
-				string tableTypeName = p.TypeName;
-				if (tableTypeName.Count(c => c == '.') > 1)
-					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
-				p.TypeName = tableTypeName;
 			}
 		}
 

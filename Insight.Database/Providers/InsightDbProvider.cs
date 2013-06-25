@@ -115,6 +115,36 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Derives the parameter list from a stored procedure command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		public virtual void DeriveParametersFromStoredProcedure(IDbCommand command)
+		{
+			throw new NotImplementedException();
+		}
+
+		/// <summary>
+		/// Derives the parameter list from a sql text command.
+		/// </summary>
+		/// <param name="command">The command to derive.</param>
+		public virtual void DeriveParametersFromSqlText(IDbCommand command)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+
+			foreach (var p in _parameterRegex.Matches(command.CommandText)
+				.Cast<Match>()
+				.Select(m => m.Groups[1].Value.ToUpperInvariant())
+				.Distinct()
+				.Select(p =>
+				{
+					var dbParameter = (IDataParameter)command.CreateParameter();
+					dbParameter.ParameterName = p;
+					return dbParameter;
+				}))
+				command.Parameters.Add(p);
+		}
+
+		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
 		/// </summary>
 		/// <param name="command">The command to use.</param>
@@ -149,8 +179,9 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Returns a string that represents selecting an empty recordset with a single column.
 		/// </summary>
+		/// <param name="command">The related command object.</param>
 		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
-		public virtual string GenerateEmptySql()
+		public virtual string GenerateEmptySql(IDbCommand command)
 		{
 			return "SELECT NULL WHERE 1 = 0";
 		}
@@ -217,10 +248,11 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Determines if the given column in the schema table is an XML column.
 		/// </summary>
+		/// <param name="command">The command associated with the reader.</param>
 		/// <param name="schemaTable">The schema table to analyze.</param>
 		/// <param name="index">The index of the column.</param>
 		/// <returns>True if the column is an XML column.</returns>
-		public virtual bool IsXmlColumn(DataTable schemaTable, int index)
+		public virtual bool IsXmlColumn(IDbCommand command, DataTable schemaTable, int index)
 		{
 			throw new NotImplementedException();
 		}
@@ -267,36 +299,6 @@ namespace Insight.Database.Providers
 			var p = CloneParameter(command, parameters[index]);
 			command.Parameters.Add(p);
 			return p;
-		}
-
-		/// <summary>
-		/// Derives the parameter list from a stored procedure command.
-		/// </summary>
-		/// <param name="command">The command to derive.</param>
-		protected virtual void DeriveParametersFromStoredProcedure(IDbCommand command)
-		{
-			throw new NotImplementedException();
-		}
-
-		/// <summary>
-		/// Derives the parameter list from a sql text command.
-		/// </summary>
-		/// <param name="command">The command to derive.</param>
-		protected virtual void DeriveParametersFromSqlText(IDbCommand command)
-		{
-			if (command == null) throw new ArgumentNullException("command");
-
-			foreach (var p in _parameterRegex.Matches(command.CommandText)
-				.Cast<Match>()
-				.Select(m => m.Groups[1].Value.ToUpperInvariant())
-				.Distinct()
-				.Select(p =>
-				{
-					var dbParameter = (IDataParameter)command.CreateParameter();
-					dbParameter.ParameterName = p;
-					return dbParameter;
-				}))
-				command.Parameters.Add(p);
 		}
 	}
 }
