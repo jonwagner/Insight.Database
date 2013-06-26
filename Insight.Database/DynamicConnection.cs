@@ -362,6 +362,7 @@ namespace Insight.Database
 					{
 						// call the server to get the parameters
 						SqlCommandBuilder.DeriveParameters((SqlCommand)cmd);
+						DbParameterGenerator.AdjustSqlParameters((SqlCommand)cmd);
 					}
 					finally
 					{

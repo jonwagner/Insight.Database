@@ -26,6 +26,7 @@ namespace Insight.Database.CodeGenerator
 	/// A code generator to create methods to serialize an object into sql parameters.
 	/// </summary>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This is temporary until the 3.0 refactor")]
 	static class DbParameterGenerator
 	{
 		#region Private Members
@@ -220,7 +221,7 @@ namespace Insight.Database.CodeGenerator
 				_ =>
 				{
 					SqlCommandBuilder.DeriveParameters(command);
-					CheckForMissingParameters(command);
+					AdjustSqlParameters(command);
 
 					return null;
 				},
@@ -238,7 +239,7 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		/// <summary>
-		/// Verify that DeriveParameters returned the correct parameters.
+		/// Fixes various issues with deriving parameters from SQL Server.
 		/// </summary>
 		/// <remarks>
 		/// If the current user doesn't have execute permissions the type of a parameter,
@@ -246,24 +247,40 @@ namespace Insight.Database.CodeGenerator
 		/// so we are going to check to make sure that we got all of the parameters.
 		/// </remarks>
 		/// <param name="command">The command to analyze.</param>
-		private static void CheckForMissingParameters(SqlCommand command)
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+		internal static void AdjustSqlParameters(SqlCommand command)
 		{
+			var parameters = command.Parameters.OfType<SqlParameter>();
+
 			// if the current user doesn't have execute permissions on the database
 			// DeriveParameters will just skip the parameter
 			// so we are going to check the list ourselves for anything missing
-			var parameterNames = command.Connection.QuerySql<string>(
-				"SELECT p.Name FROM sys.parameters p WHERE p.object_id = OBJECT_ID(@Name)",
+			var parameterNames = command.Connection.QuerySql(
+				@"SELECT ParameterName = p.name, SchemaName = s.name, TypeName = t.name FROM sys.parameters p
+					LEFT JOIN sys.types t ON (p.user_type_id = t.user_type_id)
+					LEFT JOIN sys.schemas s ON (t.schema_id = s.schema_id)
+					WHERE p.object_id = OBJECT_ID(@Name)",
 				new { Name = command.CommandText },
 				transaction: command.Transaction);
 
-			var parameters = command.Parameters.OfType<SqlParameter>();
-			string missingParameter = parameterNames.FirstOrDefault(n => !parameters.Any(p => String.Compare(p.ParameterName, n, StringComparison.OrdinalIgnoreCase) == 0));
+			// make sure that we aren't missing any parameters
+			// SQL will skip the parameter in DeriveParameters if the user does not have EXECUTE permissions on the type
+			string missingParameter = parameterNames.FirstOrDefault((dynamic n) => !parameters.Any(p => String.Compare(p.ParameterName, n.ParameterName, StringComparison.OrdinalIgnoreCase) == 0));
 			if (missingParameter != null)
 				throw new InvalidOperationException(String.Format(
 					CultureInfo.InvariantCulture,
 					"{0} is missing parameter {1}. Check to see if the parameter is using a type that the current user does not have EXECUTE access to.",
 					command.CommandText,
 					missingParameter));
+
+			// DeriveParameters will also mess up table type names that have dots in them, so we escape them ourselves
+			// SQL will return them to us unescaped
+			foreach (var p in parameters.Where(p => p.SqlDbType == SqlDbType.Structured))
+			{
+				var typeParameter = parameterNames.FirstOrDefault((dynamic n) => String.Compare(p.ParameterName, n.ParameterName, StringComparison.OrdinalIgnoreCase) == 0);
+				if (typeParameter != null)
+					p.TypeName = String.Format("[{0}].[{1}]", typeParameter.SchemaName, typeParameter.TypeName);
+			}
 		}
 
 		/// <summary>
@@ -396,10 +413,7 @@ namespace Insight.Database.CodeGenerator
 						listType = listType.GetGenericArguments()[0];
 
 					// emit the table type name, but not too many prefixes
-					string tableTypeName = sqlParameter.TypeName;
-					if (tableTypeName.Count(c => c == '.') > 1)
-						tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
-					il.Emit(OpCodes.Ldstr, tableTypeName);
+					il.Emit(OpCodes.Ldstr, sqlParameter.TypeName);
 					il.EmitLoadType(listType);
 
 					// get the value from the object
@@ -848,10 +862,6 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="value">The value of the parameter.</param>
 			public static void AddEnumerableParameters(IDbCommand command, string parameterName, string tableTypeName, Type listType, object value)
 			{
-				// trim any prefixes
-				if (tableTypeName.Count(c => c == '.') > 1)
-					tableTypeName = tableTypeName.Split(new char[] { '.' }, 2)[1];
-
 				// convert the value to an enumerable
 				IEnumerable list = (IEnumerable)value;
 
