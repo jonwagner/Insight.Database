@@ -223,7 +223,8 @@ namespace Insight.Database
 
 			// convert the list of names into a list of set reflections
 			// clone the methods list, since we are only going to use each setter once (i.e. if you return two ID columns, we will only use the first one)
-			var setMethods = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(type));
+			// Also, we want to do a case-insensitive lookup of the property, so convert the dictionary to an uppercase dictionary
+			var setMethods = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(type), StringComparer.OrdinalIgnoreCase);
 
 			List<IDataParameter> readOnlyParameters = null;
 			if (parameters != null)
@@ -253,7 +254,7 @@ namespace Insight.Database
 					continue;
 
 				// get the target property based on the result
-				string targetFieldName = e.TargetFieldName.ToUpperInvariant();
+				string targetFieldName = e.TargetFieldName;
 
 				ClassPropInfo setter;
 				if (setMethods.TryGetValue(targetFieldName, out setter))

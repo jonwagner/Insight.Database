@@ -515,12 +515,12 @@ namespace Insight.Database.CodeGenerator
 		private static bool EmitSpecialParameter(ILGenerator il, string parameterName, ParameterInfo[] interfaceParameters, ParameterInfo[] executeParameters)
 		{
 			// attempt to find the parameter on the interface method
-			var interfaceParameter = interfaceParameters.FirstOrDefault(p => p.Name == parameterName);
+			var interfaceParameter = interfaceParameters.FirstOrDefault(p => String.Compare(p.Name, parameterName, StringComparison.OrdinalIgnoreCase) == 0);
 			if (interfaceParameter == null)
 				return false;
 
 			// attempt to find the parameter on the execute method
-			var executeParameter = executeParameters.FirstOrDefault(p => p.Name == parameterName);
+			var executeParameter = executeParameters.FirstOrDefault(p => String.Compare(p.Name, parameterName, StringComparison.OrdinalIgnoreCase) == 0);
 			if (executeParameter == null)
 				return false;
 

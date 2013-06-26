@@ -229,7 +229,7 @@ namespace Insight.Database.CodeGenerator
 
 			// make the list of parameters
 			List<SqlParameter> parameters = command.Parameters.Cast<SqlParameter>().ToList();
-			parameters.ForEach(p => p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant());
+			parameters.ForEach(p => p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty));
 
 			// clear the list so we can re-add them
 			command.Parameters.Clear();
@@ -275,7 +275,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			return _parameterRegex.Matches(sql)
 				.Cast<Match>()
-				.Select(m => m.Groups[1].Value.ToUpperInvariant())
+				.Select(m => m.Groups[1].Value)
 				.Distinct()
 				.Select(p => new SqlParameter(p, null))
 				.ToList();
@@ -734,7 +734,7 @@ namespace Insight.Database.CodeGenerator
 
 				// if there is no parameter for this property, then skip it
 				// if the parameter is not output, then skip it
-				IDataParameter parameter = parameters.Find(p => p.ParameterName == prop.Key);
+				IDataParameter parameter = parameters.Find(p => String.Compare(p.ParameterName, prop.Key, StringComparison.OrdinalIgnoreCase) == 0);
 				if (parameter == null || !parameter.Direction.HasFlag(ParameterDirection.Output))
 					continue;
 
