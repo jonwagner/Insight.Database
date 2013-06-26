@@ -311,5 +311,26 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+
+		#region Table Schema Tests
+		[Test]
+		public void TestTablesInSchemasWithDots()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE SCHEMA [vk.common]");
+				_connection.ExecuteSql("CREATE TYPE [vk.common].TableOfInt AS TABLE (id int)");
+				_connection.ExecuteSql("CREATE PROC [vk.common].MyProc (@table [vk.common].TableOfInt READONLY) AS SELECT 1");
+
+				_connection.Execute("[vk.common].MyProc", new { table = Enumerable.Range(1, 10) });
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP PROC [vk.common].MyProc"); } catch {}
+				try { _connection.ExecuteSql("DROP TYPE [vk.common].TableOfInt"); } catch {}
+				try { _connection.ExecuteSql("DROP SCHEMA [vk.common]"); } catch {}
+			}
+		}
+		#endregion
 	}
 }

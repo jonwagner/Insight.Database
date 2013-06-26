@@ -243,7 +243,6 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
 				///////////////////////////////////////////////////////////////
-
 				// duplicate the parameter so we can call setvalue later
 				il.Emit(OpCodes.Dup);
 
