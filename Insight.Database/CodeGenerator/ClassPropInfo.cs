@@ -42,7 +42,7 @@ namespace Insight.Database.CodeGenerator
 		private ClassPropInfo(MemberInfo memberInfo)
 		{
 			Type = memberInfo.ReflectedType;
-			Name = memberInfo.Name.ToUpperInvariant();
+			Name = memberInfo.Name;
 
 			// try to look up a field with the name
 			FieldInfo = memberInfo as FieldInfo;
@@ -64,7 +64,7 @@ namespace Insight.Database.CodeGenerator
 
 			// see if there is a column attribute defined on the field
 			var attribute = memberInfo.GetCustomAttributes(typeof(ColumnAttribute), true).OfType<ColumnAttribute>().FirstOrDefault();
-			ColumnName = (attribute != null) ? attribute.ColumnName.ToUpperInvariant() : Name;
+			ColumnName = (attribute != null) ? attribute.ColumnName : Name;
 		}
 		#endregion
 
@@ -161,12 +161,12 @@ namespace Insight.Database.CodeGenerator
 					{
 						// get properties first
 						foreach (var p in t.GetProperties(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
-							if (!members.Any(m => m.ColumnName == p.ColumnName))
+							if (!members.Any(m => String.Compare(m.ColumnName, p.ColumnName, StringComparison.OrdinalIgnoreCase) == 0))
 								members.Add(p);
 
 						// then get fields
 						foreach (var p in t.GetFields(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
-							if (!members.Any(m => m.ColumnName == p.ColumnName))
+							if (!members.Any(m => String.Compare(m.ColumnName, p.ColumnName, StringComparison.OrdinalIgnoreCase) == 0))
 								members.Add(p);
 					}
 

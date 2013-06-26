@@ -67,6 +67,19 @@ Here is Insight letting you call your database directly with almost no code:
 	IEnumerable<Beer> listOBeer; // from somewhere
 	c.BulkCopy("Beer", listOfBeer);
 
+# v3.0 - COMING SOON! #
+
+Insight.Database v3.0 will support multiple database providers. We are currently planning on implementing the following providers:
+
+- Sql Server
+- MySQL
+- Oracle
+- Postgres
+- ODBC drivers
+- OLEDB drivers
+
+If you can help code or test (or both), comment on the Issues page or tweet @jonwagnerdotcom. 
+
 # v2.1 now with automatic interface mapping #
 
 - Insight will now automatically convert your .NET interface to SQL calls! See the wiki for some automajikal love!

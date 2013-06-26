@@ -133,7 +133,7 @@ namespace Insight.Database.Providers
 
 			foreach (var p in _parameterRegex.Matches(command.CommandText)
 				.Cast<Match>()
-				.Select(m => m.Groups[1].Value.ToUpperInvariant())
+				.Select(m => m.Groups[1].Value)
 				.Distinct()
 				.Select(p =>
 				{

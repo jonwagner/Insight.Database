@@ -518,7 +518,7 @@ namespace Insight.Database.CodeGenerator
 
 				// if there is no parameter for this property, then skip it
 				// if the parameter is not output, then skip it
-				IDataParameter parameter = parameters.Find(p => p.ParameterName == prop.Key);
+				IDataParameter parameter = parameters.Find(p => String.Compare(p.ParameterName, prop.Key, StringComparison.OrdinalIgnoreCase) == 0);
 				if (parameter == null || !parameter.Direction.HasFlag(ParameterDirection.Output))
 					continue;
 

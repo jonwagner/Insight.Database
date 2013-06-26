@@ -58,7 +58,7 @@ namespace Insight.Database.Providers
 			foreach (var p in command.Parameters.OfType<SqlParameter>())
 			{
 				// remove the @ from any parameters
-				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty).ToUpperInvariant();
+				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty);
 
 				// trim any prefixes from type names
 				string tableTypeName = p.TypeName;
