@@ -20,7 +20,7 @@ namespace Insight.Tests
 	{
 		public override void SetUpFixture()
 		{
-			new MiniProfilerInsightDbProvider().Register();
+			MiniProfilerInsightDbProvider.RegisterProvider();
 
 			base.SetUpFixture();
 		}

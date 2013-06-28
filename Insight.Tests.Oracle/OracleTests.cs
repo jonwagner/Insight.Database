@@ -35,7 +35,7 @@ namespace Insight.Tests.Oracle
 		[TestFixtureSetUp]
 		public override void SetUpFixture()
 		{
-			new OracleInsightDbProvider().Register();
+			OracleInsightDbProvider.RegisterProvider();
 
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
 			_connectionStringBuilder.ConnectionString = "Data Source = localhost; User Id = system; Password = Password1";
