@@ -5,6 +5,7 @@ using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
 using System.Data.SqlTypes;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -161,16 +162,28 @@ namespace Insight.Database.Providers
 		/// <param name="configure">A callback method to configure the bulk copy object.</param>
 		/// <param name="options">Options for initializing the bulk copy object.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
-		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<object> configure, int? options, IDbTransaction transaction)
+		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
-			if (options == null)
-				options = (int)SqlBulkCopyOptions.Default;
+			SqlBulkCopyOptions sqlOptions = SqlBulkCopyOptions.Default;
+			if (options.HasFlag(InsightBulkCopyOptions.KeepIdentity))
+				sqlOptions |= SqlBulkCopyOptions.KeepIdentity;
+			if (options.HasFlag(InsightBulkCopyOptions.FireTriggers))
+				sqlOptions |= SqlBulkCopyOptions.FireTriggers;
+			if (options.HasFlag(InsightBulkCopyOptions.CheckConstraints))
+				sqlOptions |= SqlBulkCopyOptions.CheckConstraints;
+			if (options.HasFlag(InsightBulkCopyOptions.TableLock))
+				sqlOptions |= SqlBulkCopyOptions.TableLock;
+			if (options.HasFlag(InsightBulkCopyOptions.KeepNulls))
+				sqlOptions |= SqlBulkCopyOptions.KeepNulls;
+			if (options.HasFlag(InsightBulkCopyOptions.UseInternalTransaction))
+				sqlOptions |= SqlBulkCopyOptions.UseInternalTransaction;
 
-			using (SqlBulkCopy bulk = new SqlBulkCopy((SqlConnection)connection, (SqlBulkCopyOptions)options, (SqlTransaction)transaction))
+			using (SqlBulkCopy bulk = new SqlBulkCopy((SqlConnection)connection, sqlOptions, (SqlTransaction)transaction))
+			using (var insightBulk = new SqlInsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
 				if (configure != null)
-					configure(bulk);
+					configure(insightBulk);
 				bulk.WriteToServer(reader);
 			}
 		}
@@ -286,5 +299,90 @@ namespace Insight.Database.Providers
 
 			return p.TypeName;
 		}
+
+		#region Bulk Copy Support
+		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
+		class SqlInsightBulkCopy : InsightBulkCopy, IDisposable
+		{
+			private SqlBulkCopy _bulkCopy;
+
+			public SqlInsightBulkCopy(SqlBulkCopy bulkCopy)
+			{
+				if (bulkCopy == null) throw new ArgumentNullException("bulkCopy");
+
+				_bulkCopy = bulkCopy;
+				_bulkCopy.SqlRowsCopied += OnRowsCopied;
+			}
+
+			public override event InsightRowsCopiedEventHandler RowsCopied;
+
+			public override int BatchSize
+			{
+				get { return _bulkCopy.BatchSize; }
+				set { _bulkCopy.BatchSize = value; }
+			}
+
+			public override int BulkCopyTimeout
+			{
+				get { return _bulkCopy.BulkCopyTimeout; }
+				set { _bulkCopy.BulkCopyTimeout = value; }
+			}
+
+			public override InsightBulkCopyMappingCollection ColumnMappings
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			public override int NotifyAfter
+			{
+				get { return _bulkCopy.NotifyAfter; }
+				set { _bulkCopy.NotifyAfter = value; }
+			}
+
+			public override string DestinationTableName
+			{
+				get { return _bulkCopy.DestinationTableName; }
+				set { _bulkCopy.DestinationTableName = value; }
+			}
+
+			public override object InnerBulkCopy
+			{
+				get { return _bulkCopy; }
+			}
+
+			public void Dispose()
+			{
+				_bulkCopy.SqlRowsCopied -= OnRowsCopied;
+			}
+
+			private void OnRowsCopied(object sender, SqlRowsCopiedEventArgs e)
+			{
+				var wrappedEvent = new SqlInsightRowsCopiedEventArgs(e);
+				if (RowsCopied != null)
+					RowsCopied(sender, wrappedEvent);
+			}
+
+			class SqlInsightRowsCopiedEventArgs : InsightRowsCopiedEventArgs
+			{
+				private SqlRowsCopiedEventArgs _event;
+
+				public SqlInsightRowsCopiedEventArgs(SqlRowsCopiedEventArgs e)
+				{
+					_event = e;
+				}
+
+				public override bool Abort
+				{
+					get { return _event.Abort; }
+					set { _event.Abort = value; }
+				}
+
+				public override long RowsCopied
+				{
+					get { return _event.RowsCopied; }
+				}
+			}
+		}
+		#endregion
 	}
 }

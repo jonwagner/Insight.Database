@@ -199,7 +199,7 @@ namespace Insight.Tests.Oracle
 						array[j] = new ParentTestData() { ID = j, Dec = j, TestData = new TestData() };
 
 					// bulk load the data
-					_connection.BulkCopy("InsightTestData", array);
+					_connection.BulkCopy("InsightTestData", array, configure: bulkCopy => bulkCopy.BatchSize = 10);
 
 					// run the query
 					var items = _connection.QuerySql<ParentTestData>("SELECT * FROM InsightTestData");

@@ -85,10 +85,10 @@ namespace Insight.Tests
 
 			// bulk load the data
 			long totalRows = 0;
-			_sqlConnection.BulkCopy("InsightTestData", array, configure: (SqlBulkCopy bulkCopy) =>
+			_sqlConnection.BulkCopy("InsightTestData", array, configure: (InsightBulkCopy bulkCopy) =>
 			{
 				bulkCopy.NotifyAfter = 1;
-				bulkCopy.SqlRowsCopied += (sender, args) => totalRows = args.RowsCopied;
+				bulkCopy.RowsCopied += (sender, args) => totalRows = args.RowsCopied;
 			});
 
 			// run the query

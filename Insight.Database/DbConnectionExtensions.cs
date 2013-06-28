@@ -1407,9 +1407,9 @@ namespace Insight.Database
 			this IDbConnection connection,
 			string tableName,
 			IEnumerable<T> list,
-			Action<object> configure = null,
+			Action<InsightBulkCopy> configure = null,
 			bool closeConnection = false,
-			int? options = null,
+			InsightBulkCopyOptions options = InsightBulkCopyOptions.Default,
 			IDbTransaction transaction = null)
 		{
 			var provider = InsightDbProvider.For(connection);
@@ -1441,30 +1441,6 @@ namespace Insight.Database
 				if (closeConnection)
 					connection.Close();
 			}
-		}
-
-		/// <summary>
-		/// Bulk copy a list of objects to the server. This method supports auto-open.
-		/// </summary>
-		/// <typeparam name="T">The type of the objects.</typeparam>
-		/// <typeparam name="TBulkCopy">The type of the bulk copy object to configure.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="tableName">The name of the table.</param>
-		/// <param name="list">The list of objects.</param>
-		/// <param name="configure">A callback for initialization of the BulkCopy object. The object is provider-dependent.</param>
-		/// <param name="closeConnection">True to close the connection when complete.</param>
-		/// <param name="options">The options to use for the bulk copy.</param>
-		/// <param name="transaction">An optional external transaction.</param>
-		public static void BulkCopy<T, TBulkCopy>(
-			this IDbConnection connection,
-			string tableName,
-			IEnumerable<T> list,
-			Action<TBulkCopy> configure,
-			bool closeConnection = false,
-			int? options = null,
-			IDbTransaction transaction = null)
-		{
-			connection.BulkCopy(tableName, list, o => configure((TBulkCopy)o), closeConnection, options, transaction);
 		}
 		#endregion
 

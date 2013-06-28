@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -166,19 +167,21 @@ namespace Insight.Database.Providers.Oracle
 		/// <param name="configure">A callback method to configure the bulk copy object.</param>
 		/// <param name="options">Options for initializing the bulk copy object.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
-		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<object> configure, int? options, IDbTransaction transaction)
+		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
 			if (transaction != null)
 				throw new ArgumentException("OracleProvider does not support external transactions for bulk copy", "transaction");
 
-			if (options == null)
-				options = (int)OracleBulkCopyOptions.Default;
+			OracleBulkCopyOptions oracleOptions = OracleBulkCopyOptions.Default;
+			if (options.HasFlag(InsightBulkCopyOptions.UseInternalTransaction))
+				oracleOptions |= OracleBulkCopyOptions.UseInternalTransaction;
 
-			using (var bulk = new OracleBulkCopy((OracleConnection)connection, (OracleBulkCopyOptions)options))
+			using (var bulk = new OracleBulkCopy((OracleConnection)connection, oracleOptions))
+			using (var oracleBulk = new OracleInsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
 				if (configure != null)
-					configure(bulk);
+					configure(oracleBulk);
 				bulk.WriteToServer(reader);
 			}
 		}
@@ -214,5 +217,90 @@ namespace Insight.Database.Providers.Oracle
 
 			return false;
 		}
+
+		#region Bulk Copy Support
+		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
+		class OracleInsightBulkCopy : InsightBulkCopy, IDisposable
+		{
+			private OracleBulkCopy _bulkCopy;
+
+			public OracleInsightBulkCopy(OracleBulkCopy bulkCopy)
+			{
+				if (bulkCopy == null) throw new ArgumentNullException("bulkCopy");
+
+				_bulkCopy = bulkCopy;
+				_bulkCopy.OracleRowsCopied += OnRowsCopied;
+			}
+
+			public override event InsightRowsCopiedEventHandler RowsCopied;
+
+			public override int BatchSize
+			{
+				get { return _bulkCopy.BatchSize; }
+				set { _bulkCopy.BatchSize = value; }
+			}
+
+			public override int BulkCopyTimeout
+			{
+				get { return _bulkCopy.BulkCopyTimeout; }
+				set { _bulkCopy.BulkCopyTimeout = value; }
+			}
+
+			public override InsightBulkCopyMappingCollection ColumnMappings
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			public override int NotifyAfter
+			{
+				get { return _bulkCopy.NotifyAfter; }
+				set { _bulkCopy.NotifyAfter = value; }
+			}
+
+			public override string DestinationTableName
+			{
+				get { return _bulkCopy.DestinationTableName; }
+				set { _bulkCopy.DestinationTableName = value; }
+			}
+
+			public override object InnerBulkCopy
+			{
+				get { return _bulkCopy; }
+			}
+
+			public void Dispose()
+			{
+				_bulkCopy.OracleRowsCopied -= OnRowsCopied;
+			}
+
+			private void OnRowsCopied(object sender, OracleRowsCopiedEventArgs e)
+			{
+				var wrappedEvent = new OracleInsightRowsCopiedEventArgs(e);
+				if (RowsCopied != null)
+					RowsCopied(sender, wrappedEvent);
+			}
+
+			class OracleInsightRowsCopiedEventArgs : InsightRowsCopiedEventArgs
+			{
+				private OracleRowsCopiedEventArgs _event;
+
+				public OracleInsightRowsCopiedEventArgs(OracleRowsCopiedEventArgs e)
+				{
+					_event = e;
+				}
+
+				public override bool Abort
+				{
+					get { return _event.Abort; }
+					set { _event.Abort = value; }
+				}
+
+				public override long RowsCopied
+				{
+					get { return _event.RowsCopied; }
+				}
+			}
+		}
+		#endregion
 	}
 }
