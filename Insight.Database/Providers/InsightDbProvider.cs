@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -211,25 +212,13 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Calculates the table type name for a table parameter.
+		/// Set up a table-valued parameter to a procedure.
 		/// </summary>
-		/// <param name="command">The related command object.</param>
-		/// <param name="parameter">The parameter to test.</param>
-		/// <param name="listType">The type of object being stored in the table.</param>
-		/// <returns>The name of the table parameter.</returns>
-		public virtual string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
-		{
-			return null;
-		}
-
-		/// <summary>
-		/// Gets the schema for a given user-defined table type.
-		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <param name="parameter">The parameter to use.</param>
-		/// <returns>An open reader with the schema.</returns>
-		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
-		public virtual IDataReader GetTableTypeSchema(IDbCommand command, IDataParameter parameter)
+		/// <param name="command">The command to operate on.</param>
+		/// <param name="parameter">The parameter to set up.</param>
+		/// <param name="list">The list of records.</param>
+		/// <param name="listType">The type of object in the list.</param>
+		public virtual void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, IEnumerable list, Type listType)
 		{
 			throw new NotImplementedException();
 		}

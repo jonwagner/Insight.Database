@@ -30,6 +30,7 @@
     <StyleCopOverrideSettingsFile>$(ProjectDir)\Settings.StyleCop</StyleCopOverrideSettingsFile>
     <StyleCopEnabled>False</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -44,6 +45,7 @@
     <StyleCopOverrideSettingsFile>$(ProjectDir)\Settings.StyleCop</StyleCopOverrideSettingsFile>
     <StyleCopEnabled>True</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MiniProfiler">

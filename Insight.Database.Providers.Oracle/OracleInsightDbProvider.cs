@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -8,7 +9,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Oracle.DataAccess.Client;
 
-namespace Insight.Database.Providers
+namespace Insight.Database.Providers.Oracle
 {
 	/// <summary>
 	/// Implements the Insight provider for Oracle ODP.NET connections.
@@ -91,6 +92,40 @@ namespace Insight.Database.Providers
 		public override string GetTableSchemaSql(IDbConnection connection, string tableName)
 		{
 			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} WHERE rownum = 0", tableName);
+		}
+
+		/// <summary>
+		/// Set up a table-valued parameter to a procedure.
+		/// </summary>
+		/// <param name="command">The command to operate on.</param>
+		/// <param name="parameter">The parameter to set up.</param>
+		/// <param name="list">The list of records.</param>
+		/// <param name="listType">The type of object in the list.</param>
+		public override void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, IEnumerable list, Type listType)
+		{
+			if (parameter == null) throw new ArgumentNullException("parameter");
+
+			// of the many sad things in Oracle, we have to have an array to send the list to the server.
+
+			// return arrays directly
+			if (list is Array)
+			{
+				parameter.Value = list;
+				return;
+			}
+
+			// this can handle any type that is already a list
+			ICollection ilist = list as ICollection;
+			if (ilist != null)
+			{
+				var array = new object[ilist.Count];
+				ilist.CopyTo(array, 0);
+				parameter.Value = array;
+				return;
+			}
+
+			// enumerate the rest :(
+			parameter.Value = list.Cast<object>().ToArray();
 		}
 
 		/// <summary>

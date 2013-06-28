@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Data;
 using System.Diagnostics.CodeAnalysis;
 using System.Dynamic;
@@ -592,11 +593,6 @@ namespace Insight.Database.CodeGenerator
 		internal static class ListParameterHelper
 		{
 			/// <summary>
-			/// Cache for Table-Valued Parameter schemas.
-			/// </summary>
-			private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
-
-			/// <summary>
 			/// The regex to detect parameters.
 			/// </summary>
 			private static string _parameterPrefixRegex = "[?@:]";
@@ -703,27 +699,7 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="listType">The type that the list contains.</param>
 			private static void AddListParameterByClass(IDataParameter parameter, IEnumerable list, IDbCommand command, Type listType)
 			{
-				var provider = InsightDbProvider.For(command);
-
-				// allow the provider to make sure the table parameter is set up properly
-				string tableTypeName = provider.GetTableParameterTypeName(command, parameter, listType);
-
-				// see if we already have a reader for the given type and table type name
-				// we can't use the schema cache because we don't have a schema yet
-				var key = Tuple.Create<string, Type>(tableTypeName, listType);
-				ObjectReader objectReader = _tvpReaders.GetOrAdd(
-					key,
-					k => command.Connection.ExecuteAndAutoClose(
-						_ => null,
-						(_, __) =>
-						{
-							using (var reader = provider.GetTableTypeSchema(command, parameter))
-								return ObjectReader.GetObjectReader(command, reader, listType);
-						},
-						CommandBehavior.Default));
-
-				// create the structured parameter
-				parameter.Value = new ObjectListDbDataReader(objectReader, list as IEnumerable);
+				InsightDbProvider.For(command).SetupTableValuedParameter(command, parameter, list, listType);
 			}
 		}
 		#endregion

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -9,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Insight.Database.CodeGenerator;
 
 namespace Insight.Database.Providers
 {
@@ -21,6 +23,11 @@ namespace Insight.Database.Providers
 		/// The prefix used on parameter names.
 		/// </summary>
 		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+		/// <summary>
+		/// Cache for Table-Valued Parameter schemas.
+		/// </summary>
+		private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
 
 		/// <summary>
 		/// Gets the types of objects that this provider supports.
@@ -79,20 +86,33 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Gets the schema for a given user-defined table type.
+		/// Set up a table-valued parameter to a procedure.
 		/// </summary>
-		/// <param name="command">The command to use.</param>
-		/// <param name="parameter">The parameter to use.</param>
-		/// <returns>An open reader with the schema.</returns>
-		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
-		public override IDataReader GetTableTypeSchema(IDbCommand command, IDataParameter parameter)
+		/// <param name="command">The command to operate on.</param>
+		/// <param name="parameter">The parameter to set up.</param>
+		/// <param name="list">The list of records.</param>
+		/// <param name="listType">The type of object in the list.</param>
+		public override void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, System.Collections.IEnumerable list, Type listType)
 		{
-			if (command == null) throw new ArgumentNullException("command");
+			// allow the provider to make sure the table parameter is set up properly
+			string tableTypeName = GetTableParameterTypeName(parameter, listType);
 
-			// select a 0 row result set so we can determine the schema of the table
-			SqlParameter p = (SqlParameter)parameter;
-			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", p.TypeName);
-			return command.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: command.Transaction);
+			// see if we already have a reader for the given type and table type name
+			// we can't use the schema cache because we don't have a schema yet
+			var key = Tuple.Create<string, Type>(tableTypeName, listType);
+			ObjectReader objectReader = _tvpReaders.GetOrAdd(
+				key,
+				k => command.Connection.ExecuteAndAutoClose(
+					_ => null,
+					(_, __) =>
+					{
+						using (var reader = GetTableTypeSchema(command, parameter))
+							return ObjectReader.GetObjectReader(command, reader, listType);
+					},
+					CommandBehavior.Default));
+
+			// create the structured parameter
+			parameter.Value = new ObjectListDbDataReader(objectReader, list);
 		}
 
 		/// <summary>
@@ -105,29 +125,6 @@ namespace Insight.Database.Providers
 		{
 			SqlParameter p = parameter as SqlParameter;
 			return p.SqlDbType == SqlDbType.Structured;
-		}
-
-		/// <summary>
-		/// Calculates the table type name for a table parameter.
-		/// </summary>
-		/// <param name="command">The related command object.</param>
-		/// <param name="parameter">The parameter to test.</param>
-		/// <param name="listType">The type of object being stored in the table.</param>
-		/// <returns>The name of the table parameter.</returns>
-		public override string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
-		{
-			if (parameter == null) throw new ArgumentNullException("parameter");
-			if (listType == null) throw new ArgumentNullException("listType");
-
-			SqlParameter p = parameter as SqlParameter;
-
-			if (String.IsNullOrEmpty(p.TypeName))
-			{
-				p.SqlDbType = SqlDbType.Structured;
-				p.TypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
-			}
-
-			return p.TypeName;
 		}
 
 		/// <summary>
@@ -249,6 +246,45 @@ namespace Insight.Database.Providers
 				if (typeParameter != null)
 					p.TypeName = String.Format("[{0}].[{1}]", typeParameter.SchemaName, typeParameter.TypeName);
 			}
+		}
+
+		/// <summary>
+		/// Gets the schema for a given user-defined table type.
+		/// </summary>
+		/// <param name="command">The command to use.</param>
+		/// <param name="parameter">The parameter to use.</param>
+		/// <returns>An open reader with the schema.</returns>
+		/// <remarks>The caller is responsible for closing the reader and the connection.</remarks>
+		private static IDataReader GetTableTypeSchema(IDbCommand command, IDataParameter parameter)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+
+			// select a 0 row result set so we can determine the schema of the table
+			SqlParameter p = (SqlParameter)parameter;
+			string sql = String.Format(CultureInfo.InvariantCulture, "DECLARE @schema {0} SELECT TOP 0 * FROM @schema", p.TypeName);
+			return command.Connection.GetReaderSql(sql, commandBehavior: CommandBehavior.SchemaOnly, transaction: command.Transaction);
+		}
+
+		/// <summary>
+		/// Calculates the table type name for a table parameter.
+		/// </summary>
+		/// <param name="parameter">The parameter to test.</param>
+		/// <param name="listType">The type of object being stored in the table.</param>
+		/// <returns>The name of the table parameter.</returns>
+		private static string GetTableParameterTypeName(IDataParameter parameter, Type listType)
+		{
+			if (parameter == null) throw new ArgumentNullException("parameter");
+			if (listType == null) throw new ArgumentNullException("listType");
+
+			SqlParameter p = parameter as SqlParameter;
+
+			if (String.IsNullOrEmpty(p.TypeName))
+			{
+				p.SqlDbType = SqlDbType.Structured;
+				p.TypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
+			}
+
+			return p.TypeName;
 		}
 	}
 }

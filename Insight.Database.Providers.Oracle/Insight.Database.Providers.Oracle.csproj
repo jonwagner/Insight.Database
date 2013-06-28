@@ -30,6 +30,7 @@
     <StyleCopOverrideSettingsFile>$(ProjectDir)\Settings.StyleCop</StyleCopOverrideSettingsFile>
     <StyleCopEnabled>False</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -57,7 +58,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="OracleArray.cs" />
+    <Compile Include="OracleArrayFactory.cs" />
+    <Compile Include="OracleCustomType.cs" />
     <Compile Include="OracleInsightDbProvider.cs" />
+    <Compile Include="OracleObjectFactory.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>

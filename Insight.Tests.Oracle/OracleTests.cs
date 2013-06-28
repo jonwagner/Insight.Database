@@ -4,11 +4,12 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
-using Insight.Database.Providers;
+using Insight.Database.Providers.Oracle;
 using Insight.Database.Reliable;
 using Moq;
 using NUnit.Framework;
 using Oracle.DataAccess.Client;
+using Oracle.DataAccess.Types;
 
 namespace Insight.Tests.Oracle
 {
@@ -242,5 +243,55 @@ namespace Insight.Tests.Oracle
 
 			Assert.AreEqual(1, retries);
 		}
+
+		#region Table-Valued Parameter Tests
+		public class TvpData : OracleCustomType
+		{
+			[OracleObjectMapping("X")]
+			public int? X { get; set; }
+			[OracleObjectMapping("Z")]
+			public int Z { get; set; }
+
+			public override void FromCustomObject(OracleConnection con, IntPtr pUdt)
+			{
+				if (X.HasValue)
+					OracleUdt.SetValue(con, pUdt, 0, X);
+				OracleUdt.SetValue(con, pUdt, 1, Z);
+			}
+		}
+
+		[OracleCustomTypeMapping("SYSTEM.ORACLEINSIGHTTESTTYPE")]
+		public class TvpDataFactory : OracleObjectFactory<TvpData>
+		{
+		}
+
+		[OracleCustomTypeMapping("SYSTEM.ORACLEINSIGHTTESTTABLE")]
+		public class TvpDataArrayFactory : OracleArrayFactory<TvpData>
+		{
+		}
+
+		[Test]
+		public void TestTableValuedParameters()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE OR REPLACE TYPE OracleInsightTestType AS OBJECT (x int, z int)");
+				_connection.ExecuteSql("CREATE OR REPLACE TYPE OracleInsightTestTable AS TABLE OF OracleInsightTestType");
+				_connection.ExecuteSql("CREATE OR REPLACE PROCEDURE OracleInsightTestTableProc (t OracleInsightTestTable, rs out sys_refcursor) IS BEGIN OPEN rs FOR SELECT * FROM TABLE(t); END;");
+
+				var list = new List<TvpData>();
+				list.Add(new TvpData() { X = 1, Z = 2 });
+				var results = _connection.Query("OracleInsightTestTableProc", new { t = list });
+				dynamic result = results[0];
+				Assert.AreEqual(1, result.X);
+				Assert.AreEqual(2, result.Z);
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP PROCEDURE OracleInsightTestTableProc"); } catch {}
+				try { _connection.ExecuteSql("DROP TYPE OracleInsightTestTable"); } catch {}
+			}
+		}
+		#endregion
 	}
 }
