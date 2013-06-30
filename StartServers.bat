@@ -1,0 +1,2 @@
+net start OracleServiceXE
+net start OracleXETNSListener
