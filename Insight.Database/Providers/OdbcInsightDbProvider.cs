@@ -15,6 +15,14 @@ namespace Insight.Database.Providers
 	class OdbcInsightDbProvider : InsightDbProvider
 	{
 		/// <summary>
+		/// The list of types supported by this provider.
+		/// </summary>
+		private static Type[] _supportedTypes = new Type[]
+		{
+			typeof(OdbcConnectionStringBuilder), typeof(OdbcConnection), typeof(OdbcCommand), typeof(OdbcDataReader), typeof(OdbcException)
+		};
+
+		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -22,7 +30,7 @@ namespace Insight.Database.Providers
 		{
 			get
 			{
-				return new Type[] { typeof(OdbcConnectionStringBuilder), typeof(OdbcConnection), typeof(OdbcCommand), typeof(OdbcDataReader), typeof(OdbcException) };
+				return _supportedTypes;
 			}
 		}
 

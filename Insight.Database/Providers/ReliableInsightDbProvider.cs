@@ -14,6 +14,14 @@ namespace Insight.Database.Providers
 	class ReliableInsightDbProvider : WrappedInsightDbProvider
 	{
 		/// <summary>
+		/// The list of types supported by this provider.
+		/// </summary>
+		private static Type[] _supportedTypes = new Type[]
+		{
+			typeof(ReliableConnection), typeof(ReliableCommand)
+		};
+
+		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -21,7 +29,7 @@ namespace Insight.Database.Providers
 		{
 			get
 			{
-				return new Type[] { typeof(ReliableConnection), typeof(ReliableCommand) };
+				return _supportedTypes;
 			}
 		}
 

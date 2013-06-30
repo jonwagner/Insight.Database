@@ -18,6 +18,14 @@ namespace Insight.Database.Providers.OracleManaged
 	public class OracleInsightDbProvider : InsightDbProvider
 	{
 		/// <summary>
+		/// The list of types supported by this provider.
+		/// </summary>
+		private static Type[] _supportedTypes = new Type[]
+		{
+			typeof(OracleConnectionStringBuilder), typeof(OracleConnection), typeof(OracleCommand), typeof(OracleDataReader), typeof(OracleException)
+		};
+	
+		/// <summary>
 		/// Prevents a default instance of the <see cref="OracleInsightDbProvider"/> class from being created.
 		/// </summary>
 		private OracleInsightDbProvider()
@@ -32,7 +40,7 @@ namespace Insight.Database.Providers.OracleManaged
 		{
 			get
 			{
-				return new Type[] { typeof(OracleConnectionStringBuilder), typeof(OracleConnection), typeof(OracleCommand), typeof(OracleDataReader), typeof(OracleException) };
+				return _supportedTypes;
 			}
 		}
 
