@@ -184,7 +184,7 @@ namespace Insight.Database.Providers
 		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
 		public virtual string GenerateEmptySql(IDbCommand command)
 		{
-			return "SELECT NULL WHERE 1 = 0";
+			return "(SELECT NULL WHERE 1 = 0)";
 		}
 
 		/// <summary>

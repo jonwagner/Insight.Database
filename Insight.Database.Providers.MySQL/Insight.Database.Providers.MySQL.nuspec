@@ -1,0 +1,25 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Insight.Database.Providers.MySql</id>
+    <version>3.0.0</version>
+    <title>Insight.Database.Providers.MySql</title>
+    <authors>Jon Wagner</authors>
+	  <description>
+		  An Insight.Database provider for MySql so the two can play together nicely.
+	  </description>
+	  <language>en-US</language>
+    <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
+    <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
+    <tags>Insight orm sql mysql micro-orm profiler miniprofiler</tags>
+    <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
+	<dependencies>
+		<dependency id="Insight.Database" version="3.0.0"></dependency>
+		<dependency id="MySql.Data"></dependency>
+	</dependencies>
+  </metadata>
+  <files>
+    <file src="\bin\Release\Insight.Database.Providers.MySql.dll" target="lib" />
+    <file src="\bin\Release\Insight.Database.Providers.MySql.pdb" target="lib" />
+  </files>
+</package>
