@@ -13,6 +13,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Building.txt = Building.txt
 		License.txt = License.txt
 		Settings.StyleCop = Settings.StyleCop
+		StartServers.bat = StartServers.bat
+		StopServers.bat = StopServers.bat
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Sample", "Insight.Database.Sample\Insight.Database.Sample.csproj", "{89533C41-533A-47BD-BCF3-51C7AA1B8718}"
@@ -36,6 +38,10 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.MySql", "Insight.Database.Providers.MySql\Insight.Database.Providers.MySql.csproj", "{4C56215E-8A87-4C3C-82B2-30B514F109E5}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.MySql", "Insight.Tests.MySql\Insight.Tests.MySql.csproj", "{1086C0C2-F450-4E18-8A12-9CD2B92C646D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.PostgreSQL", "Insight.Database.Providers.PostgreSQL\Insight.Database.Providers.PostgreSQL.csproj", "{6598555D-5974-4ACA-86D2-A136C0AF3797}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.PostgreSQL", "Insight.Tests.PostgreSQL\Insight.Tests.PostgreSQL.csproj", "{E33BF471-D602-4366-B4CA-17A16E91F49E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -147,6 +153,26 @@ Global
 		{1086C0C2-F450-4E18-8A12-9CD2B92C646D}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{1086C0C2-F450-4E18-8A12-9CD2B92C646D}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{1086C0C2-F450-4E18-8A12-9CD2B92C646D}.Release|x86.ActiveCfg = Release|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{6598555D-5974-4ACA-86D2-A136C0AF3797}.Release|x86.ActiveCfg = Release|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

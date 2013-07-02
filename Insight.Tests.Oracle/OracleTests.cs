@@ -290,6 +290,7 @@ namespace Insight.Tests.Oracle
 			{
 				try { _connection.ExecuteSql("DROP PROCEDURE OracleInsightTestTableProc"); } catch {}
 				try { _connection.ExecuteSql("DROP TYPE OracleInsightTestTable"); } catch {}
+				try { _connection.ExecuteSql("DROP TYPE OracleInsightTestType"); } catch { }
 			}
 		}
 		#endregion

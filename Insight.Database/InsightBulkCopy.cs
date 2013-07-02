@@ -107,17 +107,17 @@ namespace Insight.Database
 	/// </summary>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
-	public abstract class InsightRowsCopiedEventArgs
+	public class InsightRowsCopiedEventArgs
 	{
 		/// <summary>
 		/// Gets or sets a value indicating whether the bulk copy should be aborted.
 		/// </summary>
-		public abstract bool Abort { get; set; }
+		public virtual bool Abort { get; set; }
 
 		/// <summary>
-		/// Gets the number of rows copied so far.
+		/// Gets or sets the number of rows copied so far.
 		/// </summary>
-		public abstract long RowsCopied { get; }
+		public virtual long RowsCopied { get; set; }
 	}
 	
 	/// <summary>

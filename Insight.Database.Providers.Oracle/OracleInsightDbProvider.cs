@@ -84,16 +84,6 @@ namespace Insight.Database.Providers.Oracle
 		}
 
 		/// <summary>
-		/// Returns a string that represents selecting an empty recordset with a single column.
-		/// </summary>
-		/// <param name="command">The command associated with the reader.</param>
-		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
-		public override string GenerateEmptySql(IDbCommand command)
-		{
-			return "SELECT * FROM dual WHERE 1 = 0";
-		}
-
-		/// <summary>
 		/// Determines if a parameter is an XML type parameter.
 		/// </summary>
 		/// <param name="command">The related command object.</param>

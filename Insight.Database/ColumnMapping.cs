@@ -280,7 +280,7 @@ namespace Insight.Database
 			if (e.Reader != null)
 				e.TargetFieldName = e.Reader.GetName(e.FieldIndex);
 			else if (e.Parameters != null)
-				e.TargetFieldName = e.Parameters[e.FieldIndex].ToString();
+				e.TargetFieldName = e.Parameters[e.FieldIndex].ParameterName;
 			else
 				throw new InvalidOperationException("DefaultMappingHandler requires either a Reader or Parameters list.");
 		}

@@ -1,26 +1,26 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>Insight.Database.Providers.OracleManaged</id>
+    <id>Insight.Database.Providers.PostgreSQL</id>
     <version>3.0.0</version>
-    <title>Insight.Database.Providers.OracleManaged</title>
+    <title>Insight.Database.Providers.PostgreSQL</title>
     <authors>Jon Wagner</authors>
     <description>
-		An Oracle ODP.NET Managed Driver provider for Insight.Database so Insight.Database can do its magic on Oracle.
-		Automatically installs Oracle ODP.NET Managed Driver. Depends on Insight.Database.
+		A PostgreSQL provider for Insight.Database so Insight.Database can do its magic on PostgreSQL.
+		Automatically installs Npgsql PostgreSQL driver.
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
     <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
-    <tags>Insight orm sql oracle managed micro-orm</tags>
+    <tags>Insight orm sql postgre postgresql managed micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	  <dependencies>
 		  <dependency id="Insight.Database" version="3.0.0"></dependency>
-		  <dependency id="odp.net.managed"></dependency>
+		  <dependency id="Npgsql"></dependency>
 	  </dependencies>
   </metadata>
   <files>
-    <file src="\bin\Release\Insight.Database.Providers.OracleManaged.dll" target="lib" />
-    <file src="\bin\Release\Insight.Database.Providers.OracleManaged.pdb" target="lib" />
+    <file src="\bin\Release\Insight.Database.Providers.PostgreSQL.dll" target="lib" />
+    <file src="\bin\Release\Insight.Database.Providers.PostgreSQL.pdb" target="lib" />
   </files>
 </package>

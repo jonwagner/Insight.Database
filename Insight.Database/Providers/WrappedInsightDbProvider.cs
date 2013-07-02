@@ -75,17 +75,6 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Returns a string that represents selecting an empty recordset with a single column.
-		/// </summary>
-		/// <param name="command">The related command object.</param>
-		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
-		public override string GenerateEmptySql(IDbCommand command)
-		{
-			command = GetInnerCommand(command);
-			return InsightDbProvider.For(command).GenerateEmptySql(command);
-		}
-
-		/// <summary>
 		/// Determines if a parameter is an XML type parameter.
 		/// </summary>
 		/// <param name="command">The related command object.</param>

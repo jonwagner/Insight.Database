@@ -666,8 +666,7 @@ namespace Insight.Database.CodeGenerator
 
 				if (count == 0)
 				{
-					var emptyRows = InsightDbProvider.For(command).GenerateEmptySql(command);
-					command.CommandText = Regex.Replace(command.CommandText, _parameterPrefixRegex + Regex.Escape(parameterName), emptyRows, RegexOptions.IgnoreCase);
+					command.CommandText = Regex.Replace(command.CommandText, _parameterPrefixRegex + Regex.Escape(parameterName), "NULL", RegexOptions.IgnoreCase);
 				}
 				else
 				{

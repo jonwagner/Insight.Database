@@ -178,16 +178,6 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Returns a string that represents selecting an empty recordset with a single column.
-		/// </summary>
-		/// <param name="command">The related command object.</param>
-		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
-		public virtual string GenerateEmptySql(IDbCommand command)
-		{
-			return "(SELECT NULL WHERE 1 = 0)";
-		}
-
-		/// <summary>
 		/// Determines if a parameter is an XML type parameter.
 		/// </summary>
 		/// <param name="command">The related command object.</param>

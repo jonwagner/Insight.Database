@@ -93,16 +93,6 @@ namespace Insight.Database.Providers.MySql
 		}
 
 		/// <summary>
-		/// Returns a string that represents selecting an empty recordset with a single column.
-		/// </summary>
-		/// <param name="command">The related command object.</param>
-		/// <returns>A string that represents selecting an empty recordset with a single column</returns>
-		public override string GenerateEmptySql(IDbCommand command)
-		{
-			return "NULL";
-		}
-
-		/// <summary>
 		/// Returns SQL that queries a table for the schema only, no rows.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>
