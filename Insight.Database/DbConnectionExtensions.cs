@@ -1377,6 +1377,132 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region QueryOnto Members
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as Insert.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The object after merging the results.</returns>
+		public static TResult QueryOnto<TResult>(
+			this IDbConnection connection,
+			string sql,
+			TResult onto,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.Insert(sql, onto, parameters, commandType, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as Insert.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The object after merging the results.</returns>
+		public static TResult QueryOntoSql<TResult>(
+			this IDbConnection connection,
+			string sql,
+			TResult onto,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.InsertSql<TResult>(sql, onto, parameters, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as Insert.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The list of objects after merging the results.</returns>
+		public static IEnumerable<TResult> QueryOntoList<TResult>(
+			this IDbConnection connection,
+			string sql,
+			IEnumerable<TResult> onto,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.InsertList(sql, onto, parameters, commandType, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+		/// <summary>
+		/// Executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as Insert.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The list of objects after merging the results.</returns>
+		public static IEnumerable<TResult> QueryOntoListSql<TResult>(
+			this IDbConnection connection,
+			string sql,
+			IEnumerable<TResult> onto,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.InsertListSql(sql, onto, parameters, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+		#endregion
+
 		#region Interface Members
 		/// <summary>
 		/// Uses a DbConnection to implement an interface. Calls to the interface are automatically mapped to stored procedure calls.

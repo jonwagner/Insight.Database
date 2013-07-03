@@ -1056,6 +1056,132 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region QueryOnto Methods
+		/// <summary>
+		/// Asynchronously executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as InsertAsync.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A task whose completion is the object after merging the results.</returns>
+		public static Task<TResult> QueryOntoAsync<TResult>(
+			this IDbConnection connection,
+			string sql,
+			TResult onto,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.InsertAsync(sql, onto, parameters, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as InsertAsync.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A task whose completion is the object after merging the results.</returns>
+		public static Task<TResult> QueryOntoSqlAsync<TResult>(
+			this IDbConnection connection,
+			string sql,
+			TResult onto,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.InsertSqlAsync(sql, onto, parameters, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as InsertAsync.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A task whose completion is the list of objects after merging the results.</returns>
+		public static Task<IEnumerable<TResult>> QueryOntoListAsync<TResult>(
+			this IDbConnection connection,
+			string sql,
+			IEnumerable<TResult> onto,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.InsertListAsync(sql, onto, parameters, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously executes the specified query and merges the results into the specified existing object.
+		/// This is the same behavior as InsertAsync.
+		/// </summary>
+		/// <typeparam name="TResult">The type of the object to merge into.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="onto">
+		/// The list of objects to be merged onto.
+		/// If null, then the results are merged into the parameters object.
+		/// </param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A task whose completion is the list of objects after merging the results.</returns>
+		public static Task<IEnumerable<TResult>> QueryOntoListSqlAsync<TResult>(
+			this IDbConnection connection,
+			string sql,
+			IEnumerable<TResult> onto,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.InsertListSqlAsync(sql, onto, parameters, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+		#endregion
+
 		#region Merge Methods
 #if NODBASYNC
 		/// <summary>
