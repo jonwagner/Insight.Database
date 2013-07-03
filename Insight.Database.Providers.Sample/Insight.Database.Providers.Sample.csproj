@@ -35,42 +35,43 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Insight.Database">
-      <HintPath>..\packages\Insight.Database.3.0.0-alpha1\lib\NET45\Insight.Database.dll</HintPath>
+      <HintPath>packages\Insight.Database.3.0.0-alpha1\lib\NET45\Insight.Database.dll</HintPath>
     </Reference>
     <Reference Include="Insight.Database.Providers.MiniProfiler">
-      <HintPath>..\packages\Insight.Database.Providers.MiniProfiler.3.0.0-alpha1\lib\Insight.Database.Providers.MiniProfiler.dll</HintPath>
+      <HintPath>packages\Insight.Database.Providers.MiniProfiler.3.0.0-alpha1\lib\Insight.Database.Providers.MiniProfiler.dll</HintPath>
     </Reference>
     <Reference Include="Insight.Database.Providers.MySql">
-      <HintPath>..\packages\Insight.Database.Providers.MySql.3.0.0-alpha1\lib\Insight.Database.Providers.MySql.dll</HintPath>
+      <HintPath>packages\Insight.Database.Providers.MySql.3.0.0-alpha1\lib\Insight.Database.Providers.MySql.dll</HintPath>
     </Reference>
     <Reference Include="Insight.Database.Providers.Oracle">
-      <HintPath>..\packages\Insight.Database.Providers.Oracle.3.0.0-alpha1\lib\Insight.Database.Providers.Oracle.dll</HintPath>
+      <HintPath>packages\Insight.Database.Providers.Oracle.3.0.0-alpha1\lib\Insight.Database.Providers.Oracle.dll</HintPath>
     </Reference>
     <Reference Include="Insight.Database.Providers.OracleManaged">
-      <HintPath>..\packages\Insight.Database.Providers.OracleManaged.3.0.0-alpha1\lib\Insight.Database.Providers.OracleManaged.dll</HintPath>
+      <HintPath>packages\Insight.Database.Providers.OracleManaged.3.0.0-alpha1\lib\Insight.Database.Providers.OracleManaged.dll</HintPath>
     </Reference>
     <Reference Include="Insight.Database.Providers.PostgreSQL">
-      <HintPath>..\packages\Insight.Database.Providers.PostgreSQL.3.0.0-alpha1\lib\Insight.Database.Providers.PostgreSQL.dll</HintPath>
+      <HintPath>packages\Insight.Database.Providers.PostgreSQL.3.0.0-alpha1\lib\Insight.Database.Providers.PostgreSQL.dll</HintPath>
     </Reference>
-    <Reference Include="MiniProfiler">
-      <HintPath>..\packages\MiniProfiler.2.0.2\lib\net40\MiniProfiler.dll</HintPath>
+    <Reference Include="MiniProfiler, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>packages\MiniProfiler.2.1.0\lib\net40\MiniProfiler.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Security">
-      <HintPath>..\packages\Npgsql.2.0.12.1\lib\net40\Mono.Security.dll</HintPath>
+      <HintPath>packages\Npgsql.2.0.12.1\lib\net40\Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="MySql.Data, Version=6.6.5.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
-      <HintPath>..\packages\MySql.Data.6.6.5\lib\net40\MySql.Data.dll</HintPath>
+      <HintPath>packages\MySql.Data.6.6.5\lib\net40\MySql.Data.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql">
-      <HintPath>..\packages\Npgsql.2.0.12.1\lib\net40\Npgsql.dll</HintPath>
+      <HintPath>packages\Npgsql.2.0.12.1\lib\net40\Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="Oracle.DataAccess, Version=4.112.2.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=x86" />
     <Reference Include="Oracle.ManagedDataAccess, Version=4.112.3.60, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <Private>True</Private>
-      <HintPath>..\packages\odp.net.managed.112.3.60\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
+      <HintPath>packages\odp.net.managed.112.3.60\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
     </Reference>
     <Reference Include="policy.2.0.Npgsql">
-      <HintPath>..\packages\Npgsql.2.0.12.1\lib\net40\policy.2.0.Npgsql.dll</HintPath>
+      <HintPath>packages\Npgsql.2.0.12.1\lib\net40\policy.2.0.Npgsql.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
