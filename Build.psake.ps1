@@ -11,6 +11,7 @@ properties {
 
     $version = git describe --abbrev=0 --tags
     $changeset = (git log -1 $version --pretty=format:%H)
+	$assemblyversion = $version.Split('-', 2)[0]
 
     $outputDir = "$baseDir\Build\Output"
     $net40Path = "$baseDir\Insight.Database\bin\NET40"
@@ -32,8 +33,8 @@ function Replace-Version {
     )
 
     (Get-Content $Path) |
-		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$version`")]" } |
-		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$version`")]" } |
+		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } |
+		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyversion`")]" } |
 		Set-Content $Path
 }
 
@@ -101,7 +102,7 @@ Task Test45 -depends Build45 {
     }
 }
 
-Task Package { # -depends Test {
+Task PackageOnly {
     Wipe-Folder $outputDir
  
     # package the snippets
@@ -116,4 +117,7 @@ Task Package { # -depends Test {
 			Invoke-Expression "$nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis"
 		}
 	}
+}
+
+Task Package -depends Test, PackageOnly {
 }
