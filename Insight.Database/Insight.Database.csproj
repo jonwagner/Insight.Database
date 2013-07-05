@@ -87,6 +87,11 @@
     <Compile Include="Providers\WrappedInsightDbProvider.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Providers\InsightDbProvider.cs" />
+    <Compile Include="Results.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Results.tt</DependentUpon>
+    </Compile>
     <Compile Include="SqlAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />
@@ -138,10 +143,17 @@
     </None>
     <None Include="packages.config" />
     <Compile Include="Providers\SqlInsightDbProvider.cs" />
+    <None Include="Results.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Results.generated.cs</LastGenOutput>
+    </None>
     <None Include="Settings.StyleCop" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
