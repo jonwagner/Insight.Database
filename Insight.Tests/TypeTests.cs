@@ -895,5 +895,26 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+
+		#region Date Tests
+		[Test]
+		public void DateFieldsShould()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC TestDateTime2 @date datetime2 AS SELECT @date");
+
+				// send datetime and datetime? to sql
+				connection.QuerySql<DateTime>("SELECT @date", new { date = DateTime.MinValue });
+				connection.QuerySql<DateTime>("SELECT @date", new { date = (DateTime?)DateTime.MinValue });
+
+				connection.Query<DateTime>("TestDateTime2", new { date = DateTime.MinValue });
+				var list = connection.Query<DateTime>("TestDateTime2", new { date = (DateTime?)DateTime.MinValue });
+
+				var result = list.First();
+				Assert.AreEqual(DateTime.MinValue, result);
+			}
+		}
+		#endregion
 	}
 }
