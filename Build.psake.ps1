@@ -96,10 +96,15 @@ Task Test40 -depends Build40 {
     }
 }
 
-Task Test45 -depends Build45 { 
-    Exec {
-        Invoke-Expression "$nunit $baseDir\Insight.Tests\bin\$configuration\Insight.Tests.dll"
-    }
+Task Test45Only {
+	Get-ChildItem $baseDir\Insight.Tests* |% {
+	    Exec {
+			Invoke-Expression "$nunit $($_.FullName)\bin\$configuration\$($_.Name).dll"
+		}
+	}
+}
+
+Task Test45 -depends Build45, Test45Only { 
 }
 
 Task PackageOnly {
@@ -111,7 +116,7 @@ Task PackageOnly {
     }
 
     # package nuget
-	Get-ChildItem Insight* |% { Get-ChildItem -Path $_ } |? Extension -eq .nuspec |% {
+	Get-ChildItem $baseDir\Insight* |% { Get-ChildItem -Path $_ } |? Extension -eq .nuspec |% {
 		Exec {
 			$nuspec = $_.FullName
 			Invoke-Expression "$nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis"
