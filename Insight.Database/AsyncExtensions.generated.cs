@@ -984,6 +984,90 @@ namespace Insight.Database
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 
+		/// <summary>
+		/// Asynchronously executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
+		/// <typeparam name="T16">The type of the data in the sixteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> QueryResultsAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
+		/// <typeparam name="T16">The type of the data in the sixteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> QueryResultsSqlAsync<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+
         #endregion
     }
 }

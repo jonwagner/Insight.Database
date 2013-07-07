@@ -31,7 +31,7 @@ namespace Insight.Database
 	public static partial class DBConnectionExtensions
 	{
 <#
-for (var typeCount = 6; typeCount <= GenericTypeMax-1; typeCount++)
+for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 {
 	var typeList = GetGenericList(typeCount, GenericTypeFormat);
 	var argList = GetGenericList(typeCount, GenericArgumentFormat);
@@ -72,6 +72,38 @@ for (var typeCount = 6; typeCount <= GenericTypeMax-1; typeCount++)
 			return connection.QueryResults<Results<<#= typeList #>>>(sql, parameters, withGraphs, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+<#
+	for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++)
+	{
+#>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+<#
+	}
+#>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<<#= typeList #>> QueryResultsSql<<#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.QueryResults<Results<<#= typeList #>>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
+		}
 <#
 }
 #>

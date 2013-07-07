@@ -758,6 +758,67 @@ namespace Insight.Database
 #endif
     }
 
+	/// <summary>
+	/// Encapsulates multiple sets of data returned from the database.
+	/// </summary>
+	/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+	/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+	/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+	/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+	/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+	/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+	/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+	/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+	/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+	/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+	/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+	/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+	/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+	/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+	/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
+	/// <typeparam name="T16">The type of the data in the sixteenth set of data.</typeparam>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance"), SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+	public class Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> : Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>
+	{
+		/// <summary>
+		/// Gets the sixteenth set of data returned from the database.
+		/// </summary>
+		public IList<T16> Set16 { get; private set; }
+
+		/// <summary>
+		/// Reads the contents from an IDataReader.
+		/// </summary>
+		/// <param name="command">The command that generated the result set.</param>
+		/// <param name="reader">The reader to read from.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		public override void Read(IDbCommand command, IDataReader reader, Type[] withGraphs = null)
+		{
+			base.Read(command, reader, withGraphs);
+
+			Type withGraph = (withGraphs != null && withGraphs.Length >= 16) ? withGraphs[15] : null;
+			Set16 = reader.ToList<T16>(withGraph);
+		}
+
+#if !NODBASYNC
+		/// <summary>
+		/// Reads the contents from an IDataReader.
+		/// </summary>
+		/// <param name="command">The command that generated the result set.</param>
+		/// <param name="reader">The reader to read from.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
+		/// <returns>A task representing the completion of this operation.</returns>
+		protected override async Task ReadAsync(IDbCommand command, IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		{
+			Type withGraph = (withGraphs != null && withGraphs.Length >= 16) ? withGraphs[15] : null;
+
+			await base.ReadAsync(command, reader, withGraphs).ConfigureAwait(false);
+
+			Set16 = await reader.ToListAsync<T16>(withGraph, cancellationToken).ConfigureAwait(false);
+		}
+#endif
+    }
+
 
 }
 

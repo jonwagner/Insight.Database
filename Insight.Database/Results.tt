@@ -16,7 +16,7 @@ using System.Threading.Tasks;
 namespace Insight.Database
 {
 <#
-for (var typeCount = 2; typeCount <= GenericTypeMax-1; typeCount++)
+for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 {
 	var prevTypeList = GetGenericList(typeCount-1, GenericTypeFormat);
 	var typeList = GetGenericList(typeCount, GenericTypeFormat);
