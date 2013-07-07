@@ -90,6 +90,11 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DBConnectionExtensions.tt</DependentUpon>
     </Compile>
+    <Compile Include="Graph.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Graph.tt</DependentUpon>
+    </Compile>
     <Compile Include="InsightBulkCopy.cs" />
     <Compile Include="Providers\OdbcInsightDbProvider.cs" />
     <Compile Include="Providers\OleDbInsightDbProvider.cs" />
@@ -157,6 +162,10 @@
       <LastGenOutput>DBConnectionExtensions.generated.cs</LastGenOutput>
     </None>
     <None Include="GenericTypes.tt" />
+    <None Include="Graph.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Graph.generated.cs</LastGenOutput>
+    </None>
     <None Include="Insight.Database.nuspec">
       <SubType>Designer</SubType>
     </None>
