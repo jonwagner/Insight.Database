@@ -38,7 +38,7 @@ namespace Insight.Tests.Oracle
 			OracleInsightDbProvider.RegisterProvider();
 
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Data Source = localhost; User Id = system; Password = Password1";
+			_connectionStringBuilder.ConnectionString = "Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=))(ADDRESS=(PROTOCOL=TCP)(HOST=127.0.0.1)(PORT=1521))); User Id = system; Password = Password1";
 			_connection = _connectionStringBuilder.Open();
 		}
 

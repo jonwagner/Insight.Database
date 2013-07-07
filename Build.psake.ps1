@@ -21,6 +21,7 @@ properties {
     $configuration = "Release"
     $nuget = "$baseDir\.nuget\nuget.exe"
     $nunit = Get-ChildItem "$baseDir\packages" -Recurse -Include nunit-console.exe
+    $nunitx86 = Get-ChildItem "$baseDir\packages" -Recurse -Include nunit-console-x86.exe
 }
 
 Task default -depends Build
@@ -99,7 +100,13 @@ Task Test40 -depends Build40 {
 Task Test45Only {
 	Get-ChildItem $baseDir\Insight.Tests* |% {
 	    Exec {
-			Invoke-Expression "$nunit $($_.FullName)\bin\$configuration\$($_.Name).dll"
+			if ($_.Name -eq 'Insight.Tests.Oracle') {
+				# having trouble getting the 64-bit drivers installed on Windows 8, so use the 32-bit drivers
+				Invoke-Expression "$nunitx86 $($_.FullName)\bin\$configuration\$($_.Name).dll"
+			}
+			else {
+				Invoke-Expression "$nunit $($_.FullName)\bin\$configuration\$($_.Name).dll"
+			}
 		}
 	}
 }

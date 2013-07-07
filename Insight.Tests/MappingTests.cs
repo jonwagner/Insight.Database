@@ -198,7 +198,7 @@ namespace Insight.Tests
 			public SqlGeography Geo;
 		}
 
-		[Test, Ignore("Requires 64-bit SQL Types DLL, switch build mode to 64-bit to run this")]
+		[Test]
 		public void GeographyParametersArePassedCorrectly()
 		{
 			// single value query

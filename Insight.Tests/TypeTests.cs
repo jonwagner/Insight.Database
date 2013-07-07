@@ -877,14 +877,14 @@ namespace Insight.Tests
 			}
 		}
 
-		[Test, Ignore]
+		[Test]
 		public void TimeSpanMathShouldWorkOnBothSides()
 		{
 			// This seems to require SQL2012 SP1 - 11.0.3000
 			// Fails on 11.0.2100
 			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				connection.ExecuteSql("CREATE PROC TimeAdd @t [datetime], @add [time] AS SELECT @t + @add");
+				connection.ExecuteSql("CREATE PROC TimeAdd @t [datetime], @add [time] AS SELECT @t + CAST(@add as [datetime])");
 
 				// make a time and a span and add them
 				DateTime now = new DateTime(1970, 2, 1, 1, 0, 5);
