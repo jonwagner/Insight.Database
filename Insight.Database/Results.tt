@@ -1,0 +1,111 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics.CodeAnalysis;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace Insight.Database
+{
+<#
+for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
+{
+	var prevTypeList = GetGenericList(typeCount-1, GenericTypeFormat);
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+	var argList = GetGenericList(typeCount, GenericArgumentFormat);
+	var paramList = GetGenericList(typeCount, GenericParameterFormat);
+#>
+	/// <summary>
+	/// Encapsulates multiple sets of data returned from the database.
+	/// </summary>
+<#
+	for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++)
+	{
+#>
+	/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+<#
+	}
+#>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance"), SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+	public class Results<<#= typeList #>> : Results<<#= prevTypeList #>>
+	{
+		/// <summary>
+		/// Gets the <#= ConvertToOrdinal(typeCount) #> set of data returned from the database.
+		/// </summary>
+		public IList<T<#= typeCount #>> Set<#= typeCount #> { get; private set; }
+
+		/// <summary>
+		/// Reads the contents from an IDataReader.
+		/// </summary>
+		/// <param name="command">The command that generated the result set.</param>
+		/// <param name="reader">The reader to read from.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		public override void Read(IDbCommand command, IDataReader reader, Type[] withGraphs = null)
+		{
+			base.Read(command, reader, withGraphs);
+
+			Type withGraph = (withGraphs != null && withGraphs.Length >= <#= typeCount #>) ? withGraphs[<#= typeCount-1 #>] : null;
+			Set<#= typeCount #> = reader.ToList<T<#= typeCount #>>(withGraph);
+		}
+
+#if !NODBASYNC
+		/// <summary>
+		/// Reads the contents from an IDataReader.
+		/// </summary>
+		/// <param name="command">The command that generated the result set.</param>
+		/// <param name="reader">The reader to read from.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use with the current operation.</param>
+		/// <returns>A task representing the completion of this operation.</returns>
+		protected override async Task ReadAsync(IDbCommand command, IDataReader reader, Type[] withGraphs = null, CancellationToken? cancellationToken = null)
+		{
+			Type withGraph = (withGraphs != null && withGraphs.Length >= <#= typeCount #>) ? withGraphs[<#= typeCount-1 #>] : null;
+
+			await base.ReadAsync(command, reader, withGraphs).ConfigureAwait(false);
+
+			Set<#= typeCount #> = await reader.ToListAsync<T<#= typeCount #>>(withGraph, cancellationToken).ConfigureAwait(false);
+		}
+#endif
+    }
+
+<#
+}
+#>
+
+}
+
+
+<#+
+private const int GenericTypeMax = 16;
+private const int GenericTypeMin = 5;
+
+private const string GenericTypeFormat = "T{0}";
+private const string GenericArgumentFormat = "T{0} arg{0}";
+private const string GenericParameterFormat = "arg{0}";
+
+private static readonly string[] ordinalNumbers = new[] { "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "nineth", "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth" };
+private static readonly string[] wordNumbers = new[] { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen" };
+
+public static string ConvertToWord(int number)
+{
+	return wordNumbers[number - 1];
+}
+
+public static string ConvertToOrdinal(int number)
+{
+	return ordinalNumbers[number - 1];
+}
+
+private static string GetGenericList(int typeCount, string format, string separator = ", ")
+{
+	return string.Join(separator, Enumerable.Range(1, typeCount).Select(n => string.Format(format, n)).ToArray());
+}
+#>
