@@ -17,6 +17,56 @@ namespace Insight.Database
 		/// Represents a null graph type.
 		/// </summary>
 		public static readonly Type Null = null;
+
+        /// <summary>
+        /// Gets the first generic argument.
+        /// </summary>
+        /// <param name="graph">The graph type.</param>
+        /// <returns>
+        /// The type of the first generic argument, 
+        /// or <c>null</c> if the <paramref name="graph"/> 
+        /// does not inherit from <see cref="Graph"/> or 
+        /// is not a generic type.
+        /// </returns>
+        internal static Type GetFirstGenericArgument(Type graph)
+	    {
+            if (graph == null)
+            {
+                throw new ArgumentNullException("graph");
+            }
+
+            Type[] types = GetGenericArguments(graph);
+            if (types != null && types.Length != 0)
+            {
+                return types[0];
+            }
+
+	        return null;
+	    }
+
+	    internal static Type[] GetGenericArguments(Type graph)
+	    {
+            if (graph == null)
+            {
+                throw new ArgumentNullException("graph");
+            }
+
+            if (graph.IsSubclassOf(typeof(Graph)))
+            {
+                while (graph != null && !graph.IsGenericType)
+                {
+                    graph = graph.BaseType;
+                }
+
+                if (graph != null)
+                {
+                    Type[] types = graph.GetGenericArguments();
+                    return types;
+                }
+            }
+	        
+            return null;
+	    }
 	}
 
 	/// <summary>
