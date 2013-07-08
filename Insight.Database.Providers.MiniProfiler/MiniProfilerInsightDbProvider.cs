@@ -33,7 +33,7 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Registers the Oracle Provider
+		/// Registers the MiniProfiler Provider
 		/// </summary>
 		public static void RegisterProvider()
 		{
