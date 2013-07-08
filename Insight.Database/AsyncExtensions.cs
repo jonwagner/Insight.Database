@@ -15,6 +15,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Extension methods to support asynchronous database operations.
 	/// </summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	public static partial class AsyncExtensions
 	{
 		#region Execute Members
@@ -676,6 +677,24 @@ namespace Insight.Database
 			}
 		}
 #endif
+		
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to deserialize from the reader.</typeparam>
+		/// <param name="task">The task returning the reader to read from.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken? cancellationToken = null)
+		{
+			if (task == null) throw new ArgumentNullException("task");
+
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			return task.ContinueWith(reader => reader.ToListAsync<TResult>(withGraph), ct).Unwrap();
+		}
 		#endregion
 
 		#region Insert Methods

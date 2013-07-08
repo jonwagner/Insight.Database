@@ -22,8 +22,110 @@ namespace Insight.Database
 	/// <summary>
 	/// Extension methods to support asynchronous database operations.
 	/// </summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	public static partial class AsyncExtensions
     {
+        #region Query Methods
+<#
+for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+	var argList = GetGenericList(typeCount, GenericArgumentFormat);
+	var paramList = GetGenericList(typeCount, GenericParameterFormat);
+#>
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+		<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QueryAsync<TResult, <#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.QueryAsync<TResult>(sql, parameters, typeof(Graph<TResult, <#= typeList #>>), commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
+		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+		<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in it.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static Task<IList<TResult>> QuerySqlAsync<TResult, <#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			return connection.QuerySqlAsync<TResult>(sql, parameters, typeof(Graph<TResult, <#= typeList #>>), commandBehavior, commandTimeout, transaction, cancellationToken);
+		}
+
+		/// <summary>
+		/// Run a command asynchronously and return a list of objects. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="T">The type of objects to return.</typeparam>
+		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+		<# } #>
+		/// <param name="cmd">The command to execute.</param>
+		/// <param name="commandBehavior">The command behavior.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A task that returns a list of objects as the result of the query.</returns>
+		public static Task<IList<T>> QueryAsync<T, <#= typeList #>>(
+			this IDbCommand cmd, 
+			System.Data.CommandBehavior commandBehavior = System.Data.CommandBehavior.Default,
+			CancellationToken? cancellationToken = null)
+		{
+			return cmd.QueryAsync<T>(typeof(Graph<T, <#= typeList #>>), commandBehavior, cancellationToken);
+		}
+
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects.
+		/// </summary>
+		/// <typeparam name="T">The type of object to return.</typeparam>
+		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+		<# } #>
+		/// <param name="task">The data reader task to continue.</param>
+		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static Task<IList<T>> ToListAsync<T, <#= typeList #>>(this Task<IDataReader> task, CancellationToken? cancellationToken = null)
+		{
+			return task.ToListAsync<T>(typeof(Graph<T, <#= typeList #>>), cancellationToken);
+		}
+
+<# } #>
+		#endregion
+
         #region QueryResults Methods
 <#
 for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
@@ -35,14 +137,9 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 		/// <summary>
 		/// Asynchronously executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-<#
-	for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++)
-	{
-#>
+		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-<#
-	}
-#>
+		<# } #>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
@@ -70,14 +167,9 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 		/// <summary>
 		/// Asynchronously executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-<#
-	for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++)
-	{
-#>
+		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-<#
-	}
-#>
+		<# } #>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
@@ -100,9 +192,7 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			return connection.QueryResultsAsync<Results<<#= typeList #>>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
 
-<#
-}
-#>
+<# } #>
         #endregion
     }
 }

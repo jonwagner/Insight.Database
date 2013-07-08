@@ -71,7 +71,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>AsyncExtensions.tt</DependentUpon>
     </Compile>
-    <Compile Include="AsyncExtensionsObsolete.cs" />
     <Compile Include="CodeGenerator\ClassDeserializerGenerator.cs" />
     <Compile Include="CodeGenerator\ClassPropInfo.cs" />
     <Compile Include="CodeGenerator\InterfaceGenerator.cs" />
@@ -110,7 +109,6 @@
     <Compile Include="SqlAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />
-    <Compile Include="DBConnectionExtensionsObsolete.cs" />
     <Compile Include="DbConnectionWrapper.cs">
       <SubType>Component</SubType>
     </Compile>

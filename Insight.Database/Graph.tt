@@ -21,20 +21,12 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 	/// Marker class that defines an object graph.
 	/// </summary>
 	/// <typeparam name="T">The type of the root-level object in the graph.</typeparam>
-<#
-	for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++)
-	{
-#>
+	<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) {#>
 	/// <typeparam name="TSub<#= typeIndex #>">The type of the <#= ConvertToOrdinal(typeIndex) #> subobject in the graph.</typeparam>
-<#
-	}
-#>
+	<# } #>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public class Graph<T, <#= typeList #>> : Graph
 	{
 	}
-
-<#
-}
-#>
+<# } #>
 }
