@@ -24,8 +24,8 @@ namespace Insight.Database
         /// <param name="graph">The graph type.</param>
         /// <returns>
         /// The type of the first generic argument, 
-        /// or <c>null</c> if the <paramref name="graph"/> 
-        /// does not inherit from <see cref="Graph"/> or 
+        /// or <c>null</c> if the <paramref name="graph"/>
+        /// does not inherit from <see cref="Graph"/> or
         /// is not a generic type.
         /// </returns>
         internal static Type GetFirstGenericArgument(Type graph)
@@ -44,7 +44,17 @@ namespace Insight.Database
 	        return null;
 	    }
 
-	    internal static Type[] GetGenericArguments(Type graph)
+        /// <summary>
+        /// Gets the list of generic arguments for a type.
+        /// </summary>
+        /// <param name="graph">The graph type.</param>
+        /// <returns>
+        /// The types of the generic arguments,
+        /// or <c>null</c> if the <paramref name="graph"/>
+        /// does not inherit from <see cref="Graph"/> or
+        /// is not a generic type.
+        /// </returns>
+		internal static Type[] GetGenericArguments(Type graph)
 	    {
             if (graph == null)
             {
@@ -75,16 +85,6 @@ namespace Insight.Database
 	/// <typeparam name="T">The type of the root-level object in the graph.</typeparam>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public class Graph<T> : Graph
-	{
-	}
-
-	/// <summary>
-	/// Marker class that defines an object graph.
-	/// </summary>
-	/// <typeparam name="T">The type of the root-level object in the graph.</typeparam>
-	/// <typeparam name="TSub1">The type of the first subobject in the graph.</typeparam>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
-	public class Graph<T, TSub1> : Graph
 	{
 	}
 }

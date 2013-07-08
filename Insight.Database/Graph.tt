@@ -11,7 +11,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Insight.Database
 {
 <#
-for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
+for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 {
 	var typeList = GetGenericList(typeCount, "TSub{0}");
 	var argList = GetGenericList(typeCount, GenericArgumentFormat);

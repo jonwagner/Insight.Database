@@ -8,6 +8,16 @@ namespace Insight.Database
 	/// </summary>
 	/// <typeparam name="T">The type of the root-level object in the graph.</typeparam>
 	/// <typeparam name="TSub1">The type of the first subobject in the graph.</typeparam>
+	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+	public class Graph<T, TSub1> : Graph
+	{
+	}
+
+	/// <summary>
+	/// Marker class that defines an object graph.
+	/// </summary>
+	/// <typeparam name="T">The type of the root-level object in the graph.</typeparam>
+	/// <typeparam name="TSub1">The type of the first subobject in the graph.</typeparam>
 	/// <typeparam name="TSub2">The type of the second subobject in the graph.</typeparam>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public class Graph<T, TSub1, TSub2> : Graph
