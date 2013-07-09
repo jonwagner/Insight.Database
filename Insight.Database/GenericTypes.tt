@@ -1,7 +1,8 @@
 ﻿<#+
+/// <summary>
+/// Helper constants for T4 templates for generic types.
+/// </summary>
 private const int GenericTypeMax = 16;
-private const int GenericTypeMin = 5;
-
 private const string GenericTypeFormat = "T{0}";
 private const string GenericArgumentFormat = "T{0} arg{0}";
 private const string GenericParameterFormat = "arg{0}";

@@ -28,8 +28,8 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -55,8 +55,8 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -80,9 +80,9 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -108,9 +108,9 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -134,10 +134,10 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -163,10 +163,10 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -190,11 +190,11 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -220,11 +220,11 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -248,12 +248,12 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -279,12 +279,12 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -308,13 +308,13 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -340,13 +340,13 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -370,14 +370,14 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -403,14 +403,14 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -434,15 +434,15 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -468,15 +468,15 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -500,16 +500,16 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -535,16 +535,16 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -568,17 +568,17 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -604,17 +604,17 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -638,18 +638,18 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -675,18 +675,18 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -710,19 +710,19 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -748,19 +748,19 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -784,20 +784,20 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -823,20 +823,20 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -860,21 +860,21 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -900,21 +900,21 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -938,22 +938,22 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -979,22 +979,22 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -1018,23 +1018,23 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
-				/// <typeparam name="T16">The type of the data in the sixteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
+		/// <typeparam name="T16">The type of the data in the sixteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -1060,23 +1060,23 @@ namespace Insight.Database
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return.</typeparam>
-				/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
-				/// <typeparam name="T16">The type of the data in the sixteenth subobject.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth subobject.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth subobject.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth subobject.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh subobject.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth subobject.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth subobject.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth subobject.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth subobject.</typeparam>
+		/// <typeparam name="T16">The type of the data in the sixteenth subobject.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="commandType">The type of the command.</param>
@@ -1101,9 +1101,9 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1130,9 +1130,9 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1156,10 +1156,10 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1186,10 +1186,10 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1213,11 +1213,11 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1244,11 +1244,11 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1272,12 +1272,12 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1304,12 +1304,12 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1333,13 +1333,13 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1366,13 +1366,13 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1396,14 +1396,14 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1430,14 +1430,14 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1461,15 +1461,15 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1496,15 +1496,15 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1528,16 +1528,16 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1564,16 +1564,16 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1597,17 +1597,17 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1634,17 +1634,17 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1668,18 +1668,18 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1706,18 +1706,18 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1741,19 +1741,19 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1780,19 +1780,19 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1816,20 +1816,20 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1856,20 +1856,20 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1893,21 +1893,21 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1934,21 +1934,21 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -1972,22 +1972,22 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -2014,22 +2014,22 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -2053,23 +2053,23 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
-				/// <typeparam name="T16">The type of the data in the sixteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
+		/// <typeparam name="T16">The type of the data in the sixteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
@@ -2096,23 +2096,23 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-				/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
-				/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
-				/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
-				/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
-				/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
-				/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
-				/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
-				/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
-				/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
-				/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
-				/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
-				/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
-				/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
-				/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
-				/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
-				/// <typeparam name="T16">The type of the data in the sixteenth set of data.</typeparam>
-				/// <param name="connection">The connection to use.</param>
+		/// <typeparam name="T1">The type of the data in the first set of data.</typeparam>
+		/// <typeparam name="T2">The type of the data in the second set of data.</typeparam>
+		/// <typeparam name="T3">The type of the data in the third set of data.</typeparam>
+		/// <typeparam name="T4">The type of the data in the fourth set of data.</typeparam>
+		/// <typeparam name="T5">The type of the data in the fifth set of data.</typeparam>
+		/// <typeparam name="T6">The type of the data in the sixth set of data.</typeparam>
+		/// <typeparam name="T7">The type of the data in the seventh set of data.</typeparam>
+		/// <typeparam name="T8">The type of the data in the eighth set of data.</typeparam>
+		/// <typeparam name="T9">The type of the data in the nineth set of data.</typeparam>
+		/// <typeparam name="T10">The type of the data in the tenth set of data.</typeparam>
+		/// <typeparam name="T11">The type of the data in the eleventh set of data.</typeparam>
+		/// <typeparam name="T12">The type of the data in the twelfth set of data.</typeparam>
+		/// <typeparam name="T13">The type of the data in the thirteenth set of data.</typeparam>
+		/// <typeparam name="T14">The type of the data in the fourteenth set of data.</typeparam>
+		/// <typeparam name="T15">The type of the data in the fifteenth set of data.</typeparam>
+		/// <typeparam name="T16">The type of the data in the sixteenth set of data.</typeparam>
+		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>

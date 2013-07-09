@@ -37,9 +37,9 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-		<# } #>
+<# } #>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
@@ -66,9 +66,9 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		/// Create a command, execute it, and translate the result set. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="TResult">The type of object to return from the query.</typeparam>
-		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-		<# } #>
+<# } #>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
@@ -93,9 +93,9 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		/// Run a command asynchronously and return a list of objects. This method supports auto-open.
 		/// </summary>
 		/// <typeparam name="T">The type of objects to return.</typeparam>
-		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-		<# } #>
+<# } #>
 		/// <param name="cmd">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
@@ -112,9 +112,9 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		/// Chain an asynchronous data reader task with a translation to a list of objects.
 		/// </summary>
 		/// <typeparam name="T">The type of object to return.</typeparam>
-		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-		<# } #>
+<# } #>
 		/// <param name="task">The data reader task to continue.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
@@ -137,9 +137,9 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 		/// <summary>
 		/// Asynchronously executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-		<# } #>
+<# } #>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
@@ -167,9 +167,9 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 		/// <summary>
 		/// Asynchronously executes a query that returns multiple result sets and reads the results.
 		/// </summary>
-		<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-		<# } #>
+<# } #>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>

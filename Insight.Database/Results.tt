@@ -27,9 +27,9 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 	/// <summary>
 	/// Encapsulates multiple sets of data returned from the database.
 	/// </summary>
-	<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 	/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
-	<# } #>
+<# } #>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance"), SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public class Results<<#= typeList #>> : Results<<#= prevTypeList #>>
 	{
