@@ -74,9 +74,10 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// get the type we are binding to
-			Type type = identity.Graph.IsSubclassOf(typeof(Graph)) ? identity.Graph.GetGenericArguments()[0] : identity.Graph;
+		    Type graph = identity.Graph;
+            Type type = Graph.GetFirstGenericArgument(graph) ?? identity.Graph;
 
-			IsAtomicType = TypeHelper.IsAtomicType(identity.Graph);
+		    IsAtomicType = TypeHelper.IsAtomicType(identity.Graph);
 			if (!IsAtomicType)
 			{
 				var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, uniqueMatches: true);

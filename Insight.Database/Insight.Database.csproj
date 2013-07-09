@@ -66,7 +66,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AsyncExtensions.cs" />
-    <Compile Include="AsyncExtensionsObsolete.cs" />
+    <Compile Include="AsyncExtensions.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AsyncExtensions.tt</DependentUpon>
+    </Compile>
     <Compile Include="CodeGenerator\ClassDeserializerGenerator.cs" />
     <Compile Include="CodeGenerator\ClassPropInfo.cs" />
     <Compile Include="CodeGenerator\InterfaceGenerator.cs" />
@@ -80,6 +84,16 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="DBConnectionExtensions.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DBConnectionExtensions.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Graph.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Graph.tt</DependentUpon>
+    </Compile>
     <Compile Include="InsightBulkCopy.cs" />
     <Compile Include="Providers\OdbcInsightDbProvider.cs" />
     <Compile Include="Providers\OleDbInsightDbProvider.cs" />
@@ -87,10 +101,14 @@
     <Compile Include="Providers\WrappedInsightDbProvider.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Providers\InsightDbProvider.cs" />
+    <Compile Include="Results.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Results.tt</DependentUpon>
+    </Compile>
     <Compile Include="SqlAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />
-    <Compile Include="DBConnectionExtensionsObsolete.cs" />
     <Compile Include="DbConnectionWrapper.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -127,21 +145,41 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="AsyncExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AsyncExtensions.generated.cs</LastGenOutput>
+    </None>
     <None Include="CodeSnippets\InsightCodeSnippets.vscontent" />
     <None Include="CodeSnippets\InsightForEach.snippet" />
     <None Include="CodeSnippets\InsightMultiResults.snippet" />
     <None Include="CodeSnippets\InsightRepository.snippet">
       <SubType>Designer</SubType>
     </None>
+    <None Include="DBConnectionExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DBConnectionExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Include="GenericTypes.tt" />
+    <None Include="Graph.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Graph.generated.cs</LastGenOutput>
+    </None>
     <None Include="Insight.Database.nuspec">
       <SubType>Designer</SubType>
     </None>
     <None Include="packages.config" />
     <Compile Include="Providers\SqlInsightDbProvider.cs" />
+    <None Include="Results.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Results.generated.cs</LastGenOutput>
+    </None>
     <None Include="Settings.StyleCop" />
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

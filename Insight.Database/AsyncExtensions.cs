@@ -15,6 +15,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Extension methods to support asynchronous database operations.
 	/// </summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	public static partial class AsyncExtensions
 	{
 		#region Execute Members
@@ -584,242 +585,6 @@ namespace Insight.Database
 		{
 			return connection.QueryResultsAsync<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2>> QueryResultsAsync<T1, T2>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2>> QueryResultsSqlAsync<T1, T2>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2, T3>> QueryResultsAsync<T1, T2, T3>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2, T3>> QueryResultsSqlAsync<T1, T2, T3>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2, T3, T4>> QueryResultsAsync<T1, T2, T3, T4>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2, T3, T4>> QueryResultsSqlAsync<T1, T2, T3, T4>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-		/// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandType">The type of the command.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2, T3, T4, T5>> QueryResultsAsync<T1, T2, T3, T4, T5>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandType commandType = CommandType.StoredProcedure,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
-
-		/// <summary>
-		/// Asynchronously executes a query that returns multiple result sets and reads the results.
-		/// </summary>
-		/// <typeparam name="T1">The type of the data in the first data set.</typeparam>
-		/// <typeparam name="T2">The type of the data in the second data set.</typeparam>
-		/// <typeparam name="T3">The type of the data in the third data set.</typeparam>
-		/// <typeparam name="T4">The type of the data in the fourth data set.</typeparam>
-		/// <typeparam name="T5">The type of the data in the fifth data set.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="sql">The sql to execute.</param>
-		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
-		/// <param name="commandBehavior">The behavior of the command when executed.</param>
-		/// <param name="commandTimeout">The timeout of the command.</param>
-		/// <param name="transaction">The transaction to participate in.</param>
-		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
-		/// <returns>The results object filled with the data.</returns>
-		public static Task<Results<T1, T2, T3, T4, T5>> QueryResultsSqlAsync<T1, T2, T3, T4, T5>(
-			this IDbConnection connection,
-			string sql,
-			object parameters = null,
-			Type[] withGraphs = null,
-			CommandBehavior commandBehavior = CommandBehavior.Default,
-			int? commandTimeout = null,
-			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
-		{
-			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
-		}
 		#endregion
 
 		#region Translation Methods
@@ -912,6 +677,24 @@ namespace Insight.Database
 			}
 		}
 #endif
+		
+		/// <summary>
+		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
+		/// </summary>
+		/// <typeparam name="TResult">The type of object to deserialize from the reader.</typeparam>
+		/// <param name="task">The task returning the reader to read from.</param>
+		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
+		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+		/// <returns>A task that returns the list of objects.</returns>
+		public static Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken? cancellationToken = null)
+		{
+			if (task == null) throw new ArgumentNullException("task");
+
+			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			ct.ThrowIfCancellationRequested();
+
+			return task.ContinueWith(reader => reader.ToListAsync<TResult>(withGraph), ct).Unwrap();
+		}
 		#endregion
 
 		#region Insert Methods

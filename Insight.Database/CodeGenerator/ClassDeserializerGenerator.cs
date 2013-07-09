@@ -54,7 +54,7 @@ namespace Insight.Database.CodeGenerator
 				throw new ArgumentException("withGraph passed in must be of Graph<T>", "withGraph");
 
 			// process the object graph types
-			Type[] subTypes = withGraph.GetGenericArguments();
+            Type[] subTypes = Graph.GetGenericArguments(withGraph);
 			if (subTypes[0] != type)
 				throw new ArgumentException("The top-level type of the object graph must match the return type of the object.", "withGraph");
 

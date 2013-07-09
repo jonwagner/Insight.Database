@@ -1,0 +1,33 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+<#@ include file="GenericTypes.tt" #>
+using System;
+using System.Diagnostics.CodeAnalysis;
+
+namespace Insight.Database
+{
+<#
+for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, "TSub{0}");
+	var argList = GetGenericList(typeCount, GenericArgumentFormat);
+	var paramList = GetGenericList(typeCount, GenericParameterFormat);
+#>
+	/// <summary>
+	/// Marker class that defines an object graph.
+	/// </summary>
+	/// <typeparam name="T">The type of the root-level object in the graph.</typeparam>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) {#>
+	/// <typeparam name="TSub<#= typeIndex #>">The type of the <#= ConvertToOrdinal(typeIndex) #> subobject in the graph.</typeparam>
+<# } #>
+	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+	public class Graph<T, <#= typeList #>> : Graph
+	{
+	}
+
+<# } #>
+}
