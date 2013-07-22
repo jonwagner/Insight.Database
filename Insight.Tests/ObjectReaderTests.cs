@@ -231,7 +231,6 @@ namespace Insight.Tests
 			TestReadingClassType<string>("varchar(MAX)", "", "string");
 
 			// type mismatches should throw
-			Assert.Throws<NullReferenceException>(() => TestReadingClassType<byte[]>("varchar(MAX)", new byte[10], "string"));
 			Assert.Throws<InvalidOperationException>(() => TestReadingClassType<string>("varbinary(MAX)", "", "bytearray"));
 		}
 
