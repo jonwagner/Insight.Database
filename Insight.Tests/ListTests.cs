@@ -391,5 +391,25 @@ namespace Insight.Tests
 			_connection.QuerySql<InsightTestData>("InsightTestDataTestProc2", new { p = array.ToList() });
 		}
 		#endregion
+
+		#region Regression Tests
+		[Test]
+		public void TestIssue36()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TYPE [VarcharIDTableType] AS TABLE ([ID] [varchar](300))");
+				_connection.ExecuteSql("CREATE PROCEDURE [VarCharProc] (@p [VarcharIDTableType] READONLY) AS SELECT * FROM @p");
+
+				List<Guid> list = new List<Guid>() { Guid.NewGuid() };
+				_connection.Query<string>("VarCharProc", list);
+			}
+			finally
+			{
+				Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'VarCharProc') DROP PROCEDURE [VarCharProc]");
+				Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'VarcharIDTableType') DROP TYPE [VarcharIDTableType]");
+			}
+		}
+		#endregion
 	}
 }
