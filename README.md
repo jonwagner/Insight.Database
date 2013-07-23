@@ -67,9 +67,9 @@ Here is Insight letting you call your database directly with almost no code:
 	IEnumerable<Beer> listOBeer; // from somewhere
 	c.BulkCopy("Beer", listOfBeer);
 
-# v3.0 - PRE-RELEASE IS IN NUGET! #
+# v3.0 - IS NOW IN NUGET! #
 
-Insight.Database v3.0 will support multiple database providers. We are currently planning on implementing the following providers:
+Insight.Database v3.0 now supports multiple database providers. The following providers are currently available:
 
 - Sql Server
 - MySQL
@@ -77,8 +77,6 @@ Insight.Database v3.0 will support multiple database providers. We are currently
 - Postgres
 - ODBC drivers
 - OLEDB drivers
-
-You can get the 3.0 pre-release build by selecting "Include Pre-Release Versions" in NuGet Package Manager. 
 
 # v2.1 now with automatic interface mapping #
 
