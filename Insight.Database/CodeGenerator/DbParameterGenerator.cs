@@ -265,7 +265,9 @@ namespace Insight.Database.CodeGenerator
 
 			// make sure that we aren't missing any parameters
 			// SQL will skip the parameter in DeriveParameters if the user does not have EXECUTE permissions on the type
-			string missingParameter = parameterNames.FirstOrDefault((dynamic n) => !parameters.Any(p => String.Compare(p.ParameterName, n.ParameterName, StringComparison.OrdinalIgnoreCase) == 0));
+			string missingParameter = parameterNames
+				.Select((dynamic n) => (string)n.ParameterName)
+				.FirstOrDefault((string parameterName) => !parameters.Any(p => String.Compare(p.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase) == 0));
 			if (missingParameter != null)
 				throw new InvalidOperationException(String.Format(
 					CultureInfo.InvariantCulture,
