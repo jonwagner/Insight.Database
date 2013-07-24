@@ -159,7 +159,12 @@ namespace Insight.Database.CodeGenerator
 			if (ordinal != _currentStringOrdinal)
 			{
 				_currentStringOrdinal = ordinal;
-				_currentStringValue = GetValue(ordinal) as string;
+				object value = GetValue(ordinal);
+
+				_currentStringValue = value as string;
+
+				if (_currentStringValue == null && value != null)
+					_currentStringValue = value.ToString();
 			}
 
 			return _currentStringValue;
