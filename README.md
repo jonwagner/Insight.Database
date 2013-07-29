@@ -72,6 +72,7 @@ Here is Insight letting you call your database directly with almost no code:
 Insight.Database v3.0 now supports multiple database providers. The following providers are currently available:
 
 - Sql Server
+- DB2
 - MySQL
 - Oracle
 - Postgres

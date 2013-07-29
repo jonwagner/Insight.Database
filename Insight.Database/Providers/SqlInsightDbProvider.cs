@@ -51,6 +51,22 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Gets the set of bulk copy options supported by this provider.
+		/// </summary>
+		public override InsightBulkCopyOptions SupportedBulkCopyOptions
+		{
+			get
+			{
+				return InsightBulkCopyOptions.KeepIdentity |
+					InsightBulkCopyOptions.FireTriggers |
+					InsightBulkCopyOptions.CheckConstraints |
+					InsightBulkCopyOptions.TableLock |
+					InsightBulkCopyOptions.KeepNulls |
+					InsightBulkCopyOptions.UseInternalTransaction;
+			}
+		}
+
+		/// <summary>
 		/// Creates a new DbConnection supported by this provider.
 		/// </summary>
 		/// <returns>A new DbConnection.</returns>

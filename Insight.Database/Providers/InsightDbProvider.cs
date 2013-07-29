@@ -56,6 +56,11 @@ namespace Insight.Database.Providers
 				return null;
 			}
 		}
+
+		/// <summary>
+		/// Gets the set of bulk copy options supported by this provider.
+		/// </summary>
+		public virtual InsightBulkCopyOptions SupportedBulkCopyOptions { get { return 0; } }
 		#endregion
 
 		/// <summary>

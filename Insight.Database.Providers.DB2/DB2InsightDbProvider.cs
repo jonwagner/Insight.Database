@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -8,27 +7,27 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using Oracle.DataAccess.Client;
+using IBM.Data.DB2;
 
-namespace Insight.Database.Providers.Oracle
+namespace Insight.Database.Providers.DB2
 {
 	/// <summary>
-	/// Implements the Insight provider for Oracle ODP.NET connections.
+	/// Implements a provider to use DB2 with Insight.Database.
 	/// </summary>
-	public class OracleInsightDbProvider : InsightDbProvider
-	{
+    public class DB2InsightDbProvider : InsightDbProvider
+    {
 		/// <summary>
 		/// The list of types supported by this provider.
 		/// </summary>
 		private static Type[] _supportedTypes = new Type[]
 		{
-			typeof(OracleConnectionStringBuilder), typeof(OracleConnection), typeof(OracleCommand), typeof(OracleDataReader), typeof(OracleException)
+			typeof(DB2ConnectionStringBuilder), typeof(DB2Connection), typeof(DB2Command), typeof(DB2DataReader), typeof(DB2Exception)
 		};
 
 		/// <summary>
-		/// Prevents a default instance of the <see cref="OracleInsightDbProvider"/> class from being created.
+		/// Prevents a default instance of the <see cref="DB2InsightDbProvider"/> class from being created.
 		/// </summary>
-		private OracleInsightDbProvider()
+		private DB2InsightDbProvider()
 		{
 		}
 
@@ -51,16 +50,18 @@ namespace Insight.Database.Providers.Oracle
 		{
 			get
 			{
-				return InsightBulkCopyOptions.UseInternalTransaction;
+				return InsightBulkCopyOptions.KeepIdentity |
+					InsightBulkCopyOptions.TableLock |
+					InsightBulkCopyOptions.Truncate;
 			}
 		}
 
 		/// <summary>
-		/// Registers the Oracle Provider.
+		/// Registers this provider.
 		/// </summary>
 		public static void RegisterProvider()
 		{
-			new OracleInsightDbProvider().Register();
+			new DB2InsightDbProvider().Register();
 		}
 
 		/// <summary>
@@ -69,7 +70,7 @@ namespace Insight.Database.Providers.Oracle
 		/// <returns>A new DbConnection.</returns>
 		public override DbConnection CreateDbConnection()
 		{
-			return new OracleConnection();
+			return new DB2Connection();
 		}
 
 		/// <summary>
@@ -78,7 +79,7 @@ namespace Insight.Database.Providers.Oracle
 		/// <param name="command">The command to derive.</param>
 		public override void DeriveParametersFromStoredProcedure(IDbCommand command)
 		{
-			OracleCommandBuilder.DeriveParameters(command as OracleCommand);
+			DB2CommandBuilder.DeriveParameters(command as DB2Command);
 		}
 
 		/// <summary>
@@ -89,9 +90,19 @@ namespace Insight.Database.Providers.Oracle
 		/// <returns>The clone.</returns>
 		public override IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
 		{
-			// thank you, oracle
-			OracleParameter p = (OracleParameter)parameter;
-			return (IDataParameter)p.Clone();
+			DB2Parameter p = (DB2Parameter)base.CloneParameter(command, parameter);
+			DB2Parameter db2p = (DB2Parameter)parameter;
+
+			p.ArrayLength = db2p.ArrayLength;
+			p.DB2Type = db2p.DB2Type;
+			p.DB2TypeOutput = db2p.DB2TypeOutput;
+			p.InternalProperty1 = db2p.InternalProperty1;
+			p.IsDefault = db2p.IsDefault;
+			p.IsUnassigned = db2p.IsUnassigned;
+			p.Precision = db2p.Precision;
+			p.Scale = db2p.Scale;
+
+			return p;
 		}
 
 		/// <summary>
@@ -104,8 +115,8 @@ namespace Insight.Database.Providers.Oracle
 		{
 			if (parameter == null) throw new ArgumentNullException("parameter");
 
-			var op = (OracleParameter)parameter;
-			return op.OracleDbType == OracleDbType.XmlType;
+			var op = (DB2Parameter)parameter;
+			return op.DB2Type == DB2Type.Xml;
 		}
 
 		/// <summary>
@@ -116,41 +127,7 @@ namespace Insight.Database.Providers.Oracle
 		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
 		public override string GetTableSchemaSql(IDbConnection connection, string tableName)
 		{
-			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} WHERE rownum = 0", tableName);
-		}
-
-		/// <summary>
-		/// Set up a table-valued parameter to a procedure.
-		/// </summary>
-		/// <param name="command">The command to operate on.</param>
-		/// <param name="parameter">The parameter to set up.</param>
-		/// <param name="list">The list of records.</param>
-		/// <param name="listType">The type of object in the list.</param>
-		public override void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, IEnumerable list, Type listType)
-		{
-			if (parameter == null) throw new ArgumentNullException("parameter");
-
-			// of the many sad things in Oracle, we have to have an array to send the list to the server.
-
-			// return arrays directly
-			if (list is Array)
-			{
-				parameter.Value = list;
-				return;
-			}
-
-			// this can handle any type that is already a list
-			ICollection ilist = list as ICollection;
-			if (ilist != null)
-			{
-				var array = new object[ilist.Count];
-				ilist.CopyTo(array, 0);
-				parameter.Value = array;
-				return;
-			}
-
-			// enumerate the rest :(
-			parameter.Value = list.Cast<object>().ToArray();
+			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} FETCH FIRST 1 ROWS ONLY", tableName);
 		}
 
 		/// <summary>
@@ -164,7 +141,7 @@ namespace Insight.Database.Providers.Oracle
 		{
 			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
 
-			return ((OracleDbType)schemaTable.Rows[index]["ProviderType"]) == OracleDbType.XmlType;
+			return ((DB2Type)schemaTable.Rows[index]["ProviderType"]) == DB2Type.Xml;
 		}
 
 		/// <summary>
@@ -181,16 +158,20 @@ namespace Insight.Database.Providers.Oracle
 			if (transaction != null)
 				throw new ArgumentException("OracleProvider does not support external transactions for bulk copy", "transaction");
 
-			OracleBulkCopyOptions oracleOptions = OracleBulkCopyOptions.Default;
-			if (options.HasFlag(InsightBulkCopyOptions.UseInternalTransaction))
-				oracleOptions |= OracleBulkCopyOptions.UseInternalTransaction;
+			DB2BulkCopyOptions db2Options = DB2BulkCopyOptions.Default;
+			if (options.HasFlag(InsightBulkCopyOptions.KeepIdentity))
+				db2Options |= DB2BulkCopyOptions.KeepIdentity;
+			if (options.HasFlag(InsightBulkCopyOptions.TableLock))
+				db2Options |= DB2BulkCopyOptions.TableLock;
+			if (options.HasFlag(InsightBulkCopyOptions.Truncate))
+				db2Options |= DB2BulkCopyOptions.Truncate;
 
-			using (var bulk = new OracleBulkCopy((OracleConnection)connection, oracleOptions))
-			using (var oracleBulk = new OracleInsightBulkCopy(bulk))
+			using (var bulk = new DB2BulkCopy((DB2Connection)connection, db2Options))
+			using (var db2Bulk = new DB2InsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
 				if (configure != null)
-					configure(oracleBulk);
+					configure(db2Bulk);
 				bulk.WriteToServer(reader);
 			}
 		}
@@ -202,52 +183,39 @@ namespace Insight.Database.Providers.Oracle
 		/// <returns>True if the exception is transient.</returns>
 		public override bool IsTransientException(Exception exception)
 		{
-			OracleException oracleException = (OracleException)exception;
+			DB2Exception db2Exception = (DB2Exception)exception;
 
-			// there may be more error codes that we need but there are so many to go through....
-			// http://docs.oracle.com/cd/B19306_01/server.102/b14219.pdf
-			switch (oracleException.Number)
-			{
-				case 51:					// timeout waiting for a resource
-				case 12150:					// TNS:unable to send data
-				case 12153:					// TNS:not connected
-				case 12154:					// TNS:could not resolve the connect identifier specified
-				case 12157:					// TNS:internal network communication error
-				case 12161:					// TNS:internal error: partial data received
-				case 12170:					// TNS:connect timeout occurred
-				case 12171:					// TNS:could not resolve connect identifier
-				case 12203:					// TNS:could not connect to destination
-				case 12224:					// TNS:no listener
-				case 12225:					// TNS:destination host unreachable
-				case 12541:					// TNS:no listener
-				case 12543:					// TNS:destination host unreachable
-					return true;
-			}
+			return db2Exception.Errors.OfType<DB2Error>().Any(
+				e =>
+				{
+					switch (e.NativeError)
+					{
+						case -30080:				// communication error
+						case -30081:				// communication error
+							return true;
+					}
 
-			return false;
+					return false;
+				});
 		}
 
 		#region Bulk Copy Support
 		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
-		class OracleInsightBulkCopy : InsightBulkCopy, IDisposable
+		class DB2InsightBulkCopy : InsightBulkCopy, IDisposable
 		{
-			private OracleBulkCopy _bulkCopy;
+			private DB2BulkCopy _bulkCopy;
 
-			public OracleInsightBulkCopy(OracleBulkCopy bulkCopy)
+			public DB2InsightBulkCopy(DB2BulkCopy bulkCopy)
 			{
 				if (bulkCopy == null) throw new ArgumentNullException("bulkCopy");
 
 				_bulkCopy = bulkCopy;
-				_bulkCopy.OracleRowsCopied += OnRowsCopied;
+				_bulkCopy.DB2RowsCopied += OnRowsCopied;
 			}
 
 			public override event InsightRowsCopiedEventHandler RowsCopied;
 
-			public override int BatchSize
-			{
-				get { return _bulkCopy.BatchSize; }
-				set { _bulkCopy.BatchSize = value; }
-			}
+			public override int BatchSize { get; set; }
 
 			public override int BulkCopyTimeout
 			{
@@ -279,21 +247,21 @@ namespace Insight.Database.Providers.Oracle
 
 			public void Dispose()
 			{
-				_bulkCopy.OracleRowsCopied -= OnRowsCopied;
+				_bulkCopy.DB2RowsCopied -= OnRowsCopied;
 			}
 
-			private void OnRowsCopied(object sender, OracleRowsCopiedEventArgs e)
+			private void OnRowsCopied(object sender, DB2RowsCopiedEventArgs e)
 			{
-				var wrappedEvent = new OracleInsightRowsCopiedEventArgs(e);
+				var wrappedEvent = new DB2InsightRowsCopiedEventArgs(e);
 				if (RowsCopied != null)
 					RowsCopied(sender, wrappedEvent);
 			}
 
-			class OracleInsightRowsCopiedEventArgs : InsightRowsCopiedEventArgs
+			class DB2InsightRowsCopiedEventArgs : InsightRowsCopiedEventArgs
 			{
-				private OracleRowsCopiedEventArgs _event;
+				private DB2RowsCopiedEventArgs _event;
 
-				public OracleInsightRowsCopiedEventArgs(OracleRowsCopiedEventArgs e)
+				public DB2InsightRowsCopiedEventArgs(DB2RowsCopiedEventArgs e)
 				{
 					_event = e;
 				}
@@ -311,5 +279,5 @@ namespace Insight.Database.Providers.Oracle
 			}
 		}
 		#endregion
-	}
+    }
 }

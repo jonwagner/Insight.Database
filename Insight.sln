@@ -43,6 +43,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.PostgreSQL", "Insight.Tests.PostgreSQL\Insight.Tests.PostgreSQL.csproj", "{E33BF471-D602-4366-B4CA-17A16E91F49E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.DB2", "Insight.Tests.DB2\Insight.Tests.DB2.csproj", "{E88BF946-1D51-4586-8E55-36350A091E8A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.DB2", "Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj", "{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -173,6 +177,26 @@ Global
 		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{E33BF471-D602-4366-B4CA-17A16E91F49E}.Release|x86.ActiveCfg = Release|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{E88BF946-1D51-4586-8E55-36350A091E8A}.Release|x86.ActiveCfg = Release|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

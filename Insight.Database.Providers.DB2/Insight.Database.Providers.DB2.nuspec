@@ -1,26 +1,25 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <package>
   <metadata>
-    <id>Insight.Database.Providers.OracleManaged</id>
+    <id>Insight.Database.Providers.DB2</id>
     <version>3.0.0</version>
-    <title>Insight.Database.Providers.OracleManaged</title>
+    <title>Insight.Database.Providers.DB2</title>
     <authors>Jon Wagner</authors>
     <description>
-		An Oracle ODP.NET Managed Driver provider for Insight.Database so Insight.Database can do its magic on Oracle.
-		Automatically installs Oracle ODP.NET Managed Driver. Depends on Insight.Database.
+		An DB2 ODP.NET provider for Insight.Database so Insight.Database can do its magic on DB2.
+		Requires DB2's .NET provider.
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
     <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
-    <tags>Insight orm sql oracle managed micro-orm</tags>
+    <tags>Insight orm sql DB2 micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	  <dependencies>
 		  <dependency id="Insight.Database" version="3.0.1"></dependency>
-		  <dependency id="odp.net.managed"></dependency>
 	  </dependencies>
   </metadata>
   <files>
-    <file src="\bin\Release\Insight.Database.Providers.OracleManaged.dll" target="lib" />
-    <file src="\bin\Release\Insight.Database.Providers.OracleManaged.pdb" target="lib" />
+    <file src="\bin\Release\Insight.Database.Providers.DB2.dll" target="lib" />
+    <file src="\bin\Release\Insight.Database.Providers.DB2.pdb" target="lib" />
   </files>
 </package>

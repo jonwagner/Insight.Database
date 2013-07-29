@@ -56,7 +56,12 @@ namespace Insight.Database
 		/// <summary>
 		/// Use an internal transaction to roll back rows upon errors.
 		/// </summary>
-		UseInternalTransaction = 0x20
+		UseInternalTransaction = 0x20,
+
+		/// <summary>
+		/// Truncate the table prior to loading.
+		/// </summary>
+		Truncate = 0x40,
 	}
 
 	/// <summary>
