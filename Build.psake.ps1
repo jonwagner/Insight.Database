@@ -64,13 +64,12 @@ Task Build40 {
     try {
         # build the NET40 binaries
         Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.sln /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
+            Invoke-Expression "$msbuild $baseDir\Insight.sln /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NET40``;``NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
         }
 
         # copy the binaries to the net40 folder
         Wipe-Folder $net40Path
-        Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Tests\bin\Release\*.* $net40Path
+        Copy-Item $baseDir\*.*\bin\Release\*.* $net40Path
     }
     finally {
         RestoreVersions

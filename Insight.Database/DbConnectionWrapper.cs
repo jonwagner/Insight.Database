@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -173,6 +174,26 @@ namespace Insight.Database
 			finally
 			{
 				base.Dispose(disposing);
+			}
+		}
+
+		/// <summary>
+		/// Gets the DbProviderFactory that can be used to create this connection.
+		/// </summary>
+		protected override DbProviderFactory DbProviderFactory
+		{
+			get
+			{
+#if !NET40
+				// get the provider for the connection
+				var innerProviderFactory = DbProviderFactories.GetFactory(InnerConnection);
+#else
+				var innerProviderFactory = InnerConnection.GetType().GetProperty("ProviderFactory", BindingFlags.NonPublic | BindingFlags.Instance).GetValue(InnerConnection, null) as DbProviderFactory;
+#endif
+
+				// give up a wrapped provider
+				var type = typeof(DbConnectionWrapperProviderFactory<>).MakeGenericType(innerProviderFactory.GetType());
+				return (DbProviderFactory)type.GetField("Instance").GetValue(null);
 			}
 		}
 		#endregion

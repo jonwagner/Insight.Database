@@ -5,7 +5,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using Insight.Database;
-using Insight.Database.Providers;
+using Insight.Database.Providers.MiniProfiler;
 using NUnit.Framework;
 using StackExchange.Profiling;
 using StackExchange.Profiling.Data;
@@ -29,7 +29,7 @@ namespace Insight.Tests
 		public void TestProfiledSqlQuery()
 		{
 			var profiled = new ProfiledDbConnection(_connection, MiniProfiler.Current);
-			var result = profiled.QuerySql<int>("SELECT @p", new { p = 1 }).First();
+			var result = profiled.QuerySql<int>("SELECT @p --MiniProfiler", new { p = 1 }).First();
 
 			Assert.AreEqual((int)1, result);
 		}
@@ -42,10 +42,10 @@ namespace Insight.Tests
 		{
 			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
+				connection.ExecuteSql("CREATE PROC InsightTestProcMiniProfiler (@Value int = 5) AS SELECT Value=@Value");
 
 				var profiled = new ProfiledDbConnection(connection, MiniProfiler.Current);
-				var result = profiled.Query<int>("InsightTestProc", new { Value = 1 }).First();
+				var result = profiled.Query<int>("InsightTestProcMiniProfiler", new { Value = 1 }).First();
 
 				Assert.AreEqual((int)1, result);
 			}

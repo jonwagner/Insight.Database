@@ -89,6 +89,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DBConnectionExtensions.tt</DependentUpon>
     </Compile>
+    <Compile Include="DbConnectionWrapperProviderFactory.cs" />
     <Compile Include="Graph.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

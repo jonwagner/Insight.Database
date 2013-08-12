@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Insight.Database.Providers.Glimpse</id>
+    <version>3.0.0</version>
+    <title>Insight.Database.Providers.Glimpse</title>
+    <authors>Jon Wagner</authors>
+	  <description>
+		  An Insight.Database provider for the Glimpse profiling framework so the two can play together nicely.
+	  </description>
+	  <language>en-US</language>
+    <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
+    <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
+    <tags>Insight orm sql micro-orm profiler glimpse</tags>
+    <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
+	<dependencies>
+		<dependency id="Insight.Database" version="3.0.2"></dependency>
+		<dependency id="Glimpse.Ado"></dependency>
+	</dependencies>
+  </metadata>
+  <files>
+	<file src="\bin\Release\Insight.Database.Providers.Glimpse.dll" target="lib\NET45" />
+	<file src="\bin\Release\Insight.Database.Providers.Glimpse.pdb" target="lib\NET45" />
+	<file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.Glimpse.dll" target="lib\NET40" />
+	<file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.Glimpse.pdb" target="lib\NET40" />
+  </files>
+</package>

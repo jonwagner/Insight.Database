@@ -4,19 +4,20 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using StackExchange.Profiling.Data;
+using Glimpse.Ado.AlternateType;
+using Insight.Database.Providers;
 
-namespace Insight.Database.Providers.MiniProfiler
+namespace Insight.Database.Providers.Glimpse
 {
 	/// <summary>
-	/// Implements the Insight provider for MiniProfiler connections.
+	/// Implements the Insight provider for Glimpse connections.
 	/// </summary>
-	public class MiniProfilerInsightDbProvider : WrappedInsightDbProvider
-	{
+    public class GlimpseInsightDbProvider : WrappedInsightDbProvider
+    {
 		/// <summary>
-		/// Prevents a default instance of the <see cref="MiniProfilerInsightDbProvider"/> class from being created.
+		/// Prevents a default instance of the <see cref="GlimpseInsightDbProvider"/> class from being created.
 		/// </summary>
-		private MiniProfilerInsightDbProvider()
+		private GlimpseInsightDbProvider()
 		{
 		}
 
@@ -28,16 +29,16 @@ namespace Insight.Database.Providers.MiniProfiler
 		{
 			get
 			{
-				return new Type[] { typeof(ProfiledDbConnection), typeof(ProfiledDbCommand) };
+				return new Type[] { typeof(GlimpseDbConnection), typeof(GlimpseDbCommand) };
 			}
 		}
 
 		/// <summary>
-		/// Registers the MiniProfiler Provider
+		/// Registers the Glimpse Provider
 		/// </summary>
 		public static void RegisterProvider()
 		{
-			new MiniProfilerInsightDbProvider().Register();
+			new GlimpseInsightDbProvider().Register();
 		}
 
 		/// <summary>
@@ -47,7 +48,7 @@ namespace Insight.Database.Providers.MiniProfiler
 		/// <returns>The inner connection.</returns>
 		public override IDbConnection GetInnerConnection(IDbConnection connection)
 		{
-			ProfiledDbConnection profiledConnection = (ProfiledDbConnection)connection;
+			GlimpseDbConnection profiledConnection = (GlimpseDbConnection)connection;
 			return profiledConnection.InnerConnection;
 		}
 
@@ -60,8 +61,8 @@ namespace Insight.Database.Providers.MiniProfiler
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
-			ProfiledDbCommand profiledCommand = (ProfiledDbCommand)command;
-			return profiledCommand.InternalCommand;
+			GlimpseDbCommand profiledCommand = (GlimpseDbCommand)command;
+			return profiledCommand.InnerCommand;
 		}
 	}
 }
