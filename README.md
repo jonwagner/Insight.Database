@@ -67,24 +67,16 @@ Here is Insight letting you call your database directly with almost no code:
 	IEnumerable<Beer> listOBeer; // from somewhere
 	c.BulkCopy("Beer", listOfBeer);
 
-# v3.0 - IS NOW IN NUGET! #
+# v3.0 - Now Supporting Lots of Databases and Tools #
 
-Insight.Database v3.0 now supports multiple database providers. The following providers are currently available:
+Insight.Database v3.0 now supports multiple database providers, and several testing frameworks. See [the list of supported providers](https://github.com/jonwagner/Insight.Database/wiki/Insight-and-Data-Providers).
 
-- Sql Server
-- DB2
-- MySQL
-- Oracle
-- Postgres
-- ODBC drivers
-- OLEDB drivers
-
-# v2.1 now with automatic interface mapping #
+# v2.1 - Now with Automatic Interface Mapping #
 
 - Insight will now automatically convert your .NET interface to SQL calls! See the wiki for some automajikal love!
 - Also now with handy wrappers for managing transactions.
 
-# v2.0 is now in NuGet! #
+# v2.0 - Faster Than Ever #
 
 - v2.0 has full async reads in .NET 4.5, automatic multi-recordset processing, customizable binding rules, tons of optimizations, and more code than I can remember.
 - v2.0 should be compile-compatible with v1.x. (Except for a few APIs I'm pretty sure nobody is using.) It's not binary-compatible with v1.x.
