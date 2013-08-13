@@ -1,10 +1,8 @@
 # Insight.Database #
 
-**Insight.Database** is a fast, lightweight, (and dare we say awesome) micro-orm for .NET.
+**Insight.Database** is a fast, lightweight, (and dare we say awesome) micro-orm for .NET. It's available as a [NuGet Package](http://www.nuget.org/packages/Insight.Database/).
 
-Insight.Database lets you call your database with almost no code, and makes it easy to send objects to your database and get them back.
-
-Here is Insight implementing a repository automatically:
+Let's say you have a database and a class and you want them to work together. Something like this:
 
 	CREATE TABLE Beer ([ID] [int], [Type] varchar(128), [Description] varchar(128)) GO
 	CREATE PROC InsertBeer @type varchar(128), @description varchar(128) AS
@@ -20,56 +18,85 @@ Here is Insight implementing a repository automatically:
 		public string Description { get; set; }
 	}
 
+	var beer = new Beer() { Type = "ipa", Description = "Sly Fox 113" };
+
+Let's get Insight.Database:
+
+	PM> Install-Package Insight.Database
+
+Now, wire up those stored procedures to an interface with a single `connection.As<T>`:
+
 	public interface IBeerRepository
 	{
 		void InsertBeer(Beer beer);
 		IList<Beer> GetBeerByType(string type);
+		void UpdateBeerList(IList<Beer> beerList);
 	}
 
-	ConnectionStringBuilder builder = "blah blah";
+	var repo = connection.As<IBeerRepository>();
 
-	// insight will connect your interface to the stored proc automatically
-	var repo = builder.OpenAs<IBeerRepository>();
-	repo.Insert(new Beer() { Type = "ipa", Description = "Sly Fox 113" });
-	IList<Beer> beer = repo.GetBeerByType("ipa");
+	repo.Insert(beer);
+	IList<Beer> beerList = repo.GetBeerByType("ipa");
+	repo.UpdateBeerList(beerList);
 
-Here is Insight letting you call your database directly with almost no code:
+Look, ma! No mapping code! (Plus, you can now inject that interface with a DI framework or mock the interface for testing.)
+
+Want to work at a lower level? Let's call a stored proc with an anonymous object. (It also automatically opens and closes the connection.)
 
 	// auto open/close
-	var c = new SqlConnection(connectionString);
-	c.Execute("AddBeer", new { Name = "IPA", Flavor = "Bitter"});
+	conn.Execute("AddBeer", new { Name = "IPA", Flavor = "Bitter"});
+
+Objects are mapped automatically. No config files, no attributes. Just pure, clean magic:
 
 	// auto object mapping
 	Beer beer = new Beer();
-	c.Execute("InsertBeer", beer);
-	List<Beer> beers = c.Query<Beer>("FindBeer", new { Name = "IPA" });
+	conn.Execute("InsertBeer", beer);
+	List<Beer> beers = conn.Query<Beer>("FindBeer", new { Name = "IPA" });
+
+Yes, even nested objects. Insight will just figure it out for you:
 
 	// auto object graphs
-	var servings = c.Query<Serving, Beer, Glass>("GetServings");
+	var servings = conn.Query<Serving, Beer, Glass>("GetServings");
 	foreach (var serving in servings)
 		Console.WriteLine("{0} {1}", serving.Beer.Name, serving.Glass.Ounces);
 
+Feel free to return multiple result sets. We can handle them:
+
 	// multiple result sets
-	var results = c.QueryResultsSql<Beer, Chip>("GetBeerAndChips", new { Pub = "Fergie's" }));
+	var results = conn.QueryResults<Beer, Chip>("GetBeerAndChips", new { Pub = "Fergie's" }));
 	IList<Beer> beer = results.Set1;
 	IList<Chip> chips = results.Set2;
 
-	// full async support
+Full async support. Just add `Async`:
+
 	var task = c.QueryAsync<Beer>("FindBeer", new { Name = "IPA" });
+
+Send whole lists of objects to databases that support table parameters. No more multiple queries or weird parameter mapping:
 
 	// auto table parameters
 	CREATE TYPE BeerTable (Name [nvarchar](256), Flavor [nvarchar](256))
-	CREATE PROCEDURE InsertBeer (@Beer [BeerTable])
-	List<Beer> beer = new List<Beer>();
-	c.Execute("InsertBeer", new { Beer = beer });
+	CREATE PROCEDURE InsertBeer (@BeerList [BeerTable])
+	List<Beer> beerList = new List<Beer>();
+	conn.Execute("InsertBeer", new { BeerList = beerList });
+
+Insight can also stream objects over your database's BulkCopy protocol. 
 
 	// auto bulk-copy objects
-	IEnumerable<Beer> listOBeer; // from somewhere
-	c.BulkCopy("Beer", listOfBeer);
+	IEnumerable<Beer> beerList; // from somewhere
+	conn.BulkCopy("Beer", beerList);
+
+Oh, wait. You want to inline your SQL. We do that too. Just add Sql.
+
+	var beerList = conn.QuerySql<Beer>("SELECT * FROM Beer WHERE Name LIKE @Name", new { Name = "%ipa%" });
+	conn.ExecuteSql ("INSERT INTO Beer VALUES (ID, Name)", beer);
+
+But if you *really* want to control every aspect of mapping, see the [wiki](https://github.com/jonwagner/Insight.Database/wiki).
 
 # v3.0 - Now Supporting Lots of Databases and Tools #
 
-Insight.Database v3.0 now supports multiple database providers, and several testing frameworks. See [the list of supported providers](https://github.com/jonwagner/Insight.Database/wiki/Insight-and-Data-Providers).
+Insight.Database v3.0 now supports multiple database providers and several testing frameworks. See [the list of supported providers](https://github.com/jonwagner/Insight.Database/wiki/Insight-and-Data-Providers).
+
+If your database or toolset isn't listed, just open an issue on Github. Good things have been known to happen.
 
 # v2.1 - Now with Automatic Interface Mapping #
 
@@ -84,5 +111,5 @@ Insight.Database v3.0 now supports multiple database providers, and several test
 
 # Documentation #
 
-**Full documentation is available on the [wiki](https://github.com/jonwagner/Insight.Database/wiki)!**
+**Full documentation is available on the [wiki](https://github.com/jonwagner/Insight.Database/wiki)**
 
