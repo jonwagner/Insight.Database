@@ -807,6 +807,33 @@ namespace Insight.Database
 		/// <summary>
 		/// Executes a query that returns multiple result sets and reads the results.
 		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results QueryResults(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.QueryResults<Results>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
 		/// <typeparam name="T">The type of the results. This must derive from Results&lt;T&gt;.</typeparam>
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
@@ -830,6 +857,30 @@ namespace Insight.Database
 			return connection.QueryResults<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
 		}
 
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results QueryResultsSql(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			Type[] withGraphs = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.QueryResults<Results>(sql, parameters, withGraphs, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
+		}
 		#endregion
 
 		#region ForEach Methods

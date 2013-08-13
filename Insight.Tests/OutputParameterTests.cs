@@ -214,5 +214,50 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+
+		#region Return Value Tests
+		class ReturnValue
+		{
+			public int Return_Value;
+		}
+
+		[Test]
+		public void ExecuteProcShouldReturnValue()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC ReturnAValue AS RETURN 11");
+
+				var output = new ReturnValue();
+				connection.Execute("ReturnAValue", outputParameters: output);
+				Assert.AreEqual(11, output.Return_Value);
+			}
+		}
+
+		[Test]
+		public void ReturnValueCanFillInADynamic()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC ReturnAValue AS RETURN 11");
+
+				dynamic output = new FastExpando();
+				connection.Execute("ReturnAValue", outputParameters: (object)output);
+				Assert.AreEqual(11, output.Return_Value);
+			}
+		}
+
+		[Test]
+		public void ReturnValueCanFillQueryResults()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC ReturnAValue AS RETURN 11");
+
+				var results = connection.QueryResults("ReturnAValue");
+				Assert.AreEqual(11, results.Outputs.Return_Value);
+			}
+		}
+		#endregion
 	}
 }
