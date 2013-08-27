@@ -246,5 +246,16 @@ namespace Insight.Tests
 			Assert.AreEqual(10, result);
 		}
 		#endregion
+
+		#region Tests for Bad Exceptions
+		[Test]
+		public void InvalidExceptionShouldNotBeTransient()
+		{
+			// this was throwing an exception during provider lookup
+
+			RetryStrategy retry = new RetryStrategy();
+			Assert.IsFalse(retry.IsTransientException(new InvalidOperationException()));
+		}
+		#endregion
 	}
 }

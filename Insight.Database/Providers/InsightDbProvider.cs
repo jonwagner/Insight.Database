@@ -276,7 +276,7 @@ namespace Insight.Database.Providers
 			InsightDbProvider provider;
 			
 			if (!_providerMap.TryGetValue(o.GetType(), out provider) || provider == null)
-				throw new NotImplementedException("No Insight.Database provider supports the given type of command.");
+				throw new NotImplementedException("No Insight.Database provider supports the given type of object.");
 
 			return provider;
 		}

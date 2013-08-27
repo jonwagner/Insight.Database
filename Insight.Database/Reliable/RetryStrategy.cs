@@ -154,7 +154,19 @@ namespace Insight.Database.Reliable
 		/// <returns>True if the exception is a transient error, false if the command should not be retried.</returns>
 		public virtual bool IsTransientException(Exception exception)
 		{
-			return InsightDbProvider.For(exception).IsTransientException(exception);
+			InsightDbProvider provider;
+			
+			try
+			{
+				provider = InsightDbProvider.For(exception);
+			}
+			catch (NotImplementedException)
+			{
+				// if the provider lookup fails, then this can't be a transient exception
+				return false;
+			}
+
+			return provider.IsTransientException(exception);
 		}
 
 		/// <summary>
