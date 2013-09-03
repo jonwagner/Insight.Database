@@ -245,7 +245,10 @@ namespace Insight.Database.CodeGenerator
 				// We have a parameter, start handling all of the other types
 				///////////////////////////////////////////////////////////////
 				// duplicate the parameter so we can call setvalue later
+				var parameter = il.DeclareLocal(typeof(IDbDataParameter));
 				il.Emit(OpCodes.Dup);
+				il.Emit(OpCodes.Dup);
+				il.Emit(OpCodes.Stloc, parameter);
 
 				// for non-stored procedures, we don't know the desired type
 				// so we have to set the type of the parameter to the type of the value
@@ -363,6 +366,12 @@ namespace Insight.Database.CodeGenerator
 
 					// store the length of the string in local so we can stick it in the parameter
 					il.Emit(OpCodes.Stloc, stringLength);					// [string]
+
+					// set the type of the parameter to string
+					// this seems to only be necessary for string->guid conversions under sql server
+					il.Emit(OpCodes.Ldloc, parameter);
+					il.Emit(OpCodes.Ldc_I4, (int)DbType.String);
+					il.Emit(OpCodes.Callvirt, typeof(IDataParameter).GetProperty("DbType").GetSetMethod());
 				}
 				else if (prop.MemberType.GetInterfaces().Contains(typeof(IConvertible)) || prop.MemberType == typeof(object))
 				{

@@ -898,7 +898,7 @@ namespace Insight.Tests
 
 		#region Date Tests
 		[Test]
-		public void DateFieldsShould()
+		public void DateFieldsShouldConvertProperly()
 		{
 			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
@@ -913,6 +913,34 @@ namespace Insight.Tests
 
 				var result = list.First();
 				Assert.AreEqual(DateTime.MinValue, result);
+			}
+		}
+
+		[Test]
+		public void DateFieldsShouldConvertFromString()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC TestDateTimeConvert @p datetime2 AS SELECT @p");
+
+				DateTime d = DateTime.Today;
+				var results = connection.Query<DateTime>("TestDateTimeConvert", new { p = d.ToString() }).First();
+				Assert.AreEqual(d, results);
+			}
+		}
+		#endregion
+
+		#region Guid Tests
+		[Test]
+		public void GuidsShouldConvertFromString()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC TestGuidParam @p uniqueidentifier AS SELECT @p");
+
+				Guid g = Guid.NewGuid();
+				var results = connection.Query<Guid>("TestGuidParam", new { p = g.ToString() }).First();
+				Assert.AreEqual(g, results);
 			}
 		}
 		#endregion
