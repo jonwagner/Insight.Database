@@ -193,6 +193,7 @@ namespace Insight.Tests
 			Assert.AreEqual(parentTestData.ParentX, data);
 		}
 
+		#region Geography Tests
 		class TestGeography
 		{
 			public SqlGeography Geo;
@@ -220,5 +221,6 @@ namespace Insight.Tests
 			var dynamicList = _connection.Query("TestProc3", new { geo = point });
 			Assert.That(results[0].STEquals(point).IsTrue);
 		}
+		#endregion
 	}
 }

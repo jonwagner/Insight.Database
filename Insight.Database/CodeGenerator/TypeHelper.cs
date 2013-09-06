@@ -31,7 +31,7 @@ namespace Insight.Database.CodeGenerator
 			if (type.IsEnum) return true;
 
 			// anything marked as a user-defined type is atomic for our purposes
-			if (type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute"))
+			if (IsSqlUserDefinedType(type))
 				return true;
 
 			// value references are atomic
@@ -71,6 +71,16 @@ namespace Insight.Database.CodeGenerator
 				default:
 					return false;
 			}
+		}
+
+		/// <summary>
+		/// Determines if a type is a sql user defined type.
+		/// </summary>
+		/// <param name="type">The type to examine.</param>
+		/// <returns>True if it is a Sql UDT.</returns>
+		public static bool IsSqlUserDefinedType(Type type)
+		{
+			return type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
 		}
 
 		#region Xml Serialization Helpers

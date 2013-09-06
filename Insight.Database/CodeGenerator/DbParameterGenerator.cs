@@ -590,6 +590,10 @@ namespace Insight.Database.CodeGenerator
 				return DbTypeEnumerable;
 			}
 
+			// sql udts are udts
+			if (TypeHelper.IsSqlUserDefinedType(type))
+				return DbType.Object;
+
 			// let's see if the type can be directly converted to the parameter type
 			return parameterType;
 		}

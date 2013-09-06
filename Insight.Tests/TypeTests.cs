@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 using System.Data;
 using System.Dynamic;
 using System.Data.Common;
+using System.Data.SqlTypes;
 
 #pragma warning disable 0649
 
@@ -941,6 +942,33 @@ namespace Insight.Tests
 				Guid g = Guid.NewGuid();
 				var results = connection.Query<Guid>("TestGuidParam", new { p = g.ToString() }).First();
 				Assert.AreEqual(g, results);
+			}
+		}
+		#endregion
+
+		#region SqlGeometry Tests
+
+		public interface ITestGeometry
+		{
+			[Sql("GeometryProc", CommandType.StoredProcedure)]
+			IList<SqlGeometry> GeometryProc(SqlGeometry geo);
+
+			[Sql("SELECT @geo")]
+			IList<SqlGeometry> GeometrySql(SqlGeometry geo);
+		}
+
+		[Test]
+		public void GeographyParameterOnInterface()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC GeometryProc (@geo [geometry]) AS SELECT @geo");
+
+				SqlGeometry geo = SqlGeometry.STGeomFromText(new SqlChars("POINT (2568634.9700000007 1269220.2200000007)"), 102605);
+
+				var i = connection.As<ITestGeometry>();
+				//var result = i.GeometryProc(geo);
+				var result = i.GeometrySql(geo);
 			}
 		}
 		#endregion
