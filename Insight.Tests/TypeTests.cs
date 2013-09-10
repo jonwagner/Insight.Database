@@ -950,7 +950,7 @@ namespace Insight.Tests
 
 		public interface ITestGeometry
 		{
-			[Sql("spGeometryProc", CommandType.StoredProcedure)]
+			[Sql("GeometryProc", CommandType.StoredProcedure)]
 			IList<SqlGeometry> GeometryProc(SqlGeometry geo);
 
 			[Sql("SELECT @geo")]
@@ -962,13 +962,19 @@ namespace Insight.Tests
 		{
 			using (var connection = _connectionStringBuilder.OpenWithTransaction())
 			{
-				connection.ExecuteSql("CREATE PROC [dbo].spGeometryProc (@geo [geometry]) AS SELECT @geo");
+				connection.ExecuteSql("CREATE PROC [dbo].GeometryProc (@geo [geometry]) AS SELECT @geo");
 
 				SqlGeometry geo = SqlGeometry.STGeomFromText(new SqlChars("POINT (2568634.9700000007 1269220.2200000007)"), 102605);
 
 				var i = connection.As<ITestGeometry>();
+
+				// call by a proc
 				var result = i.GeometryProc(geo);
-				result = i.GeometrySql(geo);
+				Assert.AreEqual(geo.ToString(), result.First().ToString());
+
+				// call by sql
+				var result2 = i.GeometrySql(geo);
+				Assert.AreEqual(geo.ToString(), result2.First().ToString());
 			}
 		}
 		#endregion

@@ -110,6 +110,37 @@ namespace Insight.Database.Providers
 			return p;
 		}
 
+		/// <inheritdoc/>
+		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+			if (parameter == null) throw new ArgumentNullException("parameter");
+
+			base.FixupParameter(command, parameter, dbType, type);
+
+			// when calling sql text, we have to fill in the udttypename for some parameters
+			if (command.CommandType != CommandType.StoredProcedure && TypeHelper.IsSqlUserDefinedType(type))
+			{
+				SqlParameter p = (SqlParameter)parameter;
+				p.SqlDbType = SqlDbType.Udt;
+
+				switch (type.Name)
+				{
+					case "SqlGeometry":
+						p.UdtTypeName = "sys.geometry";
+						break;
+
+					case "SqlGeography":
+						p.UdtTypeName = "sys.geography";
+						break;
+
+					case "SqlHierarchy":
+						p.UdtTypeName = "sys.hierarchyid";
+						break;
+				}
+			}
+		}
+
 		/// <summary>
 		/// Set up a table-valued parameter to a procedure.
 		/// </summary>
@@ -284,6 +315,14 @@ namespace Insight.Database.Providers
 				var typeParameter = parameterNames.FirstOrDefault((dynamic n) => String.Compare(p.ParameterName, n.ParameterName, StringComparison.OrdinalIgnoreCase) == 0);
 				if (typeParameter != null)
 					p.TypeName = String.Format("[{0}].[{1}]", typeParameter.SchemaName, typeParameter.TypeName);
+			}
+
+			// in SQL2008, some UDTs will not have the proper type names, so we set them with good data
+			foreach (var p in parameters.Where(p => p.SqlDbType == SqlDbType.Udt))
+			{
+				var typeParameter = parameterNames.FirstOrDefault((dynamic n) => String.Compare(p.ParameterName, n.ParameterName, StringComparison.OrdinalIgnoreCase) == 0);
+				if (typeParameter != null)
+					p.UdtTypeName = String.Format("[{0}].[{1}]", typeParameter.SchemaName, typeParameter.TypeName);
 			}
 		}
 

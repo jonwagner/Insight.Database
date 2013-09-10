@@ -28,7 +28,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Special case for enumerable data types.
 		/// </summary>
-		private const DbType DbTypeEnumerable = (DbType)(-1);
+		internal const DbType DbTypeEnumerable = (DbType)(-1);
 
 		/// <summary>
 		/// MethodInfos for methods that we are going to call.
@@ -36,7 +36,6 @@ namespace Insight.Database.CodeGenerator
 		private static readonly FieldInfo _dbNullValue = typeof(DBNull).GetField("Value");
 		private static readonly MethodInfo _iDbCommandGetParameters = typeof(IDbCommand).GetProperty("Parameters").GetGetMethod();
 		private static readonly MethodInfo _iDataParameterCollectionGetItem = typeof(IDataParameterCollection).GetProperty("Item").GetGetMethod();
-		private static readonly MethodInfo _iDataParameterSetDbType = typeof(IDataParameter).GetProperty("DbType").GetSetMethod();
 		private static readonly MethodInfo _iDataParameterSetValue = typeof(IDataParameter).GetProperty("Value").GetSetMethod();
 		private static readonly MethodInfo _iDbDataParameterSetSize = typeof(IDbDataParameter).GetProperty("Size").GetSetMethod();
 		private static readonly MethodInfo _stringGetLength = typeof(string).GetProperty("Length").GetGetMethod();
@@ -241,6 +240,9 @@ namespace Insight.Database.CodeGenerator
 				// look up the best type to use for the parameter
 				DbType sqlType = LookupDbType(prop.MemberType, dbParameter.DbType);
 
+				// give the provider an opportunity to fix up the template parameter (e.g. set UDT type names)
+				provider.FixupParameter(command, dbParameter, sqlType, prop.MemberType);
+
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
 				///////////////////////////////////////////////////////////////
@@ -249,16 +251,6 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Dup);
 				il.Emit(OpCodes.Dup);
 				il.Emit(OpCodes.Stloc, parameter);
-
-				// for non-stored procedures, we don't know the desired type
-				// so we have to set the type of the parameter to the type of the value
-				// exception: enumerables, which we handle just below
-				if (command.CommandType != CommandType.StoredProcedure && sqlType != DbTypeEnumerable)
-				{
-					il.Emit(OpCodes.Dup);
-					il.Emit(OpCodes.Ldc_I4, (int)sqlType);
-					il.Emit(OpCodes.Call, _iDataParameterSetDbType);
-				}
 
 				///////////////////////////////////////////////////////////////
 				// Get the value from the object onto the stack

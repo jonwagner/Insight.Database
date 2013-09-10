@@ -183,6 +183,23 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// When building the parameter template, this allows the provider to fix properties.
+		/// </summary>
+		/// <param name="command">The command being prepared.</param>
+		/// <param name="parameter">The parameter to fix up.</param>
+		/// <param name="dbType">The best guess at the DbType of the parameter.</param>
+		/// <param name="type">The type of the object that will be passed in the parameter.</param>
+		public virtual void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+			if (parameter == null) throw new ArgumentNullException("parameter");
+
+			// if we are executing a text procedure, fill in the dbtype with our best guess at the type
+			if (command.CommandType != CommandType.StoredProcedure && dbType != DbParameterGenerator.DbTypeEnumerable)
+				parameter.DbType = dbType;
+		}
+
+		/// <summary>
 		/// Determines if a parameter is an XML type parameter.
 		/// </summary>
 		/// <param name="command">The related command object.</param>
