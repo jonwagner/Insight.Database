@@ -285,6 +285,7 @@ namespace Insight.Tests
 			}
 		}
 
+#if !NODYNAMIC
 		[Test]
 		public void DynamicProcWithMissingTableParameterShouldThrow()
 		{
@@ -309,6 +310,7 @@ namespace Insight.Tests
 				_connection.ExecuteSql("DROP TYPE Missing_Table");
 			}
 		}
+#endif
 		#endregion
 
 		#region Table Schema Tests

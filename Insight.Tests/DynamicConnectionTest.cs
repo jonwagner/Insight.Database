@@ -1,4 +1,5 @@
-﻿using Insight.Database;
+﻿#if !NODYNAMIC
+using Insight.Database;
 using Insight.Tests.TestDataClasses;
 using NUnit.Framework;
 using System;
@@ -373,3 +374,4 @@ namespace Insight.Tests
 		#endregion
 	}
 }
+#endif

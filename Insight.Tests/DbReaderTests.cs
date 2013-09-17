@@ -64,13 +64,13 @@ namespace Insight.Tests
 
 			dynamic item = list[0];
 			Assert.IsNotNull(item);
-			Assert.AreEqual(1, item.Int);
-			Assert.AreEqual("foo", item.String);
+			Assert.AreEqual(1, item["Int"]);
+			Assert.AreEqual("foo", item["String"]);
 
 			item = list[1];
 			Assert.IsNotNull(item);
-			Assert.AreEqual(2, item.Int);
-			Assert.AreEqual("moo", item.String);
+			Assert.AreEqual(2, item["Int"]);
+			Assert.AreEqual("moo", item["String"]);
 		}
 
 		[Test]
@@ -83,13 +83,13 @@ namespace Insight.Tests
 
 			var item = list[0];
 			Assert.IsNotNull(item);
-			Assert.AreEqual(1, item.Int);
-			Assert.AreEqual("foo", item.String);
+			Assert.AreEqual(1, item["Int"]);
+			Assert.AreEqual("foo", item["String"]);
 
 			item = list[1];
 			Assert.IsNotNull(item);
-			Assert.AreEqual(2, item.Int);
-			Assert.AreEqual("moo", item.String);
+			Assert.AreEqual(2, item["Int"]);
+			Assert.AreEqual("moo", item["String"]);
 		}
 
 		[Test]

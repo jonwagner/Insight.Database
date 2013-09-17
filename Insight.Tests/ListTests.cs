@@ -334,8 +334,8 @@ namespace Insight.Tests
 
 				var results = _connection.Query("TestMap", list);
 				dynamic first = results[0];
-				Assert.AreEqual("from", first.Key);
-				Assert.AreEqual("to", first.Value);
+				Assert.AreEqual("from", first["Key"]);
+				Assert.AreEqual("to", first["Value"]);
 			}
 			finally
 			{
@@ -370,8 +370,8 @@ namespace Insight.Tests
 
 				var results = _connection.Query("TestMap", list);
 				dynamic first = results[0];
-				Assert.AreEqual("from", first.Key);
-				Assert.AreEqual("to", first.Value);
+				Assert.AreEqual("from", first["Key"]);
+				Assert.AreEqual("to", first["Value"]);
 			}
 			finally
 			{

@@ -76,6 +76,7 @@ namespace Insight.Database
 		#endregion
 
 		#region DynamicObject Members
+#if !NODYNAMIC
 		/// <summary>
 		/// Provides the implementation for operations that invoke a member. Classes derived from the DynamicObject class can override this method to specify dynamic behavior for operations such as calling a method.
 		/// </summary>
@@ -261,6 +262,7 @@ namespace Insight.Database
 					cmd.Dispose();
 			}
 		}
+#endif
 
 		#region Delegate Invocation Methods
 		/// <summary>
@@ -448,6 +450,7 @@ namespace Insight.Database
 		{
 		}
 
+#if !NODYNAMIC
 		/// <summary>
 		/// Provides the implementation for operations that invoke a member. Classes derived from the DynamicObject class can override this method to specify dynamic behavior for operations such as calling a method.
 		/// </summary>
@@ -461,6 +464,7 @@ namespace Insight.Database
 
 			return true;
 		}
+#endif
 	}
 	#endregion
 }

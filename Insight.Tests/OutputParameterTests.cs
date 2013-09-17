@@ -58,7 +58,7 @@ namespace Insight.Tests
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
-				Assert.AreEqual(11, output.p);
+				Assert.AreEqual(11, output["p"]);
 			}
 		}
 
@@ -76,7 +76,7 @@ namespace Insight.Tests
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
-				Assert.AreEqual(6, output.p);
+				Assert.AreEqual(6, output["p"]);
 			}
 		}
 		#endregion
@@ -193,7 +193,7 @@ namespace Insight.Tests
 				var result = connection.QueryResults<Results<int>>("Insight_TestOutput", new { p = 5 });
 
 				Assert.IsNotNull(result.Outputs);
-				Assert.AreEqual(9, result.Outputs.p);
+				Assert.AreEqual(9, result.Outputs["p"]);
 			}
 		}
 
@@ -210,7 +210,7 @@ namespace Insight.Tests
 				var result = connection.QueryResultsAsync<Results<int>>("Insight_TestOutput", new { p = 5 }).Result;
 
 				Assert.IsNotNull(result.Outputs);
-				Assert.AreEqual(9, result.Outputs.p);
+				Assert.AreEqual(9, result.Outputs["p"]);
 			}
 		}
 		#endregion
@@ -243,7 +243,7 @@ namespace Insight.Tests
 
 				dynamic output = new FastExpando();
 				connection.Execute("ReturnAValue", outputParameters: (object)output);
-				Assert.AreEqual(11, output.Return_Value);
+				Assert.AreEqual(11, output["Return_Value"]);
 			}
 		}
 
@@ -255,7 +255,7 @@ namespace Insight.Tests
 				connection.ExecuteSql("CREATE PROC ReturnAValue AS RETURN 11");
 
 				var results = connection.QueryResults("ReturnAValue");
-				Assert.AreEqual(11, results.Outputs.Return_Value);
+				Assert.AreEqual(11, results.Outputs["Return_Value"]);
 			}
 		}
 		#endregion

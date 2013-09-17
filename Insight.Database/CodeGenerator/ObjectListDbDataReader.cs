@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -269,7 +268,11 @@ namespace Insight.Database.CodeGenerator
 			if (value is Guid)
 				return (Guid)value;
 
+#if NET35
+			return new Guid(value.ToString());
+#else
 			return Guid.Parse(value.ToString());
+#endif
 		}
 
 		public override short GetInt16(int ordinal)

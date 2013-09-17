@@ -250,7 +250,7 @@ namespace Insight.Database
 				}
 
 				// if no mapping was returned, then skip the column
-				if (e.Canceled || String.IsNullOrWhiteSpace(e.TargetFieldName))
+				if (e.Canceled || String.IsNullOrEmpty(e.TargetFieldName.Trim()))
 					continue;
 
 				// get the target property based on the result

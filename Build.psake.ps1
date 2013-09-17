@@ -14,6 +14,7 @@ properties {
 	$assemblyversion = $version.Split('-', 2)[0]
 
     $outputDir = "$baseDir\Build\Output"
+    $net35Path = "$baseDir\Insight.Database\bin\NET35"
     $net40Path = "$baseDir\Insight.Database\bin\NET40"
 
     $framework = "$env:systemroot\Microsoft.NET\Framework\v4.0.30319\"
@@ -25,8 +26,8 @@ properties {
 }
 
 Task default -depends Build
-Task Build -depends Build40,Build45
-Task Test -depends Test40,Test45
+Task Build -depends Build45,Build40,Build35
+Task Test -depends Test45,Test40,Test35
 
 function Replace-Version {
     param (
@@ -58,13 +59,33 @@ function Wipe-Folder {
     New-Item -Path $Path -ItemType Directory | Out-Null
 }
 
+Task Build35 {
+    ReplaceVersions
+
+    try {
+        # build the NET35 binaries
+        Exec {
+            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
+            Invoke-Expression "$msbuild $baseDir\Insight.Tests\Insight.Tests.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
+        }
+
+        # copy the binaries to the net35 folder
+        Wipe-Folder $net35Path
+        Copy-Item $baseDir\*.*\bin\Release\*.* $net35Path
+    }
+    finally {
+        RestoreVersions
+    }
+}
+
 Task Build40 {
     ReplaceVersions
 
     try {
         # build the NET40 binaries
         Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.sln /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NET40``;``NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
+            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
+            Invoke-Expression "$msbuild $baseDir\Insight.Tests\Insight.Tests.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
         }
 
         # copy the binaries to the net40 folder
@@ -87,6 +108,12 @@ Task Build45 {
     }
     finally {
         RestoreVersions
+    }
+}
+
+Task Test35 -depends Build35 { 
+    Exec {
+        Invoke-Expression "$nunit $net35Path\Insight.Tests.dll"
     }
 }
 

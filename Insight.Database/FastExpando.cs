@@ -31,6 +31,11 @@ namespace Insight.Database
 		/// <returns>A FastExpando containing the public properties and fields of obj.</returns>
 		public static FastExpando FromObject(object value)
 		{
+			// don't bother converting expandos
+			FastExpando x = value as FastExpando;
+			if (x != null)
+				return x;
+
 			return ExpandoGenerator.Convert(value);
 		}
 		#endregion
@@ -42,7 +47,7 @@ namespace Insight.Database
 		/// <param name="binder">The binder to use.</param>
 		/// <param name="value">The value to set.</param>
 		/// <returns>True if the value was set.</returns>
-		public override bool TrySetMember(System.Dynamic.SetMemberBinder binder, object value)
+		public override bool TrySetMember(SetMemberBinder binder, object value)
 		{
 			if (binder == null) throw new ArgumentNullException("binder");
 
@@ -56,7 +61,7 @@ namespace Insight.Database
 		/// <param name="binder">The binder to use.</param>
 		/// <param name="result">The output result.</param>
 		/// <returns>True if a member was returned.</returns>
-		public override bool TryGetMember(System.Dynamic.GetMemberBinder binder, out object result)
+		public override bool TryGetMember(GetMemberBinder binder, out object result)
 		{
 			if (binder == null) throw new ArgumentNullException("binder");
 
@@ -99,7 +104,11 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="key">The key of the value.</param>
 		/// <returns>The value.</returns>
-		object IDictionary<string, object>.this[string key]
+#if NET35
+		public override object this[string key]
+#else
+		public object this[string key]
+#endif
 		{
 			get
 			{

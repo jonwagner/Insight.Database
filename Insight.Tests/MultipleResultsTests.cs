@@ -61,8 +61,8 @@ namespace Insight.Tests
 			
 			Assert.AreEqual(1, results.Set1.Count);
 			var item = results.Set1[0];
-			Assert.AreEqual(1, item.X);
-			Assert.AreEqual(2, item.Y);
+			Assert.AreEqual(1, item["X"]);
+			Assert.AreEqual(2, item["Y"]);
 		}
 		#endregion
 

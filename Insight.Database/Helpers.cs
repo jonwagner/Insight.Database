@@ -65,5 +65,13 @@ namespace Insight.Database
 			return Task.FromResult(result);
 		}
 #endif
+
+#if NET35
+		internal static bool HasFlag(this Enum e, Enum flag)
+		{
+			ulong f = Convert.ToUInt64(flag);
+			return ((Convert.ToUInt64(e) & f) == f);
+		}
+#endif
 	}
 }
