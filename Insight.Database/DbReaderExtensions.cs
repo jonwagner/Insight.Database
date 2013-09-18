@@ -568,6 +568,10 @@ namespace Insight.Database
 		/// <returns>An enumerable for the type.</returns>
 		private static IEnumerable<T> AsEnumerable<T>(this IDataReader reader, Func<IDataReader, T> mapper)
 		{
+			// if the reader is closed, then we return an empty list, rather than blowing up
+			if (reader.IsClosed)
+				yield break;
+
 			// read in all of the objects from the reader
 			while (reader.Read())
 				yield return mapper(reader);

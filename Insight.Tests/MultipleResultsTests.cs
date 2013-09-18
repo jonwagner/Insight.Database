@@ -24,6 +24,41 @@ namespace Insight.Tests
 			ParentTestData.Verify(results.Set1, withGraph: false);
 			TestData2.Verify(results.Set2);
 		}
+
+		[Test]
+		public void NullListsAreReturnedWhenFewerRecordsetsAreReturned1()
+		{
+			// expect one recordsets, but retrieve none. remaining recordsets should be null, not empty.
+
+			var results = _connection.QueryResultsSql<Results<ParentTestData>>("--");
+			Assert.IsNotNull(results);
+			Assert.IsNotNull(results.Set1);
+			Assert.AreEqual(0, results.Set1.Count);
+		}
+
+		[Test]
+		public void NullListsAreReturnedWhenFewerRecordsetsAreReturned2()
+		{
+			// expect two recordsets, but retrieve one. remaining recordsets should be null, not empty.
+
+			var results = _connection.QueryResultsSql<ParentTestData, TestData2>(ParentTestData.Sql);
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: false);
+			Assert.IsNotNull(results.Set2);
+			Assert.AreEqual(0, results.Set2.Count);
+		}
+
+		[Test]
+		public void EmptyListDoesNotTerminateResults()
+		{
+			// expect two recordsets, first set is empty. first set should be empty, second should be full
+			var results = _connection.QueryResultsSql<ParentTestData, TestData2>("SELECT 0 WHERE 0=1;" + TestData2.Sql);
+
+			Assert.IsNotNull(results);
+			Assert.IsNotNull(results.Set1);
+			Assert.AreEqual(0, results.Set1.Count);
+			TestData2.Verify(results.Set2);
+		}
 		#endregion
 
 		#region Multiple Recordset WithGraph Tests

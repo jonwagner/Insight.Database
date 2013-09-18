@@ -61,7 +61,7 @@ namespace Insight.Database.CodeGenerator
 			// if the graph type is not a graph, or just the object, and we don't want a callback function
 			// then just return a one-level graph.
 			if (subTypes.Length == 1 && !mappingType.HasFlag(SchemaMappingType.WithCallback))
-				return CreateClassDeserializer(type, reader, 0, reader.FieldCount, mappingType.HasFlag(SchemaMappingType.NewObject));
+				return CreateClassDeserializer(type, reader, 0, (reader.IsClosed) ? 0 : reader.FieldCount, mappingType.HasFlag(SchemaMappingType.NewObject));
 
 			// we can't deserialize an object graph in an insert/merge because we don't know whether to create subobjects or leave them null.
 			if (!mappingType.HasFlag(SchemaMappingType.NewObject))

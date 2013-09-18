@@ -27,7 +27,8 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="reader">The reader to construct from.</param>
 		public SchemaIdentity(IDataReader reader)
 		{
-			int fieldCount = reader.FieldCount;
+			int fieldCount = (reader.IsClosed) ? 0 : reader.FieldCount;
+
 			Columns = new Tuple<string, Type>[fieldCount];
 
 			// we know that we are going to store this in a hashtable, so pre-calculate the hashcode
