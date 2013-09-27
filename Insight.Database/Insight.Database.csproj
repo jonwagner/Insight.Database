@@ -96,6 +96,7 @@
       <DependentUpon>Graph.tt</DependentUpon>
     </Compile>
     <Compile Include="InsightBulkCopy.cs" />
+    <Compile Include="Providers\DbConnectionWrapperInsightDbProvider.cs" />
     <Compile Include="Providers\OdbcInsightDbProvider.cs" />
     <Compile Include="Providers\OleDbInsightDbProvider.cs" />
     <Compile Include="Providers\ReliableInsightDbProvider.cs" />

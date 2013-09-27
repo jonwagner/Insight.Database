@@ -38,6 +38,7 @@ namespace Insight.Database.Providers
 		{
 			// only automatically initialize providers that are built into the framework
 			new SqlInsightDbProvider().Register();
+			new DbConnectionWrapperInsightDbProvider().Register();
 			new ReliableInsightDbProvider().Register();
 			new OdbcInsightDbProvider().Register();
 			new OleDbInsightDbProvider().Register();

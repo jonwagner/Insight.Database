@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using Insight.Database;
 using System.Data.SqlClient;
+using System.Data;
 
 namespace Insight.Tests
 {
@@ -20,6 +21,7 @@ namespace Insight.Tests
 
 			base.SetUpFixture();
 
+			_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestData') DROP TABLE [InsightTestData]");
 			_connection.ExecuteSql("CREATE TABLE [InsightTestData] ([Int] [int])");
 		}
 
@@ -60,14 +62,9 @@ namespace Insight.Tests
 					array[j] = new InsightTestData() { Int = j };
 
 				// bulk load the data
-				_sqlConnection.BulkCopy("InsightTestData", array);
+				_connection.BulkCopy("InsightTestData", array);
 
-				// run the query
-				var items = _connection.QuerySql<InsightTestData>("SELECT * FROM InsightTestData");
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
-				for (int j = 0; j < i; j++)
-					Assert.AreEqual(j, items[j].Int);
+				VerifyRecordsInserted(_connection, i);
 
 				_connection.ExecuteSql("DELETE FROM InsightTestData");
 			}
@@ -85,21 +82,78 @@ namespace Insight.Tests
 
 			// bulk load the data
 			long totalRows = 0;
-			_sqlConnection.BulkCopy("InsightTestData", array, configure: (InsightBulkCopy bulkCopy) =>
+			_connection.BulkCopy("InsightTestData", array, configure: (InsightBulkCopy bulkCopy) =>
 			{
 				bulkCopy.NotifyAfter = 1;
 				bulkCopy.RowsCopied += (sender, args) => totalRows = args.RowsCopied;
 			});
 
-			// run the query
-			var items = _connection.QuerySql<InsightTestData>("SELECT * FROM InsightTestData");
-			Assert.IsNotNull(items);
-			Assert.AreEqual(ItemCount, items.Count);
+			VerifyRecordsInserted(_connection, ItemCount);
 			Assert.AreEqual(ItemCount, totalRows);
-			for (int j = 0; j < ItemCount; j++)
-				Assert.AreEqual(j, items[j].Int);
 
 			_connection.ExecuteSql("DELETE FROM InsightTestData");
+		}
+
+		[Test]
+		public void TestBulkLoadWithAutoTransaction()
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					// build test data
+					InsightTestData[] array = new InsightTestData[i];
+					for (int j = 0; j < i; j++)
+						array[j] = new InsightTestData() { Int = j };
+
+					// bulk load the data
+					connection.BulkCopy("InsightTestData", array);
+
+					// records should be there
+					VerifyRecordsInserted(connection, i);
+				}
+
+				// records should be gone
+				VerifyRecordsInserted(_connection, 0);
+
+				_connection.ExecuteSql("DELETE FROM InsightTestData");
+			}
+		}
+
+		[Test]
+		public void TestBulkLoadWithSqlTransaction()
+		{
+			for (int i = 0; i < 3; i++)
+			{
+				using (var tx = _connection.BeginTransaction())
+				{
+					// build test data
+					InsightTestData[] array = new InsightTestData[i];
+					for (int j = 0; j < i; j++)
+						array[j] = new InsightTestData() { Int = j };
+
+					// bulk load the data
+					_connection.BulkCopy("InsightTestData", array, transaction: tx);
+
+					// records should be there
+					VerifyRecordsInserted(_connection, i, tx);
+				}
+
+				// records should be gone
+				VerifyRecordsInserted(_connection, 0);
+
+				_connection.ExecuteSql("DELETE FROM InsightTestData");
+			}
+		}
+
+		private void VerifyRecordsInserted(IDbConnection connection, int count, IDbTransaction transaction = null)
+		{
+			// run the query
+			var items = connection.QuerySql<InsightTestData>("SELECT * FROM InsightTestData", transaction: transaction);
+			Assert.IsNotNull(items);
+			Assert.AreEqual(count, items.Count);
+			for (int j = 0; j < count; j++)
+				Assert.AreEqual(j, items[j].Int);
 		}
 	}
 }

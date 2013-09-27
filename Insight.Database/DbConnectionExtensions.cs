@@ -1373,7 +1373,10 @@ namespace Insight.Database
 					t =>
 					{
 						// select a 0 row result set so we can determine the schema of the table
-						using (var sqlReader = connection.GetReaderSql(provider.GetTableSchemaSql(connection, tableName), commandBehavior: CommandBehavior.SchemaOnly))
+						using (var sqlReader = connection.GetReaderSql(
+							provider.GetTableSchemaSql(connection, tableName),
+							commandBehavior: CommandBehavior.SchemaOnly,
+							transaction: transaction))
 							return ObjectReader.GetObjectReader(connection.CreateCommand(), sqlReader, typeof(T));
 					});
 
