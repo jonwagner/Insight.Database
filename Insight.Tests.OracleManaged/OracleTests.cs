@@ -195,7 +195,7 @@ namespace Insight.Tests.OracleManaged
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void TestReliableConnection()
 		{
 			int retries = 0;

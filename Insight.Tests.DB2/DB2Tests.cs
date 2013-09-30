@@ -239,7 +239,7 @@ namespace Insight.Tests.DB2
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void TestReliableConnection()
 		{
 			int retries = 0;
