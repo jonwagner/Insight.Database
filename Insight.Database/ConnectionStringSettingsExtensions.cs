@@ -152,6 +152,7 @@ namespace Insight.Database
 		#endregion
 
 		#region Dynamic Invocation Helper
+#if !NODYNAMIC
 		/// <summary>
 		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
 		/// </summary>
@@ -172,6 +173,7 @@ namespace Insight.Database
 		{
 			return settings.Connection().Dynamic<T>();
 		}
+#endif
 		#endregion
 	}
 }

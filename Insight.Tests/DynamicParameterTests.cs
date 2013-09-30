@@ -20,8 +20,8 @@ namespace Insight.Tests
 		{
 			var p = new FastExpando();
 			dynamic pd = p;
-			pd.Int = 1;
-			pd.Text = "foo";
+			pd["Int"] = 1;
+			pd["Text"] = "foo";
 
 			var list = _connection.QuerySql("SELECT Int=CONVERT (int, @Int), Text=@Text", p);
 
@@ -29,8 +29,8 @@ namespace Insight.Tests
 			Assert.AreEqual(1, list.Count);
 
 			dynamic result = list[0];
-			Assert.AreEqual(pd.Int, result.Int);
-			Assert.AreEqual(pd.Text, result.Text);
+			Assert.AreEqual(pd["Int"], result["Int"]);
+			Assert.AreEqual(pd["Text"], result["Text"]);
 		}
 
 		[Test]
@@ -40,8 +40,8 @@ namespace Insight.Tests
 			dynamic d = o;
 
 			Assert.AreEqual(4, o.Count());
-			Assert.AreEqual(1, d.ID);
-			Assert.AreEqual("foo", d.Text);
+			Assert.AreEqual(1, d["ID"]);
+			Assert.AreEqual("foo", d["Text"]);
 		}
 
 		[Test]
@@ -52,23 +52,23 @@ namespace Insight.Tests
 			dynamic d = o;
 
 			Assert.AreEqual(6, o.Count());
-			Assert.AreEqual(2, d.ID);
-			Assert.AreEqual("foo", d.Text);
-			Assert.AreEqual("boo", d.GUEST);
+			Assert.AreEqual(2, d["ID"]);
+			Assert.AreEqual("foo", d["Text"]);
+			Assert.AreEqual("boo", d["GUEST"]);
 		}
 
 		[Test]
 		public void FastExpandoCanBeUsedAsDynamic()
 		{
 			dynamic d = FastExpando.FromObject(new { Id = 1, Text = "foo" });
-			d.Property = "prop";
+			d["Property"] = "prop";
 			d.Expand(new { Id = 2, Guest = "boo" });
 
 			FastExpando o = (FastExpando)d;
 			Assert.AreEqual(7, o.Count());
-			Assert.AreEqual(2, d.ID);
-			Assert.AreEqual("foo", d.Text);
-			Assert.AreEqual("prop", d.Property);
+			Assert.AreEqual(2, d["ID"]);
+			Assert.AreEqual("foo", d["Text"]);
+			Assert.AreEqual("prop", d["Property"]);
 		}
 
 		[Test]
@@ -83,9 +83,9 @@ namespace Insight.Tests
 			dynamic d = f;
 
 			Assert.AreEqual(3, f.Count());
-			Assert.AreEqual(2, d.ID);
-			Assert.AreEqual("foo", d.Text);
-			Assert.AreEqual("boo", d.GUEST);
+			Assert.AreEqual(2, d["ID"]);
+			Assert.AreEqual("foo", d["Text"]);
+			Assert.AreEqual("boo", d["GUEST"]);
 		}
 
 		[Test]
@@ -93,8 +93,8 @@ namespace Insight.Tests
 		{
 			// start with a dynamic object
 			dynamic o = new FastExpando();
-			o.Id = 1;
-			o.Text = "foo";
+			o["ID"] = 1;
+			o["Text"] = "foo";
 
 			// expand the dynamic
 			var p = new { Id = 2, Guest = "boo" };
@@ -104,9 +104,9 @@ namespace Insight.Tests
 			dynamic d = f;
 
 			Assert.AreEqual(3, f.Count());
-			Assert.AreEqual(2, d.ID);
-			Assert.AreEqual("foo", d.Text);
-			Assert.AreEqual("boo", d.GUEST);
+			Assert.AreEqual(2, d["ID"]);
+			Assert.AreEqual("foo", d["Text"]);
+			Assert.AreEqual("boo", d["GUEST"]);
 		}
 
 		[Test]
@@ -118,14 +118,14 @@ namespace Insight.Tests
 
 				// an expando with a null value passes in null
 				dynamic f = new FastExpando();
-				f.Value = null;
+				f["Value"] = null;
 				dynamic result = connection.Query("InsightTestProc", (object)f).FirstOrDefault();
-				Assert.IsNull(result.Value);
+				Assert.IsNull(result["Value"]);
 
 				// an expando with a NO value passes in DEFAULT
 				f = new FastExpando();
 				result = connection.Query("InsightTestProc", (object)f).FirstOrDefault();
-				Assert.AreEqual(5, result.Value);
+				Assert.AreEqual(5, result["Value"]);
 			}
 		}
 	}

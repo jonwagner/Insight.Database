@@ -116,7 +116,7 @@ namespace Insight.Tests
 
 			Assert.AreEqual(1, results.Count);
 			dynamic d = results[0];
-			Assert.AreEqual(1, d.X);
+			Assert.AreEqual(1, d["X"]);
 		}
 
 		/// <summary>
@@ -242,8 +242,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestAsyncReaderMultiRecordsetWithExpandos()
 		{
-			dynamic foo = null;
-			dynamic goo = null;
+			IList<FastExpando> foo = null;
+			IList<FastExpando> goo = null;
 
 			var task = _connection.QuerySqlAsync(
 				"SELECT Foo=1 SELECT Goo='Text'",
@@ -260,9 +260,9 @@ namespace Insight.Tests
 
 			Assert.IsTrue(_connection.State == ConnectionState.Closed);
 			Assert.IsNotNull(foo);
-			Assert.AreEqual(1, foo[0].Foo);
+			Assert.AreEqual(1, foo[0]["Foo"]);
 			Assert.IsNotNull(goo);
-			Assert.AreEqual("Text", goo[0].Goo);
+			Assert.AreEqual("Text", goo[0]["Goo"]);
 		}
 		#endregion
 

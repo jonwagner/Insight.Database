@@ -21,8 +21,8 @@ namespace Insight.Tests
 		{
 			FastExpando o = new FastExpando();
 			dynamic d = o;
-			d.A = "foo";
-			d.B = "goo";
+			d["A"] = "foo";
+			d["B"] = "goo";
 
 			FastExpando other = o.Transform(new Dictionary<string, string>() { { "A", "Z" } });
 			IDictionary<string, object> otherDict = other;
@@ -30,8 +30,8 @@ namespace Insight.Tests
 
 			Assert.AreNotSame(o, other);
 			Assert.IsFalse(otherDict.ContainsKey("A"));
-			Assert.IsNotNull(otherD.B);
-			Assert.AreEqual(otherD.Z, d.A);
+			Assert.IsNotNull(otherD["B"]);
+			Assert.AreEqual(otherD["Z"], d["A"]);
 		}
 
 		[Test]
@@ -52,15 +52,15 @@ namespace Insight.Tests
 		{
 			FastExpando o = new FastExpando();
 			dynamic d = o;
-			d.A = "foo";
-			d.B = "goo";
+			d["A"] = "foo";
+			d["B"] = "goo";
 
 			o.Mutate(new Dictionary<string, string>() { { "A", "Z" } });
 			IDictionary<string, object> dict = o;
 
 			Assert.IsFalse(dict.ContainsKey("A"));
-			Assert.IsNotNull(d.B);
-			Assert.AreEqual(d.Z, "foo");
+			Assert.IsNotNull(d["B"]);
+			Assert.AreEqual(d["Z"], "foo");
 		}
 
 		[Test]
@@ -68,7 +68,7 @@ namespace Insight.Tests
 		{
 			FastExpando o = new FastExpando();
 			dynamic d = o;
-			d.B = "goo";
+			d["B"] = "goo";
 
 			o.Mutate(new Dictionary<string, string>() { { "A", "Z" } });
 			IDictionary<string, object> dict = o;

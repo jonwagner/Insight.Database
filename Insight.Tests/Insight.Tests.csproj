@@ -44,19 +44,9 @@
     <FrameworkFolder>net45</FrameworkFolder>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Glimpse.Ado">
-      <HintPath>..\packages\Glimpse.Ado.1.5.0\lib\$(FrameworkFolder)\Glimpse.Ado.dll</HintPath>
-    </Reference>
-    <Reference Include="Glimpse.Core">
-      <HintPath>..\packages\Glimpse.1.6.0\lib\$(FrameworkFolder)\Glimpse.Core.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=10.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <Private>True</Private>
       <HintPath>..\packages\Microsoft.SqlServer.Types.10.50.1600.1\lib\Net20\Microsoft.SqlServer.Types.dll</HintPath>
-    </Reference>
-    <Reference Include="MiniProfiler, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\MiniProfiler.2.1.0\lib\net40\MiniProfiler.dll</HintPath>
     </Reference>
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
@@ -88,7 +78,6 @@
     <Compile Include="ColumnAttributeTests.cs" />
     <Compile Include="ConnectionTests.cs" />
     <Compile Include="ConnectionStringSettingsTests.cs" />
-    <Compile Include="GlimpseTests.cs" />
     <Compile Include="ObjectReaderTests.cs" />
     <Compile Include="OpenTests.cs" />
     <Compile Include="InterfaceTests.cs" />
@@ -96,7 +85,6 @@
     <Compile Include="OutputParameterTests.cs" />
     <Compile Include="FastExpandoTests.cs" />
     <Compile Include="InsertTests.cs" />
-    <Compile Include="MiniProfilerTests.cs" />
     <Compile Include="MultipleResultsTests.cs" />
     <Compile Include="PerformanceTests.cs" />
     <Compile Include="RegressionTests.cs" />
@@ -116,14 +104,6 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Insight.Database.Providers.Glimpse\Insight.Database.Providers.Glimpse.csproj">
-      <Project>{35d1b878-0d4b-4f85-ace8-176a58216293}</Project>
-      <Name>Insight.Database.Providers.Glimpse</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Insight.Database.Providers.MiniProfiler\Insight.Database.Providers.MiniProfiler.csproj">
-      <Project>{ec7ae6ec-45b0-4e5f-9097-4f4cb6a5296d}</Project>
-      <Name>Insight.Database.Providers.MiniProfiler</Name>
-    </ProjectReference>
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj">
       <Project>{BDF3AFB9-9689-48DB-AC12-B9087F774452}</Project>
       <Name>Insight.Database</Name>

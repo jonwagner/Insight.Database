@@ -915,7 +915,7 @@ namespace Insight.Database
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
 				(cmd, r) =>
 				{
-					foreach (FastExpando expando in r.AsEnumerable())
+					foreach (dynamic expando in r.AsEnumerable())
 						action(expando);
 
 					return false;
@@ -1010,6 +1010,7 @@ namespace Insight.Database
 		#endregion
 
 		#region Dynamic Invocation Helper
+#if !NODYNAMIC
 		/// <summary>
 		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
 		/// </summary>
@@ -1032,6 +1033,7 @@ namespace Insight.Database
 		{
 			return new DynamicConnection<T>(connection);
 		}
+#endif
 		#endregion
 
 		#region Insert Members

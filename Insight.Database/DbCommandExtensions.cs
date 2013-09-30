@@ -5,6 +5,7 @@ using System.Dynamic;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Reliable;
 
@@ -39,7 +40,7 @@ namespace Insight.Database
 		/// <returns>A dynamic object containing the output parameters.</returns>
 		public static dynamic OutputParameters(this IDbCommand command)
 		{
-			return command.OutputParameters<FastExpando>();
+			return (dynamic)command.OutputParameters<FastExpando>();
 		}
 
 		/// <summary>
@@ -89,6 +90,7 @@ namespace Insight.Database
 		#endregion
 
 		#region Query Methods
+#if !NODYNAMIC
 		/// <summary>
 		/// Execute an existing command, and translate the result set into a FastExpando. This method supports auto-open.
 		/// The Connection property of the command should be initialized before calling this method.
@@ -102,6 +104,7 @@ namespace Insight.Database
 		{
 			return command.Query<FastExpando>(Graph.Null, commandBehavior);
 		}
+#endif
 
 		/// <summary>
 		/// Execute an existing command, and translate the result set. This method supports auto-open.

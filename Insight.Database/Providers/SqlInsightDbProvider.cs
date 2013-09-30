@@ -299,7 +299,7 @@ namespace Insight.Database.Providers
 			// make sure that we aren't missing any parameters
 			// SQL will skip the parameter in DeriveParameters if the user does not have EXECUTE permissions on the type
 			string missingParameter = parameterNames
-				.Select((dynamic n) => (string)n.ParameterName)
+				.Select(n => (string)n["ParameterName"])
 				.FirstOrDefault((string parameterName) => !parameters.Any(p => String.Compare(p.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase) == 0));
 			if (missingParameter != null)
 				throw new InvalidOperationException(String.Format(
@@ -312,17 +312,17 @@ namespace Insight.Database.Providers
 			// SQL will return them to us unescaped
 			foreach (var p in parameters.Where(p => p.SqlDbType == SqlDbType.Structured))
 			{
-				var typeParameter = parameterNames.FirstOrDefault((dynamic n) => String.Compare(p.ParameterName, n.ParameterName, StringComparison.OrdinalIgnoreCase) == 0);
+				var typeParameter = parameterNames.FirstOrDefault(n => String.Compare(p.ParameterName, (string)n["ParameterName"], StringComparison.OrdinalIgnoreCase) == 0);
 				if (typeParameter != null)
-					p.TypeName = String.Format("[{0}].[{1}]", typeParameter.SchemaName, typeParameter.TypeName);
+					p.TypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
 			}
 
 			// in SQL2008, some UDTs will not have the proper type names, so we set them with good data
 			foreach (var p in parameters.Where(p => p.SqlDbType == SqlDbType.Udt))
 			{
-				var typeParameter = parameterNames.FirstOrDefault((dynamic n) => String.Compare(p.ParameterName, n.ParameterName, StringComparison.OrdinalIgnoreCase) == 0);
+				var typeParameter = parameterNames.FirstOrDefault(n => String.Compare(p.ParameterName, (string)n["ParameterName"], StringComparison.OrdinalIgnoreCase) == 0);
 				if (typeParameter != null)
-					p.UdtTypeName = String.Format("[{0}].[{1}]", typeParameter.SchemaName, typeParameter.TypeName);
+					p.UdtTypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
 			}
 		}
 

@@ -52,9 +52,12 @@ namespace Insight.Database.CodeGenerator
 		static DbReaderDeserializer()
 		{
 			// pre-initialize all of the simple serializers for known types so they can be quickly returned.
-			_simpleDeserializers.TryAdd(typeof(object), GetDynamicDeserializer<FastExpando>());
-			_simpleDeserializers.TryAdd(typeof(FastExpando), GetDynamicDeserializer<FastExpando>());
-			_simpleDeserializers.TryAdd(typeof(ExpandoObject), GetDynamicDeserializer<ExpandoObject>());
+			_simpleDeserializers.TryAdd(typeof(object), GetDynamicDeserializer<FastExpando, FastExpando>());
+			_simpleDeserializers.TryAdd(typeof(FastExpando), GetDynamicDeserializer<FastExpando, FastExpando>());
+			_simpleDeserializers.TryAdd(typeof(ExpandoObject), GetDynamicDeserializer<ExpandoObject, ExpandoObject>());
+#if NODYNAMIC
+			_simpleDeserializers.TryAdd(typeof(dynamic), GetDynamicDeserializer<dynamic, FastExpando>());
+#endif
 			_simpleDeserializers.TryAdd(typeof(XmlDocument), GetXmlDocumentDeserializer());
 			_simpleDeserializers.TryAdd(typeof(XDocument), GetXDocumentDeserializer());
 			_simpleDeserializers.TryAdd(typeof(byte[]), GetByteArrayDeserializer());
@@ -305,13 +308,14 @@ namespace Insight.Database.CodeGenerator
 		/// Get a deserializer for dynamic objects.
 		/// </summary>
 		/// <typeparam name="T">The type of object to deserialize.</typeparam>
+		/// <typeparam name="TImpl">The type of object to use to implement the requested type.</typeparam>
 		/// <returns>A deserializer that returns dynamic objects.</returns>
-		private static Func<IDataReader, T> GetDynamicDeserializer<T>() where T : IDictionary<String, Object>, new()
+		private static Func<IDataReader, T> GetDynamicDeserializer<T, TImpl>() where TImpl : T, IDictionary<String, Object>, new()
 		{
 			return r =>
 			{
 				// we need it to implement IDictionary so we can set the properties
-				T t = new T();
+				T t = new TImpl();
 				IDictionary<String, Object> o = (IDictionary<String, Object>)t;
 
 				// get all of the values at once to avoid overhead

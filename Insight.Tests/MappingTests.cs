@@ -213,7 +213,7 @@ namespace Insight.Tests
 
 			// dynamic parameter
 			dynamic p = new FastExpando();
-			p.Geo = point;
+			p["Geo"] = point;
 			results = _connection.Query<SqlGeography>("TestProc3", (object)p);
 			Assert.That(results[0].STEquals(point).IsTrue);
 

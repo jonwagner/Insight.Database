@@ -52,6 +52,10 @@
     <CodeAnalysisTreatWarningsAsErrors>True</CodeAnalysisTreatWarningsAsErrors>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
+	<PropertyGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
+		<RunCodeAnalysis>false</RunCodeAnalysis>
+		<StyleCopEnabled>false</StyleCopEnabled>
+	</PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -84,6 +88,7 @@
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
     <Compile Include="ColumnMapping.cs" />
     <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="Compatibility.cs" />
     <Compile Include="DBConnectionExtensions.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
