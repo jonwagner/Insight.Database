@@ -37,7 +37,7 @@ namespace Insight.Tests.MySql
 			MySqlInsightDbProvider.RegisterProvider();
 
 			_connectionStringBuilder = new MySqlConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Server = localhost; Database = test; User Id = root; Password = Password1";
+			_connectionStringBuilder.ConnectionString = "Server = testserver; Database = test; User Id = root; Password = Password1";
 			_connection = _connectionStringBuilder.Open();
 		}
 
@@ -171,7 +171,7 @@ namespace Insight.Tests.MySql
 			try
 			{
 				var builder = new MySqlConnectionStringBuilder(_connectionStringBuilder.ConnectionString);
-				builder.Server = "localhost";
+				builder.Server = "testserver";
 				builder.Port = 9999;
 				using (var reliable = new ReliableConnection<MySqlConnection>(builder.ConnectionString, retryStrategy))
 				{

@@ -38,7 +38,7 @@ namespace Insight.Tests.OracleManaged
 			OracleInsightDbProvider.RegisterProvider();
 
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=))(ADDRESS=(PROTOCOL=TCP)(HOST=127.0.0.1)(PORT=1521))); User Id = system; Password = Password1";
+			_connectionStringBuilder.ConnectionString = "Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=))(ADDRESS=(PROTOCOL=TCP)(HOST=testserver)(PORT=1521))); User Id = system; Password = Password1";
 			_connection = _connectionStringBuilder.Open();
 		}
 
@@ -206,7 +206,7 @@ namespace Insight.Tests.OracleManaged
 			try
 			{
 				var builder = new OracleConnectionStringBuilder(_connectionStringBuilder.ConnectionString);
-				builder.DataSource = "localhost:9999";
+				builder.DataSource = "testserver:9999";
 				using (var reliable = new ReliableConnection<OracleConnection>(builder.ConnectionString, retryStrategy))
 				{
 					reliable.Open();

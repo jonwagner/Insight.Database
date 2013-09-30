@@ -37,7 +37,7 @@ namespace Insight.Tests.PostgreSQL
 			PostgreSQLInsightDbProvider.RegisterProvider();
 
 			_connectionStringBuilder = new NpgsqlConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Host = localhost; User Id = postgres; Password = Password1";
+			_connectionStringBuilder.ConnectionString = "Host = testserver; User Id = postgres; Password = Password1";
 			_connection = _connectionStringBuilder.Open();
 		}
 
@@ -214,7 +214,7 @@ namespace Insight.Tests.PostgreSQL
 			try
 			{
 				var builder = new NpgsqlConnectionStringBuilder(_connectionStringBuilder.ConnectionString);
-				builder.Host = "localhost";
+				builder.Host = "testserver";
 				builder.Port = 9999;
 				using (var reliable = new ReliableConnection<NpgsqlConnection>(builder.ConnectionString, retryStrategy))
 				{

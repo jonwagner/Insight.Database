@@ -169,6 +169,7 @@ namespace Insight.Database.Providers.OracleManaged
 			// http://docs.oracle.com/cd/B19306_01/server.102/b14219.pdf
 			switch (oracleException.Number)
 			{
+				case -6403:					// network address connect timeout
 				case 51:					// timeout waiting for a resource
 				case 12150:					// TNS:unable to send data
 				case 12153:					// TNS:not connected

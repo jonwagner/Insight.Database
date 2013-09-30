@@ -33,7 +33,9 @@ namespace Insight.Tests.DB2
 			DB2InsightDbProvider.RegisterProvider();
 
 			DB2ConnectionStringBuilder connectionStringBuilder = new DB2ConnectionStringBuilder();
-			connectionStringBuilder.ConnectionString = "Server=localhost:50000;Database=SAMPLE";
+			connectionStringBuilder.ConnectionString = "Server=testserver:50000;Database=SAMPLE";
+			connectionStringBuilder.UserID = "db2admin";
+			connectionStringBuilder.Password = "Password1";
 
 			_connectionStringBuilder = connectionStringBuilder;
 			_connection = _connectionStringBuilder.Open();
@@ -44,7 +46,6 @@ namespace Insight.Tests.DB2
 		{
 			_connection.ExecuteSql("SELECT * FROM SYSIBM.DUAL");
 		}
-
 
 		[Test]
 		public void TestExecuteWithParameters()
@@ -248,8 +249,11 @@ namespace Insight.Tests.DB2
 
 			try
 			{
-				var builder = new DB2ConnectionStringBuilder("Server=localhost:9999;Database=SAMPLE");
-				using (var reliable = new ReliableConnection<DB2Connection>(builder.ConnectionString, retryStrategy))
+				DB2ConnectionStringBuilder connectionStringBuilder = new DB2ConnectionStringBuilder();
+				connectionStringBuilder.ConnectionString = "Server=testserver:9999;Database=SAMPLE";
+				connectionStringBuilder.UserID = "db2admin";
+				connectionStringBuilder.Password = "Password1";
+				using (var reliable = new ReliableConnection<DB2Connection>(connectionStringBuilder.ConnectionString, retryStrategy))
 				{
 					reliable.Open();
 				}
