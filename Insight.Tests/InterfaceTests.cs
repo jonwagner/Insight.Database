@@ -368,7 +368,10 @@ namespace Insight.Tests
 	public interface IEmailRepository
 	{
 		[Sql("print ''")]
-		void UpsertByUserId(int userId, bool doNotSend, bool notifications, bool privateMessages, bool newsletters);
+		void UpsertByInt(int id);
+
+		[Sql("print ''")]
+		void UpsertByString(string id);
 	}
 
 	[TestFixture]
@@ -378,7 +381,8 @@ namespace Insight.Tests
 		public void UpsertShouldNotFailWhenFirstParameterIsAtomic()
 		{
 			var repo = _connection.As<IEmailRepository>();
-			repo.UpsertByUserId(0, false, false, false, false);
+			repo.UpsertByInt(0);
+			repo.UpsertByString("");
 		}
 	}
 }

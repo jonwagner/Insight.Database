@@ -335,19 +335,22 @@ namespace Insight.Database.CodeGenerator
 			// if returntype is null
 			if (method.ReturnType == typeof(void))
 			{
-				// methods that start with insert/update/upsert map to insert
-				if (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
-					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase))
+				// if the first parameter is enumerable, then we assume we are doing an insert/update multiple
+				var parameter = method.GetParameters().FirstOrDefault();
+				Type type = (parameter == null) ? null : parameter.ParameterType;
+
+				// if the object is not atomic, then attempt to merge the results into the first object
+				// methods that start with insert/upsert map to insert
+				if (type != null &&
+					!TypeHelper.IsAtomicType(type) &&
+					(method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase)))
 				{
-					// if the first parameter is enumerable, then we assume we are doing an insert/update multiple
-					Type type = method.GetParameters()[0].ParameterType;
 					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
 						return _insertListMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
 
-					// if the object is not atomic, then attempt to merge the results into the first object
-					if (!TypeHelper.IsAtomicType(type))
-						return _insertMethod.MakeGenericMethod(type);
+					return _insertMethod.MakeGenericMethod(type);
 				}
 
 				// not an insert, so call execute
@@ -391,18 +394,21 @@ namespace Insight.Database.CodeGenerator
 			// if returntype is Task
 			if (method.ReturnType == typeof(Task))
 			{
-				// methods that start with insert/update/upsert map to insert
-				if (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
-					method.Name.StartsWith("Update", StringComparison.OrdinalIgnoreCase) ||
-					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase))
+				// if the first parameter is enumerable, then we assume we are doing an insert/update multiple
+				var parameter = method.GetParameters().FirstOrDefault();
+				Type type = (parameter == null) ? null : parameter.ParameterType;
+
+				// if the object is not atomic, then attempt to merge the results into the first object
+				// methods that start with insert/upsert map to insert
+				if (type != null &&
+					!TypeHelper.IsAtomicType(type) &&
+					(method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase)))
 				{
-					// if the first parameter is enumerable, then we assume we are doing an insert/update multiple
-					Type type = method.GetParameters()[0].ParameterType;
 					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
 						return _insertListAsyncMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
 
-					// not enumerable, so doing a single insert
 					return _insertAsyncMethod.MakeGenericMethod(type);
 				}
 
