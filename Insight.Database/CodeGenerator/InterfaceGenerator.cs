@@ -337,7 +337,6 @@ namespace Insight.Database.CodeGenerator
 			{
 				// methods that start with insert/update/upsert map to insert
 				if (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
-					method.Name.StartsWith("Update", StringComparison.OrdinalIgnoreCase) ||
 					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase))
 				{
 					// if the first parameter is enumerable, then we assume we are doing an insert/update multiple
@@ -346,8 +345,9 @@ namespace Insight.Database.CodeGenerator
 					if (enumerable != null)
 						return _insertListMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
 
-					// not enumerable, so doing a single insert
-					return _insertMethod.MakeGenericMethod(type);
+					// if the object is not atomic, then attempt to merge the results into the first object
+					if (!TypeHelper.IsAtomicType(type))
+						return _insertMethod.MakeGenericMethod(type);
 				}
 
 				// not an insert, so call execute

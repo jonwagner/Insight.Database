@@ -73,13 +73,14 @@ namespace Insight.Tests
 	{
 		void InsertTestData(TestDataClasses.TestData data);
 		void UpdateTestData(TestDataClasses.TestData data);
+		void UpsertTestData(TestDataClasses.TestData data);
 		void InsertMultipleTestData(IEnumerable<TestDataClasses.TestData> data);
-		void UpdateMultipleTestData(IEnumerable<TestDataClasses.TestData> data);
+		void UpsertMultipleTestData(IEnumerable<TestDataClasses.TestData> data);
 
 		Task InsertTestDataAsync(TestDataClasses.TestData data);
-		Task UpdateTestDataAsync(TestDataClasses.TestData data);
+		Task UpsertTestDataAsync(TestDataClasses.TestData data);
 		Task InsertMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
-		Task UpdateMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
+		Task UpsertMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
 	}
 
 	interface ITestOutputParameters
@@ -235,8 +236,9 @@ namespace Insight.Tests
 					connection.ExecuteSql("CREATE TABLE InsertTestDataTable (X [int] identity (5, 1), Z [int])");
 					connection.ExecuteSql("CREATE PROC InsertTestData @Z [int] AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X VALUES (@Z)");
 					connection.ExecuteSql("CREATE PROC UpdateTestData @X [int], @Z [int] AS UPDATE InsertTestDataTable SET Z=@Z WHERE X=@X SELECT X=0");
+					connection.ExecuteSql("CREATE PROC UpsertTestData @X [int], @Z [int] AS UPDATE InsertTestDataTable SET Z=@Z WHERE X=@X SELECT X=0");
 					connection.ExecuteSql("CREATE PROC InsertMultipleTestData @data [InsertTestDataTVP] READONLY AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X SELECT Z FROM @data");
-					connection.ExecuteSql("CREATE PROC UpdateMultipleTestData @data [InsertTestDataTVP] READONLY AS UPDATE InsertTestDataTable SET Z=data.Z FROM @data data WHERE data.X = InsertTestDataTable.X SELECT X=0 FROM @data");
+					connection.ExecuteSql("CREATE PROC UpsertMultipleTestData @data [InsertTestDataTVP] READONLY AS UPDATE InsertTestDataTable SET Z=data.Z FROM @data data WHERE data.X = InsertTestDataTable.X SELECT X=0 FROM @data");
 
 					var i = connection.As<ITestInsertUpdate>();
 
@@ -248,6 +250,10 @@ namespace Insight.Tests
 
 						// single update
 						i.UpdateTestData(data);
+						Assert.AreEqual(5, data.X, "ID should NOT be reset");
+
+						// single upsert
+						i.UpsertTestData(data);
 						Assert.AreEqual(0, data.X, "ID should be reset");
 
 						// multiple insert
@@ -261,7 +267,7 @@ namespace Insight.Tests
 						Assert.AreEqual(7, list[1].X, "ID should be returned");
 
 						// multiple update
-						i.UpdateMultipleTestData(list);
+						i.UpsertMultipleTestData(list);
 						Assert.AreEqual(0, list[0].X, "ID should be reset");
 						Assert.AreEqual(0, list[1].X, "ID should be reset");
 					}
@@ -273,7 +279,7 @@ namespace Insight.Tests
 						Assert.AreEqual(8, data.X, "ID should be returned");
 
 						// single update
-						i.UpdateTestDataAsync(data).Wait();
+						i.UpsertTestDataAsync(data).Wait();
 						Assert.AreEqual(0, data.X, "ID should be reset");
 
 						// multiple insert
@@ -287,7 +293,7 @@ namespace Insight.Tests
 						Assert.AreEqual(10, list[1].X, "ID should be returned");
 
 						// multiple update
-						i.UpdateMultipleTestDataAsync(list).Wait();
+						i.UpsertMultipleTestDataAsync(list).Wait();
 						Assert.AreEqual(0, list[0].X, "ID should be reset");
 						Assert.AreEqual(0, list[1].X, "ID should be reset");
 					}
@@ -357,5 +363,22 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+	}
+
+	public interface IEmailRepository
+	{
+		[Sql("print ''")]
+		void UpsertByUserId(int userId, bool doNotSend, bool notifications, bool privateMessages, bool newsletters);
+	}
+
+	[TestFixture]
+	public class InterfaceUpdateTests : BaseDbTest
+	{
+		[Test]
+		public void UpsertShouldNotFailWhenFirstParameterIsAtomic()
+		{
+			var repo = _connection.As<IEmailRepository>();
+			repo.UpsertByUserId(0, false, false, false, false);
+		}
 	}
 }
