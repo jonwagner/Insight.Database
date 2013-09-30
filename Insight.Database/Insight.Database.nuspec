@@ -13,8 +13,8 @@
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
   </metadata>
   <files>
-    <file src="\bin\Release\Insight.Database.dll" target="lib\NET45" />
-    <file src="\bin\Release\Insight.Database.pdb" target="lib\NET45" />
+    <file src="\bin\NET45\Insight.Database.dll" target="lib\NET45" />
+    <file src="\bin\NET45\Insight.Database.pdb" target="lib\NET45" />
     <file src="\bin\NET40\Insight.Database.dll" target="lib\NET40" />
     <file src="\bin\NET40\Insight.Database.pdb" target="lib\NET40" />
     <file src="\bin\NET35\Insight.Database.dll" target="lib\NET35" />

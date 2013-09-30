@@ -16,6 +16,7 @@ properties {
     $outputDir = "$baseDir\Build\Output"
     $net35Path = "$baseDir\Insight.Database\bin\NET35"
     $net40Path = "$baseDir\Insight.Database\bin\NET40"
+    $net45Path = "$baseDir\Insight.Database\bin\NET45"
 
     $framework = "$env:systemroot\Microsoft.NET\Framework\v4.0.30319\"
     $msbuild = $framework + "msbuild.exe"
@@ -105,7 +106,11 @@ Task Build45 {
         Exec {
             Invoke-Expression "$msbuild $baseDir\Insight.sln '/p:Configuration=$configuration' '/t:Clean;Build'"
         }
-    }
+ 
+        # copy the binaries to the net45 folder
+        Wipe-Folder $net45Path
+        Copy-Item $baseDir\*.*\bin\Release\*.* $net45Path
+   }
     finally {
         RestoreVersions
     }
@@ -128,10 +133,10 @@ Task Test45Only {
 	    Exec {
 			if ($_.Name -eq 'Insight.Tests.Oracle') {
 				# having trouble getting the 64-bit drivers installed on Windows 8, so use the 32-bit drivers
-				Invoke-Expression "$nunitx86 $($_.FullName)\bin\$configuration\$($_.Name).dll"
+				Invoke-Expression "$nunitx86 $net45Path\$($_.Name).dll"
 			}
 			else {
-				Invoke-Expression "$nunit $($_.FullName)\bin\$configuration\$($_.Name).dll"
+				Invoke-Expression "$nunit $net45Path\$($_.Name).dll"
 			}
 		}
 	}

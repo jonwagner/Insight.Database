@@ -19,8 +19,8 @@
 	</dependencies>
   </metadata>
   <files>
-	<file src="\bin\Release\Insight.Database.Providers.Glimpse.dll" target="lib\NET45" />
-	<file src="\bin\Release\Insight.Database.Providers.Glimpse.pdb" target="lib\NET45" />
+	<file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Glimpse.dll" target="lib\NET45" />
+	<file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Glimpse.pdb" target="lib\NET45" />
 	<file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.Glimpse.dll" target="lib\NET40" />
 	<file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.Glimpse.pdb" target="lib\NET40" />
   </files>

@@ -20,7 +20,7 @@
 	  </dependencies>
   </metadata>
   <files>
-    <file src="\bin\Release\Insight.Database.Providers.OracleManaged.dll" target="lib" />
-    <file src="\bin\Release\Insight.Database.Providers.OracleManaged.pdb" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.dll" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.pdb" target="lib" />
   </files>
 </package>

@@ -19,7 +19,7 @@
 	</dependencies>
   </metadata>
   <files>
-    <file src="\bin\Release\Insight.Database.Providers.MiniProfiler.dll" target="lib" />
-    <file src="\bin\Release\Insight.Database.Providers.MiniProfiler.pdb" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.MiniProfiler.dll" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.MiniProfiler.pdb" target="lib" />
   </files>
 </package>
