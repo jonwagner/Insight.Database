@@ -72,7 +72,8 @@ Task Build35 {
 
         # copy the binaries to the net35 folder
         Wipe-Folder $net35Path
-        Copy-Item $baseDir\*.*\bin\Release\*.* $net35Path
+        Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net35Path
+        Copy-Item $baseDir\Insight.Tests\bin\Release\*.* $net35Path
     }
     finally {
         RestoreVersions
@@ -86,12 +87,15 @@ Task Build40 {
         # build the NET40 binaries
         Exec {
             Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
+            Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.Glimpse\Insight.Database.Providers.Glimpse.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
             Invoke-Expression "$msbuild $baseDir\Insight.Tests\Insight.Tests.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
         }
 
         # copy the binaries to the net40 folder
         Wipe-Folder $net40Path
-        Copy-Item $baseDir\*.*\bin\Release\*.* $net40Path
+        Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net40Path
+        Copy-Item $baseDir\Insight.Database.Providers.Glimpse\bin\Release\*.* $net40Path
+        Copy-Item $baseDir\Insight.Tests\bin\Release\*.* $net40Path
     }
     finally {
         RestoreVersions
