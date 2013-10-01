@@ -125,7 +125,13 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A function that can deserialize a T from the reader.</returns>
 		public static Func<IDataReader, T, T> GetMerger<T>(IDataReader reader)
 		{
-			return (Func<IDataReader, T, T>)GetDeserializer(reader, typeof(T), null, null, SchemaMappingType.ExistingObject);
+			var merger = GetDeserializer(reader, typeof(T), null, null, SchemaMappingType.ExistingObject);
+
+			// if we have returned a value deserializer, then we can't do a merge
+			if (merger is Func<IDataReader, T>)
+				return null;
+
+			return (Func<IDataReader, T, T>)merger;
 		}
 
 		/// <summary>

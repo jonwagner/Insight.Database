@@ -511,7 +511,8 @@ namespace Insight.Database
 
 			// read the identities from the recordset and merge it into the object
 			reader.Read();
-			merger(reader, item);
+			if (merger != null)
+				merger(reader, item);
 
 			// we are done with this result set, so move onto the next or clean up the reader
 			if (!reader.NextResult())

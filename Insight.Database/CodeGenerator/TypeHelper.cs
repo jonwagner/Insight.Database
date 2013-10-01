@@ -5,6 +5,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
@@ -123,6 +124,56 @@ namespace Insight.Database.CodeGenerator
 			{
 				if (disposable != null)
 					disposable.Dispose();
+			}
+		}
+		#endregion
+
+		#region Method Implementation Helpers
+		/// <summary>
+		/// Copy the generic attributes of a method.
+		/// </summary>
+		/// <param name="sourceMethod">The source method.</param>
+		/// <param name="targetMethod">The target method.</param>
+		public static void CopyGenericSignature(MethodInfo sourceMethod, MethodBuilder targetMethod)
+		{
+			if (sourceMethod.IsGenericMethod)
+			{
+				// get the interface's generic types and make our own
+				var oldTypes = sourceMethod.GetGenericArguments();
+				var newTypes = targetMethod.DefineGenericParameters(oldTypes.Select(t => t.Name).ToArray());
+				for (int i = 0; i < newTypes.Length; i++)
+				{
+					var oldType = oldTypes[i];
+					var newType = newTypes[i];
+
+					newType.SetGenericParameterAttributes(oldType.GenericParameterAttributes);
+					newType.SetInterfaceConstraints(oldType.GetGenericParameterConstraints());
+				}
+			}
+		}
+
+		/// <summary>
+		/// Copies the method signature from one method to another.
+		/// This includes generic parameters, constraints and parameters.
+		/// </summary>
+		/// <param name="sourceMethod">The source method.</param>
+		/// <param name="targetMethod">The target method.</param>
+		public static void CopyMethodSignature(MethodInfo sourceMethod, MethodBuilder targetMethod)
+		{
+			CopyGenericSignature(sourceMethod, targetMethod);
+
+			targetMethod.SetReturnType(sourceMethod.ReturnType);
+
+			// copy the parameters and attributes
+			// it seems that we can use the source parameters directly because the target method is derived
+			// from the source method
+			var parameters = sourceMethod.GetParameters();
+			targetMethod.SetParameters(parameters.Select(p => p.ParameterType).ToArray());
+
+			for (int i = 0; i < parameters.Length; i++)
+			{
+				var parameter = parameters[i];
+				targetMethod.DefineParameter(i + 1, parameter.Attributes, parameter.Name);
 			}
 		}
 		#endregion

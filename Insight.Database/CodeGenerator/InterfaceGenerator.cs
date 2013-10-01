@@ -135,7 +135,8 @@ namespace Insight.Database.CodeGenerator
 			var graphAttribute = interfaceMethod.GetCustomAttributes(false).OfType<DefaultGraphAttribute>().FirstOrDefault();
 
 			// start a new method
-			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual, interfaceMethod.ReturnType, parameterTypes);
+			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
+			TypeHelper.CopyMethodSignature(interfaceMethod, m);
 			ILGenerator mIL = m.GetILGenerator();
 
 			LocalBuilder parameterWrapper = null;

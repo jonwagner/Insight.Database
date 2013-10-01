@@ -181,8 +181,9 @@ namespace Insight.Database.CodeGenerator
 
 			// special case if the parameters object is an IEnumerable or Array
 			// look for the parameter that is a Structured object and pass the array to the TVP
+			// note that string supports ienumerable, so exclude atomic types
 			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-			if (enumerable != null)
+			if (enumerable != null && type != typeof(string))
 			{
 				return (IDbCommand cmd, object o) => 
 				{
