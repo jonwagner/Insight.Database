@@ -1,5 +1,6 @@
 ﻿#if !NODYNAMIC
 using Insight.Database;
+using Insight.Database.Reliable;
 using Insight.Tests.TestDataClasses;
 using NUnit.Framework;
 using System;
@@ -296,6 +297,24 @@ namespace Insight.Tests
 			var result5 = _connection.Dynamic().Int32TestProc(new List<int>() { 5, 7 });
 			Assert.IsTrue(result5.Count == 2);
 			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+		}
+
+		/// <summary>
+		/// Tests GitHub Issue #41 - ReliableConnection was not being disposed properly.
+		/// </summary>
+		[Test]
+		public void TestDynamicAsync()
+		{
+			Parallel.For(0, 10, _ => TryDynamicAsync(10).Wait());
+		}
+
+		public async Task TryDynamicAsync(int count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				var settings = System.Configuration.ConfigurationManager.ConnectionStrings["Test"];
+				await settings.ReliableDynamic<int>().Int32TestProcAsync(new List<int>() { 5, 7 });
+			}
 		}
 
 		/// <summary>

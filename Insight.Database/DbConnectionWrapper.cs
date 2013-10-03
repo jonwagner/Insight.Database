@@ -163,12 +163,12 @@ namespace Insight.Database
 						InnerTransaction.Dispose();
 						InnerTransaction = null;
 					}
-				}
 
-				if (InnerConnection != null)
-				{
-					InnerConnection.Dispose();
-					InnerConnection = null;
+					if (InnerConnection != null)
+					{
+						InnerConnection.Dispose();
+						InnerConnection = null;
+					}
 				}
 			}
 			finally
