@@ -187,7 +187,8 @@ namespace Insight.Database.CodeGenerator
 			{
 				return (IDbCommand cmd, object o) => 
 				{
-					var tableParameter = provider.CloneParameter(cmd, parameters.OfType<IDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p)));
+					// don't use the provider above. The command may be unwrapped by the time we get back here
+					var tableParameter = InsightDbProvider.For(cmd).CloneParameter(cmd, parameters.OfType<IDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p)));
 					cmd.Parameters.Add(tableParameter);
 					ListParameterHelper.AddListParameter(tableParameter, o, cmd);
 				};
