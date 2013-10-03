@@ -16,18 +16,13 @@ namespace Insight.Database.Reliable
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "The implementation of IDbCommand is generated code")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the implementation of IDbCommand would be redundant without adding additional information.")]
-	public sealed class ReliableCommand : DbCommand
+	public sealed class ReliableCommand : DbCommandWrapper
 	{
 		#region Private Members
 		/// <summary>
 		/// The retry strategy to use for the command.
 		/// </summary>
 		private IRetryStrategy _retryStrategy;
-
-		/// <summary>
-		/// Gets the inner command to use to execute the command.
-		/// </summary>
-		internal DbCommand InnerCommand { get; private set; }
 		#endregion
 
 		#region Constructors
@@ -35,11 +30,11 @@ namespace Insight.Database.Reliable
 		/// Initializes a new instance of the ReliableCommand class, and bind it to the specified ReliableConnection and innerCommand.
 		/// </summary>
 		/// <param name="retryStrategy">The retry strategy to use for the command.</param>
+		/// <param name="innerConnection">The innerConnection to bind to.</param>
 		/// <param name="innerCommand">The innerCommand to bind to.</param>
-		public ReliableCommand(IRetryStrategy retryStrategy, DbCommand innerCommand)
+		public ReliableCommand(IRetryStrategy retryStrategy, ReliableConnection innerConnection, DbCommand innerCommand) : base(innerConnection, innerCommand)
 		{
 			_retryStrategy = retryStrategy;
-			InnerCommand = innerCommand;
 		}
 		#endregion
 
@@ -111,127 +106,6 @@ namespace Insight.Database.Reliable
 		public override void Prepare()
 		{
 			ExecuteWithRetry(() => { InnerCommand.Prepare(); return true; });
-		}
-
-		protected override void Dispose(bool disposing)
-		{
-			try
-			{
-				InnerCommand.Dispose();
-			}
-			finally
-			{
-				base.Dispose(disposing);
-			}
-		}
-		#endregion
-
-		#region IDbCommand Implementation
-		public override void Cancel()
-		{
-			InnerCommand.Cancel();
-		}
-
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
-		public override string CommandText
-		{
-			get
-			{
-				return InnerCommand.CommandText;
-			}
-
-			set
-			{
-				InnerCommand.CommandText = value;
-			}
-		}
-
-		public override int CommandTimeout
-		{
-			get
-			{
-				return InnerCommand.CommandTimeout;
-			}
-
-			set
-			{
-				InnerCommand.CommandTimeout = value;
-			}
-		}
-
-		public override CommandType CommandType
-		{
-			get
-			{
-				return InnerCommand.CommandType;
-			}
-
-			set
-			{
-				InnerCommand.CommandType = value;
-			}
-		}
-
-		protected override DbConnection DbConnection
-		{
-			get
-			{
-				return InnerCommand.Connection;
-			}
-
-			set
-			{
-				InnerCommand.Connection = value;
-			}
-		}
-
-		protected override DbParameter CreateDbParameter()
-		{
-			return InnerCommand.CreateParameter();
-		}
-
-		protected override DbParameterCollection DbParameterCollection
-		{
-			get { return InnerCommand.Parameters; }
-		}
-
-		protected override DbTransaction DbTransaction
-		{
-			get
-			{
-				return InnerCommand.Transaction;
-			}
-
-			set
-			{
-				InnerCommand.Transaction = value;
-			}
-		}
-
-		public override UpdateRowSource UpdatedRowSource
-		{
-			get
-			{
-				return InnerCommand.UpdatedRowSource;
-			}
-
-			set
-			{
-				InnerCommand.UpdatedRowSource = value;
-			}
-		}
-
-		public override bool DesignTimeVisible
-		{
-			get
-			{
-				return InnerCommand.DesignTimeVisible;
-			}
-
-			set
-			{
-				InnerCommand.DesignTimeVisible = value;
-			}
 		}
 		#endregion
 

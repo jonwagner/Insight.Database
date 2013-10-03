@@ -305,15 +305,17 @@ namespace Insight.Tests
 		[Test]
 		public void TestDynamicAsync()
 		{
-			Parallel.For(0, 10, _ => TryDynamicAsync(10).Wait());
+			Parallel.For(0, 10, _ => TryDynamicAsync(10));
 		}
 
-		public async Task TryDynamicAsync(int count)
+		public void TryDynamicAsync(int count)
 		{
 			for (int i = 0; i < count; i++)
 			{
-				var settings = System.Configuration.ConfigurationManager.ConnectionStrings["Test"];
-				await settings.ReliableDynamic<int>().Int32TestProcAsync(new List<int>() { 5, 7 });
+				System.Configuration.ConfigurationManager.ConnectionStrings["Test"]
+					.ReliableDynamic<int>()
+					.Int32TestProcAsync(new List<int>() { 5, 7 })
+					.Wait();
 			}
 		}
 

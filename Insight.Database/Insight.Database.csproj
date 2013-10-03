@@ -52,10 +52,10 @@
     <CodeAnalysisTreatWarningsAsErrors>True</CodeAnalysisTreatWarningsAsErrors>
     <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
-	<PropertyGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
-		<RunCodeAnalysis>false</RunCodeAnalysis>
-		<StyleCopEnabled>false</StyleCopEnabled>
-	</PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <StyleCopEnabled>false</StyleCopEnabled>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -108,6 +108,9 @@
     <Compile Include="Providers\WrappedInsightDbProvider.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Providers\InsightDbProvider.cs" />
+    <Compile Include="DbCommandWrapper.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Results.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>

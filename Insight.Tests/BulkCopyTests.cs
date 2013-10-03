@@ -16,10 +16,10 @@ namespace Insight.Tests
 		[TestFixtureSetUp]
 		public override void SetUpFixture()
 		{
+			base.SetUpFixture();
+
 			// clean up old stuff first
 			CleanupObjects();
-
-			base.SetUpFixture();
 
 			_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestData') DROP TABLE [InsightTestData]");
 			_connection.ExecuteSql("CREATE TABLE [InsightTestData] ([Int] [int])");

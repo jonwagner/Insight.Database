@@ -424,10 +424,7 @@ namespace Insight.Database
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-			{
 				_connection.Dispose();
-				_connection = null;
-			}
 		}
 		#endregion
 	}

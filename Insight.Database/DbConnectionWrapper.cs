@@ -159,16 +159,10 @@ namespace Insight.Database
 				if (disposing)
 				{
 					if (InnerTransaction != null)
-					{
 						InnerTransaction.Dispose();
-						InnerTransaction = null;
-					}
 
 					if (InnerConnection != null)
-					{
 						InnerConnection.Dispose();
-						InnerConnection = null;
-					}
 				}
 			}
 			finally
