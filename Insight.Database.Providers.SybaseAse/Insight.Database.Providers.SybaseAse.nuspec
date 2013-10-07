@@ -1,0 +1,24 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package>
+  <metadata>
+    <id>Insight.Database.Providers.SybaseAse</id>
+    <version>3.0.0</version>
+    <title>Insight.Database.Providers.SybaseAse</title>
+    <authors>Jon Wagner</authors>
+    <description>
+		A Sybase ASE provider for Insight.Database so Insight.Database can do its magic on Sybase Adaptive Server Enterprise (ASE).
+	</description>
+    <language>en-US</language>
+    <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
+    <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
+    <tags>Insight orm sql sybase ase sybasease micro-orm</tags>
+    <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
+	  <dependencies>
+		  <dependency id="Insight.Database" version="3.1.2"></dependency>
+	  </dependencies>
+  </metadata>
+  <files>
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.SybaseAse.dll" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.SybaseAse.pdb" target="lib" />
+  </files>
+</package>
