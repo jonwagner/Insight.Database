@@ -46,6 +46,7 @@
     <StyleCopEnabled>True</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Release\Insight.Database.Providers.MiniProfiler.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MiniProfiler, Version=2.1.0.0, Culture=neutral, PublicKeyToken=b44f9351044011a3, processorArchitecture=MSIL">

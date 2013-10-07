@@ -41,16 +41,19 @@ namespace Insight.Database
 		#endregion
 
 		#region Synchronous DbCommand Implementation
+		/// <inheritdoc/>
 		public override int ExecuteNonQuery()
 		{
 			return InnerCommand.ExecuteNonQuery();
 		}
 
+		/// <inheritdoc/>
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
 			return InnerCommand.ExecuteReader(behavior);
 		}
 
+		/// <inheritdoc/>
 		public override object ExecuteScalar()
 		{
 			return InnerCommand.ExecuteScalar();
@@ -59,16 +62,19 @@ namespace Insight.Database
 
 		#region Async Methods
 #if !NODBASYNC
+		/// <inheritdoc/>
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
 		{
 			return InnerCommand.ExecuteReaderAsync(behavior, cancellationToken);
 		}
 
+		/// <inheritdoc/>
 		public override Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken)
 		{
 			return InnerCommand.ExecuteNonQueryAsync(cancellationToken);
 		}
 
+		/// <inheritdoc/>
 		public override Task<object> ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken)
 		{
 			return InnerCommand.ExecuteScalarAsync(cancellationToken);
@@ -77,11 +83,13 @@ namespace Insight.Database
 		#endregion
 
 		#region Support Methods
+		/// <inheritdoc/>
 		public override void Prepare()
 		{
 			InnerCommand.Prepare();
 		}
 
+		/// <inheritdoc/>
 		protected override void Dispose(bool disposing)
 		{
 			try
@@ -100,11 +108,13 @@ namespace Insight.Database
 		#endregion
 
 		#region IDbCommand Implementation
+		/// <inheritdoc/>
 		public override void Cancel()
 		{
 			InnerCommand.Cancel();
 		}
 
+		/// <inheritdoc/>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
 		public override string CommandText
 		{
@@ -119,6 +129,7 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		public override int CommandTimeout
 		{
 			get
@@ -132,6 +143,7 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		public override CommandType CommandType
 		{
 			get
@@ -145,6 +157,7 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		protected override DbConnection DbConnection
 		{
 			get
@@ -158,16 +171,19 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		protected override DbParameter CreateDbParameter()
 		{
 			return InnerCommand.CreateParameter();
 		}
 
+		/// <inheritdoc/>
 		protected override DbParameterCollection DbParameterCollection
 		{
 			get { return InnerCommand.Parameters; }
 		}
 
+		/// <inheritdoc/>
 		protected override DbTransaction DbTransaction
 		{
 			get
@@ -181,6 +197,7 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		public override UpdateRowSource UpdatedRowSource
 		{
 			get
@@ -194,6 +211,7 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		public override bool DesignTimeVisible
 		{
 			get

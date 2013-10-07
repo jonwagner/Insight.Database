@@ -20,6 +20,7 @@
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.dll" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.xml" target="lib" />
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.pdb" target="lib" />
   </files>
 </package>

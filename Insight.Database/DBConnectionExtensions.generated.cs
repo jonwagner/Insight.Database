@@ -59,7 +59,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -113,7 +112,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -169,7 +167,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -227,7 +224,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -287,7 +283,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -349,7 +344,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -413,7 +407,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -479,7 +472,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -547,7 +539,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -617,7 +608,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -689,7 +679,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -763,7 +752,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -839,7 +827,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -917,7 +904,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -997,7 +983,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
@@ -1079,7 +1064,6 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use.</param>
 		/// <param name="sql">The sql to execute.</param>
 		/// <param name="parameters">The parameter to pass.</param>
-		/// <param name="commandType">The type of the command.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>

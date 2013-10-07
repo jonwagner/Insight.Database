@@ -47,6 +47,7 @@
     <StyleCopEnabled>True</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
     <Prefer32Bit>false</Prefer32Bit>
+    <DocumentationFile>bin\Release\Insight.Database.Providers.Glimpse.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
     <FrameworkFolder>net40</FrameworkFolder>

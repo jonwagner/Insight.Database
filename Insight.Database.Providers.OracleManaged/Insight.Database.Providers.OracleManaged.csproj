@@ -44,6 +44,7 @@
     <StyleCopOverrideSettingsFile>$(ProjectDir)\Settings.StyleCop</StyleCopOverrideSettingsFile>
     <StyleCopEnabled>True</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <DocumentationFile>bin\Release\Insight.Database.Providers.OracleManaged.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.112.3.60, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">

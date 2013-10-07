@@ -21,6 +21,7 @@
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.PostgreSQL.dll" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.PostgreSQL.xml" target="lib" />
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.PostgreSQL.pdb" target="lib" />
   </files>
 </package>

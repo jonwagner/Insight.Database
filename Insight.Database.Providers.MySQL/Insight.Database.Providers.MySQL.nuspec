@@ -21,6 +21,7 @@
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.MySql.dll" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.MySql.xml" target="lib" />
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.MySql.pdb" target="lib" />
   </files>
 </package>

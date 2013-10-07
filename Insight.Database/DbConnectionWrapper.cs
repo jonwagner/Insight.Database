@@ -76,11 +76,13 @@ namespace Insight.Database
 		#endregion
 
 		#region IDbConnection Implementation
+		/// <inheritdoc/>
 		protected override DbTransaction BeginDbTransaction(IsolationLevel isolationLevel)
 		{
 			return InnerConnection.BeginTransaction(isolationLevel);
 		}
 
+		/// <inheritdoc/>
 		protected override bool CanRaiseEvents
 		{
 			get
@@ -89,16 +91,19 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		public override void ChangeDatabase(string databaseName)
 		{
 			InnerConnection.ChangeDatabase(databaseName);
 		}
 
+		/// <inheritdoc/>
 		public override void Close()
 		{
 			InnerConnection.Close();
 		}
 
+		/// <inheritdoc/>
 		public override string ConnectionString
 		{
 			get
@@ -112,46 +117,55 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		public override string ServerVersion
 		{
 			get { return InnerConnection.ServerVersion; }
 		}
 
+		/// <inheritdoc/>
 		public override string DataSource
 		{
 			get { return InnerConnection.DataSource; }
 		}
 
+		/// <inheritdoc/>
 		public override int ConnectionTimeout
 		{
 			get { return InnerConnection.ConnectionTimeout; }
 		}
 
+		/// <inheritdoc/>
 		public override string Database
 		{
 			get { return InnerConnection.Database; }
 		}
 
+		/// <inheritdoc/>
 		public override ConnectionState State
 		{
 			get { return InnerConnection.State; }
 		}
 
+		/// <inheritdoc/>
 		public override DataTable GetSchema()
 		{
 			return InnerConnection.GetSchema();
 		}
 
+		/// <inheritdoc/>
 		public override DataTable GetSchema(string collectionName)
 		{
 			return InnerConnection.GetSchema(collectionName);
 		}
 
+		/// <inheritdoc/>
 		public override DataTable GetSchema(string collectionName, string[] restrictionValues)
 		{
 			return InnerConnection.GetSchema(collectionName, restrictionValues);
 		}
 
+		/// <inheritdoc/>
 		protected override void Dispose(bool disposing)
 		{
 			try

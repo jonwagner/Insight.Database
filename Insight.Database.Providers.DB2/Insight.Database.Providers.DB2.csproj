@@ -44,6 +44,7 @@
     <StyleCopOverrideSettingsFile>$(ProjectDir)\Settings.StyleCop</StyleCopOverrideSettingsFile>
     <StyleCopEnabled>True</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <DocumentationFile>bin\Release\Insight.Database.Providers.DB2.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="IBM.Data.DB2, Version=9.7.4.4, Culture=neutral, PublicKeyToken=7c307b91aa13d208, processorArchitecture=AMD64" />

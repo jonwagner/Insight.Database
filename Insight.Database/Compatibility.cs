@@ -4,6 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+// don't yell at us for not documenting these classes
+#pragma warning disable 1591
+
 namespace System.Collections.Concurrent
 {
 	class Placeholder { }

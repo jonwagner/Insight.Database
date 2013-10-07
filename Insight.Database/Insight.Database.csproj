@@ -51,6 +51,7 @@
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
     <CodeAnalysisTreatWarningsAsErrors>True</CodeAnalysisTreatWarningsAsErrors>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Release\Insight.Database.XML</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
     <RunCodeAnalysis>false</RunCodeAnalysis>

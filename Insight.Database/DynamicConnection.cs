@@ -357,26 +357,31 @@ namespace Insight.Database
 		#endregion
 
 		#region IDbConnection Members
+		/// <inheritdoc/>
 		public IDbTransaction BeginTransaction(IsolationLevel il)
 		{
 			return _connection.BeginTransaction(il);
 		}
 
+		/// <inheritdoc/>
 		public IDbTransaction BeginTransaction()
 		{
 			return _connection.BeginTransaction();
 		}
 
+		/// <inheritdoc/>
 		public void ChangeDatabase(string databaseName)
 		{
 			_connection.ChangeDatabase(databaseName);
 		}
 
+		/// <inheritdoc/>
 		public void Close()
 		{
 			_connection.Close();
 		}
 
+		/// <inheritdoc/>
 		public string ConnectionString
 		{
 			get
@@ -390,37 +395,44 @@ namespace Insight.Database
 			}
 		}
 
+		/// <inheritdoc/>
 		public int ConnectionTimeout
 		{
 			get { return _connection.ConnectionTimeout; }
 		}
 
+		/// <inheritdoc/>
 		public IDbCommand CreateCommand()
 		{
 			return _connection.CreateCommand();
 		}
 
+		/// <inheritdoc/>
 		public string Database
 		{
 			get { return _connection.Database; }
 		}
 
+		/// <inheritdoc/>
 		public void Open()
 		{
 			_connection.Open();
 		}
 
+		/// <inheritdoc/>
 		public ConnectionState State
 		{
 			get { return _connection.State; }
 		}
 
+		/// <inheritdoc/>
 		public void Dispose()
 		{
 			Dispose(true);
 			GC.SuppressFinalize(this);
 		}
 
+		/// <inheritdoc/>
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)

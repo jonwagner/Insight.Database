@@ -46,46 +46,55 @@ namespace Insight.Database
         }
 
 		#region Implementation
+		/// <inheritdoc/>
 		public override bool CanCreateDataSourceEnumerator
 		{
 			get { return InnerFactory.CanCreateDataSourceEnumerator; }
 		}
 
+		/// <inheritdoc/>
 		public override DbCommand CreateCommand()
 		{
 			return InnerFactory.CreateCommand();
 		}
 
+		/// <inheritdoc/>
 		public override DbCommandBuilder CreateCommandBuilder()
 		{
 			return InnerFactory.CreateCommandBuilder();
 		}
 
+		/// <inheritdoc/>
 		public override DbConnection CreateConnection()
 		{
 			return new DbConnectionWrapper(InnerFactory.CreateConnection());
 		}
 
+		/// <inheritdoc/>
 		public override DbConnectionStringBuilder CreateConnectionStringBuilder()
 		{
 			return InnerFactory.CreateConnectionStringBuilder();
 		}
 
+		/// <inheritdoc/>
 		public override DbDataAdapter CreateDataAdapter()
 		{
 			return InnerFactory.CreateDataAdapter();
 		}
 
+		/// <inheritdoc/>
 		public override DbDataSourceEnumerator CreateDataSourceEnumerator()
 		{
 			return InnerFactory.CreateDataSourceEnumerator();
 		}
 
+		/// <inheritdoc/>
 		public override DbParameter CreateParameter()
 		{
 			return InnerFactory.CreateParameter();
 		}
 
+		/// <inheritdoc/>
 		public override CodeAccessPermission CreatePermission(PermissionState state)
 		{
 			return InnerFactory.CreatePermission(state);

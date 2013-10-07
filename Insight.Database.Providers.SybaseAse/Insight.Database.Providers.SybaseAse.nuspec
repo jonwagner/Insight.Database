@@ -19,6 +19,7 @@
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.SybaseAse.dll" target="lib" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.SybaseAse.xml" target="lib" />
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.SybaseAse.pdb" target="lib" />
   </files>
 </package>

@@ -39,16 +39,19 @@ namespace Insight.Database.Reliable
 		#endregion
 
 		#region Synchronous DbCommand Implementation
+		/// <inheritdoc/>
 		public override int ExecuteNonQuery()
 		{
 			return ExecuteWithRetry(() => InnerCommand.ExecuteNonQuery());
 		}
 
+		/// <inheritdoc/>
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
 			return ExecuteWithRetry(() => InnerCommand.ExecuteReader(behavior));
 		}
 
+		/// <inheritdoc/>
 		public override object ExecuteScalar()
 		{
 			return ExecuteWithRetry(() => InnerCommand.ExecuteScalar());
@@ -85,16 +88,19 @@ namespace Insight.Database.Reliable
 #endif
 
 #if !NODBASYNC
+		/// <inheritdoc/>
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
 		{
 			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteReaderAsync(behavior, cancellationToken));
 		}
 
+		/// <inheritdoc/>
 		public override Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken)
 		{
 			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteNonQueryAsync(cancellationToken));
 		}
 
+		/// <inheritdoc/>
 		public override Task<object> ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken)
 		{
 			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteScalarAsync(cancellationToken));
@@ -103,6 +109,7 @@ namespace Insight.Database.Reliable
 		#endregion
 
 		#region Support Methods
+		/// <inheritdoc/>
 		public override void Prepare()
 		{
 			ExecuteWithRetry(() => { InnerCommand.Prepare(); return true; });

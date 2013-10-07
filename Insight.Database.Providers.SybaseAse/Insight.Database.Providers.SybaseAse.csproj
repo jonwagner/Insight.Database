@@ -42,6 +42,7 @@
     <CodeAnalysisTreatWarningsAsErrors>True</CodeAnalysisTreatWarningsAsErrors>
     <StyleCopEnabled>True</StyleCopEnabled>
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <DocumentationFile>bin\Release\Insight.Database.Providers.SybaseAse.XML</DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Sybase.AdoNet4.AseClient, Version=4.157.1000.0, Culture=neutral, PublicKeyToken=95d94fac46c88e1e, processorArchitecture=MSIL">
