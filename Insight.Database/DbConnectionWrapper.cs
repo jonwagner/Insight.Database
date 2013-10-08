@@ -33,6 +33,8 @@ namespace Insight.Database
 		/// <param name="innerConnection">The inner connection to wrap.</param>
 		public DbConnectionWrapper(IDbConnection innerConnection)
 		{
+			if (innerConnection == null) throw new ArgumentNullException("innerException");
+
 			DbConnection dbConnection = innerConnection as DbConnection;
 
 			// currently we only support wrapping DbConnection because we need the async support, etc.
@@ -173,10 +175,16 @@ namespace Insight.Database
 				if (disposing)
 				{
 					if (InnerTransaction != null)
+					{
 						InnerTransaction.Dispose();
+						InnerTransaction = null;
+					}
 
 					if (InnerConnection != null)
+					{
 						InnerConnection.Dispose();
+						InnerConnection = null;
+					}
 				}
 			}
 			finally

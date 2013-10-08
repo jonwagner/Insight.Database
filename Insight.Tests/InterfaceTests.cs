@@ -306,6 +306,36 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Test Interface Multi-Threaded
+		/// <summary>
+		/// Tests GitHub Issue #41 - connection was not being disposed properly.
+		/// </summary>
+		[Test]
+		public void TestInterfaceMultithreaded()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT 1");
+
+				Parallel.For(0, 100, _ => TryInterfaceCall(100));
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP PROC ExecuteSomething");
+			}
+		}
+
+		public void TryInterfaceCall(int count)
+		{
+			for (int i = 0; i < count; i++)
+			{
+				System.Configuration.ConfigurationManager.ConnectionStrings["Test"]
+					.As <ITest1>()
+					.ExecuteSomething();
+			}
+		}
+		#endregion
+
 		#region Test Output Parameters
 		[Test]
 		public void TestOutputParameters()

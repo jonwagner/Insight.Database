@@ -71,6 +71,8 @@ namespace Insight.Database
 		/// <param name="connection">The connection to use as the inner database connection.</param>
 		public DynamicConnection(IDbConnection connection)
 		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
 			_connection = connection;
 		}
 		#endregion
@@ -436,7 +438,13 @@ namespace Insight.Database
 		protected virtual void Dispose(bool disposing)
 		{
 			if (disposing)
-				_connection.Dispose();
+			{
+				if (_connection != null)
+				{
+					_connection.Dispose();
+					_connection = null;
+				}
+			}
 		}
 		#endregion
 	}
