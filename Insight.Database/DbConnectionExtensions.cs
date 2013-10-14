@@ -1347,7 +1347,8 @@ namespace Insight.Database
 		/// <param name="closeConnection">True to close the connection when complete.</param>
 		/// <param name="options">The options to use for the bulk copy.</param>
 		/// <param name="transaction">An optional external transaction.</param>
-		public static void BulkCopy<T>(
+		/// <returns>Number of rows copied.</returns>
+		public static int BulkCopy<T>(
 			this IDbConnection connection,
 			string tableName,
 			IEnumerable<T> list,
@@ -1385,7 +1386,7 @@ namespace Insight.Database
 				// create a reader for the list
 				using (var reader = new ObjectListDbDataReader(fieldReaderData, list))
 				{
-					provider.BulkCopy(connection, tableName, reader, configure, options, transaction);
+					return provider.BulkCopy(connection, tableName, reader, configure, options, transaction);
 				}
 			}
 			finally

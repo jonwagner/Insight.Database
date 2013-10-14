@@ -70,6 +70,26 @@ namespace Insight.Tests
 			}
 		}
 
+        [Test]
+        public void TestBulkLoadCount()
+        {
+            const int RowCount = 3;
+            for (int i = 0; i < RowCount; i++)
+            {
+                // build test data
+                InsightTestData[] array = new InsightTestData[i];
+                for (int j = 0; j < i; j++)
+                    array[j] = new InsightTestData() { Int = j };
+
+                // bulk load the data
+                var count = _connection.BulkCopy("InsightTestData", array);
+
+                Assert.AreEqual(i, count);
+
+                _connection.ExecuteSql("DELETE FROM InsightTestData");
+            }
+        }
+
 		[Test]
 		public void TestBulkLoadWithConfiguration()
 		{

@@ -10,3 +10,7 @@ StyleCop.Cache
 Output
 TestResult.xml
 packages
+
+# ReSharper is a .NET coding add-in
+_ReSharper*/
+*.[Rr]e[Ss]harper
