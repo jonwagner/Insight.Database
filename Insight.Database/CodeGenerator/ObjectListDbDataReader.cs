@@ -66,10 +66,17 @@ namespace Insight.Database.CodeGenerator
 		/// Information about how to serialize the object.
 		/// </summary>
 		private ObjectReader _objectReader;
+
+        /// <summary>
+        /// Number of rows read.
+        /// </summary>
+	    private int _readRowCount;
 		#endregion
 
-		#region Constructors
-		/// <summary>
+      
+
+        #region Constructors
+        /// <summary>
 		/// Initializes a new instance of the ObjectListDbDataReader class.
 		/// </summary>
 		/// <param name="objectReader">The objectReader to use to read the values from an object in the list.</param>
@@ -110,6 +117,7 @@ namespace Insight.Database.CodeGenerator
 				_currentValue = null;
 				_currentStringOrdinal = -1;
 				_currentStringValue = null;
+			    _readRowCount++;
 
 				// not allowed to have nulls in the list
 				if (_current == null && !_objectReader.IsAtomicType)
@@ -387,9 +395,12 @@ namespace Insight.Database.CodeGenerator
 			get { return false; }
 		}
 
+        /// <summary>
+        /// Obtains the number of rows read by the current DbDataReader.
+        /// </summary>
 		public override int RecordsAffected
 		{
-			get { return -1; }
+            get { return _readRowCount; }
 		}
 
 		public override object this[string name]

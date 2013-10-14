@@ -51,11 +51,11 @@ namespace Insight.Database.Providers
 		}
 
 		/// <inheritdoc/>
-		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
+		public override int BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
 			DbConnectionWrapper wrapped = (DbConnectionWrapper)connection;
 
-			base.BulkCopy(connection, tableName, reader, configure, options, transaction ?? wrapped.InnerTransaction);
+			return base.BulkCopy(connection, tableName, reader, configure, options, transaction ?? wrapped.InnerTransaction);
 		}
 	}
 }
