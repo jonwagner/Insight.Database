@@ -186,11 +186,11 @@ namespace Insight.Database.Providers.Oracle
 				oracleOptions |= OracleBulkCopyOptions.UseInternalTransaction;
 
 			using (var bulk = new OracleBulkCopy((OracleConnection)connection, oracleOptions))
-			using (var oracleBulk = new OracleInsightBulkCopy(bulk))
+			using (var insightBulk = new OracleInsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
 				if (configure != null)
-					configure(oracleBulk);
+					configure(insightBulk);
 				bulk.WriteToServer(reader);
 			}
 		}

@@ -238,6 +238,8 @@ namespace Insight.Database.Providers
 			using (var insightBulk = new SqlInsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
+				bulk.EnableStreaming = true;
+
 				if (configure != null)
 					configure(insightBulk);
 				bulk.WriteToServer(reader);

@@ -147,11 +147,11 @@ namespace Insight.Database.Providers.SybaseAse
 				aseOptions |= AseBulkCopyOptions.UseInternalTransaction;
 
 			using (var bulk = new AseBulkCopy((AseConnection)connection, aseOptions, (AseTransaction)transaction))
-			using (var oracleBulk = new SybaseAseInsightBulkCopy(bulk))
+			using (var insightBulk = new SybaseAseInsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
 				if (configure != null)
-					configure(oracleBulk);
+					configure(insightBulk);
 				bulk.WriteToServer(reader);
 			}
 		}

@@ -167,11 +167,11 @@ namespace Insight.Database.Providers.DB2
 				db2Options |= DB2BulkCopyOptions.Truncate;
 
 			using (var bulk = new DB2BulkCopy((DB2Connection)connection, db2Options))
-			using (var db2Bulk = new DB2InsightBulkCopy(bulk))
+			using (var insightBulk = new DB2InsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
 				if (configure != null)
-					configure(db2Bulk);
+					configure(insightBulk);
 				bulk.WriteToServer(reader);
 			}
 		}
