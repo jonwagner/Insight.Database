@@ -1359,11 +1359,6 @@ namespace Insight.Database
 		{
 			var provider = InsightDbProvider.For(connection);
 
-			// see if there are any invalid bulk copy options set
-			var invalidOptions = (options & ~(provider.SupportedBulkCopyOptions));
-			if (invalidOptions != 0)
-				throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "BulkCopyOption {0} is not supported for this provider", invalidOptions));
-
 			try
 			{
 				connection.DetectAutoOpen(ref closeConnection);
@@ -1387,10 +1382,61 @@ namespace Insight.Database
 				var reader = new ObjectListDbDataReader(fieldReaderData, list);
 				using (reader)
 				{
-					provider.BulkCopy(connection, tableName, reader, configure, options, transaction);
+					return connection.BulkCopy(
+						tableName,
+						reader,
+						configure,
+						false,
+						options,
+						transaction);
+				}
+			}
+			finally
+			{
+				if (closeConnection)
+					connection.Close();
+			}
+		}
+
+		/// <summary>
+		/// Bulk copy a list of objects to the server. This method supports auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="source">The list of data to read.</param>
+		/// <param name="configure">A callback for initialization of the BulkCopy object. The object is provider-dependent.</param>
+		/// <param name="closeConnection">True to close the connection when complete.</param>
+		/// <param name="options">The options to use for the bulk copy.</param>
+		/// <param name="transaction">An optional external transaction.</param>
+		/// <returns>Number of rows copied.</returns>
+		public static int BulkCopy(
+			this IDbConnection connection,
+			string tableName,
+			IDataReader source,
+			Action<InsightBulkCopy> configure = null,
+			bool closeConnection = false,
+			InsightBulkCopyOptions options = InsightBulkCopyOptions.Default,
+			IDbTransaction transaction = null)
+		{
+			if (source == null) throw new ArgumentNullException("source");
+
+			var provider = InsightDbProvider.For(connection);
+
+			// see if there are any invalid bulk copy options set
+			var invalidOptions = (options & ~(provider.SupportedBulkCopyOptions));
+			if (invalidOptions != 0)
+				throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "BulkCopyOption {0} is not supported for this provider", invalidOptions));
+
+			try
+			{
+				connection.DetectAutoOpen(ref closeConnection);
+
+				using (source)
+				{
+					provider.BulkCopy(connection, tableName, source, configure, options, transaction);
 				}
 
-				return reader.RecordsAffected;
+				return source.RecordsAffected;
 			}
 			finally
 			{
