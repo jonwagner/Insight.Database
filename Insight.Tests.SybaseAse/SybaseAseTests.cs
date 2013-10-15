@@ -191,7 +191,7 @@ namespace Insight.Tests.SybaseAse
 			}
 		}
 
-		[Test]
+		[Test, Ignore]
 		public void TestReliableConnection()
 		{
 			int retries = 0;
