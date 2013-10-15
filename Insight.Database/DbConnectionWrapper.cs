@@ -33,7 +33,7 @@ namespace Insight.Database
 		/// <param name="innerConnection">The inner connection to wrap.</param>
 		public DbConnectionWrapper(IDbConnection innerConnection)
 		{
-			if (innerConnection == null) throw new ArgumentNullException("innerException");
+			if (innerConnection == null) throw new ArgumentNullException("innerConnection");
 
 			DbConnection dbConnection = innerConnection as DbConnection;
 

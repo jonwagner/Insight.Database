@@ -218,7 +218,7 @@ namespace Insight.Database.Providers
 		/// <param name="options">Options for initializing the bulk copy object.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
 		/// <remarks>Number of rows copied if supported, -1 otherwise.</remarks>
-		public override int BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
+		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
 			SqlBulkCopyOptions sqlOptions = SqlBulkCopyOptions.Default;
 			if (options.HasFlag(InsightBulkCopyOptions.KeepIdentity))
@@ -241,7 +241,6 @@ namespace Insight.Database.Providers
 				if (configure != null)
 					configure(insightBulk);
 				bulk.WriteToServer(reader);
-			    return reader.RecordsAffected;
 			}
 		}
 

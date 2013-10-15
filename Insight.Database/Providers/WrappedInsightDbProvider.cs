@@ -146,10 +146,10 @@ namespace Insight.Database.Providers
 		/// <param name="options">Options for initializing the bulk copy object.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
 		/// <remarks>Number of rows copied.</remarks>
-		public override int BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
+		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
 			connection = GetInnerConnection(connection);
-			return InsightDbProvider.For(connection).BulkCopy(connection, tableName, reader, configure, options, transaction);
+			InsightDbProvider.For(connection).BulkCopy(connection, tableName, reader, configure, options, transaction);
 		}
 	}
 }

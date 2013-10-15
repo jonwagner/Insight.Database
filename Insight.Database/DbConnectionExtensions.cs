@@ -1384,10 +1384,13 @@ namespace Insight.Database
 					});
 
 				// create a reader for the list
-				using (var reader = new ObjectListDbDataReader(fieldReaderData, list))
+				var reader = new ObjectListDbDataReader(fieldReaderData, list);
+				using (reader)
 				{
-					return provider.BulkCopy(connection, tableName, reader, configure, options, transaction);
+					provider.BulkCopy(connection, tableName, reader, configure, options, transaction);
 				}
+
+				return reader.RecordsAffected;
 			}
 			finally
 			{

@@ -73,8 +73,6 @@ namespace Insight.Database.CodeGenerator
 	    private int _readRowCount;
 		#endregion
 
-      
-
         #region Constructors
         /// <summary>
 		/// Initializes a new instance of the ObjectListDbDataReader class.
