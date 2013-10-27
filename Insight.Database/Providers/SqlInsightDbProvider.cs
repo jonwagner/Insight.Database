@@ -238,8 +238,9 @@ namespace Insight.Database.Providers
 			using (var insightBulk = new SqlInsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
+#if !NODBASYNC
 				bulk.EnableStreaming = true;
-
+#endif
 				if (configure != null)
 					configure(insightBulk);
 				bulk.WriteToServer(reader);
