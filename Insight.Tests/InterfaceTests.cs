@@ -317,7 +317,10 @@ namespace Insight.Tests
 			{
 				_connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT 1");
 
+#if !NET35
+				// this only works in 4.0 and later
 				Parallel.For(0, 100, _ => TryInterfaceCall(100));
+#endif
 			}
 			finally
 			{
