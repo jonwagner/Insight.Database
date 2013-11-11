@@ -35,7 +35,7 @@ Now, wire up those stored procedures to an interface with a single `connection.A
 
 	var repo = connection.As<IBeerRepository>();
 
-	repo.Insert(beer);
+	repo.InsertBeer(beer);
 	IList<Beer> beerList = repo.GetBeerByType("ipa");
 	repo.UpdateBeerList(beerList);
 
