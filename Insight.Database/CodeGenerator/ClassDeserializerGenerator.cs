@@ -176,6 +176,8 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Stloc, localResult);		// pop loc.1 (result), stack => [empty]
 			}
 
+			var returnLabel = il.DefineLabel();
+
 			for (int index = 0; index < columnCount; index++)
 			{
 				var method = mapping[index];
@@ -219,6 +221,7 @@ namespace Insight.Database.CodeGenerator
 				{
 					il.Emit(OpCodes.Ldnull);							// push null
 					il.Emit(OpCodes.Stloc, localResult);				// store null => loc.1 (target)
+					il.Emit(OpCodes.Br, returnLabel);					// exit the loop
 				}
 
 				/////////////////////////////////////////////////////////////////////
@@ -226,6 +229,8 @@ namespace Insight.Database.CodeGenerator
 				/////////////////////////////////////////////////////////////////////
 				il.MarkLabel(finishLabel);
 			}
+
+			il.MarkLabel(returnLabel);
 
 			/////////////////////////////////////////////////////////////////////
 			// catch exceptions and rethrow

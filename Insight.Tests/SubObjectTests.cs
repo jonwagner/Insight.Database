@@ -391,5 +391,31 @@ namespace Insight.Tests
 				withGraph: typeof(Graph<TestData, TestSubData>));
 		}
 		#endregion
+
+		#region Null SubObject Tests
+		public class Address
+		{
+			public string city;
+			public string country;
+		}
+
+		[DefaultGraph(typeof(Graph<Supplier, Address>))]
+		public class Supplier
+		{
+			public int id;
+			public string name;
+			public Address site;
+		}
+
+		/// <summary>
+		/// This tests issue #61.
+		/// </summary>
+		[Test]
+		public void ReturningSubObjectShouldNotThrowWhenFirstColumnIsNull()
+		{
+			var supplier = _connection.QuerySql<Supplier>("select id=1, name='supplier', city=null, country=null").First();
+			Assert.IsNull(supplier.site);
+		}
+		#endregion
 	}
 }
