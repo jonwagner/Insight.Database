@@ -215,10 +215,16 @@ namespace Insight.Database.CodeGenerator
 				Label finishLabel = TypeConverterGenerator.EmitConvertAndSetValue(il, sourceType, method);
 
 				/////////////////////////////////////////////////////////////////////
-				// if this is the first column of a sub-object and the value is null, then return a null object
+				// if this is the first column of a sub-object and the value is null, AND all of the columns are db null then return a null object
 				/////////////////////////////////////////////////////////////////////
 				if (startColumn > 0 && index == 0)
 				{
+					il.Emit(OpCodes.Ldarg_0);							// push arg.0 (reader), stack => [target][reader]
+					il.Emit(OpCodes.Ldc_I4, startColumn);
+					il.Emit(OpCodes.Ldc_I4, columnCount);
+					il.Emit(OpCodes.Call, TypeConverterGenerator.IsAllDbNullMethod);
+					il.Emit(OpCodes.Brfalse, finishLabel);
+
 					il.Emit(OpCodes.Ldnull);							// push null
 					il.Emit(OpCodes.Stloc, localResult);				// store null => loc.1 (target)
 					il.Emit(OpCodes.Br, returnLabel);					// exit the loop

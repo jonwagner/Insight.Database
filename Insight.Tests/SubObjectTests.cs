@@ -411,10 +411,22 @@ namespace Insight.Tests
 		/// This tests issue #61.
 		/// </summary>
 		[Test]
-		public void ReturningSubObjectShouldNotThrowWhenFirstColumnIsNull()
+		public void ReturningSubObjectShouldNotThrowWhenAllColumnsAreNull()
 		{
 			var supplier = _connection.QuerySql<Supplier>("select id=1, name='supplier', city=null, country=null").First();
 			Assert.IsNull(supplier.site);
+		}
+
+		/// <summary>
+		/// This tests issue #61.
+		/// </summary>
+		[Test]
+		public void ReturningSubObjectShouldNotThrowWhenFirstColumnIsNull()
+		{
+			var supplier = _connection.QuerySql<Supplier>("select id=1, name='supplier', city=null, country='usa'").First();
+			Assert.IsNotNull(supplier.site);
+			Assert.IsNull(supplier.site.city);
+			Assert.IsNotNull(supplier.site.country);
 		}
 		#endregion
 	}

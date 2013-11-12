@@ -24,6 +24,7 @@ namespace Insight.Database.CodeGenerator
 	{
 		#region Private Members
 		internal static readonly MethodInfo CreateDataExceptionMethod = typeof(TypeConverterGenerator).GetMethod("CreateDataException");
+		internal static readonly MethodInfo IsAllDbNullMethod = typeof(TypeConverterGenerator).GetMethod("IsAllDbNull");
 		private static readonly MethodInfo _enumParse = typeof(Enum).GetMethod("Parse", new Type[] { typeof(Type), typeof(string), typeof(bool) });
 		private static readonly ConstructorInfo _linqBinaryCtor = typeof(System.Data.Linq.Binary).GetConstructor(new Type[] { typeof(byte[]) });
 		private static readonly MethodInfo _readChar = typeof(TypeConverterGenerator).GetMethod("ReadChar");
@@ -319,6 +320,22 @@ namespace Insight.Database.CodeGenerator
 				if (reader != null)
 					reader.Dispose();
 			}
+		}
+
+		/// <summary>
+		/// Determines if all of the specified fields of a data record are null.
+		/// </summary>
+		/// <param name="record">The record to look at.</param>
+		/// <param name="startColumn">The first column to look at.</param>
+		/// <param name="count">The number of columns to look at.</param>
+		/// <returns>True if all of the specified columns are null.</returns>
+		public static bool IsAllDbNull(IDataRecord record, int startColumn, int count)
+		{
+			for (int i = startColumn; i < startColumn + count; i++)
+				if (!record.IsDBNull(i))
+					return false;
+
+			return true;
 		}
 		#endregion
 
