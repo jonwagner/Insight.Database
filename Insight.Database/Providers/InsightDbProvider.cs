@@ -27,6 +27,11 @@ namespace Insight.Database.Providers
 		/// Regex to detect parameters in sql text.
 		/// </summary>
 		private static Regex _parameterRegex = new Regex("[?@:]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+
+		/// <summary>
+		/// The default provider to use if we don't understand a given type.
+		/// </summary>
+		private static InsightDbProvider _defaultProvider = new InsightDbProvider();
 		#endregion
 
 		#region Constructors
@@ -256,7 +261,7 @@ namespace Insight.Database.Providers
 		/// <returns>True if the column is an XML column.</returns>
 		public virtual bool IsXmlColumn(IDbCommand command, DataTable schemaTable, int index)
 		{
-			throw new NotImplementedException();
+			return false;
 		}
 
 		/// <summary>
@@ -292,11 +297,15 @@ namespace Insight.Database.Providers
 		internal static InsightDbProvider For(object o)
 		{
 			InsightDbProvider provider;
-			
-			if (!_providerMap.TryGetValue(o.GetType(), out provider) || provider == null)
-				throw new NotImplementedException("No Insight.Database provider supports the given type of object.");
 
-			return provider;
+			// walk the base classes to see if we know anything about what class it is derived from
+			for (Type type = o.GetType(); type != null; type = type.BaseType)
+			{
+				if (_providerMap.TryGetValue(type, out provider) && provider != null)
+					return provider;
+			}
+
+			return _defaultProvider;
 		}
 
 		/// <summary>

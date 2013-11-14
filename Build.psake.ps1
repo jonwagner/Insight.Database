@@ -78,6 +78,7 @@ Task Build35 {
         # copy the binaries to the net35 folder
         Wipe-Folder $net35Path
         Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net35Path
+        Copy-Item $baseDir\Insight.Database.Json\bin\Release\*.* $net35Path
         Copy-Item $baseDir\Insight.Database.Providers.PostgreSQL\bin\Release\*.* $net35Path
         Copy-Item $baseDir\Insight.Tests\bin\Release\*.* $net35Path
     }
@@ -107,6 +108,7 @@ Task Build40 {
         # copy the binaries to the net40 folder
         Wipe-Folder $net40Path
         Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net40Path
+        Copy-Item $baseDir\Insight.Database.Json\bin\Release\*.* $net40Path
         Copy-Item $baseDir\Insight.Database.Providers.Glimpse\bin\Release\*.* $net40Path
         Copy-Item $baseDir\Insight.Database.Providers.PostgreSQL\bin\Release\*.* $net40Path
         Copy-Item $baseDir\Insight.Tests\bin\Release\*.* $net40Path

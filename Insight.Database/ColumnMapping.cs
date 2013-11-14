@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
+using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
 
 namespace Insight.Database
 {
@@ -33,6 +36,16 @@ namespace Insight.Database
 		private static ColumnMapping _parameters = new ColumnMapping();
 
 		/// <summary>
+		/// The singleton instance of the AllColumnMapping configuration for Parameters.
+		/// </summary>
+		private static AllColumnMapping _all = new AllColumnMapping();
+
+		/// <summary>
+		/// The default object serializer.
+		/// </summary>
+		private static Type _defaultObjectSerializer = typeof(ToStringObjectSerializer);
+
+		/// <summary>
 		/// The mapping event handler.
 		/// </summary>
 		private EventHandler<ColumnMappingEventArgs> _mappings;
@@ -40,24 +53,34 @@ namespace Insight.Database
 
 		#region Constructors
 		/// <summary>
-		/// Prevents a default instance of the ColumnMapping class from being created outside of the class constructor.
+		/// Initializes a new instance of the ColumnMapping class.
 		/// </summary>
-		private ColumnMapping()
+		protected ColumnMapping()
 		{
-			ResetHandlers();
+			_mappings += DefaultMappingHandler;
 		}
 		#endregion
 
 		#region Properties
 		/// <summary>
-		/// Gets singleton instance of the ColumnMapping configuration for Tables and Table Valued Parameters.
+		/// Gets the singleton instance of the ColumnMapping configuration for Tables and Table Valued Parameters.
 		/// </summary>
 		public static ColumnMapping Tables { get { return _tables; } }
 
 		/// <summary>
-		/// Gets singleton instance of the ColumnMapping configuration for Parameters.
+		/// Gets the singleton instance of the ColumnMapping configuration for Parameters.
 		/// </summary>
 		public static ColumnMapping Parameters { get { return _parameters; } }
+
+		/// <summary>
+		/// Gets the singleton instance of the ColumnMapping configuration for both Tables and Parameters.
+		/// </summary>
+		public static ColumnMapping All { get { return _all; } }
+
+		/// <summary>
+		/// Gets or sets the type to use to serialize objects.
+		/// </summary>
+		internal static Type DefaultObjectSerializer { get { return _defaultObjectSerializer; } set { _defaultObjectSerializer = value; } }
 		#endregion
 
 		/// <summary>
@@ -65,7 +88,7 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="handler">The handler to add.</param>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping AddHandler(IColumnMappingHandler handler)
+		public virtual ColumnMapping AddHandler(IColumnMappingHandler handler)
 		{
 			lock (_lock)
 			{
@@ -189,12 +212,49 @@ namespace Insight.Database
 		}
 		#endregion
 
+		#region Common Serialization Functions
+		/// <summary>
+		/// Adds a serialization handler that serializes the named field of the given type as the given mode.
+		/// </summary>
+		/// <param name="recordType">The type to handle.</param>
+		/// <param name="fieldName">The name of the field.</param>
+		/// <param name="mode">The serialization mode to use for the field of the type.</param>
+		/// <returns>The current ColumnMapping configuration.</returns>
+		public ColumnMapping SerializeAs(Type recordType, string fieldName, SerializationMode mode)
+		{
+			return AddHandler(new SerializationMappingHandler() { RecordType = recordType, FieldName = fieldName, SerializationMode = mode });
+		}
+
+		/// <summary>
+		/// Adds a serialization handler that serializes the given field of the given type as the given mode.
+		/// </summary>
+		/// <param name="recordType">The type to handle.</param>
+		/// <param name="fieldType">The type of the field.</param>
+		/// <param name="mode">The serialization mode to use for the field of the type.</param>
+		/// <returns>The current ColumnMapping configuration.</returns>
+		public ColumnMapping SerializeAs(Type recordType, Type fieldType, SerializationMode mode)
+		{
+			return AddHandler(new SerializationMappingHandler() { RecordType = recordType, FieldType = fieldType, SerializationMode = mode });
+		}
+
+		/// <summary>
+		/// Adds a serialization handler that serializes any field of a given type.
+		/// </summary>
+		/// <param name="fieldType">The type of the field.</param>
+		/// <param name="mode">The serialization mode to use for the field of the type.</param>
+		/// <returns>The current ColumnMapping configuration.</returns>
+		public ColumnMapping SerializeAs(Type fieldType, SerializationMode mode)
+		{
+			return AddHandler(new SerializationMappingHandler() { FieldType = fieldType, SerializationMode = mode });
+		}
+		#endregion
+
 		#region Internals
 		/// <summary>
 		/// Reset all of the handlers to the default.
 		/// </summary>
 		/// <returns>The current ColumnMapping configuration.</returns>
-		public ColumnMapping ResetHandlers()
+		public virtual ColumnMapping ResetHandlers()
 		{
 			lock (_lock)
 			{
@@ -210,16 +270,15 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="type">The type of object to map to.</param>
 		/// <param name="reader">The reader to read.</param>
-		/// <param name="commandText">The command text that is currently being mapped.</param>
-		/// <param name="commandType">The command type that is currently being mapped.</param>
+		/// <param name="command">The command that is currently being mapped.</param>
 		/// <param name="parameters">The list of parameters used in the mapping operation.</param>
 		/// <param name="startColumn">The index of the first column to map.</param>
 		/// <param name="columnCount">The number of columns to map.</param>
 		/// <param name="uniqueMatches">True to only return the first match per field, false to return all matches per field.</param>
 		/// <returns>An array of setters.</returns>
-		internal ClassPropInfo[] CreateMapping(Type type, IDataReader reader, string commandText, CommandType? commandType, IList<IDataParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
+		internal ColumnMappingEventArgs[] CreateMapping(Type type, IDataReader reader, IDbCommand command, IList<IDataParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
 		{
-			ClassPropInfo[] mapping = new ClassPropInfo[columnCount];
+			ColumnMappingEventArgs[] mapping = new ColumnMappingEventArgs[columnCount];
 
 			// convert the list of names into a list of set reflections
 			// clone the methods list, since we are only going to use each setter once (i.e. if you return two ID columns, we will only use the first one)
@@ -239,10 +298,14 @@ namespace Insight.Database
 					TargetType = type,
 					Reader = reader,
 					FieldIndex = i + startColumn,
-					CommandText = commandText,
-					CommandType = commandType,
 					Parameters = readOnlyParameters,
 				};
+
+				if (command != null)
+				{
+					e.CommandText = command.CommandText;
+					e.CommandType = command.CommandType;
+				}
 
 				lock (_lock)
 				{
@@ -259,7 +322,10 @@ namespace Insight.Database
 				ClassPropInfo setter;
 				if (setMethods.TryGetValue(targetFieldName, out setter))
 				{
-					mapping[i] = setter;
+					mapping[i] = e;
+					e.ClassPropInfo = setter;
+
+					InitializeMappingSerializer(e, reader, command, parameters, i);
 
 					// remove the name from the list so we can only use it once
 					if (uniqueMatches)
@@ -268,6 +334,53 @@ namespace Insight.Database
 			}
 
 			return mapping;
+		}
+
+		/// <summary>
+		/// Initialize the serializer on the given mapping.
+		/// </summary>
+		/// <param name="mapping">The mapping being evaluated.</param>
+		/// <param name="reader">The reader being evaluated.</param>
+		/// <param name="command">The command being evaluated.</param>
+		/// <param name="parameters">The parameters being evaluated.</param>
+		/// <param name="i">The index of the parameter being evaluated.</param>
+		private static void InitializeMappingSerializer(ColumnMappingEventArgs mapping, IDataReader reader, IDbCommand command, IList<IDataParameter> parameters, int i)
+		{
+			// if the provider knows that this is an xml field, then automatically use that
+			if ((command != null && InsightDbProvider.For(command).IsXmlParameter(command, parameters[i])) ||
+				(reader != null && InsightDbProvider.For(reader).IsXmlColumn(command, reader.GetSchemaTable(), i)))
+			{
+				mapping.SerializationMode = SerializationMode.Xml;
+				mapping.Serializer = typeof(XmlObjectSerializer);
+			}
+			else
+			{
+				mapping.SerializationMode = mapping.SerializationMode ?? mapping.ClassPropInfo.SerializationMode;
+
+				switch (mapping.SerializationMode)
+				{
+					default:
+					case SerializationMode.Default:
+						mapping.Serializer = ColumnMapping.DefaultObjectSerializer;
+						break;
+					case SerializationMode.Xml:
+						mapping.Serializer = typeof(XmlObjectSerializer);
+						break;
+					case SerializationMode.Json:
+						mapping.Serializer = JsonObjectSerializer.SerializerType;
+						break;
+					case SerializationMode.ToString:
+						mapping.Serializer = typeof(ToStringObjectSerializer);
+						break;
+					case SerializationMode.Custom:
+						mapping.Serializer = mapping.Serializer ?? mapping.ClassPropInfo.Serializer ?? ColumnMapping.DefaultObjectSerializer;
+						break;
+				}
+			}
+
+			// if we allow atomic types to get a different serializer, then there are certain situations where we can't figure out the right thing to do
+			if (mapping.SerializationMode != SerializationMode.Default && TypeHelper.IsAtomicType(mapping.ClassPropInfo.MemberType) && mapping.ClassPropInfo.MemberType != typeof(string))
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Atomic types cannot have a column serializer: {0}.{1}", mapping.ClassPropInfo.Type.Name, mapping.ClassPropInfo.Name));
 		}
 
 		/// <summary>
@@ -285,5 +398,28 @@ namespace Insight.Database
 				throw new InvalidOperationException("DefaultMappingHandler requires either a Reader or Parameters list.");
 		}
 		#endregion
+	}
+
+	/// <summary>
+	/// Allows for configuration of both the Parameters and Tables mappings at the same time.
+	/// </summary>
+	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+	class AllColumnMapping : ColumnMapping
+	{
+		/// <inheritdoc/>
+		public override ColumnMapping AddHandler(IColumnMappingHandler handler)
+		{
+			ColumnMapping.Parameters.AddHandler(handler);
+			ColumnMapping.Tables.AddHandler(handler);
+			return this;
+		}
+
+		/// <inheritdoc/>
+		public override ColumnMapping ResetHandlers()
+		{
+			ColumnMapping.Parameters.ResetHandlers();
+			ColumnMapping.Tables.ResetHandlers();
+			return this;
+		}
 	}
 }

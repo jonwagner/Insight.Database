@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database.CodeGenerator;
 
 namespace Insight.Database
 {
@@ -50,9 +51,24 @@ namespace Insight.Database
 		public string TargetFieldName { get; set; }
 
 		/// <summary>
+		/// Gets or sets the serialization mode for this column mapping.
+		/// </summary>
+		public SerializationMode? SerializationMode { get; set; }
+
+		/// <summary>
+		/// Gets or sets the custom serializer to use for this column mapping.
+		/// </summary>
+		public Type Serializer { get; set; }
+
+		/// <summary>
 		/// Gets or sets a value indicating whether the mapping operation should be canceled for this column.
 		/// If set to true, then the mapper will not map the current column.
 		/// </summary>
 		public bool Canceled { get; set; }
+
+		/// <summary>
+		/// Gets or sets the field the column is bound to.
+		/// </summary>
+		internal ClassPropInfo ClassPropInfo { get; set; }
 	}
 }

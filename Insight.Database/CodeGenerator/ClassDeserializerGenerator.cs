@@ -116,7 +116,7 @@ namespace Insight.Database.CodeGenerator
 				return null;
 
 			// get the mapping from the reader to the type
-			ClassPropInfo[] mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, startColumn, columnCount, true);
+			var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, startColumn, columnCount, true);
 
 			// need to know the constructor for the object (except for structs)
 			bool isStruct = type.IsValueType;
@@ -180,10 +180,12 @@ namespace Insight.Database.CodeGenerator
 
 			for (int index = 0; index < columnCount; index++)
 			{
-				var method = mapping[index];
-
 				// if there is no matching property for this column, then continue
-				if (method == null || !method.CanSetMember)
+				if (mapping[index] == null)
+					continue;
+
+				var method = mapping[index].ClassPropInfo;
+				if (!method.CanSetMember)
 					continue;
 
 				// store the value as a local variable in case type conversion fails
@@ -212,7 +214,7 @@ namespace Insight.Database.CodeGenerator
 				Type sourceType = reader.GetFieldType(index + startColumn);
 
 				// emit the code to convert the value and set the value on the field
-				Label finishLabel = TypeConverterGenerator.EmitConvertAndSetValue(il, sourceType, method);
+				Label finishLabel = TypeConverterGenerator.EmitConvertAndSetValue(il, sourceType, mapping[index]);
 
 				/////////////////////////////////////////////////////////////////////
 				// if this is the first column of a sub-object and the value is null, AND all of the columns are db null then return a null object
@@ -501,7 +503,7 @@ namespace Insight.Database.CodeGenerator
 			// for the next set, we want to find all applicable matches, so we can detect the transition to the next object
 			int fieldCount = reader.FieldCount;
 			int columnsLeft = fieldCount - columnIndex;
-			var currentSetters = ColumnMapping.Tables.CreateMapping(currentType, reader, null, null, null, columnIndex, columnsLeft, uniqueMatches: true);
+			var currentSetters = ColumnMapping.Tables.CreateMapping(currentType, reader, null, null, columnIndex, columnsLeft, uniqueMatches: true);
 
 			// go through the remaining types to see if anything will claim the column
 			int i = 0;
@@ -515,7 +517,7 @@ namespace Insight.Database.CodeGenerator
 				for (int t = typeIndex + 1; t < types.Length; t++)
 				{
 					// one of the next types can claim the column, so quit now
-					var nextSetters = ColumnMapping.Tables.CreateMapping(types[t], reader, null, null, null, columnIndex + i, 1, uniqueMatches: false);
+					var nextSetters = ColumnMapping.Tables.CreateMapping(types[t], reader, null, null, columnIndex + i, 1, uniqueMatches: false);
 					if (nextSetters[0] != null)
 						return columnIndex + i;
 				}

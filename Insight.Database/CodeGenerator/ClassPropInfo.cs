@@ -62,9 +62,11 @@ namespace Insight.Database.CodeGenerator
 				MemberType = p.PropertyType;
 			}
 
-			// see if there is a column attribute defined on the field
-			var attribute = memberInfo.GetCustomAttributes(typeof(ColumnAttribute), true).OfType<ColumnAttribute>().FirstOrDefault();
-			ColumnName = (attribute != null) ? attribute.ColumnName : Name;
+			// initialize the rest of the data from a ColumnAttribute from the field
+			var attribute = memberInfo.GetCustomAttributes(typeof(ColumnAttribute), true).OfType<ColumnAttribute>().FirstOrDefault() ?? new ColumnAttribute();
+			ColumnName = attribute.ColumnName ?? Name;
+			SerializationMode = attribute.SerializationMode;
+			Serializer = attribute.Serializer;
 		}
 		#endregion
 
@@ -114,9 +116,19 @@ namespace Insight.Database.CodeGenerator
 		public bool CanGetMember { get { return FieldInfo != null || GetMethodInfo != null; } }
 
 		/// <summary>
+		/// Gets the serialization mode defined for the field.
+		/// </summary>
+		public SerializationMode SerializationMode { get; private set; }
+
+		/// <summary>
+		/// Gets the custom serializer defined for the field.
+		/// </summary>
+		public Type Serializer { get; private set; }		
+
+		/// <summary>
 		/// Gets or sets the type that this is bound to.
 		/// </summary>
-		private Type Type { get; set; }
+		public Type Type { get; set; }
 		#endregion
 
 		#region Method List Members

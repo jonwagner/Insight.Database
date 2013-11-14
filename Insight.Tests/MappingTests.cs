@@ -20,7 +20,7 @@ namespace Insight.Tests
 		[TearDown]
 		public override void TearDown()
 		{
-			ColumnMapping.Tables.ResetHandlers();
+			ColumnMapping.All.ResetHandlers();
 
 			base.TearDown();
 		}
@@ -70,9 +70,104 @@ namespace Insight.Tests
 			ParentTestData.Verify(results);
 		}
 		#endregion
+
+		#region Serialization Tests
+		public class JsonClass
+		{
+			[Column(SerializationMode = SerializationMode.Json)]
+			public JsonSubClass SubClass;
+		}
+
+		public class JsonSubClass
+		{
+			public string Foo;
+			public int Bar;
+		}
+
+		[Test]
+		public void SerializationHandlerSwitchesObjectToXmlWhenNotFiltered()
+		{
+			ColumnMapping.All.AddHandler(new SerializationMappingHandler() { SerializationMode = SerializationMode.Xml });
+
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC MappingAsJson1 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+
+				var input = new JsonClass();
+				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
+
+				var s = connection.Single<string>("MappingAsJson1", input);
+				Assert.IsTrue(connection.Single<string>("MappingAsJson1", input).StartsWith("<MappingTests."));
+			}
+		}
+
+		[Test]
+		public void SerializationHandlerSwitchesObjectToXmlWhenNameMatches()
+		{
+			ColumnMapping.All.AddHandler(new SerializationMappingHandler()
+			{ 
+				FieldName = "Subclass",
+				SerializationMode = SerializationMode.Xml
+			});
+
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC MappingAsJson2 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+
+				var input = new JsonClass();
+				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
+
+				var s = connection.Single<string>("MappingAsJson2", input);
+				Assert.IsTrue(connection.Single<string>("MappingAsJson2", input).StartsWith("<MappingTests."));
+			}
+		}
+
+		[Test]
+		public void SerializationHandlerSwitchesObjectToXmlWhenTypeMatches()
+		{
+			ColumnMapping.All.AddHandler(new SerializationMappingHandler()
+			{
+				FieldType = typeof(JsonSubClass),
+				SerializationMode = SerializationMode.Xml
+			});
+
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC MappingAsJson3 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+
+				var input = new JsonClass();
+				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
+
+				var s = connection.Single<string>("MappingAsJson3", input);
+				Assert.IsTrue(connection.Single<string>("MappingAsJson3", input).StartsWith("<MappingTests."));
+			}
+		}
+
+#if !NET35
+		[Test]
+		public void SerializationHandlerDoesNotSwitchObjectToXmlWhenNameDoesNotMatch()
+		{
+			ColumnMapping.All.AddHandler(new SerializationMappingHandler()
+			{ 
+				FieldName = "foo",
+				SerializationMode = SerializationMode.Xml
+			});
+
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC MappingAsJson4 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+
+				var input = new JsonClass();
+				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
+
+				var s = connection.Single<string>("MappingAsJson4", input);
+				Assert.IsFalse(connection.Single<string>("MappingAsJson4", input).StartsWith("<MappingTests."));
+			}
+		}
+#endif
+		#endregion
 	}
-
-
+	
 	/// <summary>
 	/// Tests dynamic connection.
 	/// </summary>

@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Insight.Database.Providers;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -31,7 +32,6 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _readNullableChar = typeof(TypeConverterGenerator).GetMethod("ReadNullableChar");
 		private static readonly MethodInfo _readXmlDocument = typeof(TypeConverterGenerator).GetMethod("ReadXmlDocument");
 		private static readonly MethodInfo _readXDocument = typeof(TypeConverterGenerator).GetMethod("ReadXDocument");
-		private static readonly MethodInfo _deserializeXml = typeof(TypeConverterGenerator).GetMethod("DeserializeXml");
 
 		/// <summary>
 		/// The number of ticks to offset when converting between .NET TimeSpan and SQL DateTime.
@@ -45,7 +45,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="il">The IL generator to output to.</param>
 		/// <param name="sourceType">The current type of the value.</param>
-		/// <param name="method">The set property method to call.</param>
+		/// <param name="mapping">The column mapping to use.</param>
 		/// <remarks>
 		///	Expects the stack to contain:
 		///		Target Object
@@ -53,8 +53,10 @@ namespace Insight.Database.CodeGenerator
 		/// The value is first converted to the type required by the method parameter, then sets the property.
 		/// </remarks>
 		/// <returns>A label that needs to be marked at the end of a succesful set.</returns>
-		public static Label EmitConvertAndSetValue(ILGenerator il, Type sourceType, ClassPropInfo method)
+		public static Label EmitConvertAndSetValue(ILGenerator il, Type sourceType, ColumnMappingEventArgs mapping)
 		{
+			var method = mapping.ClassPropInfo;
+
 			// targetType - the target type we need to convert to
 			// underlyingTargetType - if the target type is nullable, we need to look at the underlying target type
 			// rawTargetType - if the underlying target type is enum, we need to look at the underlying target type for that
@@ -111,16 +113,22 @@ namespace Insight.Database.CodeGenerator
 
 				// after: stack => [target][xDocument]
 			}
-			else if (sourceType == typeof(string) && targetType != typeof(string) && !targetType.IsValueType)
+			else if (sourceType == typeof(string) && targetType != typeof(string) && (!TypeHelper.IsAtomicType(targetType)))
 			{
-				// we are getting a string from the database, but the target is not a string, but it's a reference type
-				// assume the column is an xml data type and that we want to deserialize it
+				// we are getting a string from the database, but the target is not a string, and it's a reference type
+				// assume the column is a serialized data type and that we want to deserialize it
 
 				// before: stack => [target][object-value]
+				il.Emit(OpCodes.Castclass, typeof(string));
 				il.EmitLoadType(targetType);
 
 				// after: stack => [target][object-value][memberType]
-				il.Emit(OpCodes.Call, _deserializeXml);
+
+				// determine the serializer to use to convert the string to an object
+				var serializerMethod = mapping.Serializer.GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(string), typeof(Type) }, null);
+				if (serializerMethod == null)
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Serializer type {0} needs the method 'public static object Deserialize(string, Type)'", mapping.Serializer.Name));
+				il.Emit(OpCodes.Call, serializerMethod);
 				il.Emit(OpCodes.Unbox_Any, targetType);
 			}
 			else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
@@ -294,32 +302,6 @@ namespace Insight.Database.CodeGenerator
 		public static XDocument ReadXDocument(object value)
 		{
 			return XDocument.Parse(value.ToString(), LoadOptions.None);
-		}
-
-		/// <summary>
-		/// Reads an object from an Xml column.
-		/// </summary>
-		/// <param name="value">The value to deserialize.</param>
-		/// <param name="type">The type to deserialize to.</param>
-		/// <returns>The deserialized object.</returns>
-		public static object DeserializeXml(object value, Type type)
-		{
-			DataContractSerializer serializer = new DataContractSerializer(type);
-
-			StringReader reader = new StringReader(value.ToString());
-			try
-			{
-				using (XmlTextReader xr = new XmlTextReader(reader))
-				{
-					reader = null;
-					return serializer.ReadObject(xr);
-				}
-			}
-			finally
-			{
-				if (reader != null)
-					reader.Dispose();
-			}
 		}
 
 		/// <summary>
@@ -545,9 +527,10 @@ namespace Insight.Database.CodeGenerator
 			// support auto-converting strings to other types by parsing
 			if (sourceType == typeof(string))
 			{
-				if (targetType == typeof(TimeSpan) || targetType == typeof(DateTime) || targetType == typeof(DateTimeOffset))
+				var parseMethod = targetType.GetMethod("Parse", new Type[] { typeof(string) });
+				if (parseMethod != null)
 				{
-					il.Emit(OpCodes.Call, targetType.GetMethod("Parse", new Type[] { typeof(string) }));
+					il.Emit(OpCodes.Call, parseMethod);
 					return true;
 				}
 			}

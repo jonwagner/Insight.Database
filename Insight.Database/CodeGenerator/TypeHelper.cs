@@ -86,48 +86,6 @@ namespace Insight.Database.CodeGenerator
 			return type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
 		}
 
-		#region Xml Serialization Helpers
-		/// <summary>
-		/// Serialize an object to Xml.
-		/// </summary>
-		/// <param name="o">The object to serialize.</param>
-		/// <param name="type">The type of the object to deserialize.</param>
-		/// <returns>The serialized xml.</returns>
-		public static string SerializeObjectToXml(object o, Type type)
-		{
-			if (o == null)
-				return null;
-
-			if (type == null)
-				type = o.GetType();
-
-			// don't double-encode strings. assume the string is xml.
-			if (type == typeof(string))
-				return (string)o;
-
-			// serialize the parameters
-			StringWriter sw = new StringWriter(CultureInfo.InvariantCulture);
-			StringWriter disposable = sw;
-			try
-			{
-				XmlWriterSettings settings = new XmlWriterSettings();
-				settings.OmitXmlDeclaration = true;
-				using (XmlWriter xw = XmlWriter.Create(sw, settings))
-				{
-					disposable = null;
-					new DataContractSerializer(type).WriteObject(xw, o);
-				}
-
-				return sw.ToString();
-			}
-			finally
-			{
-				if (disposable != null)
-					disposable.Dispose();
-			}
-		}
-		#endregion
-
 		#region Method Implementation Helpers
 		/// <summary>
 		/// Copy the generic attributes of a method.

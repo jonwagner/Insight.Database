@@ -80,17 +80,18 @@ namespace Insight.Database.CodeGenerator
 		    IsAtomicType = TypeHelper.IsAtomicType(identity.Graph);
 			if (!IsAtomicType)
 			{
-				var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, uniqueMatches: true);
+				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, 0, reader.FieldCount, uniqueMatches: true);
 
-				_accessors = new Func<object, object>[mapping.Length];
-				_memberNames = new string[mapping.Length];
-				_memberTypes = new Type[mapping.Length];
+				_accessors = new Func<object, object>[mappings.Length];
+				_memberNames = new string[mappings.Length];
+				_memberTypes = new Type[mappings.Length];
 
-				for (int i = 0; i < mapping.Length; i++)
+				for (int i = 0; i < mappings.Length; i++)
 				{
-					ClassPropInfo propInfo = mapping[i];
-					if (propInfo == null)
+					var mapping = mappings[i];
+					if (mapping == null)
 						continue;
+					ClassPropInfo propInfo = mapping.ClassPropInfo;
 
 					// create a new anonymous method that takes an object and returns the value
 					var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
@@ -142,10 +143,14 @@ namespace Insight.Database.CodeGenerator
 					}
 
 					// if the provider type is Xml, then serialize the value
-					if (!sourceType.IsValueType && provider.IsXmlColumn(command, SchemaTable, i))
+					if (!sourceType.IsValueType && sourceType != typeof(string))
 					{
+						var serializerMethod = mapping.Serializer.GetMethod("Serialize", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(object), typeof(Type) }, null);
+						if (serializerMethod == null)
+							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Serializer type {0} needs the method 'public static string Serialize(object, Type)'", mapping.Serializer.Name));
+
 						il.EmitLoadType(sourceType);
-						il.Emit(OpCodes.Call, typeof(TypeHelper).GetMethod("SerializeObjectToXml", new Type[] { typeof(object), typeof(Type) }));
+						il.Emit(OpCodes.Call, serializerMethod);
 					}
 					else
 					{
