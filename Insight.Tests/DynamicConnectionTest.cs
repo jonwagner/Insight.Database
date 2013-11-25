@@ -29,6 +29,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestUnopenedConnection()
 		{
+			_connection.Dynamic().sp_Who(commandTimeout: 100);
+
 			// make sure the connection is closed first
 			_connection.Close();
 			Assert.AreEqual(ConnectionState.Closed, _connection.State);

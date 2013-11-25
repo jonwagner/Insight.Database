@@ -184,6 +184,9 @@ namespace Insight.Database
 					cmd.CommandType = CommandType.StoredProcedure;
 					cmd.CommandText = procName;
 
+					if (timeout.HasValue)
+						cmd.CommandTimeout = timeout.Value;
+
 					// unwrap the transaction because the transaction has to match the command and connection
 					if (transaction != null)
 						cmd.Transaction = DBConnectionExtensions.UnwrapDbTransaction(transaction);
