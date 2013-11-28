@@ -168,7 +168,7 @@ namespace Insight.Database.CodeGenerator
 
                             // prepend schema name if specified
 						    if (schemaAttribute != null)
-						        procName = procName + "." + schemaAttribute.Name.Trim();
+						        procName = schemaAttribute.Name.Trim() + "." + procName;
 
 						    mIL.Emit(OpCodes.Ldstr, procName);
 						}
