@@ -117,6 +117,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Results.tt</DependentUpon>
     </Compile>
+    <Compile Include="SchemaAttribute.cs" />
     <Compile Include="SqlAttribute.cs" />
     <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionStringBuilderExtensions.cs" />
