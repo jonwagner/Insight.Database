@@ -132,8 +132,9 @@ namespace Insight.Database.CodeGenerator
 			var sqlAttribute = interfaceMethod.GetCustomAttributes(false).OfType<SqlAttribute>().FirstOrDefault();
 
             // see if the interface specifies a schema
-		    var schemaAttribute = interfaceMethod.DeclaringType.GetCustomAttributes(false)
-		        .OfType<SchemaAttribute>().FirstOrDefault();
+		    var schemaAttribute =
+		        interfaceMethod.GetCustomAttributes(false).OfType<SchemaAttribute>().FirstOrDefault() ??
+		        interfaceMethod.DeclaringType.GetCustomAttributes(false).OfType<SchemaAttribute>().FirstOrDefault();
 
 			// see if the interface method has a graph defined
 			var graphAttribute = interfaceMethod.GetCustomAttributes(false).OfType<DefaultGraphAttribute>().FirstOrDefault();

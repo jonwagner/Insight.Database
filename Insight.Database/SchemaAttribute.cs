@@ -2,7 +2,7 @@
 
 namespace Insight.Database
 {
-    [AttributeUsage(AttributeTargets.Interface, Inherited = false, AllowMultiple = false)]
+    [AttributeUsage(AttributeTargets.Interface | AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
     public sealed class SchemaAttribute : Attribute
     {
         public string Name { get; private set; }
