@@ -131,6 +131,10 @@ namespace Insight.Database.CodeGenerator
 			// see if the interface method has inlined SQL
 			var sqlAttribute = interfaceMethod.GetCustomAttributes(false).OfType<SqlAttribute>().FirstOrDefault();
 
+            // see if the interface specifies a schema
+		    var schemaAttribute = interfaceMethod.DeclaringType.GetCustomAttributes(false)
+		        .OfType<SchemaAttribute>().FirstOrDefault();
+
 			// see if the interface method has a graph defined
 			var graphAttribute = interfaceMethod.GetCustomAttributes(false).OfType<DefaultGraphAttribute>().FirstOrDefault();
 
@@ -161,7 +165,12 @@ namespace Insight.Database.CodeGenerator
 						{
 							// if this is an async method, remove async from the end of the proc name
 							var procName = (executeMethod.DeclaringType == typeof(AsyncExtensions)) ? Regex.Replace(interfaceMethod.Name, "Async$", String.Empty, RegexOptions.IgnoreCase) : interfaceMethod.Name;
-							mIL.Emit(OpCodes.Ldstr, procName);
+
+                            // prepend schema name if specified
+						    if (schemaAttribute != null)
+						        procName = procName + "." + schemaAttribute.Name.Trim();
+
+						    mIL.Emit(OpCodes.Ldstr, procName);
 						}
 
 						break;
