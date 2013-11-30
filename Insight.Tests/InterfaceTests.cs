@@ -44,6 +44,8 @@ namespace Insight.Tests
 		string InlineSql(int p);
 		[Sql("ExecuteSomethingScalar", CommandType.StoredProcedure)]
 		int InlineSqlProcOverride(int p);
+		[Sql(Schema="dbo", Sql="ExecuteSomethingScalar")]
+		int InlineSqlWithSchema(int p);
 
 		// graph override
 		[DefaultGraph(typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>))]
@@ -90,6 +92,12 @@ namespace Insight.Tests
 		IList<int> QueryWithOutputParameter(out int p);
 		Results<TestDataClasses.ParentTestData, int> QueryResultsWithOutputParameter(out int p);
 		void InsertWithOutputParameter(IEnumerable<TestDataClasses.TestData> data, out int p);
+	}
+
+	[Sql(Schema = "dbo")]
+	interface ITestWithSqlAttribute
+	{
+		int ExecuteSomethingScalar(int p);
 	}
 	#endregion
 
@@ -156,6 +164,8 @@ namespace Insight.Tests
 					// inline SQL!
 					Assert.AreEqual("42", i.InlineSql(42));
 					Assert.AreEqual(99, i.InlineSqlProcOverride(99));
+					Assert.AreEqual(98, i.InlineSqlWithSchema(98));
+					Assert.AreEqual(98, connection.As<ITestWithSqlAttribute>().ExecuteSomethingScalar(98));
 
 					// graphs
 					i.QueryWithGraph().Verify(true);

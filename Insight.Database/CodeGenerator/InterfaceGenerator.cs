@@ -128,8 +128,17 @@ namespace Insight.Database.CodeGenerator
 			// determine the proper method to call
 			MethodInfo executeMethod = GetExecuteMethod(interfaceMethod);
 
-			// see if the interface method has inlined SQL
-			var sqlAttribute = interfaceMethod.GetCustomAttributes(false).OfType<SqlAttribute>().FirstOrDefault();
+			// get the sql attributes from the  method and class/interface
+			var sqlAttribute = interfaceMethod.GetCustomAttributes(false).OfType<SqlAttribute>().FirstOrDefault() ?? new SqlAttribute();
+			var typeSqlAttribute = interfaceMethod.DeclaringType.GetCustomAttributes(false).OfType<SqlAttribute>().FirstOrDefault() ?? new SqlAttribute();
+
+			// calculate the query parameters
+			var schema = sqlAttribute.Schema ?? typeSqlAttribute.Schema;
+			var procName = (executeMethod.DeclaringType == typeof(AsyncExtensions)) ? Regex.Replace(interfaceMethod.Name, "Async$", String.Empty, RegexOptions.IgnoreCase) : interfaceMethod.Name;
+			var sql = sqlAttribute.Sql ?? typeSqlAttribute.Sql ?? procName;
+			var commandType = sqlAttribute.CommandType ?? typeSqlAttribute.CommandType ?? (sql.Contains(' ') ? CommandType.Text : CommandType.StoredProcedure);
+			if (commandType == CommandType.StoredProcedure && !String.IsNullOrWhiteSpace(schema) && !sql.Contains('.'))
+				procName = schema.Trim() + "." + procName;
 
 			// see if the interface method has a graph defined
 			var graphAttribute = interfaceMethod.GetCustomAttributes(false).OfType<DefaultGraphAttribute>().FirstOrDefault();
@@ -153,17 +162,7 @@ namespace Insight.Database.CodeGenerator
 
 					case "sql":
 						// if the sql attribute is on the method, use that
-						if (sqlAttribute != null)
-						{
-							mIL.Emit(OpCodes.Ldstr, sqlAttribute.Sql);
-						}
-						else
-						{
-							// if this is an async method, remove async from the end of the proc name
-							var procName = (executeMethod.DeclaringType == typeof(AsyncExtensions)) ? Regex.Replace(interfaceMethod.Name, "Async$", String.Empty, RegexOptions.IgnoreCase) : interfaceMethod.Name;
-							mIL.Emit(OpCodes.Ldstr, procName);
-						}
-
+						mIL.Emit(OpCodes.Ldstr, sql);
 						break;
 
 					case "parameters":
@@ -245,7 +244,7 @@ namespace Insight.Database.CodeGenerator
 						if (EmitSpecialParameter(mIL, "commandType", parameters, executeParameters))
 							break;
 
-						IlHelper.EmitLdInt32(mIL, (sqlAttribute != null) ? (int)sqlAttribute.CommandType : (int)CommandType.StoredProcedure);
+						IlHelper.EmitLdInt32(mIL, (int)commandType);
 						break;
 
 					case "commandBehavior":

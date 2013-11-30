@@ -10,9 +10,16 @@ namespace Insight.Database
 	/// <summary>
 	/// Specifies that Insight should generate the specified SQL for the interface method.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Method)]
+	[AttributeUsage(AttributeTargets.Method | AttributeTargets.Class | AttributeTargets.Interface)]
 	public sealed class SqlAttribute : Attribute
 	{
+		/// <summary>
+		/// Initializes a new instance of the SqlAttribute class.
+		/// </summary>
+		public SqlAttribute()
+		{
+		}
+
 		/// <summary>
 		/// Initializes a new instance of the SqlAttribute class.
 		/// </summary>
@@ -20,7 +27,6 @@ namespace Insight.Database
 		public SqlAttribute(string sql)
 		{
 			Sql = sql;
-			CommandType = CommandType.Text;
 		}
 
 		/// <summary>
@@ -35,13 +41,18 @@ namespace Insight.Database
 		}
 
 		/// <summary>
-		/// Gets the SQL to use for the interface method.
+		/// Gets or sets the default SQL Schema to use when calling stored procedures.
 		/// </summary>
-		public string Sql { get; private set; }
+		public string Schema { get; set; }
 
 		/// <summary>
-		/// Gets the CommandType to use for the interface method.
+		/// Gets or sets the SQL to use for the interface method.
 		/// </summary>
-		public CommandType CommandType { get; private set; }
+		public string Sql { get; set; }
+
+		/// <summary>
+		/// Gets or sets the CommandType to use for the interface method.
+		/// </summary>
+		public CommandType? CommandType { get; set; }
 	}
 }
