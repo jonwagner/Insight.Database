@@ -139,6 +139,15 @@ namespace Insight.Database.Providers
 						break;
 				}
 			}
+
+			// older versions of SQL Server (CE and 2005) don't support DateTime2
+			if (parameter.DbType == DbType.DateTime2)
+			{
+				var sc = (SqlConnection)command.Connection;
+				var version = Int32.Parse(sc.ServerVersion.Split('.')[0]);
+				if (version < 10)
+					parameter.DbType = DbType.DateTime;
+			}
 		}
 
 		/// <summary>
