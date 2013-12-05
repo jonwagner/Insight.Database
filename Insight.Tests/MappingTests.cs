@@ -71,6 +71,30 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Output Parameter Tests
+		class OutputParameters
+		{
+			public int out_foo;
+			public int foo;
+		}
+
+		[Test]
+		public void OutputParameterShouldHonorParameterMappings()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROCEDURE OutputParameterMappingTest @out_foo int = NULL OUTPUT AS SELECT @out_foo = 5");
+
+				ColumnMapping.Parameters.RemovePrefixes("out_");
+
+				var output = new OutputParameters();
+				connection.Execute("OutputParameterMappingTest", outputParameters: output);
+				Assert.AreEqual(0, output.out_foo);
+				Assert.AreEqual(5, output.foo);
+			}
+		}
+		#endregion
+
 		#region Serialization Tests
 		public class JsonClass
 		{

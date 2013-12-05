@@ -11,6 +11,8 @@ using NUnit.Framework;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 
+#pragma warning disable 0649;
+
 namespace Insight.Tests.OracleManaged
 {
 	/// <summary>
@@ -218,5 +220,36 @@ namespace Insight.Tests.OracleManaged
 
 			Assert.AreEqual(1, retries);
 		}
+
+		#region Output Parameter Tests
+		class OutputParameters
+		{
+			public int out_foo;
+			public int foo;
+		}
+
+		[Test]
+		public void OutputParameterShouldHonorParameterMappings()
+		{
+			try
+			{
+				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				{
+					connection.ExecuteSql("CREATE OR REPLACE PROCEDURE OutputParameterMappingTest (out_foo out int) IS BEGIN out_foo := 5; END;");
+
+					ColumnMapping.Parameters.RemovePrefixes("out_");
+
+					var output = new OutputParameters();
+					connection.Execute("OutputParameterMappingTest", outputParameters: output);
+					Assert.AreEqual(0, output.out_foo);
+					Assert.AreEqual(5, output.foo);
+				}
+			}
+			finally
+			{
+				ColumnMapping.All.ResetHandlers();
+			}
+		}
+		#endregion
 	}
 }
