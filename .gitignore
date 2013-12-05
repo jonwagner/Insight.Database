@@ -6,6 +6,7 @@ obj
 *.nupkg
 *.orig
 *.rej
+*.dll
 StyleCop.Cache
 Output
 TestResult.xml
