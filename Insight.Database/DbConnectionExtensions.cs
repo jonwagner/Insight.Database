@@ -1538,10 +1538,10 @@ namespace Insight.Database
 			}
 			finally
 			{
-				if (reader != null)
+				if (reader != null && !reader.IsClosed)
 					reader.Dispose();
 
-				if (closeConnection)
+				if (closeConnection && connection.State != ConnectionState.Closed)
 					connection.Close();
 			}
 		}
