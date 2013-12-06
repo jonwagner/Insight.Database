@@ -947,7 +947,6 @@ namespace Insight.Tests
 		#endregion
 
 		#region SqlGeometry Tests
-
 		public interface ITestGeometry
 		{
 			[Sql("GeometryProc", CommandType.StoredProcedure)]
@@ -976,6 +975,23 @@ namespace Insight.Tests
 				var result2 = i.GeometrySql(geo);
 				Assert.AreEqual(geo.ToString(), result2.First().ToString());
 			}
+		}
+		#endregion
+
+		#region SqlHierarchyTests
+		public class HierarchyModel
+		{
+			public int Id;
+			public SqlHierarchyId Hierarchy;
+		}
+
+		/// <summary>
+		/// Tests Issue #70.
+		/// </summary>
+		[Test]
+		public void Hierarchy()
+		{
+			var results = _connection.QuerySql<HierarchyModel>("SELECT ID=1, Hierarchy=CAST('/1/' AS hierarchyid)").FirstOrDefault();
 		}
 		#endregion
 	}

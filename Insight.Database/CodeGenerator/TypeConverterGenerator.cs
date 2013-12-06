@@ -155,36 +155,39 @@ namespace Insight.Database.CodeGenerator
 				// now we have an unboxed sourceType
 				il.Emit(OpCodes.Unbox_Any, sourceType);
 
-				// look for a constructor that takes the type as a parameter
-				Type[] sourceTypes = new Type[] { sourceType };
-				ConstructorInfo ci = targetType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, sourceTypes, null);
-				if (ci != null)
+				if (sourceType != targetType)
 				{
-					// if the constructor only takes nullable types, warn the programmer
-					if (Nullable.GetUnderlyingType(ci.GetParameters()[0].ParameterType) != null)
-						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Class {0} must provide a constructor taking a parameter of type {1}. Nullable parameters are not supported.", targetType, sourceType));
-
-					il.Emit(OpCodes.Newobj, ci);
-				}
-				else
-				{
-					// attempt to convert the value to the target type
-					if (!EmitConversionOrCoersion(il, sourceType, targetType))
+					// look for a constructor that takes the type as a parameter
+					Type[] sourceTypes = new Type[] { sourceType };
+					ConstructorInfo ci = targetType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, sourceTypes, null);
+					if (ci != null)
 					{
-						if (sourceType != targetType)
-						{
-							throw new InvalidOperationException(String.Format(
-								CultureInfo.InvariantCulture,
-								"Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
-								method.Name,
-								sourceType,
-								targetType));
-						}
-					}
+						// if the constructor only takes nullable types, warn the programmer
+						if (Nullable.GetUnderlyingType(ci.GetParameters()[0].ParameterType) != null)
+							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Class {0} must provide a constructor taking a parameter of type {1}. Nullable parameters are not supported.", targetType, sourceType));
 
-					// if the target is nullable, then construct the nullable from the data
-					if (Nullable.GetUnderlyingType(targetType) != null)
-						il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
+						il.Emit(OpCodes.Newobj, ci);
+					}
+					else
+					{
+						// attempt to convert the value to the target type
+						if (!EmitConversionOrCoersion(il, sourceType, targetType))
+						{
+							if (sourceType != targetType)
+							{
+								throw new InvalidOperationException(String.Format(
+									CultureInfo.InvariantCulture,
+									"Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
+									method.Name,
+									sourceType.AssemblyQualifiedName,
+									targetType.AssemblyQualifiedName));
+							}
+						}
+
+						// if the target is nullable, then construct the nullable from the data
+						if (Nullable.GetUnderlyingType(targetType) != null)
+							il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
+					}
 				}
 			}
 
