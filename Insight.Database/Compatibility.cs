@@ -1,5 +1,5 @@
-﻿#if NET35
-using System;
+﻿using System;
+#if NET35
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -389,3 +389,33 @@ namespace Insight.Database
 	}
 }
 #endif
+
+/// <summary>
+/// Adds missing methods.
+/// </summary>
+static class StringExtensions
+{
+	/// <summary>
+	/// Determines if a string is null or all whitespace.
+	/// </summary>
+	/// <param name="value">The string to test.</param>
+	/// <returns>False if the string contains at least one non-whitespace character.</returns>
+	public static bool IsNullOrWhiteSpace(this string value)
+	{
+#if NET35
+		if (value != null)
+		{
+			for (int i = 0; i < value.Length; i++)
+			{
+				if (!char.IsWhiteSpace(value[i]))
+				{
+					return false;
+				}
+			}
+		}
+		return true;
+#else
+		return String.IsNullOrWhiteSpace(value);
+#endif
+	}
+}

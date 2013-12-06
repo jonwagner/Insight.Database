@@ -12,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
+using Insight.Database;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -137,7 +138,7 @@ namespace Insight.Database.CodeGenerator
 			var procName = (executeMethod.DeclaringType == typeof(AsyncExtensions)) ? Regex.Replace(interfaceMethod.Name, "Async$", String.Empty, RegexOptions.IgnoreCase) : interfaceMethod.Name;
 			var sql = sqlAttribute.Sql ?? typeSqlAttribute.Sql ?? procName;
 			var commandType = sqlAttribute.CommandType ?? typeSqlAttribute.CommandType ?? (sql.Contains(' ') ? CommandType.Text : CommandType.StoredProcedure);
-			if (commandType == CommandType.StoredProcedure && !String.IsNullOrWhiteSpace(schema) && !sql.Contains('.'))
+			if (commandType == CommandType.StoredProcedure && !schema.IsNullOrWhiteSpace() && !sql.Contains('.'))
 				procName = schema.Trim() + "." + procName;
 
 			// see if the interface method has a graph defined

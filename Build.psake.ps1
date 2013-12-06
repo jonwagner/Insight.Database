@@ -151,9 +151,8 @@ Task Test40 -depends Build40 {
 Task Test45Only {
 	Get-ChildItem $baseDir\Insight.Tests* |% {
 	    Exec {
-			if ($_.Name -eq 'Insight.Tests.Oracle') {
-				# having trouble getting the 64-bit drivers installed on Windows 8, so use the 32-bit drivers
-				Invoke-Expression "$nunitx86 $net45Path\$($_.Name).dll"
+			if ($_.Name -eq 'Insight.Tests.SQLite') {
+				Invoke-Expression "$nunit $baseDir\$($_.Name)\bin\Release\$($_.Name).dll"
 			}
 			else {
 				Invoke-Expression "$nunit $net45Path\$($_.Name).dll"
