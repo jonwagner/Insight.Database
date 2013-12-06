@@ -16,6 +16,7 @@
     <BuildToolsFxCopVersion>1.0.0</BuildToolsFxCopVersion>
     <BuildToolsStyleCopVersion>4.7.44.0</BuildToolsStyleCopVersion>
     <TargetFrameworkProfile />
+    <StyleCopOverrideSettingsFile>Settings.StyleCop</StyleCopOverrideSettingsFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -33,6 +34,7 @@
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <Prefer32Bit>false</Prefer32Bit>
+    <RunCodeAnalysisRestore>False</RunCodeAnalysisRestore>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -49,6 +51,7 @@
     <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
     <Prefer32Bit>false</Prefer32Bit>
     <DocumentationFile>bin\Release\Insight.Database.Providers.Oracle.XML</DocumentationFile>
+    <RunCodeAnalysisRestore>True</RunCodeAnalysisRestore>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Oracle.DataAccess, Version=4.112.3.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=AMD64">
@@ -92,8 +95,8 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
-  <Import Project="..\packages\BuildTools.StyleCop.4.7.44.0\tools\StyleCop.targets" Condition="Exists('..\packages\BuildTools.StyleCop.4.7.44.0\tools\StyleCop.targets')" />
-  <Target Name="___packages_BuildTools_StyleCop_4_7_44_0_tools_StyleCop_targets" Condition="$(StyleCopOutputFile)==''" BeforeTargets="BeforeBuild">
+  <Import Project="..\packages\BuildTools.StyleCop.4.7.46.0\tools\StyleCop.targets" Condition="Exists('..\packages\BuildTools.StyleCop.4.7.46.0\tools\StyleCop.targets')" />
+  <Target Name="___packages_BuildTools_StyleCop_4_7_46_0_tools_StyleCop_targets" Condition="$(StyleCopOutputFile)==''" BeforeTargets="BeforeBuild">
     <Error Text="BuildTools_StyleCop - the BuildTools_StyleCop package has not been restored.&#xD;&#xA;If you are running this from an IDE, make sure NuGet Package Restore has been enabled, then reload the solution and re-run the build.&#xD;&#xA;If you are running this from the command line, run the build again.&#xD;&#xA;If this is a CI server, you may want to make sure NuGet Package Restore runs before your build with:&#xD;&#xA;	msbuild solution.sln /t:restorepackages" />
   </Target>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -11,7 +11,7 @@ using NUnit.Framework;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 
-#pragma warning disable 0649;
+#pragma warning disable 0649
 
 namespace Insight.Tests.OracleManaged
 {

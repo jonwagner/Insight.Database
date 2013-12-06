@@ -144,7 +144,7 @@ namespace Insight.Database.Providers
 			if (parameter.DbType == DbType.DateTime2)
 			{
 				var sc = (SqlConnection)command.Connection;
-				var version = Int32.Parse(sc.ServerVersion.Split('.')[0]);
+				var version = Int32.Parse(sc.ServerVersion.Split('.')[0], CultureInfo.InvariantCulture);
 				if (version < 10)
 					parameter.DbType = DbType.DateTime;
 			}
