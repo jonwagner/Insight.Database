@@ -57,6 +57,16 @@ namespace Insight.Tests.PostgreSQL
 		}
 
 		[Test]
+		public void TestExecuteWithDateTimeParameters()
+		{
+			var date = DateTime.Parse("1/1/1978");
+			var result = _connection.QuerySql<string>("SELECT @p as p", new { p = date });
+
+			Assert.AreEqual(1, result.Count);
+			Assert.AreEqual(date, DateTime.Parse(result[0]));
+		}
+
+		[Test]
 		public void TestExecuteProcedure()
 		{
 			try
@@ -76,6 +86,32 @@ namespace Insight.Tests.PostgreSQL
 			{
 				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestExecute (i int)"); } catch { }
 				try { _connection.ExecuteSql("DROP TYPE PostgreSQLTestType"); } catch { }
+			}
+		}
+
+		[Test]
+		public void TestExecuteProcedureWithDateParameter()
+		{
+			try
+			{
+				var date = DateTime.Now;
+				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestDateType AS (i date)");
+				_connection.ExecuteSql(@"
+					CREATE OR REPLACE FUNCTION PostgreSQLTestDateExecute (i date) 
+					RETURNS SETOF PostgreSQLTestDateType
+					AS $$
+					BEGIN 
+						RETURN QUERY SELECT i as i; 
+					END;
+					$$ LANGUAGE plpgsql;");
+				var result = _connection.Execute("PostgreSQLTestDateExecute", new { i = date });
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestDateExecute (i date)"); }
+				catch { }
+				try { _connection.ExecuteSql("DROP TYPE PostgreSQLTestDateType"); }
+				catch { }
 			}
 		}
 

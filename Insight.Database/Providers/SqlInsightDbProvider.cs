@@ -141,12 +141,13 @@ namespace Insight.Database.Providers
 			}
 
 			// older versions of SQL Server (CE and 2005) don't support DateTime2
-			if (parameter.DbType == DbType.DateTime2)
+			// newer versions do, so if we have a new version and it's a datetime, make it bigger
+			if (parameter.DbType == DbType.DateTime)
 			{
 				var sc = (SqlConnection)command.Connection;
 				var version = Int32.Parse(sc.ServerVersion.Split('.')[0], CultureInfo.InvariantCulture);
-				if (version < 10)
-					parameter.DbType = DbType.DateTime;
+				if (version >= 10)
+					parameter.DbType = DbType.DateTime2;
 			}
 		}
 
