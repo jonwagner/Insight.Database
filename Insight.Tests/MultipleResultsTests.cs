@@ -49,6 +49,29 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void NullListsAreReturnedWhenFewerRecordsetsAreReturnedAsync1()
+		{
+			// expect one recordsets, but retrieve none. remaining recordsets should be null, not empty.
+
+			var results = _connection.QueryResultsSqlAsync<Results<ParentTestData>>("--").Result;
+			Assert.IsNotNull(results);
+			Assert.IsNotNull(results.Set1);
+			Assert.AreEqual(0, results.Set1.Count);
+		}
+
+		[Test]
+		public void NullListsAreReturnedWhenFewerRecordsetsAreReturnedAsync2()
+		{
+			// expect two recordsets, but retrieve one. remaining recordsets should be null, not empty.
+
+			var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(ParentTestData.Sql).Result;
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: false);
+			Assert.IsNotNull(results.Set2);
+			Assert.AreEqual(0, results.Set2.Count);
+		}
+
+		[Test]
 		public void EmptyListDoesNotTerminateResults()
 		{
 			// expect two recordsets, first set is empty. first set should be empty, second should be full

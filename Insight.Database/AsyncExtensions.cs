@@ -650,11 +650,14 @@ namespace Insight.Database
 			var mapper = DbReaderDeserializer.GetDeserializer<TResult>(dbReader, withGraph);
 
 			bool moreResults = false;
+			IList<TResult> list = new List<TResult>();
+
+			// if the reader is already closed, then return an empty list
+			if (dbReader.IsClosed)
+				return list;
 
 			try
 			{
-				IList<TResult> list = new List<TResult>();
-
 				// read in all of the records
 				while (await dbReader.ReadAsync(ct).ConfigureAwait(false))
 				{
