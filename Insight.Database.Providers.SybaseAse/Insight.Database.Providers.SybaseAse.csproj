@@ -46,6 +46,12 @@
     <DocumentationFile>bin\Release\Insight.Database.Providers.SybaseAse.XML</DocumentationFile>
     <RunCodeAnalysisRestore>True</RunCodeAnalysisRestore>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Sybase.AdoNet4.AseClient, Version=4.157.1000.0, Culture=neutral, PublicKeyToken=95d94fac46c88e1e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -72,6 +78,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Insight.Database.snk">
+      <Link>Insight.Database.snk</Link>
+    </None>
     <None Include="CodeAnalysisRules.ruleset" />
     <None Include="Insight.Database.Providers.SybaseAse.nuspec" />
     <None Include="packages.config" />

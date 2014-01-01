@@ -86,11 +86,6 @@ namespace Insight.Database.CodeGenerator
 
 		#region Properties
 		/// <summary>
-		/// Gets the columns in the schema as a list of Tuple of string + Type.
-		/// </summary>
-		internal Tuple<string, Type>[] Columns { get { return _schemaIdentity.Columns; } }
-
-		/// <summary>
 		/// Gets the type of the object graph that the schema is mapped to.
 		/// </summary>
 		internal Type Graph { get; private set; }

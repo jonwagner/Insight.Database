@@ -129,50 +129,5 @@ namespace Insight.Tests
 			}
 		}
 	}
-
-	[TestFixture]
-	public class SerializerConfigurationTests : BaseDbTest
-	{
-		// this class is not tagged as JSON
-		public class JsonClass
-		{
-			public JsonSubClass SubClass;
-		}
-
-		public class JsonSubClass
-		{
-			public string Foo;
-			public int Bar;
-		}
-
-		[Test]
-		public void DefaultSerializerCanBeChanged()
-		{
-			var oldSerializer = ColumnMapping.DefaultObjectSerializer;
-			try
-			{
-				ColumnMapping.DefaultObjectSerializer = typeof(JsonObjectSerializer);
-
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
-				{
-					connection.ExecuteSql("CREATE PROC DefaultSerializerCanBeChanged @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
-
-					var input = new JsonClass();
-					input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
-
-					Assert.AreEqual("{\"Bar\":5,\"Foo\":\"foo\"}", connection.Single<string>("DefaultSerializerCanBeChanged", input));
-
-					var result = connection.Query<JsonClass, JsonSubClass>("DefaultSerializerCanBeChanged", input).First();
-					Assert.IsNotNull(result.SubClass);
-					Assert.AreEqual(input.SubClass.Foo, result.SubClass.Foo);
-					Assert.AreEqual(input.SubClass.Bar, result.SubClass.Bar);
-				}
-			}
-			finally
-			{
-				ColumnMapping.DefaultObjectSerializer = oldSerializer;
-			}
-		}
-	}
 }
 #endif

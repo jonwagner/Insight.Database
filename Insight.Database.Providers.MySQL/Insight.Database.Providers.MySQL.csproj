@@ -46,6 +46,12 @@
     <DocumentationFile>bin\Release\Insight.Database.Providers.MySql.XML</DocumentationFile>
     <RunCodeAnalysisRestore>True</RunCodeAnalysisRestore>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="MySql.Data">
       <HintPath>..\packages\MySql.Data.6.6.5\lib\net40\MySql.Data.dll</HintPath>
@@ -70,6 +76,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Insight.Database.snk">
+      <Link>Insight.Database.snk</Link>
+    </None>
     <None Include="CodeAnalysisRules.ruleset" />
     <None Include="Insight.Database.Providers.MySql.nuspec" />
     <None Include="packages.config" />

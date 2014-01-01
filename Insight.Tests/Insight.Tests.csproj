@@ -88,7 +88,6 @@
     <Compile Include="FastExpandoTests.cs" />
     <Compile Include="InsertTests.cs" />
     <Compile Include="MultipleResultsTests.cs" />
-    <Compile Include="PerformanceTests.cs" />
     <Compile Include="RegressionTests.cs" />
     <Compile Include="RetryStrategyTests.cs" />
     <Compile Include="TestDataClasses.cs" />

@@ -10,7 +10,7 @@
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
     <licenseUrl>http://opensource.org/licenses/ms-pl.html</licenseUrl>
 	<iconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</iconUrl>
-    <tags>Insight orm sql sqlserver micro-orm</tags>
+    <tags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
   </metadata>
   <files>

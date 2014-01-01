@@ -51,6 +51,12 @@
     <DocumentationFile>bin\Release\Insight.Database.Providers.PostgreSQL.XML</DocumentationFile>
     <RunCodeAnalysisRestore>True</RunCodeAnalysisRestore>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Security">
       <HintPath>..\packages\Npgsql.2.0.12.1\lib\net40\Mono.Security.dll</HintPath>
@@ -75,6 +81,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Insight.Database.snk">
+      <Link>Insight.Database.snk</Link>
+    </None>
     <None Include="CodeAnalysisRules.ruleset" />
     <None Include="Insight.Database.Providers.PostgreSQL.nuspec">
       <SubType>Designer</SubType>

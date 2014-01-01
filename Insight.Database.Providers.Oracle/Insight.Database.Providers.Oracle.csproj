@@ -53,6 +53,12 @@
     <DocumentationFile>bin\Release\Insight.Database.Providers.Oracle.XML</DocumentationFile>
     <RunCodeAnalysisRestore>True</RunCodeAnalysisRestore>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Oracle.DataAccess, Version=4.112.3.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=AMD64">
       <SpecificVersion>False</SpecificVersion>
@@ -83,6 +89,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Insight.Database.snk">
+      <Link>Insight.Database.snk</Link>
+    </None>
     <None Include="CodeAnalysisRules.ruleset" />
     <None Include="Insight.Database.Providers.Oracle.nuspec">
       <SubType>Designer</SubType>

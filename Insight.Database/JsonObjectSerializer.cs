@@ -22,8 +22,9 @@ namespace Insight.Database
 
 		/// <summary>
 		/// Gets or sets the serializer to use for JSON objects. By default, this is JsonObjectSerializer.
+		/// This property is not intended to be used by application code.
 		/// </summary>
-		internal static Type SerializerType { get { return _serializerType; } set { _serializerType = value; } }
+		public static Type SerializerType { get { return _serializerType; } set { _serializerType = value; } }
 
 		/// <summary>
 		/// Serializes an object to a string.

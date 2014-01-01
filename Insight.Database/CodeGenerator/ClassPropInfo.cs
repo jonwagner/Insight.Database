@@ -225,17 +225,6 @@ namespace Insight.Database.CodeGenerator
 			else
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.FullName, Name));
 		}
-
-		/// <summary>
-		/// Emit a box operation if the type is a value type.
-		/// </summary>
-		/// <param name="il">The ILGenerator to use.</param>
-		public void EmitBox(ILGenerator il)
-		{
-			// these should all be value types, so we need to box them
-			if (MemberType.IsValueType)
-				il.Emit(OpCodes.Box, MemberType);
-		}
 		#endregion
 	}
 }

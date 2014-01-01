@@ -58,6 +58,13 @@
   <PropertyGroup Condition="'$(FrameworkFolder)' == ''">
     <FrameworkFolder>net45</FrameworkFolder>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>false</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Glimpse.Ado">
       <HintPath>..\packages\Glimpse.Ado.1.5.0\lib\$(FrameworkFolder)\Glimpse.Ado.dll</HintPath>

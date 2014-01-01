@@ -78,9 +78,9 @@ namespace Insight.Database
 		public static ColumnMapping All { get { return _all; } }
 
 		/// <summary>
-		/// Gets or sets the type to use to serialize objects.
+		/// Gets the type to use to serialize objects.
 		/// </summary>
-		internal static Type DefaultObjectSerializer { get { return _defaultObjectSerializer; } set { _defaultObjectSerializer = value; } }
+		public static Type DefaultObjectSerializer { get { return _defaultObjectSerializer; } }
 		#endregion
 
 		/// <summary>

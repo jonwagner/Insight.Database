@@ -59,6 +59,12 @@
     <RunCodeAnalysis>false</RunCodeAnalysis>
     <StyleCopEnabled>false</StyleCopEnabled>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -163,6 +169,9 @@
     <Compile Include="XmlObjectSerializer.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="..\Insight.Database.snk">
+      <Link>Insight.Database.snk</Link>
+    </None>
     <None Include="AsyncExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AsyncExtensions.generated.cs</LastGenOutput>

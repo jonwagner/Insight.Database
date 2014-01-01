@@ -19,16 +19,6 @@ namespace Insight.Database
 		internal static readonly Task<bool> FalseTask = Task<bool>.Factory.StartNew(() => false);
 
 		/// <summary>
-		/// Represents a completed true task.
-		/// </summary>
-		internal static readonly Task<bool> TrueTask = Task<bool>.Factory.StartNew(() => true);
-
-		/// <summary>
-		/// Represents a completed IDataReader task.
-		/// </summary>
-		internal static readonly Task<IDataReader> DataReaderTask = Task<IDataReader>.Factory.StartNew(() => (IDataReader)null);
-
-		/// <summary>
 		/// Returns a completed task from the given result.
 		/// </summary>
 		/// <typeparam name="T">The type of the result.</typeparam>
@@ -43,16 +33,6 @@ namespace Insight.Database
 		/// Represents a completed false task.
 		/// </summary>
 		internal static readonly Task<bool> FalseTask = Task.FromResult(false);
-
-		/// <summary>
-		/// Represents a completed true task.
-		/// </summary>
-		internal static readonly Task<bool> TrueTask = Task.FromResult(true);
-
-		/// <summary>
-		/// Represents a completed IDataReader task.
-		/// </summary>
-		internal static readonly Task<IDataReader> DataReaderTask = Task.FromResult((IDataReader)null);
 
 		/// <summary>
 		/// Returns a completed task from the given result.

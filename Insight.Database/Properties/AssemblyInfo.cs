@@ -15,12 +15,11 @@ using System.Runtime.InteropServices;
 using System.Diagnostics.CodeAnalysis;
 
 [assembly: AssemblyTitle("Insight.Database")]
-[assembly: AssemblyCompany("Insight Database Module")]
-[assembly: AssemblyProduct("Insight")]
+[assembly: AssemblyCompany("Insight.Database Micro ORM")]
+[assembly: AssemblyProduct("Insight.Database")]
 [assembly: AssemblyCopyright("Copyright © Jon Wagner, used by permission")]
 [assembly: ComVisible(false)]
-[assembly: CLSCompliant(true)]
-[assembly: AssemblyVersion("1.0.0.0")]
+
+[assembly: AssemblyVersion("3.2.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
-[assembly: InternalsVisibleTo("Insight.Tests")]
-[assembly: InternalsVisibleTo("Insight.Database.Json")]
+[assembly: CLSCompliant(true)]
