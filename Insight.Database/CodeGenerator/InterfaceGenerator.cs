@@ -359,7 +359,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// if returntype is IList<T>, then we call Query
-			if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(IList<>))
+			if (IsGenericListType(method.ReturnType))
 				return _queryMethod.MakeGenericMethod(method.ReturnType.GetGenericArguments()[0]);
 
 			// if returntype is Results<T>, then we call QueryResults
@@ -424,7 +424,7 @@ namespace Insight.Database.CodeGenerator
 				var taskResultType = method.ReturnType.GetGenericArguments()[0];
 
 				// if returntype is Task<IList<T>>, then we call QueryAsync
-				if (taskResultType.IsGenericType && taskResultType.GetGenericTypeDefinition() == typeof(IList<>))
+				if (IsGenericListType(taskResultType))
 					return _queryAsyncMethod.MakeGenericMethod(taskResultType.GetGenericArguments()[0]);
 
 				// if returntype is Task<Results<T>>, then then we call QueryResultsAsync
@@ -486,6 +486,20 @@ namespace Insight.Database.CodeGenerator
 			ctorIL.Emit(OpCodes.Ret);
 
 			return tb.CreateType();
+		}
+
+		/// <summary>
+		/// Returns true if the type represents a generic of a list.
+		/// Used to determine if the type represents a result set.
+		/// </summary>
+		/// <param name="type">The type to inspect.</param>
+		/// <returns>True if it is a list type.</returns>
+		private static bool IsGenericListType(Type type)
+		{
+			return type.IsGenericType &&
+				(type.GetGenericTypeDefinition() == typeof(IList<>) ||
+					type.GetGenericTypeDefinition() == typeof(List<>) ||
+					type.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 		}
 
 		/// <summary>

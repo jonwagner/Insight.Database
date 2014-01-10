@@ -23,6 +23,8 @@ namespace Insight.Tests
 		int ExecuteSomethingScalar(int p);
 		TestDataClasses.ParentTestData SingleObject();
 		IList<int> QueryValue(int p);
+		List<int> QueryValueList(int p);
+		IEnumerable<int> QueryValueEnumerable(int p);
 		IList<TestDataClasses.ParentTestData> QueryObject();
 		int ObjectAsParameter(TestDataClasses.ParentTestData data);
 		IList<int> ObjectListAsParameter(IEnumerable<TestDataClasses.ParentTestData> data);
@@ -34,6 +36,8 @@ namespace Insight.Tests
 		Task<int> ExecuteSomethingScalarAsync(int p);
 		Task<TestDataClasses.ParentTestData> SingleObjectAsync();
 		Task<IList<int>> QueryValueAsync(int p);
+		Task<IEnumerable<int>> QueryValueEnumerableAsync(int p);
+		Task<List<int>> QueryValueListAsync(int p);
 		Task<IList<TestDataClasses.ParentTestData>> QueryObjectAsync();
 		Task<int> ObjectAsParameterAsync(TestDataClasses.ParentTestData data);
 		Task<IList<int>> ObjectListAsParameterAsync(IEnumerable<TestDataClasses.ParentTestData> data);
@@ -403,6 +407,92 @@ namespace Insight.Tests
 			finally
 			{
 				_connection.ExecuteSql("DROP TYPE InsertTestDataTVP");
+			}
+		}
+		#endregion
+
+		#region List Return Tests
+		[Test]
+		public void DifferentTypesOfListsAreSupportedAsReturnTypes()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC QueryValue @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
+				connection.ExecuteSql("CREATE PROC QueryValueEnumerable @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
+				connection.ExecuteSql("CREATE PROC QueryValueList @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
+				connection.ExecuteSql("CREATE PROC QueryResults @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
+
+				ITest1 i = connection.As<ITest1>();
+
+				IEnumerable<int> result = i.QueryValue(1);
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryValueList(1);
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryValueEnumerable(1);
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryValueAsync(1).Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryValueListAsync(1).Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryValueEnumerableAsync(1).Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				var results = i.QueryResults(1);
+				Assert.IsNotNull(results.Set1);
+				Assert.AreEqual(2, results.Set1.Count);
+			}
+		}
+
+		[Test]
+		public void MissingResultSetShouldReturnEmptyListRegardlessOfReturnType()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC QueryValue @p int AS BEGIN PRINT 'foo' END");
+				connection.ExecuteSql("CREATE PROC QueryValueEnumerable @p int AS BEGIN PRINT 'foo' END");
+				connection.ExecuteSql("CREATE PROC QueryValueList @p int AS BEGIN PRINT 'foo' END");
+				connection.ExecuteSql("CREATE PROC QueryResults @p int AS BEGIN PRINT 'foo' END");
+
+				ITest1 i = connection.As<ITest1>();
+
+				IEnumerable<int> result = i.QueryValue(1);
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.QueryValueList(1);
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.QueryValueEnumerable(1);
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.QueryValueAsync(1).Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.QueryValueListAsync(1).Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.QueryValueEnumerableAsync(1).Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				var results = i.QueryResults(1);
+				Assert.IsNotNull(results.Set1);
+				Assert.AreEqual(0, results.Set1.Count);
 			}
 		}
 		#endregion
