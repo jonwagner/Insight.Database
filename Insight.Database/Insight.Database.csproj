@@ -121,7 +121,6 @@
     <Compile Include="Providers\DbConnectionWrapperInsightDbProvider.cs" />
     <Compile Include="Providers\OdbcInsightDbProvider.cs" />
     <Compile Include="Providers\OleDbInsightDbProvider.cs" />
-    <Compile Include="Providers\ReliableInsightDbProvider.cs" />
     <Compile Include="Providers\WrappedInsightDbProvider.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Providers\InsightDbProvider.cs" />

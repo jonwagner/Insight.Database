@@ -18,7 +18,7 @@ namespace Insight.Database.Providers
 		/// </summary>
 		private static Type[] _supportedTypes = new Type[]
 		{
-			typeof(DbConnectionWrapper)
+			typeof(DbConnectionWrapper), typeof(DbCommandWrapper)
 		};
 
 		/// <summary>
@@ -47,7 +47,8 @@ namespace Insight.Database.Providers
 		/// <inheritdoc/>
 		public override IDbCommand GetInnerCommand(IDbCommand command)
 		{
-			throw new NotImplementedException();
+			DbCommandWrapper wrapped = (DbCommandWrapper)command;
+			return wrapped.InnerCommand;
 		}
 
 		/// <inheritdoc/>

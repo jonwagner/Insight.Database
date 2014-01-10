@@ -11,6 +11,13 @@ namespace Insight.Tests
 	[TestFixture]
 	public class OptimisticTests : BaseDbTest
 	{
+		[Test]
+		public void OptimisticConnectionCanCallProc()
+		{
+			var opt = new OptimisticConnection(_connection);
+			opt.Execute("sp_who");
+		}
+
 		[Test, ExpectedException(typeof(OptimisticConcurrencyException))]
 		public void OptimisticExceptionsAreTranslated()
 		{
