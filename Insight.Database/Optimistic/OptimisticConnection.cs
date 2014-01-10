@@ -27,6 +27,20 @@ namespace Insight.Database
 		{
 			return new OptimisticCommand(this, InnerConnection.CreateCommand());
 		}
+
+		/// <summary>
+		/// Returns true if the exception is an optimistic concurrency exception.
+		/// This method may be overridden.
+		/// </summary>
+		/// <param name="exception">The exception to test.</param>
+		/// <returns>Whether the exception is a concurrency exception.</returns>
+		public virtual bool IsConcurrencyException(Exception exception)
+		{
+			if (!(exception is DbException))
+				return false;
+
+			return exception.Message.Contains("CONCURRENCY CHECK");
+		}
 	}
 
 	/// <summary>

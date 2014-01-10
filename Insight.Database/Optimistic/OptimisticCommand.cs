@@ -72,12 +72,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="exception">The exception to test.</param>
 		/// <returns>Whether the exception is a concurrency exception.</returns>
-		protected virtual bool IsConcurrencyException(Exception exception)
+		protected bool IsConcurrencyException(Exception exception)
 		{
-			if (!(exception is DbException))
-				return false;
-
-			return exception.Message.Contains("CONCURRENCY CHECK");
+			return ((OptimisticConnection)Connection).IsConcurrencyException(exception);
 		}
 
 		/// <summary>
