@@ -36,7 +36,7 @@ namespace Insight.Database.CodeGenerator
 
 		private static readonly Type[] _queryAsyncParameterTypes = new Type[]
 		{
-				typeof(IDbConnection), typeof(string), typeof(object), typeof(Type), typeof(CommandType), typeof(CommandBehavior), typeof(int?), typeof(IDbTransaction), typeof(CancellationToken?)
+				typeof(IDbConnection), typeof(string), typeof(object), typeof(Type), typeof(CommandType), typeof(CommandBehavior), typeof(int?), typeof(IDbTransaction), typeof(CancellationToken?), typeof(object)
 		};
 
 		private static readonly MethodInfo _executeMethod = typeof(DBConnectionExtensions).GetMethod("Execute", _executeParameterTypes);

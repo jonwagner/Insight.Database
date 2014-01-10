@@ -33,7 +33,7 @@ namespace Insight.Database
 		/// <summary>
 		/// The types of parameters to pass to QueryAsync methods.
 		/// </summary>
-		private static Type[] _queryAsyncParameters = new Type[] { typeof(IDbCommand), typeof(Type), typeof(CommandBehavior), typeof(CancellationToken?) };
+		private static Type[] _queryAsyncParameters = new Type[] { typeof(IDbCommand), typeof(Type), typeof(CommandBehavior), typeof(CancellationToken?), typeof(object) };
 
 		/// <summary>
 		/// The types of parameters to pass to QueryResults methods.
@@ -43,14 +43,14 @@ namespace Insight.Database
 		/// <summary>
 		/// The types of parameters to pass to QueryResultsAsync methods.
 		/// </summary>
-		private static Type[] _queryResultsAsyncParameters = new Type[] { typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior), typeof(CancellationToken?) };
+		private static Type[] _queryResultsAsyncParameters = new Type[] { typeof(IDbCommand), typeof(Type[]), typeof(CommandBehavior), typeof(CancellationToken?), typeof(object) };
 
 		/// <summary>
 		/// Caches for MethodInfo for query methods.
 		/// </summary>
-		private static ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>> _queryResultsAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>>();
+		private static ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object, object>> _queryResultsAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object, object>>();
 		private static ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, object>> _queryResultsMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, object>>();
-		private static ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>> _queryAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>>();
+		private static ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object, object>> _queryAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object, object>>();
 		private static ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, object>> _queryMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, object>>();
 
 		/// <summary>
@@ -299,10 +299,10 @@ namespace Insight.Database
 		{
 			var method = _queryAsyncMethods.GetOrAdd(
 				returnType,
-				t => (Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>)Delegate.CreateDelegate(
-					typeof(Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object>),
+				t => (Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object, object>)Delegate.CreateDelegate(
+					typeof(Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object, object>),
 					typeof(AsyncExtensions).GetMethod("QueryAsync", _queryAsyncParameters).MakeGenericMethod(t)));
-			return method(command, (Type)withGraph, CommandBehavior.Default, cancellationToken);
+			return method(command, (Type)withGraph, CommandBehavior.Default, cancellationToken, null);
 		}
 
 		/// <summary>
@@ -334,10 +334,10 @@ namespace Insight.Database
 		{
 			var method = _queryResultsAsyncMethods.GetOrAdd(
 				returnType,
-				t => (Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>)Delegate.CreateDelegate(
-					typeof(Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object>),
+				t => (Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object, object>)Delegate.CreateDelegate(
+					typeof(Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object, object>),
 					typeof(AsyncExtensions).GetMethod("QueryResultsAsync", _queryResultsAsyncParameters).MakeGenericMethod(t)));
-			return method(command, (Type[])withGraph, CommandBehavior.Default, cancellationToken);
+			return method(command, (Type[])withGraph, CommandBehavior.Default, cancellationToken, null);
 		}
 		#endregion
 

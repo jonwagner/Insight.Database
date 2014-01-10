@@ -327,8 +327,7 @@ namespace Insight.Database
 					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
 					{
 						var result = cmd.ExecuteNonQuery();
-						if (outputParameters != null)
-							cmd.OutputParameters(outputParameters);
+						cmd.OutputParameters(parameters, outputParameters);
 						return result;
 					}
 				},
@@ -390,8 +389,7 @@ namespace Insight.Database
 					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
 					{
 						var result = (T)cmd.ExecuteScalar();
-						if (outputParameters != null)
-							cmd.OutputParameters(outputParameters);
+						cmd.OutputParameters(parameters, outputParameters);
 						return result;
 					}
 				},
@@ -527,8 +525,7 @@ namespace Insight.Database
 				(cmd, r) =>
 				{
 					var result = r.ToList<TResult>(withGraph);
-					if (outputParameters != null)
-						cmd.OutputParameters(outputParameters);
+					cmd.OutputParameters(parameters, outputParameters);
 					return result;
 				},
 				commandBehavior);
@@ -669,8 +666,7 @@ namespace Insight.Database
 				(cmd, r) =>
 				{
 					read(r);
-					if (outputParameters != null)
-						cmd.OutputParameters(outputParameters);
+					cmd.OutputParameters(parameters, outputParameters);
 					return false;
 				},
 				commandBehavior);
@@ -796,8 +792,7 @@ namespace Insight.Database
 				{
 					T results = new T();
 					results.Read(cmd, r, withGraphs);
-					if (outputParameters != null)
-						cmd.OutputParameters(outputParameters);
+					cmd.OutputParameters(parameters, outputParameters);
 
 					return results;
 				},
@@ -1072,8 +1067,7 @@ namespace Insight.Database
 				(cmd, r) =>
 				{
 					var result = r.Merge(inserted);
-					if (outputParameters != null)
-						cmd.OutputParameters(outputParameters);
+					cmd.OutputParameters(parameters, outputParameters);
 					return result;
 				},
 				commandBehavior);
@@ -1147,8 +1141,7 @@ namespace Insight.Database
 				(cmd, r) =>
 				{
 					var result = r.Merge(inserted);
-					if (outputParameters != null)
-						cmd.OutputParameters(outputParameters);
+					cmd.OutputParameters(parameters, outputParameters);
 					return result;
 				},
 				commandBehavior);
@@ -1187,8 +1180,7 @@ namespace Insight.Database
 				(cmd, r) =>
 				{
 					var result = r.Merge(inserted);
-					if (outputParameters != null)
-						cmd.OutputParameters(outputParameters);
+					cmd.OutputParameters(parameters, outputParameters);
 					return result;
 				},
 				commandBehavior);

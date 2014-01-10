@@ -158,5 +158,23 @@ namespace Insight.Database
 				commandBehavior);
 		}
 		#endregion
+
+		#region Internal Methods
+		/// <summary>
+		/// Outputs the output parameters onto two objects.
+		/// </summary>
+		/// <typeparam name="T">The first type of object.</typeparam>
+		/// <typeparam name="T2">The second type of object.</typeparam>
+		/// <param name="command">The command.</param>
+		/// <param name="result">The first object.</param>
+		/// <param name="result2">The second object.</param>
+		internal static void OutputParameters<T, T2>(this IDbCommand command, T result, T2 result2)
+		{
+			if (result != null)
+				command.OutputParameters(result);
+			if (result2 != null)
+				command.OutputParameters(result2);
+		}
+		#endregion
 	}
 }

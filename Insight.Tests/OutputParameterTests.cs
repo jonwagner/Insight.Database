@@ -7,6 +7,7 @@ using Insight.Database;
 using NUnit.Framework;
 using System.Transactions;
 using System.Data.Common;
+using System.Threading.Tasks;
 
 #pragma warning disable 0649
 
@@ -19,7 +20,7 @@ namespace Insight.Tests
 	public class OutputParameterTests : BaseDbTest
 	{
 		#region Tests to Verify Parameter Returns
-		class OutputData
+		public class OutputData
 		{
 			public int p;
 		}
@@ -256,6 +257,53 @@ namespace Insight.Tests
 
 				var results = connection.QueryResults("ReturnAValue");
 				Assert.AreEqual(11, results.Outputs["Return_Value"]);
+			}
+		}
+		#endregion
+
+		#region Async Tests
+		/// <summary>
+		/// Test that async methods will fill in output parameters.
+		/// </summary>
+		[Test]
+		public void TestAsyncWithOutputParameters()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9");
+
+				var outputData = new OutputData();
+				var task = connection.ExecuteAsync("Insight_TestOutput", new { p = 5 }, outputParameters: outputData);
+
+				task.Wait();
+
+				Assert.AreEqual(9, outputData.p);
+			}
+		}
+
+		public interface IAsyncWithOutputParameters
+		{
+			Task Insight_TestOutput(OutputData data);
+		}
+
+		/// <summary>
+		/// Test that async interfaces will fill in output parameters.
+		/// </summary>
+		[Test]
+		public void TestIAsyncWithOutputParameters()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9");
+
+				var i = connection.As<IAsyncWithOutputParameters>();
+
+				var outputData = new OutputData() { p = 10 };
+				var task = i.Insight_TestOutput(outputData);
+
+				task.Wait();
+
+				Assert.AreEqual(9, outputData.p);
 			}
 		}
 		#endregion

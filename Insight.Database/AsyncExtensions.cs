@@ -30,6 +30,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<int> ExecuteAsync(
 			this IDbConnection connection,
@@ -39,36 +40,36 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => null,
+				parameters,
+				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				false,
 				(cmd, r) =>
 				{
-					// NOTE: we open the connection before creating the command because we may need to use the retry logic
-					// when deriving the stored procedure parameters
-					IDbCommand command = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
-
 #if NODBASYNC
 					// Only SqlCommand supports execute async
-					var sqlCommand = command as System.Data.SqlClient.SqlCommand;
+					var sqlCommand = cmd as System.Data.SqlClient.SqlCommand;
 					if (sqlCommand != null)
 						return Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
 					else
-						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery(), ct);
+						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), ct);
 #else
 					// DbCommand now supports async execute
-					DbCommand dbCommand = command as DbCommand;
+					DbCommand dbCommand = cmd as DbCommand;
 					if (dbCommand != null)
 						return dbCommand.ExecuteNonQueryAsync(ct);
 					else
-						return Task<int>.Factory.StartNew(() => command.ExecuteNonQuery(), ct);
+						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), ct);
 #endif
 				},
 				closeConnection,
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -81,6 +82,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout for the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<int> ExecuteSqlAsync(
 			this IDbConnection connection,
@@ -89,9 +91,10 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.ExecuteAsync(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, cancellationToken);
+			return connection.ExecuteAsync(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 		#endregion
 
@@ -107,6 +110,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		/// <typeparam name="T">The type of the data to be returned.</typeparam>
 		public static Task<T> ExecuteScalarAsync<T>(
@@ -117,32 +121,32 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
-				c => null,
+				parameters,
+				c => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				false,
 				(cmd, r) =>
 				{
-					// NOTE: we open the connection before creating the command because we may need to use the retry logic
-					// when deriving the stored procedure parameters
-					IDbCommand command = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction);
-
 #if NODBASYNC
 					// not supported in .NET 4.0
-					return Task<T>.Factory.StartNew(() => (T)command.ExecuteScalar(), ct);
+					return Task<T>.Factory.StartNew(() => (T)cmd.ExecuteScalar(), ct);
 #else
 					// DbCommand now supports async execute
-					DbCommand dbCommand = command as DbCommand;
+					DbCommand dbCommand = cmd as DbCommand;
 					if (dbCommand != null)
 						return dbCommand.ExecuteScalarAsync(ct).ContinueWith(t => (T)t.Result, TaskContinuationOptions.ExecuteSynchronously);
 					else
-						return Task<T>.Factory.StartNew(() => (T)command.ExecuteScalar(), ct);
+						return Task<T>.Factory.StartNew(() => (T)cmd.ExecuteScalar(), ct);
 #endif
 				},
 				closeConnection,
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -155,6 +159,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout for the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		/// <typeparam name="T">The type of the data to be returned.</typeparam>
 		public static Task<T> ExecuteScalarSqlAsync<T>(
@@ -164,9 +169,10 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.ExecuteScalarAsync<T>(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, cancellationToken);
+			return connection.ExecuteScalarAsync<T>(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 		#endregion
 
@@ -182,6 +188,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<FastExpando>> QueryAsync(
 			this IDbConnection connection,
@@ -191,9 +198,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.QueryAsync<FastExpando>(sql, parameters, Graph.Null, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
+			return connection.QueryAsync<FastExpando>(sql, parameters, Graph.Null, commandType, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 
 		/// <summary>
@@ -209,6 +217,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QueryAsync<TResult>(
 			this IDbConnection connection,
@@ -219,15 +228,19 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
+				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				true,
 				(cmd, r) => r.ToListAsync<TResult>(withGraph, cancellationToken),
 				commandBehavior,
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -240,6 +253,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<FastExpando>> QuerySqlAsync(
 			this IDbConnection connection,
@@ -248,9 +262,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.QueryAsync<FastExpando>(sql, parameters, Graph.Null, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+			return connection.QueryAsync<FastExpando>(sql, parameters, Graph.Null, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 
 		/// <summary>
@@ -265,6 +280,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<IList<TResult>> QuerySqlAsync<TResult>(
 			this IDbConnection connection,
@@ -274,9 +290,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.QueryAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+			return connection.QueryAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 		#endregion
 
@@ -294,6 +311,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<TResult> SingleAsync<TResult>(
 			this IDbConnection connection,
@@ -304,9 +322,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.QueryAsync<TResult>(sql, parameters, withGraph, commandType, commandBehavior, commandTimeout, transaction, cancellationToken)
+			return connection.QueryAsync<TResult>(sql, parameters, withGraph, commandType, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters)
 				.ContinueWith(t => t.Result.FirstOrDefault(), TaskContinuationOptions.ExecuteSynchronously);
 		}
 
@@ -322,6 +341,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<TResult> SingleSqlAsync<TResult>(
 			this IDbConnection connection,
@@ -331,9 +351,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.SingleAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+			return connection.SingleAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 		#endregion
 
@@ -345,13 +366,15 @@ namespace Insight.Database
 		/// <param name="command">The command to execute.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
 		public static Task<IList<FastExpando>> QueryAsync(
 			this IDbCommand command,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return command.QueryAsync<FastExpando>(Graph.Null, commandBehavior, cancellationToken);
+			return command.QueryAsync<FastExpando>(Graph.Null, commandBehavior, cancellationToken, outputParameters);
 		}
 
 		/// <summary>
@@ -363,20 +386,25 @@ namespace Insight.Database
 		/// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
 		/// <param name="commandBehavior">The command behavior.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task that returns a list of objects as the result of the query.</returns>
 		public static Task<IList<T>> QueryAsync<T>(
 			this IDbCommand command,
 			Type withGraph = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return command.Connection.ExecuteAsyncAndAutoClose(
+				null,
 				c => command,
+				true,
 				(cmd, r) => r.ToListAsync<T>(withGraph, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct);
+				ct,
+				outputParameters);
 		}
 		#endregion
 
@@ -393,6 +421,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task QueryAsync(
 			this IDbConnection connection,
@@ -403,15 +432,19 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
+				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				true,
 				(cmd, r) => { read(r); return Helpers.FalseTask; },
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -425,6 +458,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task QuerySqlAsync(
 			this IDbConnection connection,
@@ -434,9 +468,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 
 		/// <summary>
@@ -452,6 +487,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task<T> QueryAsync<T>(
 			this IDbConnection connection,
@@ -462,15 +498,19 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
+				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				true,
 				(cmd, r) => Helpers.FromResult(read(r)),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -485,6 +525,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">An optional timeout for the command.</param>
 		/// <param name="transaction">An optiona transaction to participate in.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task representing the completion of the query and read operation.</returns>
 		public static Task<T> QuerySqlAsync<T>(
 			this IDbConnection connection,
@@ -494,9 +535,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
-			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 		#endregion
 
@@ -509,21 +551,26 @@ namespace Insight.Database
 		/// <param name="withGraphs">The object graphs to use to deserialize the objects.</param>
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <typeparam name="T">The type of object to return in the result set.</typeparam>
 		/// <returns>A data reader with the results.</returns>
 		public static Task<T> QueryResultsAsync<T>(
 			this IDbCommand command,
 			Type[] withGraphs = null,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null) where T : Results, new()
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null) where T : Results, new()
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return command.Connection.ExecuteAsyncAndAutoClose(
+				null,
 				c => command,
+				true,
 				(cmd, r) => new T().ReadAsync<T>(cmd, r, withGraphs, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -539,6 +586,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Task<T> QueryResultsAsync<T>(
 			this IDbConnection connection,
@@ -549,15 +597,19 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null) where T : Results, new()
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null) where T : Results, new()
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
+				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
+				true,
 				(cmd, r) => new T().ReadAsync<T>(cmd, r, withGraphs, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -572,6 +624,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>The results object filled with the data.</returns>
 		public static Task<T> QueryResultsSqlAsync<T>(
 			this IDbConnection connection,
@@ -581,9 +634,10 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null) where T : Results, new()
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null) where T : Results, new()
 		{
-			return connection.QueryResultsAsync<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
+			return connection.QueryResultsAsync<T>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
 		}
 		#endregion
 
@@ -719,6 +773,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task whose completion is the object after merging the results.</returns>
 		public static Task<TResult> InsertAsync<TResult>(
 			this IDbConnection connection,
@@ -729,15 +784,19 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
+				parameters,
 				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
+				true,
 				(cmd, r) => r.MergeAsync(inserted, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -789,6 +848,7 @@ namespace Insight.Database
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task whose completion is the list of objects after merging the results.</returns>
 		public static Task<IEnumerable<TResult>> InsertListAsync<TResult>(
 			this IDbConnection connection,
@@ -799,15 +859,19 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken? cancellationToken = null,
+			object outputParameters = null)
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
+				parameters,
 				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
+				true,
 				(cmd, r) => r.MergeAsync(inserted, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct);
+				ct,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -1121,19 +1185,32 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The return type of the task.</typeparam>
 		/// <param name="connection">The connection to use.</param>
+		/// <param name="parameters">The parameters for the call.</param>
 		/// <param name="getCommand">An action to perform to get the command to execute.</param>
+		/// <param name="callGetReader">True to automatically get the reader from the command.</param>
 		/// <param name="translate">An action to perform to translate the reader into results.</param>
 		/// <param name="closeConnection">True to force the connection to close after the operation completes.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
 		private static Task<T> ExecuteAsyncAndAutoClose<T>(
 			this IDbConnection connection,
+			object parameters,
 			Func<IDbConnection, IDbCommand> getCommand,
+			bool callGetReader,
 			Func<IDbCommand, IDataReader, Task<T>> translate,
 			bool closeConnection,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken,
+			object outputParameters)
 		{
-			return connection.ExecuteAsyncAndAutoClose<T>(getCommand, translate, closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default, cancellationToken);
+			return connection.ExecuteAsyncAndAutoClose<T>(
+				parameters,
+				getCommand,
+				callGetReader,
+				translate,
+				closeConnection ? CommandBehavior.CloseConnection : CommandBehavior.Default,
+				cancellationToken,
+				outputParameters);
 		}
 
 		/// <summary>
@@ -1141,17 +1218,23 @@ namespace Insight.Database
 		/// </summary>
 		/// <typeparam name="T">The return type of the task.</typeparam>
 		/// <param name="connection">The connection to use.</param>
+		/// <param name="parameters">The parameters for the call.</param>
 		/// <param name="getCommand">An action to perform to get the command to execute.</param>
+		/// <param name="callGetReader">True to automatically call GetReader on the command.</param>
 		/// <param name="translate">An action to perform to translate the reader into results.</param>
 		/// <param name="commandBehavior">The CommandBehavior to use to execute the command.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
+		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
 		private static Task<T> ExecuteAsyncAndAutoClose<T>(
 			this IDbConnection connection,
+			object parameters,
 			Func<IDbConnection, IDbCommand> getCommand,
+			bool callGetReader,
 			Func<IDbCommand, IDataReader, Task<T>> translate,
 			CommandBehavior commandBehavior,
-			CancellationToken cancellationToken)
+			CancellationToken cancellationToken,
+			object outputParameters)
 		{
 			bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
 			IDbCommand command = null;
@@ -1172,7 +1255,7 @@ namespace Insight.Database
 						command = getCommand(connection);
 
 						// if we have a command, execute it
-						if (command != null)
+						if (command != null && callGetReader)
 							return command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, cancellationToken);
 
 						return Helpers.FromResult<IDataReader>(null);
@@ -1187,6 +1270,14 @@ namespace Insight.Database
 					},
 					TaskContinuationOptions.ExecuteSynchronously)
 				.Unwrap()
+				.ContinueWith(
+					t =>
+					{
+						if (t.IsCompleted && command != null)
+							command.OutputParameters(parameters, outputParameters);
+						return t.Result;
+					},
+					TaskContinuationOptions.ExecuteSynchronously)
 				.ContinueWith(
 					t =>
 					{
