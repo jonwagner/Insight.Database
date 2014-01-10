@@ -66,6 +66,17 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void TestSchema()
+		{
+			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
+
+				List<Data> result = connection.Dynamic<Data>().dbo.InsightTestProc(value: 5);
+			}
+		}
+
+		[Test]
 		public void TestUnnamedParameter()
 		{
 			using (var connection = _connectionStringBuilder.OpenWithTransaction())

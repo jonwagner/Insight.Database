@@ -59,9 +59,19 @@ namespace Insight.Database
 		private ConcurrentDictionary<string, List<IDataParameter>> _parameters = new ConcurrentDictionary<string, List<IDataParameter>>();
 
 		/// <summary>
+		/// The SQL schema to use when calling the procedure.
+		/// </summary>
+		private string _schema = null;
+
+		/// <summary>
 		/// The connection to use to connect to the database.
 		/// </summary>
 		private IDbConnection _connection;
+
+		/// <summary>
+		/// Gets the inner connection.
+		/// </summary>
+		protected IDbConnection InnerConnection { get { return _connection; } }
 		#endregion
 
 		#region Constructors
@@ -69,11 +79,21 @@ namespace Insight.Database
 		/// Initializes a new instance of the DynamicConnection class.
 		/// </summary>
 		/// <param name="connection">The connection to use as the inner database connection.</param>
-		public DynamicConnection(IDbConnection connection)
+		public DynamicConnection(IDbConnection connection) : this(connection, null)
+		{
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the DynamicConnection class.
+		/// </summary>
+		/// <param name="connection">The connection to use as the inner database connection.</param>
+		/// <param name="schema">The SQL schema to use when calling procedures.</param>
+		protected DynamicConnection(IDbConnection connection, string schema)
 		{
 			if (connection == null) throw new ArgumentNullException("connection");
 
 			_connection = connection;
+			_schema = schema;
 		}
 		#endregion
 
@@ -124,6 +144,10 @@ namespace Insight.Database
 				procName = procName.Substring(0, procName.Length - 5);
 				doAsync = true;
 			}
+
+			// if there is a schema, use it
+			if (!String.IsNullOrWhiteSpace(_schema))
+				procName = _schema + "." + procName;
 
 			// go through the arguments and look for our special arguments
 			// NOTE: this is intentionally case-sensitive so that you can use other cases if you need to pass a parameter by the same name.
@@ -266,6 +290,15 @@ namespace Insight.Database
 				if (cmd != null)
 					cmd.Dispose();
 			}
+		}
+
+		/// <inheritdoc/>
+		public override bool TryGetMember(GetMemberBinder binder, out object result)
+		{
+			if (binder == null) throw new ArgumentNullException("binder");
+
+			result = new DynamicConnection(_connection, binder.Name);
+			return true;
 		}
 #endif
 
@@ -474,6 +507,16 @@ namespace Insight.Database
 		{
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the DynamicConnection class.
+		/// </summary>
+		/// <param name="connection">The connection to use as the inner database connection.</param>
+		/// <param name="schema">The SQL schema to use when calling the procedure.</param>
+		private DynamicConnection(IDbConnection connection, string schema)
+			: base(connection, schema)
+		{
+		}
+
 #if !NODYNAMIC
 		/// <summary>
 		/// Provides the implementation for operations that invoke a member. Classes derived from the DynamicObject class can override this method to specify dynamic behavior for operations such as calling a method.
@@ -486,6 +529,15 @@ namespace Insight.Database
 		{
 			result = DoInvokeMember(binder, args, typeof(T));
 
+			return true;
+		}
+
+		/// <inheritdoc/>
+		public override bool TryGetMember(GetMemberBinder binder, out object result)
+		{
+			if (binder == null) throw new ArgumentNullException("binder");
+
+			result = new DynamicConnection<T>(InnerConnection, binder.Name);
 			return true;
 		}
 #endif
