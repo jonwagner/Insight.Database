@@ -84,6 +84,7 @@
     <Compile Include="OpenTests.cs" />
     <Compile Include="InterfaceTests.cs" />
     <Compile Include="MappingTests.cs" />
+    <Compile Include="OptimisticTests.cs" />
     <Compile Include="OutputParameterTests.cs" />
     <Compile Include="FastExpandoTests.cs" />
     <Compile Include="InsertTests.cs" />

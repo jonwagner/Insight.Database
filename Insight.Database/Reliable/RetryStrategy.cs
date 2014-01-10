@@ -198,8 +198,8 @@ namespace Insight.Database.Reliable
 						}
 
 						// if it's not a transient error, then let it go
-						Exception ex = t.Exception;
-						if (!IsTransientException(ex))
+						var ex = t.Exception;
+						if (!ex.Flatten().InnerExceptions.Any(x => IsTransientException(x)))
 						{
 							tcs.SetException(ex);
 							return;
