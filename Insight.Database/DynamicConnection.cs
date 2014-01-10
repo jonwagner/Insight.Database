@@ -48,10 +48,17 @@ namespace Insight.Database
 		/// <summary>
 		/// Caches for MethodInfo for query methods.
 		/// </summary>
+#if NODYNAMIC
+		private static ConcurrentDictionary<Type, object> _queryResultsAsyncMethods = new ConcurrentDictionary<Type, object>();
+		private static ConcurrentDictionary<Type, object> _queryResultsMethods = new ConcurrentDictionary<Type, object>();
+		private static ConcurrentDictionary<Type, object> _queryAsyncMethods = new ConcurrentDictionary<Type, object>();
+		private static ConcurrentDictionary<Type, object> _queryMethods = new ConcurrentDictionary<Type, object>();
+#else
 		private static ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object, object>> _queryResultsAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, CancellationToken?, object, object>>();
 		private static ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, object>> _queryResultsMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type[], CommandBehavior, object>>();
 		private static ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object, object>> _queryAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, CancellationToken?, object, object>>();
 		private static ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, object>> _queryMethods = new ConcurrentDictionary<Type, Func<IDbCommand, Type, CommandBehavior, object>>();
+#endif
 
 		/// <summary>
 		/// The internal cache for parameters to stored procedures.
@@ -300,7 +307,6 @@ namespace Insight.Database
 			result = new DynamicConnection(_connection, binder.Name);
 			return true;
 		}
-#endif
 
 		#region Delegate Invocation Methods
 		/// <summary>
@@ -373,6 +379,7 @@ namespace Insight.Database
 			return method(command, (Type[])withGraph, CommandBehavior.Default, cancellationToken, null);
 		}
 		#endregion
+#endif
 
 		/// <summary>
 		/// Derive the parameters that are needed to execute a given command.

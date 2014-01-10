@@ -240,6 +240,7 @@ namespace Insight.Database
 		public static TaskFactory Factory = new TaskFactory();
 		public TaskStatus Status { get; private set; }
 		public Exception Exception { get; private set; }
+		public bool IsCompleted { get { return true; } }
 		protected object InternalResult { get; set; }
 
 		internal Task(Action action) : this(() => { action(); return null; })
