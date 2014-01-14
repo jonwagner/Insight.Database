@@ -1325,6 +1325,34 @@ namespace Insight.Database
 			// if the connection already supports T, then return it, otherwise we need a wrapper
 			return (connection as T) ?? (T)InterfaceGenerator.GetImplementorOf(connection, typeof(T));
 		}
+
+		/// <summary>
+		/// Creates and returns a new multi-threaded connection implementing the given interface.
+		/// The object can support making multiple calls at the same time.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="connection">The connection to use as a template for opening connections. The connection will not be used.</param>
+		/// <returns>A closed connection that implements the given interface.</returns>
+		public static T AsParallel<T>(this IDbConnection connection) where T : class
+		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
+			var provider = InsightDbProvider.For(connection);
+			Func<IDbConnection> constructor = () => provider.CloneDbConnection(connection);
+			return constructor.AsParallel<T>();
+		}
+
+		/// <summary>
+		/// Creates and returns a new multi-threaded connection implementing the given interface.
+		/// The object can support making multiple calls at the same time.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="provider">A method that provides a new instance of the DbConnection.</param>
+		/// <returns>A closed connection that implements the given interface.</returns>
+		public static T AsParallel<T>(this Func<IDbConnection> provider) where T : class
+		{
+			return (T)InterfaceGenerator.GetImplementorOf(provider, typeof(T));
+		}
 		#endregion
 
 		#region Bulk Copy Members

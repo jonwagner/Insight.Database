@@ -32,6 +32,20 @@ namespace Insight.Database.Providers
 		public abstract IDbCommand GetInnerCommand(IDbCommand command);
 
 		/// <summary>
+		/// Clones a new DbConnection supported by this provider.
+		/// </summary>
+		/// <param name="connection">The connection to clone.</param>
+		/// <returns>A new DbConnection.</returns>
+		public override IDbConnection CloneDbConnection(IDbConnection connection)
+		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
+			var newConnection = (IDbConnection)System.Activator.CreateInstance(connection.GetType());
+			newConnection.ConnectionString = connection.ConnectionString;
+			return newConnection;
+		}
+
+		/// <summary>
 		/// Derives the parameter list for a given command.
 		/// </summary>
 		/// <param name="command">The command to use.</param>

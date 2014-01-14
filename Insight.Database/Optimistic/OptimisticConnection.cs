@@ -22,12 +22,6 @@ namespace Insight.Database
 		{
 		}
 
-		/// <inheritdoc/>
-		protected override DbCommand CreateDbCommand()
-		{
-			return new OptimisticCommand(this, InnerConnection.CreateCommand());
-		}
-
 		/// <summary>
 		/// Returns true if the exception is an optimistic concurrency exception.
 		/// This method may be overridden.
@@ -40,6 +34,12 @@ namespace Insight.Database
 				return false;
 
 			return exception.Message.Contains("CONCURRENCY CHECK");
+		}
+
+		/// <inheritdoc/>
+		protected override DbCommand CreateDbCommand()
+		{
+			return new OptimisticCommand(this, InnerConnection.CreateCommand());
 		}
 	}
 

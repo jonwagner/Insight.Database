@@ -63,6 +63,19 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Creates and returns a new multi-threaded connection implementing the given interface.
+		/// The object can support making multiple calls at the same time.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement on the connection.</typeparam>
+		/// <param name="settings">The ConnectionStringSettings containing the connection string.</param>
+		/// <returns>A closed connection that implements the given interface.</returns>
+		public static T AsParallel<T>(this ConnectionStringSettings settings) where T : class
+		{
+			Func<IDbConnection> constructor = (() => settings.Connection());
+			return constructor.AsParallel<T>();
+		}
+
+		/// <summary>
 		/// Opens and returns a database connection.
 		/// </summary>
 		/// <param name="settings">The connection string to open and return.</param>

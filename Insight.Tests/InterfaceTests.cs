@@ -523,4 +523,28 @@ namespace Insight.Tests
 			repo.UpsertByT<string>("");
 		}
 	}
+
+	#region Multi-Threaded Interface Tests
+	interface IMultiThreaded
+	{
+		[Sql("SELECT ParentX=@p")]
+		Task<TestDataClasses.ParentTestData> FooAsync(int p);
+	}
+
+	[TestFixture]
+	public class MultiThreadedInterfaceTests : BaseDbTest
+	{
+		[Test]
+		public void Foo()
+		{
+			var foo = _connection.AsParallel<IMultiThreaded>();
+
+			var tasks = new List<Task>();
+			for (int i = 0; i < 100; i++)
+				tasks.Add (foo.FooAsync(i));
+
+			Task.WaitAll(tasks.ToArray());
+		}
+	}
+	#endregion
 }
