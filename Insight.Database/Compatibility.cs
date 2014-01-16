@@ -239,7 +239,7 @@ namespace Insight.Database
 	{
 		public static TaskFactory Factory = new TaskFactory();
 		public TaskStatus Status { get; private set; }
-		public Exception Exception { get; private set; }
+		public AggregateException Exception { get; private set; }
 		public bool IsCompleted { get { return true; } }
 		protected object InternalResult { get; set; }
 
@@ -265,6 +265,12 @@ namespace Insight.Database
 		{
 			if (Exception != null)
 				throw Exception;
+		}
+
+		public static void WaitAll(params Task[] tasks)
+		{
+			foreach (var t in tasks)
+				t.Wait();
 		}
 	}
 
@@ -356,6 +362,16 @@ namespace Insight.Database
 
 		public AggregateException(Exception e) : base ("An exception occurred.", e)
 		{
+		}
+
+		public AggregateException Flatten()
+		{
+			return this;
+		}
+
+		public IEnumerable<Exception> InnerExceptions
+		{
+			get { yield return this; }
 		}
 	}
 

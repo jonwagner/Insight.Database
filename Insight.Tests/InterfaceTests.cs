@@ -525,6 +525,7 @@ namespace Insight.Tests
 	}
 
 	#region Multi-Threaded Interface Tests
+#if !NODBASYNC
 	interface IMultiThreaded
 	{
 		[Sql("SELECT ParentX=@p")]
@@ -546,5 +547,6 @@ namespace Insight.Tests
 			Task.WaitAll(tasks.ToArray());
 		}
 	}
+#endif
 	#endregion
 }

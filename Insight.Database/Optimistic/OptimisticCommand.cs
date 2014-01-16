@@ -98,6 +98,7 @@ namespace Insight.Database
 			}
 		}
 
+#if !NODBASYNC
 		/// <summary>
 		/// Asynchronously performs an action and translate exceptions.
 		/// </summary>
@@ -115,5 +116,6 @@ namespace Insight.Database
 					return t.Result;
 				});
 		}
+#endif
 	}
 }
