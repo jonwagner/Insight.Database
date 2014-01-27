@@ -446,6 +446,14 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if a conversion was emitted, false if one could not be found.</returns>
 		private static bool EmitConversion(ILGenerator il, Type sourceType, Type targetType)
 		{
+			// support converting any value to type of object
+			if (targetType == typeof(object))
+			{
+				if (sourceType.IsValueType)
+					il.Emit(OpCodes.Box, sourceType);
+				return true;
+			}
+
 			MethodInfo mi = FindConversionMethod(sourceType, targetType);
 			if (mi == null)
 				return false;
