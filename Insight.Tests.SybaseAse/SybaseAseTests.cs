@@ -9,6 +9,7 @@ using Insight.Database;
 using Insight.Database.Providers.SybaseAse;
 using Sybase.Data.AseClient;
 using Insight.Database.Reliable;
+using System.Data;
 
 namespace Insight.Tests.SybaseAse
 {
@@ -16,8 +17,11 @@ namespace Insight.Tests.SybaseAse
 	/// Sybase ASE-specific tests
 	/// </summary>
 	[TestFixture]
-    public class SybaseAseTests : BaseDbTest
+    public class SybaseAseTests
     {
+		private AseConnectionStringBuilder _connectionStringBuilder;
+		private IDbConnection _connection;
+
 		public class ParentTestData
 		{
 			public int ID;
@@ -32,7 +36,7 @@ namespace Insight.Tests.SybaseAse
 		}
 
 		[TestFixtureSetUp]
-		public override void SetUpFixture()
+		public void SetUpFixture()
 		{
 			SybaseAseInsightDbProvider.RegisterProvider();
 

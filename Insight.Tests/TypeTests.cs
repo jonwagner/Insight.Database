@@ -16,7 +16,7 @@ using System.Data.SqlTypes;
 namespace Insight.Tests
 {
 	[TestFixture]
-	public class TypeTests : BaseDbTest
+	public class TypeTests : BaseTest
 	{
 		#region Helper Classes
 		/// <summary>
@@ -41,7 +41,7 @@ namespace Insight.Tests
 			private T? FieldNull;
 			private T? PropertyNull { get; set; }
 
-			public static void Test(T value, DbConnection connection, string sqlType)
+			public static void Test(T value, IDbConnection connection, string sqlType)
 			{
 				// make sure we can send values up to SQL
 				// make sure we can deserialize properties and fields
@@ -141,7 +141,7 @@ namespace Insight.Tests
 			private T FieldNull;
 			private T PropertyNull { get; set; }
 
-			public static void Test(T value, DbConnection connection, string sqlType)
+			public static void Test(T value, IDbConnection connection, string sqlType)
 			{
 				// make sure we can read the values
 				var data = connection.QuerySql<Data<T>>(String.Format("SELECT Field=@p, Property=@p, FieldNull=CONVERT({0}, NULL), PropertyNull=CONVERT({0}, NULL)", sqlType), new { p = value }).First();
@@ -184,6 +184,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestTypes()
 		{
+			var _connection = Connection();
+
 			// value types
 			// NOTE: unsigned types are not supported by sql so we won't test them here
 			NullableData<byte>.Test(1, _connection, "tinyint");
@@ -225,13 +227,13 @@ namespace Insight.Tests
 		public void TestVarBinaryMaxAsSingleColumn()
 		{
 			// this used to fail because we couldn't find the constructor for byte[]
-			var results = _connection.QuerySql<byte[]>("SELECT CONVERT(varbinary(MAX), '1234')");
+			var results = Connection().QuerySql<byte[]>("SELECT CONVERT(varbinary(MAX), '1234')");
 		}
 
 		[Test]
 		public void TestIntAsSingleColumn()
 		{
-			var results = _connection.QuerySql<int>("SELECT 1234");
+			var results = Connection().QuerySql<int>("SELECT 1234");
 		}
 		#endregion
 
@@ -239,6 +241,8 @@ namespace Insight.Tests
 		[Test]
 		public void TypeCoersions()
 		{
+			var _connection = Connection();
+
 			// string tests
 			Assert.AreEqual(Guid.Empty.ToString(), _connection.QuerySql<TypeContainer<string>>(String.Format("SELECT Value=CONVERT(uniqueidentifier, '{0}')", Guid.Empty.ToString())).FirstOrDefault().Value);
 
@@ -444,7 +448,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatSimpleClassesCanBeDeserializedByConstructor()
 		{
-			var data = _connection.QuerySql<Foo>("SELECT ID=1, Name='foo'", Parameters.Empty);
+			var data = Connection().QuerySql<Foo>("SELECT ID=1, Name='foo'", Parameters.Empty);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNotNull(data[0].ID);
 			Assert.AreEqual(1, data[0].ID.Value);
@@ -456,16 +460,11 @@ namespace Insight.Tests
 		{
 			Foo f = new Foo() { ID = new FooID(1), Name = "goo" };
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
-
-				var data = connection.Query<Foo>("InsightTestProc", f);
-				Assert.AreEqual(1, data.Count);
-				Assert.IsNotNull(data[0].ID);
-				Assert.AreEqual(1, data[0].ID.Value);
-				Assert.AreEqual("goo", data[0].Name);
-			}
+			var data = Connection().Query<Foo>("ConvertClassToString", f);
+			Assert.AreEqual(1, data.Count);
+			Assert.IsNotNull(data[0].ID);
+			Assert.AreEqual(1, data[0].ID.Value);
+			Assert.AreEqual("goo", data[0].Name);
 		}
 
 		[Test]
@@ -473,15 +472,10 @@ namespace Insight.Tests
 		{
 			Foo f = new Foo() { ID = null, Name = "goo" };
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
-
-				var data = connection.Query<Foo>("InsightTestProc", f);
-				Assert.AreEqual(1, data.Count);
-				Assert.IsNull(data[0].ID);
-				Assert.AreEqual("goo", data[0].Name);
-			}
+			var data = Connection().Query<Foo>("ConvertClassToString", f);
+			Assert.AreEqual(1, data.Count);
+			Assert.IsNull(data[0].ID);
+			Assert.AreEqual("goo", data[0].Name);
 		}
 
 		[Test]
@@ -489,7 +483,7 @@ namespace Insight.Tests
 		{
 			Foo f = new Foo() { ID = new FooID(1), Name = "goo" };
 
-			var data = _connection.QuerySql<Foo>("SELECT ID=CONVERT (int, @ID), Name=@Name", f);
+			var data = Connection().QuerySql<Foo>("SELECT ID=CONVERT (int, @ID), Name=@Name", f);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNotNull(data[0].ID);
 			Assert.AreEqual(1, data[0].ID.Value);
@@ -517,7 +511,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatSimpleClassesCanBeDeserializedByConversion()
 		{
-			var data = _connection.QuerySql<FooByConversion>("SELECT ID=1, Name='foo'", Parameters.Empty);
+			var data = Connection().QuerySql<FooByConversion>("SELECT ID=1, Name='foo'", Parameters.Empty);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNotNull(data[0].ID);
 			Assert.AreEqual(1, data[0].ID.Value);
@@ -545,7 +539,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatSimpleStructsCanBeDeserialized()
 		{
-			var data = _connection.QuerySql<FooStruct>("SELECT ID=1, Name='foo'", Parameters.Empty);
+			var data = Connection().QuerySql<FooStruct>("SELECT ID=1, Name='foo'", Parameters.Empty);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNotNull(data[0].ID);
 			Assert.AreEqual(1, data[0].ID.Value);
@@ -573,7 +567,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatSimpleStructsCanBeDeserializedByConversion()
 		{
-			var data = _connection.QuerySql<FooStructByConversion>("SELECT ID=1, Name='foo'", Parameters.Empty);
+			var data = Connection().QuerySql<FooStructByConversion>("SELECT ID=1, Name='foo'", Parameters.Empty);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNotNull(data[0].ID);
 			Assert.AreEqual(1, data[0].ID.Value);
@@ -688,16 +682,11 @@ namespace Insight.Tests
 		{
 			FooConvertible f = new FooConvertible() { ID = new FooConvertibleID(1), Name = "goo" };
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
-
-				var data = connection.Query<FooConvertible>("InsightTestProc", f);
-				Assert.AreEqual(1, data.Count);
-				Assert.IsNotNull(data[0].ID);
-				Assert.AreEqual(1, data[0].ID.Value);
-				Assert.AreEqual("goo", data[0].Name);
-			}
+			var data = Connection().Query<FooConvertible>("ConvertClassToString", f);
+			Assert.AreEqual(1, data.Count);
+			Assert.IsNotNull(data[0].ID);
+			Assert.AreEqual(1, data[0].ID.Value);
+			Assert.AreEqual("goo", data[0].Name);
 		}
 
 		[Test]
@@ -705,7 +694,7 @@ namespace Insight.Tests
 		{
 			FooConvertible f = new FooConvertible() { ID = new FooConvertibleID(1), Name = "goo" };
 
-			var data = _connection.QuerySql<FooConvertible>("SELECT ID=CONVERT (int, @ID), Name=@Name", f);
+			var data = Connection().QuerySql<FooConvertible>("SELECT ID=CONVERT (int, @ID), Name=@Name", f);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNotNull(data[0].ID);
 			Assert.AreEqual(1, data[0].ID.Value);
@@ -751,7 +740,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatSimpleNullableValueClassesCanBeDeserializedByConstructor()
 		{
-			var data = _connection.QuerySql<FooNullable>("SELECT ID=1, Name='foo'", Parameters.Empty);
+			var data = Connection().QuerySql<FooNullable>("SELECT ID=1, Name='foo'", Parameters.Empty);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNotNull(data[0].ID);
 			Assert.AreEqual(1, data[0].ID.Value);
@@ -763,7 +752,7 @@ namespace Insight.Tests
 		{
 			// in this case, the db value is null, so when we deserialize, the OUTER object id comes back as null.
 			// since the values are not round-trip, this configuration is NOT recommended
-			var data = _connection.QuerySql<FooNullable>("SELECT ID=CONVERT (int, null), Name='foo'", Parameters.Empty);
+			var data = Connection().QuerySql<FooNullable>("SELECT ID=CONVERT (int, null), Name='foo'", Parameters.Empty);
 			Assert.AreEqual(1, data.Count);
 			Assert.IsNull(data[0].ID);
 			Assert.AreEqual("foo", data[0].Name);
@@ -777,15 +766,10 @@ namespace Insight.Tests
 			// since the values are not round-trip, this configuration is NOT recommended
 			FooNullable f = new FooNullable() { ID = new FooNullableID(), Name = "goo" };
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@ID int, @Name varchar(128)) AS SELECT ID=@ID, Name=@Name");
-
-				var data = connection.Query<FooNullable>("InsightTestProc", f);
-				Assert.AreEqual(1, data.Count);
-				Assert.IsNull(data[0].ID);
-				Assert.AreEqual("goo", data[0].Name);
-			}
+			var data = Connection().Query<FooNullable>("ConvertClassToString", f);
+			Assert.AreEqual(1, data.Count);
+			Assert.IsNull(data[0].ID);
+			Assert.AreEqual("goo", data[0].Name);
 		}
 		#endregion
 
@@ -803,14 +787,14 @@ namespace Insight.Tests
 		[Test]
 		public void TestSettingMembersOfAStruct()
 		{
-			var results = _connection.QuerySql<TestStruct>("SELECT Foo = 4");
+			var results = Connection().QuerySql<TestStruct>("SELECT Foo = 4");
 			Assert.AreEqual(4, results[0].Foo);
 		}
 
 		[Test]
 		public void TestSettingNestedStructures()
 		{
-			var results = _connection.QuerySql<TestParentStruct, TestStruct>("SELECT Foo = 4");
+			var results = Connection().QuerySql<TestParentStruct, TestStruct>("SELECT Foo = 4");
 			Assert.AreEqual(4, results[0].Struct.Foo);
 		}
 		#endregion
@@ -820,62 +804,47 @@ namespace Insight.Tests
 		[Test]
 		public void TimeSpanShouldConvertProperlyToSqlTime()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC TimeInput @t [time] AS SELECT @t");
+			// one hour should work
+			TimeSpan oneHour = new TimeSpan(1, 0, 0);
+			var time = Connection().ExecuteScalar<TimeSpan>("TimeInput", new { t = oneHour });
+			Assert.AreEqual(oneHour, time);
 
-				// one hour should work
-				TimeSpan oneHour = new TimeSpan(1, 0, 0);
-				var time = connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = oneHour });
-				Assert.AreEqual(oneHour, time);
-
-				// > 1 day should throw
-				Assert.Throws<OverflowException>(() => connection.ExecuteScalar<TimeSpan>("TimeInput", new { t = new TimeSpan(1, 1, 0, 0) }));
-			}
+			// > 1 day should throw
+			Assert.Throws<OverflowException>(() => Connection().ExecuteScalar<TimeSpan>("TimeInput", new { t = new TimeSpan(1, 1, 0, 0) }));
 		}
 
 		[Test]
 		public void TimeSpanShouldConvertProperlyToSqlDateTime()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC DateTimeInput @t [datetime] AS SELECT @t");
+			// this is the sql server base 'zero-datetime'
+			DateTime timeBase = DateTime.Parse("1/1/1900");
+			TimeSpan oneHour = new TimeSpan(1, 0, 0);
+			DateTime result;
 
-				// this is the sql server base 'zero-datetime'
-				DateTime timeBase = DateTime.Parse("1/1/1900");
-				TimeSpan oneHour = new TimeSpan(1, 0, 0);
-				DateTime result;
+			// one hour should work - and come back based on 'zero-datetime'
+			result = Connection().ExecuteScalar<DateTime>("DateTimeInput", new { t = oneHour });
+			Assert.AreEqual(oneHour, result - timeBase);
 
-				// one hour should work - and come back based on 'zero-datetime'
-				result = connection.ExecuteScalar<DateTime>("DateTimeInput", new { t = oneHour });
-				Assert.AreEqual(oneHour, result - timeBase);
+			// one hour should work - and come back round-tripped
+			result = Connection().ExecuteScalar<DateTime>("DateTimeInput", new { t = oneHour });
+			Assert.AreEqual(oneHour, result - timeBase);
 
-				// one hour should work - and come back round-tripped
-				result = connection.ExecuteScalar<DateTime>("DateTimeInput", new { t = oneHour });
-				Assert.AreEqual(oneHour, result - timeBase);
+			TimeSpan oneDayAndOneMinute = new TimeSpan(1, 0, 0, 1);
 
-				TimeSpan oneDayAndOneMinute = new TimeSpan(1, 0, 0, 1);
-
-				// > 1 day should not fail because [datetime] is longer
-				result = connection.ExecuteScalar<DateTime>("DateTimeInput", new { t = oneDayAndOneMinute });
-				Assert.AreEqual(oneDayAndOneMinute, result - timeBase);
-			}
+			// > 1 day should not fail because [datetime] is longer
+			result = Connection().ExecuteScalar<DateTime>("DateTimeInput", new { t = oneDayAndOneMinute });
+			Assert.AreEqual(oneDayAndOneMinute, result - timeBase);
 		}
 
 		[Test]
 		public void DateTimeMathShouldWorkOnBothSides()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC TimeAdd @t [datetime], @add [datetime] AS SELECT @t + @add");
+			// make a time and a span and add them
+			DateTime now = new DateTime (1970, 2, 1, 1, 0, 5);
+			TimeSpan adjust = new TimeSpan(2, 1, 5, 6);
 
-				// make a time and a span and add them
-				DateTime now = new DateTime (1970, 2, 1, 1, 0, 5);
-				TimeSpan adjust = new TimeSpan(2, 1, 5, 6);
-
-				var time = connection.ExecuteScalar<DateTime>("TimeAdd", new { t = now, add = adjust });
-				Assert.AreEqual(now + adjust, time);
-			}
+			var time = Connection().ExecuteScalar<DateTime>("TimeAdd", new { t = now, add = adjust });
+			Assert.AreEqual(now + adjust, time);
 		}
 
 		[Test]
@@ -883,17 +852,12 @@ namespace Insight.Tests
 		{
 			// This seems to require SQL2012 SP1 - 11.0.3000
 			// Fails on 11.0.2100
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC TimeAdd @t [datetime], @add [time] AS SELECT @t + CAST(@add as [datetime])");
+			// make a time and a span and add them
+			DateTime now = new DateTime(1970, 2, 1, 1, 0, 5);
+			TimeSpan oneHour = new TimeSpan(1, 0, 0);
 
-				// make a time and a span and add them
-				DateTime now = new DateTime(1970, 2, 1, 1, 0, 5);
-				TimeSpan oneHour = new TimeSpan(1, 0, 0);
-
-				var time = connection.ExecuteScalar<DateTime>("TimeAdd", new { t = now, add = oneHour });
-				Assert.AreEqual(now + oneHour, time);
-			}
+			var time = Connection().ExecuteScalar<DateTime>("TimeAdd2", new { t = now, add = oneHour });
+			Assert.AreEqual(now + oneHour, time);
 		}
 		#endregion
 
@@ -901,33 +865,23 @@ namespace Insight.Tests
 		[Test]
 		public void DateFieldsShouldConvertProperly()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC TestDateTime2 @date datetime2 AS SELECT @date");
+			// send datetime and datetime? to sql
+			Connection().QuerySql<DateTime>("SELECT @date", new { date = DateTime.MinValue });
+			Connection().QuerySql<DateTime>("SELECT @date", new { date = (DateTime?)DateTime.MinValue });
 
-				// send datetime and datetime? to sql
-				connection.QuerySql<DateTime>("SELECT @date", new { date = DateTime.MinValue });
-				connection.QuerySql<DateTime>("SELECT @date", new { date = (DateTime?)DateTime.MinValue });
+			Connection().Query<DateTime>("TestDateTime2", new { date = DateTime.MinValue });
+			var list = Connection().Query<DateTime>("TestDateTime2", new { date = (DateTime?)DateTime.MinValue });
 
-				connection.Query<DateTime>("TestDateTime2", new { date = DateTime.MinValue });
-				var list = connection.Query<DateTime>("TestDateTime2", new { date = (DateTime?)DateTime.MinValue });
-
-				var result = list.First();
-				Assert.AreEqual(DateTime.MinValue, result);
-			}
+			var result = list.First();
+			Assert.AreEqual(DateTime.MinValue, result);
 		}
 
 		[Test]
 		public void DateFieldsShouldConvertFromString()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC TestDateTimeConvert @p datetime2 AS SELECT @p");
-
-				DateTime d = DateTime.Today;
-				var results = connection.Query<DateTime>("TestDateTimeConvert", new { p = d.ToString() }).First();
-				Assert.AreEqual(d, results);
-			}
+			DateTime d = DateTime.Today;
+			var results = Connection().Query<DateTime>("TestDateTimeConvert", new { p = d.ToString() }).First();
+			Assert.AreEqual(d, results);
 		}
 		#endregion
 
@@ -935,14 +889,9 @@ namespace Insight.Tests
 		[Test]
 		public void GuidsShouldConvertFromString()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC TestGuidParam @p uniqueidentifier AS SELECT @p");
-
-				Guid g = Guid.NewGuid();
-				var results = connection.Query<Guid>("TestGuidParam", new { p = g.ToString() }).First();
-				Assert.AreEqual(g, results);
-			}
+			Guid g = Guid.NewGuid();
+			var results = Connection().Query<Guid>("TestGuidParam", new { p = g.ToString() }).First();
+			Assert.AreEqual(g, results);
 		}
 		#endregion
 
@@ -959,22 +908,17 @@ namespace Insight.Tests
 		[Test]
 		public void GeographyParameterOnInterface()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC [dbo].GeometryProc (@geo [geometry]) AS SELECT @geo");
+			SqlGeometry geo = SqlGeometry.STGeomFromText(new SqlChars("POINT (2568634.9700000007 1269220.2200000007)"), 102605);
 
-				SqlGeometry geo = SqlGeometry.STGeomFromText(new SqlChars("POINT (2568634.9700000007 1269220.2200000007)"), 102605);
+			var i = Connection().As<ITestGeometry>();
 
-				var i = connection.As<ITestGeometry>();
+			// call by a proc
+			var result = i.GeometryProc(geo);
+			Assert.AreEqual(geo.ToString(), result.First().ToString());
 
-				// call by a proc
-				var result = i.GeometryProc(geo);
-				Assert.AreEqual(geo.ToString(), result.First().ToString());
-
-				// call by sql
-				var result2 = i.GeometrySql(geo);
-				Assert.AreEqual(geo.ToString(), result2.First().ToString());
-			}
+			// call by sql
+			var result2 = i.GeometrySql(geo);
+			Assert.AreEqual(geo.ToString(), result2.First().ToString());
 		}
 		#endregion
 
@@ -991,7 +935,7 @@ namespace Insight.Tests
 		[Test]
 		public void Hierarchy()
 		{
-			var results = _connection.QuerySql<HierarchyModel>("SELECT ID=1, Hierarchy=CAST('/1/' AS hierarchyid)").FirstOrDefault();
+			var results = Connection().QuerySql<HierarchyModel>("SELECT ID=1, Hierarchy=CAST('/1/' AS hierarchyid)").FirstOrDefault();
 		}
 		#endregion
 	}

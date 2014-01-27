@@ -73,10 +73,6 @@
       <Project>{bdf3afb9-9689-48db-ac12-b9087f774452}</Project>
       <Name>Insight.Database</Name>
     </ProjectReference>
-    <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj">
-      <Project>{deb0a47d-fc34-4b7f-a2fb-151b3697533e}</Project>
-      <Name>Insight.Tests</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

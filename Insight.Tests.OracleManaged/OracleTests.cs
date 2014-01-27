@@ -10,6 +10,7 @@ using Moq;
 using NUnit.Framework;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
+using System.Data;
 
 #pragma warning disable 0649
 
@@ -19,8 +20,11 @@ namespace Insight.Tests.OracleManaged
 	/// Oracle-specific tests.
 	/// </summary>
 	[TestFixture]
-	public class OracleTests : BaseDbTest
+	public class OracleTests
 	{
+		private OracleConnectionStringBuilder _connectionStringBuilder;
+		private IDbConnection _connection;
+
 		public class ParentTestData
 		{
 			public int ID;
@@ -35,7 +39,7 @@ namespace Insight.Tests.OracleManaged
 		}
 
 		[TestFixtureSetUp]
-		public override void SetUpFixture()
+		public void SetUpFixture()
 		{
 			OracleInsightDbProvider.RegisterProvider();
 

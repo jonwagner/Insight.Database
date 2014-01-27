@@ -8,12 +8,16 @@ using Insight.Database;
 using Insight.Database.Providers.DB2;
 using Insight.Database.Reliable;
 using NUnit.Framework;
+using System.Data;
 
 namespace Insight.Tests.DB2
 {
 	[TestFixture]
-    public class DB2Tests : BaseDbTest
+    public class DB2Tests
     {
+		private DB2ConnectionStringBuilder _connectionStringBuilder;
+		private IDbConnection _connection;
+
 		public class ParentTestData
 		{
 			public int ID;
@@ -28,7 +32,7 @@ namespace Insight.Tests.DB2
 		}
 
 		[TestFixtureSetUp]
-		public override void SetUpFixture()
+		public void SetUpFixture()
 		{
 			DB2InsightDbProvider.RegisterProvider();
 

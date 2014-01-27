@@ -11,7 +11,7 @@ using NUnit.Framework;
 namespace Insight.Tests
 {
 	[TestFixture]
-	class ObjectReaderTests : BaseDbTest
+	class ObjectReaderTests : BaseTest
 	{
 		#region Converting Types While Reading
 		/// <summary>
@@ -45,9 +45,9 @@ namespace Insight.Tests
 
 			try
 			{
-				_connection.ExecuteSql(String.Format("CREATE TYPE {1} AS TABLE (value {0})", sqlType, tableName));
+				Connection().ExecuteSql(String.Format("CREATE TYPE {1} AS TABLE (value {0})", sqlType, tableName));
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = ConnectionWithTransaction())
 				{
 					connection.ExecuteSql(String.Format("CREATE PROC {0} @values {1} READONLY AS SELECT value FROM @values", procName, tableName));
 
@@ -63,7 +63,7 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql(String.Format("DROP TYPE {0}", tableName));
+				Connection().ExecuteSql(String.Format("DROP TYPE {0}", tableName));
 			}
 		}
 		#endregion
@@ -84,9 +84,9 @@ namespace Insight.Tests
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE TYPE ObjectReader_ImplicitTable AS TABLE (value decimal(18,5))");
+				Connection().ExecuteSql("CREATE TYPE ObjectReader_ImplicitTable AS TABLE (value decimal(18,5))");
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = ConnectionWithTransaction())
 				{
 					connection.ExecuteSql("CREATE PROC ObjectReader_Implicit @values ObjectReader_ImplicitTable READONLY AS SELECT value FROM @values");
 
@@ -97,7 +97,7 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql("DROP TYPE ObjectReader_ImplicitTable");
+				Connection().ExecuteSql("DROP TYPE ObjectReader_ImplicitTable");
 			}
 		}
 		#endregion
@@ -201,9 +201,9 @@ namespace Insight.Tests
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE TYPE ObjectReader_IConvertibleTable AS TABLE (value decimal(18,5))");
+				Connection().ExecuteSql("CREATE TYPE ObjectReader_IConvertibleTable AS TABLE (value decimal(18,5))");
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = ConnectionWithTransaction())
 				{
 					connection.ExecuteSql("CREATE PROC ObjectReader_IConvertible @values ObjectReader_IConvertibleTable READONLY AS SELECT value FROM @values");
 
@@ -214,7 +214,7 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql("DROP TYPE ObjectReader_IConvertibleTable");
+				Connection().ExecuteSql("DROP TYPE ObjectReader_IConvertibleTable");
 			}
 		}
 		#endregion
@@ -243,9 +243,9 @@ namespace Insight.Tests
 
 			try
 			{
-				_connection.ExecuteSql(String.Format("CREATE TYPE {1} AS TABLE (value {0})", sqlType, tableName));
+				Connection().ExecuteSql(String.Format("CREATE TYPE {1} AS TABLE (value {0})", sqlType, tableName));
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = ConnectionWithTransaction())
 				{
 					connection.ExecuteSql(String.Format("CREATE PROC {0} @values {1} READONLY AS SELECT value FROM @values", procName, tableName));
 
@@ -255,7 +255,7 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql(String.Format("DROP TYPE {0}", tableName));
+				Connection().ExecuteSql(String.Format("DROP TYPE {0}", tableName));
 			}
 		}		
 		#endregion
@@ -266,9 +266,9 @@ namespace Insight.Tests
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE TYPE Missing_Table AS TABLE (value int)");
+				Connection().ExecuteSql("CREATE TYPE Missing_Table AS TABLE (value int)");
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = ConnectionWithTransaction())
 				{
 					connection.ExecuteSql("CREATE PROC ProcWithMissingTable (@table Missing_Table READONLY) AS SELECT * FROM @table");
 
@@ -281,7 +281,7 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql("DROP TYPE Missing_Table");
+				Connection().ExecuteSql("DROP TYPE Missing_Table");
 			}
 		}
 
@@ -291,9 +291,9 @@ namespace Insight.Tests
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE TYPE Missing_Table AS TABLE (value int)");
+				Connection().ExecuteSql("CREATE TYPE Missing_Table AS TABLE (value int)");
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = ConnectionWithTransaction())
 				{
 					connection.ExecuteSql("CREATE PROC ProcWithMissingTable (@table Missing_Table READONLY) AS SELECT * FROM @table");
 
@@ -307,7 +307,7 @@ namespace Insight.Tests
 			}
 			finally
 			{
-				_connection.ExecuteSql("DROP TYPE Missing_Table");
+				Connection().ExecuteSql("DROP TYPE Missing_Table");
 			}
 		}
 #endif
@@ -319,17 +319,17 @@ namespace Insight.Tests
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE SCHEMA [vk.common]");
-				_connection.ExecuteSql("CREATE TYPE [vk.common].TableOfInt AS TABLE (id int)");
-				_connection.ExecuteSql("CREATE PROC [vk.common].MyProc (@table [vk.common].TableOfInt READONLY) AS SELECT 1");
+				Connection().ExecuteSql("CREATE SCHEMA [vk.common]");
+				Connection().ExecuteSql("CREATE TYPE [vk.common].TableOfInt AS TABLE (id int)");
+				Connection().ExecuteSql("CREATE PROC [vk.common].MyProc (@table [vk.common].TableOfInt READONLY) AS SELECT 1");
 
-				_connection.Execute("[vk.common].MyProc", new { table = Enumerable.Range(1, 10) });
+				Connection().Execute("[vk.common].MyProc", new { table = Enumerable.Range(1, 10) });
 			}
 			finally
 			{
-				try { _connection.ExecuteSql("DROP PROC [vk.common].MyProc"); } catch {}
-				try { _connection.ExecuteSql("DROP TYPE [vk.common].TableOfInt"); } catch {}
-				try { _connection.ExecuteSql("DROP SCHEMA [vk.common]"); } catch {}
+				try { Connection().ExecuteSql("DROP PROC [vk.common].MyProc"); } catch { }
+				try { Connection().ExecuteSql("DROP TYPE [vk.common].TableOfInt"); } catch { }
+				try { Connection().ExecuteSql("DROP SCHEMA [vk.common]"); } catch { }
 			}
 		}
 		#endregion

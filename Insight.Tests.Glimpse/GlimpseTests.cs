@@ -15,13 +15,12 @@ namespace Insight.Tests
 	/// Tests that the mini-profiler connection wrapper does not interfere with SQL parameter detection.
 	/// </summary>
 	[TestFixture]
-	public class GlimpseTests : BaseDbTest
+	public class GlimpseTests : BaseTest
 	{
-		public override void SetUpFixture()
+		[SetUp]
+		public void SetUpFixture()
 		{
 			GlimpseInsightDbProvider.RegisterProvider();
-
-			base.SetUpFixture();
 		}
 
 		/// <summary>
@@ -30,7 +29,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestProfiledSqlQuery()
 		{
-			var profiled = new GlimpseDbConnection(_connection);
+			var profiled = new GlimpseDbConnection((DbConnection)Connection());
 			var result = profiled.QuerySql<int>("SELECT @p --GLIMPSE", new { p = 1 }).First();
 
 			Assert.AreEqual((int)1, result);
@@ -42,11 +41,11 @@ namespace Insight.Tests
 		[Test]
 		public void TestProfiledStoredProcWithParameters()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = ConnectionWithTransaction())
 			{
 				connection.ExecuteSql("CREATE PROC InsightTestProcGlimpse (@Value int = 5) AS SELECT Value=@Value");
 
-				var profiled = new GlimpseDbConnection(connection);
+				var profiled = new GlimpseDbConnection((DbConnection)connection);
 				var result = profiled.Query<int>("InsightTestProcGlimpse", new { Value = 1 }).First();
 
 				Assert.AreEqual((int)1, result);

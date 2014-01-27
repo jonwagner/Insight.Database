@@ -1,7 +1,6 @@
 ﻿#if !NODYNAMIC
 using Insight.Database;
 using Insight.Database.Reliable;
-using Insight.Tests.TestDataClasses;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -16,7 +15,7 @@ using System.Data.Common;
 
 namespace Insight.Tests
 {
-	public class DynamicConnectionTest : BaseDbTest
+	public class DynamicConnectionTest : BaseTest
 	{
 		class Data
 		{
@@ -29,6 +28,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestUnopenedConnection()
 		{
+			var _connection = Connection();
+
 			_connection.Dynamic().sp_Who(commandTimeout: 100);
 
 			// make sure the connection is closed first
@@ -57,259 +58,126 @@ namespace Insight.Tests
 		[Test]
 		public void Test()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
-
-				List<Data> result = connection.Dynamic<Data>().InsightTestProc(value: 5);
-			}
+			List<Data> result = Connection().Dynamic<Data>().ReflectInt(value: 5);
 		}
 
 		[Test]
 		public void TestSchema()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
-
-				List<Data> result = connection.Dynamic<Data>().dbo.InsightTestProc(value: 5);
-			}
+			List<Data> result = Connection().Dynamic<Data>().dbo.ReflectInt(value: 5);
 		}
 
 		[Test]
 		public void TestUnnamedParameter()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
-
-				List<Data> result = connection.Dynamic<Data>().InsightTestProc(5);
-			}
+			List<Data> result = Connection().Dynamic<Data>().ReflectInt(5);
 		}
 
 		[Test]
 		public void TestExecute()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS PRINT 'foo'");
-
-				connection.Dynamic().InsightTestProc(value: 5);
-			}
+			Connection().Dynamic().ReflectInt(value: 5);
 		}
 
 		[Test]
 		public void TestObjectParameter()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
+			Data d = new Data() { Value = 10 };
+			IList<Data> list = Connection().Dynamic<Data>().ReflectInt(d);
+			Data result = list.First();
 
-				Data d = new Data() { Value = 10 };
-				IList<Data> list = connection.Dynamic<Data>().InsightTestProc(d);
-				Data result = list.First();
-
-				Assert.AreEqual(d.Value, result.Value);
-			}
+			Assert.AreEqual(d.Value, result.Value);
 		}
 
 		[Test]
 		public void TestSingleStringParameter()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value");
+			string value = "foo";
+			IList<string> list = Connection().Dynamic<string>().ReflectString(value);
+			string result = list.First();
 
-				string value = "foo";
-				IList<string> list = connection.Dynamic<string>().InsightTestProc(value);
-				string result = list.First();
-
-				Assert.AreEqual(value, result);
-			}
+			Assert.AreEqual(value, result);
 		}
 
 		[Test]
 		public void TestDynamicWithMultipleResultSets()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128), @Value2 varchar(128)) AS SELECT Value=@Value SELECT Value=@Value2");
+			string value = "foo";
+			string value2 = "foo2";
+			Results<string, string> results = Connection().Dynamic<Results<string, string>>().ReflectTwoRecordsets(value, value2);
 
-				string value = "foo";
-				string value2 = "foo2";
-				Results<string, string> results = connection.Dynamic<Results<string, string>>().InsightTestProc(value, value2);
-
-				Assert.AreEqual(value, results.Set1.First());
-				Assert.AreEqual(value2, results.Set2.First());
-			}
+			Assert.AreEqual(value, results.Set1.First());
+			Assert.AreEqual(value2, results.Set2.First());
 		}
 
 		[Test]
 		public void TestReturnTypeOverride()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value");
+			string value = "foo";
 
-				string value = "foo";
+			var dc = Connection().Dynamic();
+			IList<string> results = dc.ReflectString(value, returnType: typeof(string));
 
-				var dc = connection.Dynamic();
-
-				// going to infer the return type of the stored procedure rather than specifying it
-				IList<string> results = dc.InsightTestProc(value, returnType: typeof(string));
-
-				Assert.AreEqual(value, results.First());
-			}
+			Assert.AreEqual(value, results.First());
 		}
 
 		[Test]
 		public void TestReturnTypeOverrideAsync()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS SELECT Value=@Value");
+			string value = "foo";
 
-				string value = "foo";
+			var dc = Connection().Dynamic();
 
-				var dc = connection.Dynamic();
+			Task<IList<string>> task = dc.ReflectStringAsync(value, returnType: typeof(string));
+			var results = task.Result;
 
-				// going to infer the return type of the stored procedure rather than specifying it
-				Task<IList<string>> task = dc.InsightTestProcAsync(value, returnType: typeof(string));
-
-				var results = task.Result;
-
-				Assert.AreEqual(value, results.First());
-			}
+			Assert.AreEqual(value, results.First());
 		}
 
 		[Test]
-		public void TestReturnTypeOverrideWithJustWithGraph()
+		public void TestReturnTypeOverrideWithJustWithReturns()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc AS " + ParentTestData.Sql);
-
-				var dc = connection.Dynamic();
-
-				// going to infer the return type of the stored procedure rather than specifying it
-				IList<ParentTestData> results = dc.InsightTestProc(withGraph: typeof(Graph<ParentTestData>));
-				ParentTestData.Verify(results, false);
-			}
+			IList<ParentTestData> results = Connection().Dynamic().GetParentTestData(returns: Query.Returns(Some<ParentTestData>.Records));
+			ParentTestData.Verify(results, false);
 		}
 
 		[Test]
 		public void TestMultipleRecordsets()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql);
+			// going to infer the return type of the stored procedure rather than specifying it
+			Results<ParentTestData, TestData2> results = Connection().Dynamic().GetParentAndChildTestData(
+				returns: Query.Returns(Some<ParentTestData>.Records)
+							.Then(Some<TestData2>.Records));
 
-				string value = "foo";
-
-				var dc = connection.Dynamic();
-
-				// going to infer the return type of the stored procedure rather than specifying it
-				Results<ParentTestDataWithDefaultGraph, TestData2> results = dc.InsightTestProc(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>));
-
-				Assert.IsNotNull(results);
-				ParentTestData.Verify(results.Set1, withGraph: true);
-				TestData2.Verify(results.Set2);
-			}
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: false);
+			TestData2.Verify(results.Set2);
 		}
 
 		[Test]
 		public void TestMultipleRecordsetsAsync()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql);
+			// going to infer the return type of the stored procedure rather than specifying it
+			Results<ParentTestData, TestData2> results = Connection().Dynamic().GetParentAndChildTestDataAsync(
+				returns: Query.Returns(Some<ParentTestData>.Records)
+							.Then(Some<TestData2>.Records))
+							.Result;
 
-				string value = "foo";
-
-				var dc = connection.Dynamic();
-
-				// going to infer the return type of the stored procedure rather than specifying it
-				Task<Results<ParentTestDataWithDefaultGraph, TestData2>> task = dc.InsightTestProcAsync(value, returnType: typeof(Results<ParentTestDataWithDefaultGraph, TestData2>));
-				var results = task.Result;
-
-				Assert.IsNotNull(results);
-				ParentTestData.Verify(results.Set1, withGraph: true);
-				TestData2.Verify(results.Set2);
-			}
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: false);
+			TestData2.Verify(results.Set2);
 		}
 
 		[Test]
 		public void TestMultipleRecordsetsWithGraph()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value varchar(128)) AS " + ParentTestData.Sql + TestData2.Sql);
+			Results<ParentTestData, TestData2> results = Connection().Dynamic().GetParentAndChildTestData(
+				returns: Query.Returns(OneToOne<ParentTestData, TestData>.Records)
+						.Then(Some<TestData2>.Records));
 
-				string value = "foo";
-
-				var dc = connection.Dynamic();
-
-				// going to infer the return type of the stored procedure rather than specifying it
-				Results<ParentTestData, TestData2> results = dc.InsightTestProc(
-					value,
-					returnType: typeof(Results<ParentTestData, TestData2>),
-					withGraphs: new Type[] { typeof(Graph<ParentTestData, TestData>) });
-
-				Assert.IsNotNull(results);
-				ParentTestData.Verify(results.Set1, withGraph: true);
-				TestData2.Verify(results.Set2);
-			}
-		}
-	}
-
-	/// <summary>
-	/// Tests dynamic connection.
-	/// </summary>
-	[TestFixture]
-	public class DynamicConnectionProcTests : BaseDbTest
-	{
-		#region SetUp and TearDown
-		[TestFixtureSetUp]
-		public override void SetUpFixture()
-		{
-			base.SetUpFixture();
-
-			// clean up old stuff first
-			CleanupObjects();
-
-			_connection.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
-			_connection.ExecuteSql("CREATE PROCEDURE [Int32TestProc] @p [Int32Table] READONLY AS SELECT * FROM @p");
-		}
-
-		[TestFixtureTearDown]
-		public override void TearDownFixture()
-		{
-			CleanupObjects();
-
-			base.TearDownFixture();
-		}
-
-		private void CleanupObjects()
-		{
-			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'Int32TestProc') DROP PROCEDURE [Int32TestProc]");
-			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
-		}
-		#endregion
-
-		/// <summary>
-		/// Make sure that using dynamic on an unopened connection properly auto-opens the connection when getting the procedure.
-		/// </summary>
-		[Test]
-		public void TestUnopenedConnection()
-		{
-			// make sure the connection is closed first
-			_connection.Close();
-			Assert.AreEqual(ConnectionState.Closed, _connection.State);
-
-			// call a proc that requires input parameters from a list
-			var result5 = _connection.Dynamic().Int32TestProc(new List<int>() { 5, 7 });
-			Assert.IsTrue(result5.Count == 2);
-			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+			Assert.IsNotNull(results);
+			ParentTestData.Verify(results.Set1, withGraph: true);
+			TestData2.Verify(results.Set2);
 		}
 
 		/// <summary>
@@ -327,7 +195,7 @@ namespace Insight.Tests
 			{
 				System.Configuration.ConfigurationManager.ConnectionStrings["Test"]
 					.ReliableDynamic<int>()
-					.Int32TestProcAsync(new List<int>() { 5, 7 })
+					.ReflectInt32TableAsync(new List<int>() { 5, 7 })
 					.Wait();
 			}
 		}
@@ -338,41 +206,36 @@ namespace Insight.Tests
 		[Test]
 		public void SqlExceptionShouldNotBeHiddenByDynamicCalls()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProcWithError (@Value varchar(128)) AS raiserror ('test', 18, 1)");
+			// in v2.0.1, we were using method.Invoke to execute the sql. 
+			// This would wrap the results in a TargetInvocationException and hide the SQL error.
+			Assert.Throws(typeof(SqlException), () => Connection().Dynamic().RaiseAnError(value: 4));
+			Assert.Throws(typeof(SqlException), () => Connection().Dynamic().RaiseAnError(value: 4, returnType: typeof(Results<int>)));
 
-				// in v2.0.1, we were using method.Invoke to execute the sql. 
-				// This would wrap the results in a TargetInvocationException and hide the SQL error.
-				Assert.Throws(typeof(SqlException), () => connection.Dynamic().InsightTestProcWithError(value: 4));
-				Assert.Throws(typeof(SqlException), () => connection.Dynamic().InsightTestProcWithError(value: 4, returnType: typeof(Results<int>)));
-
-				Assert.Throws(typeof(SqlException), () =>
+			Assert.Throws(typeof(SqlException), () =>
+				{
+					try
 					{
-						try
-						{
-							connection.Dynamic().InsightTestProcWithErrorAsync(value: 4).Wait();
-						}
-						catch (AggregateException e)
-						{
-							throw e.Flatten().InnerExceptions.OfType<SqlException>().First();
-						}
+						Connection().Dynamic().RaiseAnErrorAsync(value: 4).Wait();
 					}
-				);
-
-				Assert.Throws(typeof(SqlException), () =>
+					catch (AggregateException e)
 					{
-						try
-						{
-							connection.Dynamic().InsightTestProcWithErrorAsync(value: 4, returnType: typeof(Results<int>)).Wait();
-						}
-						catch (AggregateException e)
-						{
-							throw e.Flatten().InnerExceptions.OfType<SqlException>().First();
-						}
+						throw e.Flatten().InnerExceptions.OfType<SqlException>().First();
 					}
-				);
-			}
+				}
+			);
+
+			Assert.Throws(typeof(SqlException), () =>
+				{
+					try
+					{
+						Connection().Dynamic().RaiseAnErrorAsync(value: 4, returnType: typeof(Results<int>)).Wait();
+					}
+					catch (AggregateException e)
+					{
+						throw e.Flatten().InnerExceptions.OfType<SqlException>().First();
+					}
+				}
+			);
 		}
 
 		#region Dynamic Proc with Table Parameters
@@ -384,26 +247,12 @@ namespace Insight.Tests
 		[Test]
 		public void DynamicProcCanHaveTableParameters()
 		{
-			try
-			{
-				_connection.ExecuteSql("CREATE TYPE Dynamic_Table AS TABLE (value int)");
+			Assert.AreEqual(0, Connection().Dynamic().DynamicProcWithTable(new { Table = Parameters.EmptyList }).Count);
+			Assert.AreEqual(0, Connection().Dynamic().DynamicProcWithTable(Table: Parameters.EmptyList).Count);
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
-				{
-					connection.ExecuteSql("CREATE PROC DynamicProcWithTable (@i int = 0, @table Dynamic_Table READONLY, @j int = 0) AS SELECT * FROM @table");
-
-					Assert.AreEqual(0, connection.Dynamic().DynamicProcWithTable(new { Table = Parameters.EmptyList }).Count);
-					Assert.AreEqual(0, connection.Dynamic().DynamicProcWithTable(Table: Parameters.EmptyList).Count);
-
-					var results = connection.Dynamic().DynamicProcWithTable(Table: new List<DynamicTableType>() { new DynamicTableType() { Value = 9 } });
-					Assert.AreEqual(1, results.Count);
-					Assert.AreEqual(9, results[0].Value);
-				}
-			}
-			finally
-			{
-				_connection.ExecuteSql("DROP TYPE Dynamic_Table");
-			}
+			var results = Connection().Dynamic().DynamicProcWithTable(Table: new List<DynamicTableType>() { new DynamicTableType() { Value = 9 } });
+			Assert.AreEqual(1, results.Count);
+			Assert.AreEqual(9, results[0].Value);
 		}
 		#endregion
 	}

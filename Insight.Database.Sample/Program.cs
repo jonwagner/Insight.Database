@@ -379,8 +379,8 @@ namespace Insight.Database.Sample
 			Beer ipa = new Beer() { Name = "IPA" };
 			Database.Connection().ExecuteSql("INSERT INTO Beer (Name) VALUES (@Name)", ipa);
 
-			Database.Connection().ForEachSql("SELECT * FROM Beer WHERE Name = @Name", new { Name = "IPA" },
-				(dynamic beer) =>
+			Database.Connection().ForEachDynamicSql("SELECT * FROM Beer WHERE Name = @Name", new { Name = "IPA" },
+				beer =>
 				{
 					beer.OriginalGravity = 4.2m;
 

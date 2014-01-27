@@ -8,6 +8,7 @@ using Insight.Database;
 using System.Data.Common;
 using System.Data;
 using System.Threading;
+using Insight.Tests.Cases;
 
 // since the interface and types are private, we have to let insight have access to them
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Insight.Database")]
@@ -21,27 +22,27 @@ namespace Insight.Tests
 		void ExecuteSomething();
 		void ExecuteSomethingWithParameters(int p, string q);
 		int ExecuteSomethingScalar(int p);
-		TestDataClasses.ParentTestData SingleObject();
+		ParentTestData SingleObject();
 		IList<int> QueryValue(int p);
 		List<int> QueryValueList(int p);
 		IEnumerable<int> QueryValueEnumerable(int p);
-		IList<TestDataClasses.ParentTestData> QueryObject();
-		int ObjectAsParameter(TestDataClasses.ParentTestData data);
-		IList<int> ObjectListAsParameter(IEnumerable<TestDataClasses.ParentTestData> data);
-		Results<TestDataClasses.ParentTestData, int> QueryResults(int p);
+		IList<ParentTestData> QueryObject();
+		int ObjectAsParameter(ParentTestData data);
+		IList<int> ObjectListAsParameter(IEnumerable<ParentTestData> data);
+		Results<ParentTestData, int> QueryResults(int p);
 
 		// same procs, asynchronously
 		Task ExecuteSomethingAsync();
 		Task ExecuteSomethingWithParametersAsync(int p, string q);
 		Task<int> ExecuteSomethingScalarAsync(int p);
-		Task<TestDataClasses.ParentTestData> SingleObjectAsync();
+		Task<ParentTestData> SingleObjectAsync();
 		Task<IList<int>> QueryValueAsync(int p);
 		Task<IEnumerable<int>> QueryValueEnumerableAsync(int p);
 		Task<List<int>> QueryValueListAsync(int p);
-		Task<IList<TestDataClasses.ParentTestData>> QueryObjectAsync();
-		Task<int> ObjectAsParameterAsync(TestDataClasses.ParentTestData data);
-		Task<IList<int>> ObjectListAsParameterAsync(IEnumerable<TestDataClasses.ParentTestData> data);
-		Task<Results<TestDataClasses.ParentTestData, int>> QueryResultsAsync(int p);
+		Task<IList<ParentTestData>> QueryObjectAsync();
+		Task<int> ObjectAsParameterAsync(ParentTestData data);
+		Task<IList<int>> ObjectListAsParameterAsync(IEnumerable<ParentTestData> data);
+		Task<Results<ParentTestData, int>> QueryResultsAsync(int p);
 
 		// inline overrides
 		[Sql("SELECT X=CONVERT(varchar(128), @p)")]
@@ -51,23 +52,11 @@ namespace Insight.Tests
 		[Sql(Schema="dbo", Sql="ExecuteSomethingScalar")]
 		int InlineSqlWithSchema(int p);
 
-		// graph override
-		[DefaultGraph(typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>))]
-		[Sql("QueryObject", CommandType.StoredProcedure)]
-		TestDataClasses.ParentTestData QueryWithGraph();
-
-		// graph override for results
-		[DefaultGraph(
-			typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>),
-			null)]
-		[Sql("QueryResults", CommandType.StoredProcedure)]
-		Results<TestDataClasses.ParentTestData, int> QueryResultsWithGraph(int p);
+		// TODO: override structure with attributes
 	}
 
 	interface ITestWithSpecialParameters
 	{
-		IList<TestDataClasses.ParentTestData> QueryObject(Type withGraph);
-		Task<Results<TestDataClasses.ParentTestData, int>> QueryResultsAsync(Type[] withGraphs, int p);
 		void ExecuteSomething(int? commandTimeout);
 		Task ExecuteSomethingAsync(CancellationToken? cancellationToken);
 
@@ -77,16 +66,16 @@ namespace Insight.Tests
 
 	interface ITestInsertUpdate
 	{
-		void InsertTestData(TestDataClasses.TestData data);
-		void UpdateTestData(TestDataClasses.TestData data);
-		void UpsertTestData(TestDataClasses.TestData data);
-		void InsertMultipleTestData(IEnumerable<TestDataClasses.TestData> data);
-		void UpsertMultipleTestData(IEnumerable<TestDataClasses.TestData> data);
+		void InsertTestData(TestData data);
+		void UpdateTestData(TestData data);
+		void UpsertTestData(TestData data);
+		void InsertMultipleTestData(IEnumerable<TestData> data);
+		void UpsertMultipleTestData(IEnumerable<TestData> data);
 
-		Task InsertTestDataAsync(TestDataClasses.TestData data);
-		Task UpsertTestDataAsync(TestDataClasses.TestData data);
-		Task InsertMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
-		Task UpsertMultipleTestDataAsync(IEnumerable<TestDataClasses.TestData> data);
+		Task InsertTestDataAsync(TestData data);
+		Task UpsertTestDataAsync(TestData data);
+		Task InsertMultipleTestDataAsync(IEnumerable<TestData> data);
+		Task UpsertMultipleTestDataAsync(IEnumerable<TestData> data);
 	}
 
 	interface ITestOutputParameters
@@ -94,8 +83,8 @@ namespace Insight.Tests
 		void ExecuteWithOutputParameter(out int p);
 		int ExecuteScalarWithOutputParameter(out int p);
 		IList<int> QueryWithOutputParameter(out int p);
-		Results<TestDataClasses.ParentTestData, int> QueryResultsWithOutputParameter(out int p);
-		void InsertWithOutputParameter(IEnumerable<TestDataClasses.TestData> data, out int p);
+		Results<ParentTestData, int> QueryResultsWithOutputParameter(out int p);
+		void InsertWithOutputParameter(IEnumerable<TestData> data, out int p);
 	}
 
 	[Sql(Schema = "dbo")]
@@ -106,80 +95,57 @@ namespace Insight.Tests
 	#endregion
 
 	[TestFixture]
-	public class InterfaceTests : BaseDbTest
+	public class InterfaceTests : BaseTest
 	{
 		#region Test Interface Is Generated
 		[Test]
 		public void InterfaceIsGenerated()
 		{
-			try
-			{
-				_connection.ExecuteSql("CREATE TYPE ObjectTable AS TABLE (ParentX [int])");
+			var connection = Connection();
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
-				{
-					// make sure that we can create an interface
-					ITest1 i = connection.As<ITest1>();
-					Assert.IsNotNull(i);
+			// make sure that we can create an interface
+			ITest1 i = connection.As<ITest1>();
+			Assert.IsNotNull(i);
 
-					// make sure that the wrapper is still a connection
-					DbConnection c = i as DbConnection;
-					Assert.IsNotNull(c);
+			// make sure that the wrapper is still a connection
+			DbConnection c = i as DbConnection;
+			Assert.IsNotNull(c);
 
-					// create some procs to call
-					connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT NULL");
-					connection.ExecuteSql("CREATE PROC ExecuteSomethingWithParameters @p int, @q [varchar](128) AS SELECT @p, @q");
-					connection.ExecuteSql("CREATE PROC ExecuteSomethingScalar @p int AS SELECT @p");
-					connection.ExecuteSql("CREATE PROC QueryValue @p int AS SELECT @p UNION ALL SELECT @p");
-					connection.ExecuteSql("CREATE PROC QueryObject AS " + TestDataClasses.ParentTestData.Sql);
-					connection.ExecuteSql("CREATE PROC SingleObject AS " + TestDataClasses.ParentTestData.Sql);
-					connection.ExecuteSql("CREATE PROC ObjectAsParameter @ParentX [int] AS SELECT @ParentX");
-					connection.ExecuteSql("CREATE PROC ObjectListAsParameter (@objects [ObjectTable] READONLY) AS SELECT ParentX FROM @objects");
-					connection.ExecuteSql("CREATE PROC QueryResults @p int AS " + TestDataClasses.ParentTestData.Sql + " SELECT @p");
-					
-					// let's call us some methods
-					i.ExecuteSomething();
-					i.ExecuteSomethingWithParameters(5, "6");
-					Assert.AreEqual(9, i.ExecuteSomethingScalar(9));
-					i.SingleObject().Verify(false);
-					Assert.AreEqual(2, i.QueryValue(9).Count());
-					TestDataClasses.ParentTestData.Verify(i.QueryObject(), false);
-					Assert.AreEqual(11, i.ObjectAsParameter(new TestDataClasses.ParentTestData() { ParentX = 11 }));
-					Assert.AreEqual(11, i.ObjectListAsParameter(new[] { new TestDataClasses.ParentTestData() { ParentX = 11 } }).First());
+			// let's call us some methods
+			i.ExecuteSomething();
+			i.ExecuteSomethingWithParameters(5, "6");
+			Assert.AreEqual(9, i.ExecuteSomethingScalar(9));
+			i.SingleObject().Verify(false);
+			Assert.AreEqual(2, i.QueryValue(9).Count());
+			ParentTestData.Verify(i.QueryObject(), false);
+			Assert.AreEqual(11, i.ObjectAsParameter(new ParentTestData() { ParentX = 11 }));
+			Assert.AreEqual(11, i.ObjectListAsParameter(new[] { new ParentTestData() { ParentX = 11 } }).First());
 
-					var results = i.QueryResults(7);
-					TestDataClasses.ParentTestData.Verify(results.Set1, false);
-					Assert.AreEqual(7, results.Set2.First());
+			var results = i.QueryResults(7);
+			ParentTestData.Verify(results.Set1, false);
+			Assert.AreEqual(7, results.Set2.First());
 
-					// let's call them asynchronously
-					i.ExecuteSomethingAsync().Wait();
-					i.ExecuteSomethingWithParametersAsync(5, "6").Wait();
-					Assert.AreEqual(9, i.ExecuteSomethingScalarAsync(9).Result);
-					i.SingleObjectAsync().Result.Verify(false);
-					Assert.AreEqual(2, i.QueryValueAsync(9).Result.Count());
-					TestDataClasses.ParentTestData.Verify(i.QueryObjectAsync().Result, false);
-					Assert.AreEqual(11, i.ObjectAsParameterAsync(new TestDataClasses.ParentTestData() { ParentX = 11 }).Result);
-					Assert.AreEqual(11, i.ObjectListAsParameterAsync(new[] { new TestDataClasses.ParentTestData() { ParentX = 11 } }).Result.First());
+			// let's call them asynchronously
+			i.ExecuteSomethingAsync().Wait();
+			i.ExecuteSomethingWithParametersAsync(5, "6").Wait();
+			Assert.AreEqual(9, i.ExecuteSomethingScalarAsync(9).Result);
+			i.SingleObjectAsync().Result.Verify(false);
+			Assert.AreEqual(2, i.QueryValueAsync(9).Result.Count());
+			ParentTestData.Verify(i.QueryObjectAsync().Result, false);
+			Assert.AreEqual(11, i.ObjectAsParameterAsync(new ParentTestData() { ParentX = 11 }).Result);
+			Assert.AreEqual(11, i.ObjectListAsParameterAsync(new[] { new ParentTestData() { ParentX = 11 } }).Result.First());
 
-					results = i.QueryResultsAsync(7).Result;
-					TestDataClasses.ParentTestData.Verify(results.Set1, false);
-					Assert.AreEqual(7, results.Set2.First());
+			results = i.QueryResultsAsync(7).Result;
+			ParentTestData.Verify(results.Set1, false);
+			Assert.AreEqual(7, results.Set2.First());
 
-					// inline SQL!
-					Assert.AreEqual("42", i.InlineSql(42));
-					Assert.AreEqual(99, i.InlineSqlProcOverride(99));
-					Assert.AreEqual(98, i.InlineSqlWithSchema(98));
-					Assert.AreEqual(98, connection.As<ITestWithSqlAttribute>().ExecuteSomethingScalar(98));
+			// inline SQL!
+			Assert.AreEqual("42", i.InlineSql(42));
+			Assert.AreEqual(99, i.InlineSqlProcOverride(99));
+			Assert.AreEqual(98, i.InlineSqlWithSchema(98));
+			Assert.AreEqual(98, connection.As<ITestWithSqlAttribute>().ExecuteSomethingScalar(98));
 
-					// graphs
-					i.QueryWithGraph().Verify(true);
-					i.QueryResultsWithGraph(87).Set1.First().Verify(true);
-				}
-			}
-			finally
-			{
-				_connection.ExecuteSql("DROP TYPE ObjectTable");
-			}
+			// TODO: test interface with results on attribute
 		}
 		#endregion
 
@@ -187,30 +153,16 @@ namespace Insight.Tests
 		[Test]
 		public void InterfaceWithSpecialParametersIsGenerated()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = Connection().OpenConnection())
 			{
 				// make sure that we can create an interface
 				ITestWithSpecialParameters i = connection.As<ITestWithSpecialParameters>();
 				Assert.IsNotNull(i);
 
-				// create some procs to call
-				connection.ExecuteSql("CREATE PROC QueryObject AS " + TestDataClasses.ParentTestData.Sql);
-				connection.ExecuteSql("CREATE PROC QueryResults @p int AS " + TestDataClasses.ParentTestData.Sql + " SELECT @p");
-				connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT NULL");
-
 				// let's call us some methods
 
 				// commandTimeout
 				i.ExecuteSomething(30);
-
-				// withGraph
-				TestDataClasses.ParentTestData.Verify(i.QueryObject(typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>)), true);
-
-				// withGraphs
-				Type[] graphs = new[] { typeof(Graph<TestDataClasses.ParentTestData, TestDataClasses.TestData>), null };
-				var results = i.QueryResultsAsync(graphs, 7).Result;
-				TestDataClasses.ParentTestData.Verify(results.Set1, true);
-				Assert.AreEqual(7, results.Set2.First());
 
 				// a cancelled cancellation token
 				CancellationTokenSource cts = new CancellationTokenSource();
@@ -219,7 +171,10 @@ namespace Insight.Tests
 
 				// override of the transaction
 				// NOTE: if you use OpenWithTransaction, the transaction is propagated automatically, so you don't need to do this
-				i.ExecuteSomethingWithTransaction(connection);
+				using (var tx = connection.BeginTransaction())
+				{
+					i.ExecuteSomethingWithTransaction(tx);
+				}
 			}
 		}
 		#endregion
@@ -228,9 +183,8 @@ namespace Insight.Tests
 		[Test]
 		public void ConnectionOpenedWithInterfaceAndTransaction()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransactionAs<ITest1>())
+			using (var connection = Connection().OpenWithTransactionAs<ITest1>())
 			{
-				connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT NULL");
 				connection.ExecuteSomething();
 				connection.Rollback();
 			}
@@ -241,81 +195,62 @@ namespace Insight.Tests
 		[Test]
 		public void TestInsert()
 		{
-			try
+			using (var connection = Connection().OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE TYPE InsertTestDataTVP AS TABLE (X [int], Z [int])");
+				var i = connection.As<ITestInsertUpdate>();
+				connection.Execute("ResetTestDataTable");
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				// single insert
+				TestData data = new TestData() { Z = 4 };
+				i.InsertTestData(data);
+				Assert.AreEqual(1, data.X, "ID should be returned");
+
+				// single update
+				i.UpdateTestData(data);
+				Assert.AreEqual(1, data.X, "ID should NOT be reset");
+
+				// single upsert
+				i.UpsertTestData(data);
+				Assert.AreEqual(0, data.X, "ID should be reset");
+
+				// multiple insert
+				var list = new[]
 				{
-					connection.ExecuteSql("CREATE TABLE InsertTestDataTable (X [int] identity (5, 1), Z [int])");
-					connection.ExecuteSql("CREATE PROC InsertTestData @Z [int] AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X VALUES (@Z)");
-					connection.ExecuteSql("CREATE PROC UpdateTestData @X [int], @Z [int] AS UPDATE InsertTestDataTable SET Z=@Z WHERE X=@X SELECT X=0");
-					connection.ExecuteSql("CREATE PROC UpsertTestData @X [int], @Z [int] AS UPDATE InsertTestDataTable SET Z=@Z WHERE X=@X SELECT X=0");
-					connection.ExecuteSql("CREATE PROC InsertMultipleTestData @data [InsertTestDataTVP] READONLY AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X SELECT Z FROM @data");
-					connection.ExecuteSql("CREATE PROC UpsertMultipleTestData @data [InsertTestDataTVP] READONLY AS UPDATE InsertTestDataTable SET Z=data.Z FROM @data data WHERE data.X = InsertTestDataTable.X SELECT X=0 FROM @data");
+					new TestData() { Z = 5 },
+					new TestData() { Z = 6 }
+				};
+				i.InsertMultipleTestData(list);
+				Assert.AreEqual(2, list[0].X, "ID should be returned");
+				Assert.AreEqual(3, list[1].X, "ID should be returned");
 
-					var i = connection.As<ITestInsertUpdate>();
+				// multiple update
+				i.UpsertMultipleTestData(list);
+				Assert.AreEqual(0, list[0].X, "ID should be reset");
+				Assert.AreEqual(0, list[1].X, "ID should be reset");
 
-					{
-						// single insert
-						TestDataClasses.TestData data = new TestDataClasses.TestData() { Z = 4 };
-						i.InsertTestData(data);
-						Assert.AreEqual(5, data.X, "ID should be returned");
+				// single insert
+				data = new TestData() { Z = 4 };
+				i.InsertTestDataAsync(data).Wait();
+				Assert.AreEqual(4, data.X, "ID should be returned");
 
-						// single update
-						i.UpdateTestData(data);
-						Assert.AreEqual(5, data.X, "ID should NOT be reset");
+				// single update
+				i.UpsertTestDataAsync(data).Wait();
+				Assert.AreEqual(0, data.X, "ID should be reset");
 
-						// single upsert
-						i.UpsertTestData(data);
-						Assert.AreEqual(0, data.X, "ID should be reset");
+				// multiple insert
+				list = new[]
+				{
+					new TestData() { Z = 5 },
+					new TestData() { Z = 6 }
+				};
+				i.InsertMultipleTestDataAsync(list).Wait();
+				Assert.AreEqual(5, list[0].X, "ID should be returned");
+				Assert.AreEqual(6, list[1].X, "ID should be returned");
 
-						// multiple insert
-						var list = new[]
-						{
-							new TestDataClasses.TestData() { Z = 5 },
-							new TestDataClasses.TestData() { Z = 6 }
-						};
-						i.InsertMultipleTestData(list);
-						Assert.AreEqual(6, list[0].X, "ID should be returned");
-						Assert.AreEqual(7, list[1].X, "ID should be returned");
-
-						// multiple update
-						i.UpsertMultipleTestData(list);
-						Assert.AreEqual(0, list[0].X, "ID should be reset");
-						Assert.AreEqual(0, list[1].X, "ID should be reset");
-					}
-
-					{
-						// single insert
-						TestDataClasses.TestData data = new TestDataClasses.TestData() { Z = 4 };
-						i.InsertTestDataAsync(data).Wait();
-						Assert.AreEqual(8, data.X, "ID should be returned");
-
-						// single update
-						i.UpsertTestDataAsync(data).Wait();
-						Assert.AreEqual(0, data.X, "ID should be reset");
-
-						// multiple insert
-						var list = new[]
-						{
-							new TestDataClasses.TestData() { Z = 5 },
-							new TestDataClasses.TestData() { Z = 6 }
-						};
-						i.InsertMultipleTestDataAsync(list).Wait();
-						Assert.AreEqual(9, list[0].X, "ID should be returned");
-						Assert.AreEqual(10, list[1].X, "ID should be returned");
-
-						// multiple update
-						i.UpsertMultipleTestDataAsync(list).Wait();
-						Assert.AreEqual(0, list[0].X, "ID should be reset");
-						Assert.AreEqual(0, list[1].X, "ID should be reset");
-					}
-				}
-			}
-			finally
-			{
-				_connection.ExecuteSql("DROP TYPE InsertTestDataTVP");
+				// multiple update
+				i.UpsertMultipleTestDataAsync(list).Wait();
+				Assert.AreEqual(0, list[0].X, "ID should be reset");
+				Assert.AreEqual(0, list[1].X, "ID should be reset");
 			}
 		}
 		#endregion
@@ -327,19 +262,10 @@ namespace Insight.Tests
 		[Test]
 		public void TestInterfaceMultithreaded()
 		{
-			try
-			{
-				_connection.ExecuteSql("CREATE PROC ExecuteSomething AS SELECT 1");
-
 #if !NET35
-				// this only works in 4.0 and later
-				Parallel.For(0, 100, _ => TryInterfaceCall(100));
+			// this only works in 4.0 and later
+			Parallel.For(0, 100, _ => TryInterfaceCall(100));
 #endif
-			}
-			finally
-			{
-				_connection.ExecuteSql("DROP PROC ExecuteSomething");
-			}
 		}
 
 		public void TryInterfaceCall(int count)
@@ -357,142 +283,168 @@ namespace Insight.Tests
 		[Test]
 		public void TestOutputParameters()
 		{
-			try
+			using (var connection = Connection().OpenWithTransaction())
 			{
-				_connection.ExecuteSql("CREATE TYPE InsertTestDataTVP AS TABLE (X [int], Z [int])");
+				var i = connection.As<ITestOutputParameters>();
 
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
-				{
-					connection.ExecuteSql("CREATE TABLE InsertTestDataTable (X [int] identity (5, 1), Z [int])");
-					connection.ExecuteSql("CREATE PROC ExecuteWithOutputParameter @p [int] = NULL OUTPUT AS SELECT @p=@p+1");
-					connection.ExecuteSql("CREATE PROC ExecuteScalarWithOutputParameter @p [int] = NULL OUTPUT AS SELECT @p=@p+1 SELECT 7");
-					connection.ExecuteSql("CREATE PROC QueryWithOutputParameter @p [int] = NULL OUTPUT AS SELECT @p=@p+1 SELECT 5");
-					connection.ExecuteSql("CREATE PROC QueryResultsWithOutputParameter @p int OUTPUT AS " + TestDataClasses.ParentTestData.Sql + " SELECT @p=@p+1 SELECT @p");
-					connection.ExecuteSql("CREATE PROC InsertWithOutputParameter @data [InsertTestDataTVP] READONLY, @p [int] OUTPUT AS INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X SELECT z FROM @data OUTPUT SELECT @p=@p+1");
+				// test execute with output parameter
+				int original = 2;
+				int p = original;
+				i.ExecuteWithOutputParameter(out p);
+				Assert.AreEqual(original + 1, p);
 
-					var i = connection.As<ITestOutputParameters>();
+				// test executescalar with output parameter
+				p = original;
+				var scalar = i.ExecuteScalarWithOutputParameter(out p);
+				Assert.AreEqual(original + 1, p);
+				Assert.AreEqual(7, scalar);
 
-					// test execute with output parameter
-					int original = 2;
-					int p = original;
-					i.ExecuteWithOutputParameter(out p);
-					Assert.AreEqual(original + 1, p);
+				// test query with output parameters
+				p = original;
+				var results = i.QueryWithOutputParameter(out p);
+				Assert.AreEqual(original + 1, p);
+				Assert.AreEqual(1, results.Count);
+				Assert.AreEqual(5, results[0]);
 
-					// test executescalar with output parameter
-					p = original;
-					var scalar = i.ExecuteScalarWithOutputParameter(out p);
-					Assert.AreEqual(original + 1, p);
-					Assert.AreEqual(7, scalar);
+				// test query results with output parameters
+				p = original;
+				i.QueryResultsWithOutputParameter(out p);
+				Assert.AreEqual(original + 1, p);
 
-					// test query with output parameters
-					p = original;
-					var results = i.QueryWithOutputParameter(out p);
-					Assert.AreEqual(original + 1, p);
-					Assert.AreEqual(1, results.Count);
-					Assert.AreEqual(5, results[0]);
-
-					// test query results with output parameters
-					p = original;
-					i.QueryResultsWithOutputParameter(out p);
-					Assert.AreEqual(original + 1, p);
-
-					// test insert with output parameters
-					TestDataClasses.TestData data = new TestDataClasses.TestData() { Z = 4 };
-					var list = new List<TestDataClasses.TestData>() { data };
-					p = original;
-					i.InsertWithOutputParameter(list, out p);
-					Assert.AreEqual(original + 1, p);
-				}
-			}
-			finally
-			{
-				_connection.ExecuteSql("DROP TYPE InsertTestDataTVP");
+				// test insert with output parameters
+				TestData data = new TestData() { Z = 4 };
+				var list = new List<TestData>() { data };
+				p = original;
+				i.InsertWithOutputParameter(list, out p);
+				Assert.AreEqual(original + 1, p);
 			}
 		}
 		#endregion
 
 		#region List Return Tests
+		public interface IReturnItems
+		{
+			[Sql("SELECT 1 UNION SELECT 2")] IEnumerable<int> QueryEnumerable();
+			[Sql("SELECT 1 UNION SELECT 2")] IList<int> QueryIList();
+			[Sql("SELECT 1 UNION SELECT 2")] List<int> QueryList();
+			[Sql("SELECT 1 UNION SELECT 2")] ICollection<int> QueryCollection();
+			[Sql("SELECT 1 UNION SELECT 2")] Results<int> QueryResults();
+			[Sql("SELECT 1 UNION SELECT 2")] Task<IEnumerable<int>> QueryEnumerableAsync();
+			[Sql("SELECT 1 UNION SELECT 2")] Task<IList<int>> QueryIListAsync();
+			[Sql("SELECT 1 UNION SELECT 2")] Task<List<int>> QueryListAsync();
+			[Sql("SELECT 1 UNION SELECT 2")] Task<ICollection<int>> QueryCollectionAsync();
+			[Sql("SELECT 1 UNION SELECT 2")] Task<Results<int>> QueryResultsAsync();
+		}
+
 		[Test]
 		public void DifferentTypesOfListsAreSupportedAsReturnTypes()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = Connection().OpenWithTransaction())
 			{
-				connection.ExecuteSql("CREATE PROC QueryValue @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
-				connection.ExecuteSql("CREATE PROC QueryValueEnumerable @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
-				connection.ExecuteSql("CREATE PROC QueryValueList @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
-				connection.ExecuteSql("CREATE PROC QueryResults @p int AS BEGIN SELECT 1 UNION SELECT 2 END");
+				IReturnItems i = connection.As<IReturnItems>();
 
-				ITest1 i = connection.As<ITest1>();
-
-				IEnumerable<int> result = i.QueryValue(1);
+				IEnumerable<int> result = i.QueryEnumerable();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(2, result.Count());
 
-				result = i.QueryValueList(1);
+				result = i.QueryIList();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(2, result.Count());
 
-				result = i.QueryValueEnumerable(1);
+				result = i.QueryList();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(2, result.Count());
 
-				result = i.QueryValueAsync(1).Result;
+				result = i.QueryCollection();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(2, result.Count());
 
-				result = i.QueryValueListAsync(1).Result;
+				result = i.QueryResults().Set1;
 				Assert.IsNotNull(result);
 				Assert.AreEqual(2, result.Count());
 
-				result = i.QueryValueEnumerableAsync(1).Result;
+				result = i.QueryEnumerableAsync().Result;
 				Assert.IsNotNull(result);
 				Assert.AreEqual(2, result.Count());
 
-				var results = i.QueryResults(1);
-				Assert.IsNotNull(results.Set1);
-				Assert.AreEqual(2, results.Set1.Count);
+				result = i.QueryIListAsync().Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryListAsync().Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryCollectionAsync().Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
+
+				result = i.QueryResultsAsync().Result.Set1;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(2, result.Count());
 			}
+		}
+
+		public interface IReturnNothing
+		{
+			[Sql("print ''")] IEnumerable<int> EmptyEnumerable();
+			[Sql("print ''")] IList<int> EmptyIList();
+			[Sql("print ''")] List<int> EmptyList();
+			[Sql("print ''")] ICollection<int> EmptyCollection();
+			[Sql("print ''")] Results<int> EmptyResults();
+			[Sql("print ''")] Task<IEnumerable<int>> EmptyEnumerableAsync();
+			[Sql("print ''")] Task<IList<int>> EmptyIListAsync();
+			[Sql("print ''")] Task<List<int>> EmptyListAsync();
+			[Sql("print ''")] Task<ICollection<int>> EmptyCollectionAsync();
+			[Sql("print ''")] Task<Results<int>> EmptyResultsAsync();
 		}
 
 		[Test]
 		public void MissingResultSetShouldReturnEmptyListRegardlessOfReturnType()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = Connection().OpenWithTransaction())
 			{
-				connection.ExecuteSql("CREATE PROC QueryValue @p int AS BEGIN PRINT 'foo' END");
-				connection.ExecuteSql("CREATE PROC QueryValueEnumerable @p int AS BEGIN PRINT 'foo' END");
-				connection.ExecuteSql("CREATE PROC QueryValueList @p int AS BEGIN PRINT 'foo' END");
-				connection.ExecuteSql("CREATE PROC QueryResults @p int AS BEGIN PRINT 'foo' END");
+				var i = connection.As<IReturnNothing>();
 
-				ITest1 i = connection.As<ITest1>();
-
-				IEnumerable<int> result = i.QueryValue(1);
+				IEnumerable<int> result = i.EmptyEnumerable();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(0, result.Count());
 
-				result = i.QueryValueList(1);
+				result = i.EmptyIList();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(0, result.Count());
 
-				result = i.QueryValueEnumerable(1);
+				result = i.EmptyList();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(0, result.Count());
 
-				result = i.QueryValueAsync(1).Result;
+				result = i.EmptyCollection();
 				Assert.IsNotNull(result);
 				Assert.AreEqual(0, result.Count());
 
-				result = i.QueryValueListAsync(1).Result;
+				result = i.EmptyResults().Set1;
 				Assert.IsNotNull(result);
 				Assert.AreEqual(0, result.Count());
 
-				result = i.QueryValueEnumerableAsync(1).Result;
+				result = i.EmptyEnumerableAsync().Result;
 				Assert.IsNotNull(result);
 				Assert.AreEqual(0, result.Count());
 
-				var results = i.QueryResults(1);
-				Assert.IsNotNull(results.Set1);
-				Assert.AreEqual(0, results.Set1.Count);
+				result = i.EmptyIListAsync().Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.EmptyListAsync().Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.EmptyCollectionAsync().Result;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
+
+				result = i.EmptyResultsAsync().Result.Set1;
+				Assert.IsNotNull(result);
+				Assert.AreEqual(0, result.Count());
 			}
 		}
 		#endregion
@@ -508,52 +460,257 @@ namespace Insight.Tests
 		[Test, ExpectedException(ExpectedMessage = "The stored procedure 'MySchema.MyOtherInsertProc' doesn't exist.")]
 		public void SchemaShouldBeInherited()
 		{
-			_connection.As<IBeerRepositoryWithSchema>().InsertBeer(1);
+			Connection().As<IBeerRepositoryWithSchema>().InsertBeer(1);
+		}
+		#endregion
+
+		#region Structure Tests
+		internal interface IHaveStructure
+		{
+			[Sql("SELECT ID=1, ID=2")]
+			IList<InfiniteBeer> GetBeerAndMoreWithExplicitStructure(Insight.Database.Structure.IQueryReader<IList<InfiniteBeer>> returns);
+
+			[Sql("SELECT ID=1, ID=2")]
+			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
+			IList<InfiniteBeer> GetBeerAndMoreWithAttributeIList();
+			[Sql("SELECT ID=1, ID=2")]
+			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
+			ICollection<InfiniteBeer> GetBeerAndMoreWithAttributeICollection();
+			[Sql("SELECT ID=1, ID=2")]
+			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
+			IEnumerable<InfiniteBeer> GetBeerAndMoreWithAttributeIEnumerable();
+			[Sql("SELECT ID=1, ID=2")]
+			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
+			List<InfiniteBeer> GetBeerAndMoreWithAttributeList();
+
+			[Sql("SELECT ID=1, ID=2")]
+			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
+			Task<IList<InfiniteBeer>> GetBeerAndMoreWithAttributeAsync();
+
+			[Sql("SELECT ID=1, ID=2; SELECT ID=2, ID=2")]
+			[Recordset(1, typeof(InfiniteBeer), typeof(InfiniteBeer))]
+			Results<InfiniteBeer, InfiniteBeer> GetBeerResultsWithAttribute();
+
+			[Sql("SELECT ParentX=1; SELECT TotalCount=70")]
+			PageData<ParentTestData> GetDerivedRecordset();
+
+			[Sql("SELECT ID=1; SELECT ParentID=1, ID=1")]
+			[Recordset(0, typeof(InfiniteBeerList))]
+			[Recordset(1, typeof(InfiniteBeerList), IsChild = true)]
+			IList<InfiniteBeerList> GetBeerWithChildrenList();
+			[Sql("SELECT ID=1; SELECT ParentID=1, ID=1")]
+			[Recordset(0, typeof(InfiniteBeerList))]
+			[Recordset(1, typeof(InfiniteBeerList), IsChild = true)]
+			Results<InfiniteBeerList> GetBeerWithChildrenResults();
+
+			[Sql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ParentID=1, ID=3")]
+			[Recordset(1, typeof(Beer), IsChild = true)]
+			[Recordset(2, typeof(Wine), IsChild = true)]
+			IList<LiquorStore> GetLiquorStoreWithMultipleChildren();
+
+			[Sql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ParentID=1, ID=3; SELECT ID=4")]
+			[Recordset(1, typeof(Beer), IsChild = true)]
+			[Recordset(2, typeof(Wine), IsChild = true)]
+			[Recordset(3, typeof(Beer))]
+			Results<LiquorStore, Beer> GetLiquorStoreWithChildrenAndMore();
+
+			[Sql("SELECT Foo=1; SELECT ParentID=1, ID=2; SELECT ParentID=1, ID=3; SELECT ID=4")]
+			[Recordset(1, typeof(Beer), IsChild = true, Id = "Foo", Into = "OtherBeer")]
+			[Recordset(2, typeof(Wine), IsChild = true, Id = "Foo")]
+			[Recordset(3, typeof(Beer))]
+			Results<LiquorStoreNeedingFieldOverrides, Beer> GetLiquorStoreWithChildrenAndMoreWithOverrides();
+		}
+
+		[Test]
+		public void CanPassStructureToInterface()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetBeerAndMoreWithExplicitStructure(Insight.Database.Structure.ListReader<InfiniteBeer, InfiniteBeer>.Default);
+
+			Assert.AreEqual(1, result.Count);
+			var beer = result[0];
+			Assert.IsNotNull(beer);
+			Assert.AreEqual(1, beer.ID);
+			Assert.IsNotNull(beer.More);
+			Assert.AreEqual(2, beer.More.ID);
+		}
+
+		[Test]
+		public void CanUseAttributeToGetList()
+		{
+			var i = Connection().As<IHaveStructure>();
+
+			var calls = new Func<IEnumerable<InfiniteBeer>>[] {
+				() => i.GetBeerAndMoreWithAttributeIList(),
+				() => i.GetBeerAndMoreWithAttributeIEnumerable(),
+				() => i.GetBeerAndMoreWithAttributeICollection(),
+				() => i.GetBeerAndMoreWithAttributeList(),
+			};
+
+			foreach (var call in calls)
+			{
+				var result = call();
+
+				Assert.AreEqual(1, result.Count());
+				var beer = result.First();
+				Assert.IsNotNull(beer);
+				Assert.AreEqual(1, beer.ID);
+				Assert.IsNotNull(beer.More);
+				Assert.AreEqual(2, beer.More.ID);
+			}
+		}
+
+		[Test]
+		public void CanUseAttributeToGetListAsync()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetBeerAndMoreWithAttributeAsync().Result;
+
+			Assert.AreEqual(1, result.Count);
+			var beer = result[0];
+			Assert.IsNotNull(beer);
+			Assert.AreEqual(1, beer.ID);
+			Assert.IsNotNull(beer.More);
+			Assert.AreEqual(2, beer.More.ID);
+		}
+
+		[Test]
+		public void CanUseAttributeToGetResults()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetBeerResultsWithAttribute();
+
+			Assert.AreEqual(1, result.Set1.Count);
+			Assert.AreEqual(1, result.Set1[0].ID);
+			Assert.IsNull(result.Set1[0].More);
+
+			Assert.AreEqual(1, result.Set2.Count);
+			Assert.AreEqual(2, result.Set2[0].ID);
+			Assert.IsNotNull(result.Set2[0].More);
+			Assert.AreEqual(2, result.Set2[0].More.ID);
+		}
+
+		[Test]
+		public void CanGetDerivedRecordset()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetDerivedRecordset();
+
+			Assert.AreEqual(1, result.Set1.Count);
+			Assert.AreEqual(1, result.Set1[0].ParentX);
+
+			Assert.AreEqual(70, result.TotalCount);
+		}
+
+		[Test]
+		public void CanGetChildrenInList()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetBeerWithChildrenList();
+
+			Assert.AreEqual(1, result.Count);
+			Assert.AreEqual(1, result[0].List.Count);
+			Assert.AreEqual(1, result[0].List[0].ID);
+		}
+
+		[Test]
+		public void CanGetChildrenInResults()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetBeerWithChildrenResults().Set1;
+
+			Assert.AreEqual(1, result.Count);
+			Assert.AreEqual(1, result[0].List.Count);
+			Assert.AreEqual(1, result[0].List[0].ID);
+		}
+
+		[Test]
+		public void CanGetMultipleChildren()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetLiquorStoreWithMultipleChildren();
+
+			Assert.AreEqual(1, result.Count);
+			Assert.AreEqual(1, result[0].Beer.Count);
+			Assert.AreEqual(2, result[0].Beer[0].ID);
+			Assert.AreEqual(1, result[0].Wine.Count);
+			Assert.AreEqual(3, result[0].Wine[0].ID);
+		}
+
+		[Test]
+		public void CanGetMultipleChildrenAndThenMore()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetLiquorStoreWithChildrenAndMore();
+
+			Assert.AreEqual(1, result.Set1.Count);
+			Assert.AreEqual(1, result.Set1[0].Beer.Count);
+			Assert.AreEqual(2, result.Set1[0].Beer[0].ID);
+			Assert.AreEqual(1, result.Set1[0].Wine.Count);
+			Assert.AreEqual(3, result.Set1[0].Wine[0].ID);
+
+			Assert.AreEqual(1, result.Set2.Count);
+			Assert.AreEqual(4, result.Set2[0].ID);
+		}
+
+		[Test]
+		public void CanOverrideParentChildRelationships()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetLiquorStoreWithChildrenAndMoreWithOverrides().Set1;
+
+			Assert.AreEqual(1, result.Count);
+			Assert.AreEqual(1, result[0].OtherBeer.Count);
+			Assert.AreEqual(2, result[0].OtherBeer[0].ID);
+			Assert.AreEqual(1, result[0].Wine.Count);
+			Assert.AreEqual(3, result[0].Wine[0].ID);
 		}
 		#endregion
 	}
 
-	public interface IEmailRepository
-	{
-		[Sql("print ''")]
-		void UpsertByInt(int id);
-
-		[Sql("print ''")]
-		void UpsertByString(string id);
-
-		[Sql("print ''")]
-		void UpsertByT<T>(T id);
-	}
-
+	#region Interface Update Tests
 	[TestFixture]
-	public class InterfaceUpdateTests : BaseDbTest
+	public class InterfaceUpdateTests : BaseTest
 	{
+		public interface IEmailRepository
+		{
+			[Sql("print ''")]
+			void UpsertByInt(int id);
+
+			[Sql("print ''")]
+			void UpsertByString(string id);
+
+			[Sql("print ''")]
+			void UpsertByT<T>(T id);
+		}
+
 		[Test]
 		public void UpsertShouldNotFailWhenFirstParameterIsAtomic()
 		{
-			var repo = _connection.As<IEmailRepository>();
+			var repo = Connection().As<IEmailRepository>();
 			repo.UpsertByInt(0);
 			repo.UpsertByString("");
 			repo.UpsertByT<int>(0);
 			repo.UpsertByT<string>("");
 		}
 	}
+	#endregion
 
 	#region Multi-Threaded Interface Tests
 #if !NODBASYNC
 	interface IMultiThreaded
 	{
 		[Sql("SELECT ParentX=@p")]
-		Task<TestDataClasses.ParentTestData> FooAsync(int p);
+		Task<ParentTestData> FooAsync(int p);
 	}
 
 	[TestFixture]
-	public class MultiThreadedInterfaceTests : BaseDbTest
+	public class MultiThreadedInterfaceTests : BaseTest
 	{
 		[Test]
 		public void Foo()
 		{
-			var foo = _connection.AsParallel<IMultiThreaded>();
+			var foo = Connection().AsParallel<IMultiThreaded>();
 
 			var tasks = new List<Task>();
 			for (int i = 0; i < 100; i++)

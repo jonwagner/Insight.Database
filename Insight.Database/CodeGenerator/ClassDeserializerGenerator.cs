@@ -8,6 +8,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Insight.Database.Structure;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -28,8 +29,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="reader">The reader to analyze.</param>
 		/// <param name="type">The type of object to deserialize from the IDataReader.</param>
-		/// <param name="withGraph">The type of the graph of object to be returned, or null/typeof(T) to deserialize just the top-level object.</param>
-		/// <param name="idColumns">An optional mapping of type to Id columns used for splitting and object graph.</param>
+		/// <param name="structure">The structure of the object.</param>
 		/// <param name="mappingType">The type of mapping to create.</param>
 		/// <returns>
 		/// A function that takes an IDataReader and deserializes an object of type T.
@@ -37,26 +37,12 @@ namespace Insight.Database.CodeGenerator
 		/// If createNewObject is true, the next parameter will be of type T.
 		/// If useCallback is true, the next parameter will be an Action&lt;object[]&gt;.
 		/// </returns>
-		public static Delegate CreateDeserializer(IDataReader reader, Type type, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
+		public static Delegate CreateDeserializer(IDataReader reader, Type type, IRecordStructure structure, SchemaMappingType mappingType)
 		{
-			// if the graph isn't specified, look for a defaultgraphattribute, or just do a one-level graph
-			if (withGraph == null)
-			{
-				DefaultGraphAttribute defaultGraph = type.GetCustomAttributes(typeof(DefaultGraphAttribute), true).OfType<DefaultGraphAttribute>().FirstOrDefault();
-				if (defaultGraph != null)
-					withGraph = defaultGraph.GetGraphTypes()[0];
-				else
-					withGraph = typeof(Graph<>).MakeGenericType(type);
-			}
-
-			// make sure that withGraph is a graph
-			if (!withGraph.IsSubclassOf(typeof(Graph)))
-				throw new ArgumentException("withGraph passed in must be of Graph<T>", "withGraph");
-
 			// process the object graph types
-            Type[] subTypes = Graph.GetGenericArguments(withGraph);
+			var subTypes = structure.GetObjectTypes();
 			if (subTypes[0] != type)
-				throw new ArgumentException("The top-level type of the object graph must match the return type of the object.", "withGraph");
+				throw new ArgumentException("The top-level type of the object graph must match the return type of the object.", "structure");
 
 			// if the graph type is not a graph, or just the object, and we don't want a callback function
 			// then just return a one-level graph.
@@ -69,9 +55,9 @@ namespace Insight.Database.CodeGenerator
 
 			// create the graph deserializer
 			if (mappingType.HasFlag(SchemaMappingType.WithCallback))
-				return CreateGraphDeserializerWithCallback(subTypes, reader, idColumns);
+				return CreateGraphDeserializerWithCallback(subTypes, reader, structure.GetIDColumns());
 			else
-				return CreateGraphDeserializer(subTypes, reader, idColumns);
+				return CreateGraphDeserializer(subTypes, reader, structure.GetIDColumns());
 		}
 
 		#region Single Class Deserialization
@@ -287,6 +273,10 @@ namespace Insight.Database.CodeGenerator
 			var il = dm.GetILGenerator();
 			var localObject = il.DeclareLocal(type);
 
+			// keep track of the properties that we have already used
+			// the tuple is the level + property
+			var usedMethods = new HashSet<Tuple<int, ClassPropInfo>>();
+
 			///////////////////////////////////////////////////
 			// emit the method
 			///////////////////////////////////////////////////
@@ -313,6 +303,13 @@ namespace Insight.Database.CodeGenerator
 				{
 					// find the set method on the current parent
 					setMethod = GetFirstMatchingMethod(ClassPropInfo.GetMembersForType(subTypes[parent]).Where(m => m.CanSetMember), subTypes[i]);
+
+					// make sure that at a given level, we only use the method once
+					var tuple = Tuple.Create(parent, setMethod);
+					if (usedMethods.Contains(tuple))
+						continue;
+					else
+						usedMethods.Add(tuple);
 
 					// if we didn't find a matching set method, then continue on to the next type in the graph
 					if (setMethod == null)
@@ -367,8 +364,9 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The first method that has the given type.</returns>
 		private static ClassPropInfo GetFirstMatchingMethod(IEnumerable<ClassPropInfo> properties, Type type)
 		{
+			// NOTE: for a subtype match, we can't bind to object, it's not specific enough, it also prevents Guardian<T> from working
 			return properties.FirstOrDefault(s => type == s.MemberType) ??
-				properties.FirstOrDefault(s => type.IsSubclassOf(s.MemberType));
+				properties.Where(p => p.MemberType != typeof(object)).FirstOrDefault(s => type.IsSubclassOf(s.MemberType));
 		}
 		#endregion
 

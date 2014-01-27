@@ -1,0 +1,49 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+<#@ include file="..\GenericTypes.tt" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
+using Insight.Database.Structure;
+
+namespace Insight.Database.Structure
+{
+<#
+for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+#>
+	/// <summary>
+	/// Reads a single record from a data stream.
+	/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+	/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+	public class SingleReader<<#= typeList #>> : SingleReader<T1>
+	{
+		#region Fields
+		/// <summary>
+		/// The default reader to read a list of type T.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
+		public static readonly new SingleReader<<#= typeList #>> Default = new SingleReader<<#= typeList #>>();
+		#endregion
+
+		#region Constructors
+		/// <summary>
+		/// Initializes a new instance of the SingleReader class.
+		/// </summary>
+		public SingleReader() : base(OneToOne<<#= typeList #>>.Records)
+		{
+		}
+		#endregion
+	}	
+<# } #>
+}

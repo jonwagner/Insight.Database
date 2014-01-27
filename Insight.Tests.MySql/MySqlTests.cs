@@ -9,6 +9,7 @@ using Insight.Database.Reliable;
 using Moq;
 using NUnit.Framework;
 using MySql.Data.MySqlClient;
+using System.Data;
 
 namespace Insight.Tests.MySql
 {
@@ -16,8 +17,11 @@ namespace Insight.Tests.MySql
 	/// MySql-specific tests.
 	/// </summary>
 	[TestFixture]
-	public class MySqlTests : BaseDbTest
+	public class MySqlTests
 	{
+		private MySqlConnectionStringBuilder _connectionStringBuilder;
+		private IDbConnection _connection;
+
 		public class ParentTestData
 		{
 			public int ID;
@@ -32,7 +36,7 @@ namespace Insight.Tests.MySql
 		}
 
 		[TestFixtureSetUp]
-		public override void SetUpFixture()
+		public void SetUpFixture()
 		{
 			MySqlInsightDbProvider.RegisterProvider();
 

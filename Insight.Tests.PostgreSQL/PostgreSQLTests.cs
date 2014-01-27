@@ -9,6 +9,7 @@ using Insight.Database.Reliable;
 using Moq;
 using NUnit.Framework;
 using Npgsql;
+using System.Data;
 
 namespace Insight.Tests.PostgreSQL
 {
@@ -16,8 +17,11 @@ namespace Insight.Tests.PostgreSQL
 	/// PostgreSQL-specific tests.
 	/// </summary>
 	[TestFixture]
-	public class PostgreSQLTests : BaseDbTest
+	public class PostgreSQLTests
 	{
+		private NpgsqlConnectionStringBuilder _connectionStringBuilder;
+		private IDbConnection _connection;
+
 		public class ParentTestData
 		{
 			public int ID;
@@ -32,7 +36,7 @@ namespace Insight.Tests.PostgreSQL
 		}
 
 		[TestFixtureSetUp]
-		public override void SetUpFixture()
+		public void SetUpFixture()
 		{
 			PostgreSQLInsightDbProvider.RegisterProvider();
 

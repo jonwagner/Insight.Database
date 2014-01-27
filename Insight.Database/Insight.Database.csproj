@@ -78,8 +78,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncExtensions.cs" />
-    <Compile Include="AsyncExtensions.generated.cs">
+    <Compile Include="CodeGenerator\StaticFieldStorage.cs" />
+    <Compile Include="Extensions\AsyncExtensions.cs" />
+    <Compile Include="Extensions\AsyncExtensions.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>AsyncExtensions.tt</DependentUpon>
@@ -87,7 +88,6 @@
     <Compile Include="CodeGenerator\ClassDeserializerGenerator.cs" />
     <Compile Include="CodeGenerator\ClassPropInfo.cs" />
     <Compile Include="CodeGenerator\InterfaceGenerator.cs" />
-    <Compile Include="CodeGenerator\InterfaceGeneratorHelper.cs" />
     <Compile Include="CodeGenerator\ObjectReader.cs" />
     <Compile Include="CodeGenerator\SchemaIdentity.cs" />
     <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
@@ -95,22 +95,40 @@
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
     <Compile Include="CodeGenerator\SchemaMappingType.cs" />
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
-    <Compile Include="ColumnMapping.cs" />
-    <Compile Include="ColumnMappingEventArgs.cs" />
+    <Compile Include="Mapping\ColumnMapping.cs" />
+    <Compile Include="Mapping\ColumnMappingEventArgs.cs" />
     <Compile Include="Compatibility.cs" />
-    <Compile Include="DBConnectionExtensions.generated.cs">
+    <Compile Include="Extensions\DBConnectionExtensions.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>DBConnectionExtensions.tt</DependentUpon>
     </Compile>
     <Compile Include="DbConnectionWrapperProviderFactory.cs" />
-    <Compile Include="Graph.generated.cs">
+    <Compile Include="Extensions\DbReaderExtensions.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
-      <DependentUpon>Graph.tt</DependentUpon>
+      <DependentUpon>DbReaderExtensions.tt</DependentUpon>
     </Compile>
+    <Compile Include="Structure\DerivedResultsReader.cs" />
+    <Compile Include="Structure\IChildRecordReader.cs" />
+    <Compile Include="Structure\IQueryReader.cs" />
+    <Compile Include="Structure\IRecordReader.cs" />
+    <Compile Include="Structure\IRecordStructure.cs" />
+    <Compile Include="Structure\ListReader.cs" />
+    <Compile Include="Structure\ListReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ListReader.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\OneToOne.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OneToOne.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\Query.cs" />
     <Compile Include="InsightBulkCopy.cs" />
-    <Compile Include="JsonObjectSerializer.cs" />
+    <Compile Include="Serialization\JsonObjectSerializer.cs" />
+    <Compile Include="Structure\OneToOne.cs" />
     <Compile Include="Optimistic\OptimisticCommand.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -127,25 +145,31 @@
     <Compile Include="DbCommandWrapper.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Results.generated.cs">
+    <Compile Include="Structure\Query.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Query.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\QueryReader.cs" />
+    <Compile Include="Structure\ChildRecordsAttribute.cs" />
+    <Compile Include="Structure\RecordIdAttribute.cs" />
+    <Compile Include="Structure\Results.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>Results.tt</DependentUpon>
     </Compile>
-    <Compile Include="SerializationMappingHandler.cs" />
-    <Compile Include="SerializationMode.cs" />
+    <Compile Include="Serialization\SerializationMappingHandler.cs" />
+    <Compile Include="Serialization\SerializationMode.cs" />
     <Compile Include="SqlAttribute.cs" />
-    <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
-    <Compile Include="DbConnectionStringBuilderExtensions.cs" />
+    <Compile Include="Extensions\SqlConnectionStringBuilderExtensions.cs" />
+    <Compile Include="Extensions\DbConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionWrapper.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Helpers.cs" />
-    <Compile Include="IColumnMappingHandler.cs" />
-    <Compile Include="DefaultGraphAttribute.cs" />
-    <Compile Include="Graph.cs" />
-    <Compile Include="RegexReplaceMappingHandler.cs" />
-    <Compile Include="Results.cs" />
+    <Compile Include="Mapping\IColumnMappingHandler.cs" />
+    <Compile Include="Mapping\RegexReplaceMappingHandler.cs" />
+    <Compile Include="Structure\Results.cs" />
     <Compile Include="Reliable\ReliableConnectionExtensions.cs" />
     <Compile Include="Reliable\RetryStrategy.cs" />
     <Compile Include="Reliable\IRetryStrategy.cs" />
@@ -153,54 +177,89 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="DynamicConnection.cs" />
-    <Compile Include="ExpandoExtensions.cs" />
-    <Compile Include="FastExpando.cs" />
+    <Compile Include="Expando\ExpandoExtensions.cs" />
+    <Compile Include="Expando\FastExpando.cs" />
     <Compile Include="CodeGenerator\IlHelper.cs" />
     <Compile Include="CodeGenerator\ObjectListDbDataReader.cs" />
     <Compile Include="CodeGenerator\QueryIdentity.cs" />
     <Compile Include="CodeGenerator\SchemaMappingIdentity.cs" />
     <Compile Include="CodeGenerator\TypeHelper.cs" />
-    <Compile Include="ConnectionStringSettingsExtensions.cs" />
-    <Compile Include="DBCommandExtensions.cs" />
-    <Compile Include="DBConnectionExtensions.cs" />
-    <Compile Include="ColumnAttribute.cs" />
+    <Compile Include="Extensions\ConnectionStringSettingsExtensions.cs" />
+    <Compile Include="Extensions\DBCommandExtensions.cs" />
+    <Compile Include="Extensions\DBConnectionExtensions.cs" />
+    <Compile Include="Mapping\ColumnAttribute.cs" />
     <Compile Include="Reliable\ReliableConnection.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Reliable\RetryEventArgs.cs" />
-    <Compile Include="DBReaderExtensions.cs" />
+    <Compile Include="Extensions\DBReaderExtensions.cs" />
     <Compile Include="Parameters.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="ToStringObjectSerializer.cs" />
-    <Compile Include="XmlObjectSerializer.cs" />
+    <Compile Include="Structure\Children.cs" />
+    <Compile Include="Structure\Guardian.cs" />
+    <Compile Include="Structure\ChildMapper.cs" />
+    <Compile Include="Serialization\ToStringObjectSerializer.cs" />
+    <Compile Include="Serialization\XmlObjectSerializer.cs" />
+    <Compile Include="Structure\ResultsReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ResultsReader.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\RecordsetAttribute.cs" />
+    <Compile Include="Structure\SingleReader.cs" />
+    <Compile Include="Structure\SingleReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SingleReader.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Insight.Database.snk">
       <Link>Insight.Database.snk</Link>
     </None>
-    <None Include="AsyncExtensions.tt">
+    <None Include="Extensions\AsyncExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AsyncExtensions.generated.cs</LastGenOutput>
     </None>
-    <None Include="DBConnectionExtensions.tt">
+    <None Include="Extensions\DBConnectionExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>DBConnectionExtensions.generated.cs</LastGenOutput>
     </None>
-    <None Include="GenericTypes.tt" />
-    <None Include="Graph.tt">
+    <None Include="Extensions\DbReaderExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>Graph.generated.cs</LastGenOutput>
+      <LastGenOutput>DbReaderExtensions.generated.cs</LastGenOutput>
     </None>
+    <None Include="GenericTypes.tt" />
     <None Include="Insight.Database.nuspec">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Structure\ListReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ListReader.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\OneToOne.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>OneToOne.generated.cs</LastGenOutput>
+    </None>
     <None Include="packages.config" />
     <Compile Include="Providers\SqlInsightDbProvider.cs" />
-    <None Include="Results.tt">
+    <None Include="Structure\Query.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Query.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\Results.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Results.generated.cs</LastGenOutput>
     </None>
     <None Include="Settings.StyleCop" />
+    <None Include="Structure\ResultsReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ResultsReader.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\SingleReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SingleReader.generated.cs</LastGenOutput>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <CodeAnalysisDictionary Include="CustomDictionary.xml" />
@@ -208,7 +267,6 @@
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

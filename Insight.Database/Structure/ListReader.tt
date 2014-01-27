@@ -1,0 +1,88 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+<#@ include file="..\GenericTypes.tt" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
+using Insight.Database.Structure;
+
+namespace Insight.Database.Structure
+{
+<#
+for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+#>
+	/// <summary>
+	/// Reads a list of objects from a data reader.
+	/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+	/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+	public class ListReader<<#= typeList #>> : ListReader<T1>
+	{
+		/// <summary>
+		/// The default reader to read a list of type T.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
+		public static readonly new IQueryReader<IList<T1>> Default = new ListReader<<#= typeList #>>();
+
+		/// <summary>
+		/// Initializes a new instance of the ListReader class.
+		/// </summary>
+		public ListReader() : base(OneToOne<<#= typeList #>>.Records)
+		{
+		}
+	}	
+
+	/// <summary>
+	/// Allows ListReader to return any of the interfaces implemented by List.
+	/// Used by InterfaceGenerator. Not intended to be used by user code.
+	/// </summary>
+	/// <typeparam name="TList">The type of list to return.</typeparam>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+	/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+	public class ListReaderAdapter<TList, <#= typeList #>> : ListReader<<#= typeList #>>, IQueryReader<TList>
+	{
+		#region Fields
+		/// <summary>
+		/// The default reader to read a list of type T.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
+		public static readonly new ListReaderAdapter<TList, <#= typeList #>> Default = new ListReaderAdapter<TList, <#= typeList #>>();
+		#endregion
+
+		#region Methods
+		/// <inheritdoc/>
+		TList IQueryReader<TList>.Read(IDbCommand command, IDataReader reader)
+		{
+			return (TList)base.Read(command, reader);
+		}
+
+		/// <inheritdoc/>
+		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		{
+			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+		}
+
+		/// <inheritdoc/>
+		Type IQueryReader.ReturnType
+		{
+			get
+			{
+				return typeof(TList);
+			}
+		}
+		#endregion
+	}
+<# } #>
+}

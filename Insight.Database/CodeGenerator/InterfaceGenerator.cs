@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database;
+using Insight.Database.Structure;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -31,29 +32,18 @@ namespace Insight.Database.CodeGenerator
 				typeof(IDbConnection), typeof(string), typeof(object), typeof(CommandType), typeof(bool), typeof(int?), typeof(IDbTransaction), typeof(object)
 		};
 
-		private static readonly Type[] _queryParameterTypes = new Type[]
-		{
-				typeof(IDbConnection), typeof(string), typeof(object), typeof(Type), typeof(CommandType), typeof(CommandBehavior), typeof(int?), typeof(IDbTransaction), typeof(object)
-		};
-
-		private static readonly Type[] _queryAsyncParameterTypes = new Type[]
-		{
-				typeof(IDbConnection), typeof(string), typeof(object), typeof(Type), typeof(CommandType), typeof(CommandBehavior), typeof(int?), typeof(IDbTransaction), typeof(CancellationToken?), typeof(object)
-		};
-
 		private static readonly MethodInfo _executeMethod = typeof(DBConnectionExtensions).GetMethod("Execute", _executeParameterTypes);
 		private static readonly MethodInfo _executeScalarMethod = typeof(DBConnectionExtensions).GetMethod("ExecuteScalar", _executeParameterTypes);
-		private static readonly MethodInfo _queryMethod = typeof(DBConnectionExtensions).GetMethod("Query", _queryParameterTypes);
-		private static readonly MethodInfo _queryResultsMethod = typeof(DBConnectionExtensions).GetMethods().FirstOrDefault(mi => mi.Name == "QueryResults" && mi.GetGenericArguments().Length == 1 && mi.GetParameters()[0].ParameterType == typeof(IDbConnection));
-		private static readonly MethodInfo _singleMethod = typeof(DBConnectionExtensions).GetMethod("Single", _queryParameterTypes);
+		private static readonly MethodInfo _queryMethod = typeof(DBConnectionExtensions).GetMethods().Single(mi => mi.Name == "Query" && mi.GetParameters().Any(p => p.Name == "returns") && mi.GetParameters().Any(p => p.Name == "connection"));
+
+		private static readonly MethodInfo _singleMethod = typeof(DBConnectionExtensions).GetMethods().Single(mi => mi.Name == "Single" && mi.GetGenericArguments().Length == 1);
 		private static readonly MethodInfo _insertMethod = typeof(DBConnectionExtensions).GetMethod("Insert");
 		private static readonly MethodInfo _insertListMethod = typeof(DBConnectionExtensions).GetMethod("InsertList");
 
-		private static readonly MethodInfo _executeAsyncMethod = typeof(AsyncExtensions).GetMethods().First(mi => mi.Name == "ExecuteAsync");
-		private static readonly MethodInfo _executeScalarAsyncMethod = typeof(AsyncExtensions).GetMethods().First(mi => mi.Name == "ExecuteScalarAsync");
-		private static readonly MethodInfo _queryAsyncMethod = typeof(AsyncExtensions).GetMethod("QueryAsync", _queryAsyncParameterTypes);
-		private static readonly MethodInfo _singleAsyncMethod = typeof(AsyncExtensions).GetMethod("SingleAsync", _queryAsyncParameterTypes);
-		private static readonly MethodInfo _queryResultsAsyncMethod = typeof(AsyncExtensions).GetMethods().FirstOrDefault(mi => mi.Name == "QueryResultsAsync" && mi.GetGenericArguments().Length == 1 && mi.GetParameters()[0].ParameterType == typeof(IDbConnection));
+		private static readonly MethodInfo _executeAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "ExecuteAsync");
+		private static readonly MethodInfo _executeScalarAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "ExecuteScalarAsync");
+		private static readonly MethodInfo _queryAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "QueryAsync" && mi.GetParameters().Any(p => p.Name == "returns") && mi.GetParameters().Any(p => p.Name == "connection"));
+		private static readonly MethodInfo _singleAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "SingleAsync" && mi.GetGenericArguments().Length == 1);
 		private static readonly MethodInfo _insertAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertAsync");
 		private static readonly MethodInfo _insertListAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertListAsync");
 
@@ -238,9 +228,6 @@ namespace Insight.Database.CodeGenerator
 			if (commandType == CommandType.StoredProcedure && !schema.IsNullOrWhiteSpace() && !sql.Contains('.'))
 				sql = schema.Trim() + "." + sql;
 
-			// see if the interface method has a graph defined
-			var graphAttribute = interfaceMethod.GetCustomAttributes(false).OfType<DefaultGraphAttribute>().FirstOrDefault();
-
 			// start a new method
 			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
 			TypeHelper.CopyMethodSignature(interfaceMethod, m);
@@ -306,36 +293,9 @@ namespace Insight.Database.CodeGenerator
 						mIL.Emit(OpCodes.Ldarg_1);
 						break;
 
-					case "withGraph":
-						if (EmitSpecialParameter(mIL, "withGraph", parameters, executeParameters))
-							break;
-
-						// if the defaultgraph attribute is on the method, use that
-						if (graphAttribute != null)
-							mIL.EmitLoadType(graphAttribute.GraphTypes[0]);
-						else
-							mIL.Emit(OpCodes.Ldnull);
-						break;
-
-					case "withGraphs":
-						if (EmitSpecialParameter(mIL, "withGraphs", parameters, executeParameters))
-							break;
-
-						if (graphAttribute != null)
-						{
-							// if the defaultgraph attribute is on the method, use that
-							// need to pass in the GraphTypes array
-							// this way copies the graph attribute onto our new method and then pulls it out at runtime
-							// i haven't found a good way to embed the types into the dynamic assembly
-							// type references seem to get lost if you convert to a handle via ldtoken and then back with type.gettype
-							// this method serializes the types into attributes, and then they pop out on the other side
-							CustomAttributeBuilder cab = new CustomAttributeBuilder(typeof(DefaultGraphAttribute).GetConstructor(new Type[] { typeof(Type[]) }), new object[] { graphAttribute.GraphTypes });
-							m.SetCustomAttribute(cab);
-							mIL.Emit(OpCodes.Ldtoken, m);
-							mIL.Emit(OpCodes.Call, typeof(InterfaceGeneratorHelper).GetMethod("GetGraphTypesFromMethodHandle", BindingFlags.Static | BindingFlags.Public));
-						}
-						else
-							mIL.Emit(OpCodes.Ldnull);
+					case "returns":
+						if (!EmitSpecialParameter(mIL, "returns", parameters, executeParameters))
+							GenerateReturnsStructure(interfaceMethod, mb, mIL);
 						break;
 
 					case "commandType":
@@ -404,6 +364,110 @@ namespace Insight.Database.CodeGenerator
 			mIL.Emit(OpCodes.Ret);
 		}
 
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+		private static void GenerateReturnsStructure(MethodInfo interfaceMethod, ModuleBuilder moduleBuilder, ILGenerator mIL)
+		{
+			// if we are returning a task, unwrap the task result
+			var returnType = interfaceMethod.ReturnType;
+			if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
+				returnType = returnType.GetGenericArguments()[0];
+			
+			// if there are returns attributes specified, then build the structure for the coder
+			var returnsAttributes = interfaceMethod.GetCustomAttributes(true).OfType<RecordsetAttribute>().ToDictionary(r => r.Index);
+
+			if (returnType.IsSubclassOf(typeof(Results)) && !returnType.Name.StartsWith("Results`", StringComparison.OrdinalIgnoreCase))
+			{
+				// we have a return that is derived from results
+				mIL.Emit(OpCodes.Ldsfld, typeof(DerivedResultsReader<>).MakeGenericType(returnType).GetField("Default"));
+			}
+			else
+			{
+				// we are returning results<T...>, or IList<T...>
+				var returnTypeArgs = returnType.GetGenericArguments();
+				Type currentType = null;
+
+				// go through all of the type arguments or recordsets
+				int returnIndex = 0;
+				for (int i = 0; i < Math.Max(returnTypeArgs.Length, returnsAttributes.Keys.MaxOrDefault(k => k + 1)); i++)
+				{
+					RecordsetAttribute r;
+					returnsAttributes.TryGetValue(i, out r);
+					var types = (r != null) ? r.Types : new Type[] { returnTypeArgs[i] };
+
+					// grab the records field for the appropriate OneToOne mapping
+					mIL.Emit(OpCodes.Ldsfld, Query.GetOneToOneType(types).GetField("Records", BindingFlags.Public | BindingFlags.Static));
+
+					// keep track of the type that we are returning
+					if (r == null || !r.IsChild)
+						returnIndex++;
+
+					if (i == 0)
+					{
+						// start the chain of calls
+						MethodInfo method;
+						if (returnType.IsSubclassOf(typeof(Results)))
+						{
+							method = typeof(Query).GetMethod("ReturnsResults", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(types[0]);
+							currentType = method.ReturnType;
+							mIL.Emit(OpCodes.Call, method);
+						}
+						else
+						{
+							// IList<T> or List<T>, etc...
+							var oneToOneBaseType = typeof(OneToOne<>).MakeGenericType(types[0]);
+
+							Type readerType;
+
+							if (returnType.GetGenericTypeDefinition() == typeof(IList<>))
+								readerType = typeof(ListReader<>).MakeGenericType(types[0]);
+							else
+								readerType = typeof(ListReaderAdapter<,>).MakeGenericType(returnType, types[0]);
+
+							mIL.Emit(OpCodes.Newobj, readerType.GetConstructor(new Type[] { oneToOneBaseType }));
+							currentType = readerType;
+						}
+					}
+					else if (r != null && r.IsChild)
+					{
+						var parentType = currentType.GetGenericArguments()[0];
+						var childType = types[0];
+						var id = ChildMapperHelper.GetIDAccessor(parentType, r.Id);
+						var idType = id.MemberType;
+						var idMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(parentType, idType).Invoke(id, Parameters.EmptyArray);
+						var list = ChildMapperHelper.GetListSetter(parentType, childType, r.Into);
+						var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
+
+						// previous and recordReader are on the stack, add the id and list methods
+						new StaticFieldStorage(moduleBuilder, idMethod).EmitLoad(mIL);
+						new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
+
+						var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
+							.Single(
+								mi => mi.Name == "ThenChildren" && 
+									mi.GetGenericArguments().Length == 3 && 
+									currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name)
+							.MakeGenericMethod(
+								new Type[]
+								{
+									parentType,		// TParent
+									childType,		// TChild
+									idType			// TId
+								});
+						mIL.Emit(OpCodes.Call, method);
+						currentType = method.ReturnType;
+					}
+					else
+					{
+						var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
+							.Single(mi => mi.Name == "Then" && mi.GetGenericArguments().Length == returnIndex && mi.GetParameters()[0].ParameterType.Name.StartsWith("IQueryReader", StringComparison.OrdinalIgnoreCase))
+							.MakeGenericMethod(returnTypeArgs.Take(returnIndex).ToArray());
+						mIL.Emit(OpCodes.Call, method);
+						currentType = method.ReturnType;
+					}
+				}
+			}
+		}
+
 		/// <summary>
 		/// Copies fields from the temporary output parameters structure to the output parameters object specified by the caller.
 		/// </summary>
@@ -455,13 +519,9 @@ namespace Insight.Database.CodeGenerator
 				return _executeMethod;
 			}
 
-			// if returntype is IList<T>, then we call Query
-			if (IsGenericListType(method.ReturnType))
-				return _queryMethod.MakeGenericMethod(method.ReturnType.GetGenericArguments()[0]);
-
-			// if returntype is Results<T>, then we call QueryResults
-			if (method.ReturnType.IsSubclassOf(typeof(Results)))
-				return _queryResultsMethod.MakeGenericMethod(method.ReturnType);
+			// if returntype is IList<T>, or Results<T> then we call Query
+			if (IsGenericListType(method.ReturnType) || method.ReturnType.IsSubclassOf(typeof(Results)))
+				return _queryMethod.MakeGenericMethod(method.ReturnType);
 
 			// check for async signatures
 			var asyncMethod = GetExecuteAsyncMethod(method);
@@ -520,13 +580,9 @@ namespace Insight.Database.CodeGenerator
 				// get the inside of the task
 				var taskResultType = method.ReturnType.GetGenericArguments()[0];
 
-				// if returntype is Task<IList<T>>, then we call QueryAsync
-				if (IsGenericListType(taskResultType))
-					return _queryAsyncMethod.MakeGenericMethod(taskResultType.GetGenericArguments()[0]);
-
-				// if returntype is Task<Results<T>>, then then we call QueryResultsAsync
-				if (taskResultType.IsSubclassOf(typeof(Results)))
-					return _queryResultsAsyncMethod.MakeGenericMethod(taskResultType);
+				// if returntype is Task<IList<T>>, or Task<Results<T>>, then we call QueryAsync
+				if (IsGenericListType(taskResultType) || taskResultType.IsSubclassOf(typeof(Results)))
+					return _queryAsyncMethod.MakeGenericMethod(taskResultType);
 
 				// if returntype is Task<T>, and T is an atomic object, then we call ExecuteScalarAsync
 				if (TypeHelper.IsAtomicType(taskResultType))
@@ -593,10 +649,15 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if it is a list type.</returns>
 		private static bool IsGenericListType(Type type)
 		{
-			return type.IsGenericType &&
-				(type.GetGenericTypeDefinition() == typeof(IList<>) ||
-					type.GetGenericTypeDefinition() == typeof(List<>) ||
-					type.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+			if (!type.IsGenericType)
+				return false;
+
+			var generic = type.GetGenericTypeDefinition();
+
+			return generic == typeof(IList<>) ||
+					generic == typeof(List<>) ||
+					generic == typeof(IEnumerable<>) ||
+					generic == typeof(ICollection<>);
 		}
 
 		/// <summary>
@@ -608,8 +669,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			switch (parameterInfo.Name)
 			{
-				case "withGraph":
-				case "withGraphs":
+				case "returns":
 				case "commandBehavior":
 				case "closeConnection":
 				case "commandTimeout":

@@ -10,6 +10,7 @@ using Moq;
 using NUnit.Framework;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
+using System.Data;
 
 namespace Insight.Tests.Oracle
 {
@@ -17,8 +18,11 @@ namespace Insight.Tests.Oracle
 	/// Oracle-specific tests.
 	/// </summary>
 	[TestFixture]
-	public class OracleTests : BaseDbTest
+	public class OracleTests
 	{
+		private OracleConnectionStringBuilder _connectionStringBuilder;
+		private IDbConnection _connection;
+
 		public class ParentTestData
 		{
 			public int ID;
@@ -33,7 +37,7 @@ namespace Insight.Tests.Oracle
 		}
 
 		[TestFixtureSetUp]
-		public override void SetUpFixture()
+		public void SetUpFixture()
 		{
 			OracleInsightDbProvider.RegisterProvider();
 

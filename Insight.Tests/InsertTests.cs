@@ -16,7 +16,7 @@ namespace Insight.Tests
 	/// Test the ability to return identity values from the database and zipping them into inserted objects.
 	/// </summary>
 	[TestFixture]
-	class InsertTests : BaseDbTest
+	class InsertTests : BaseTest
 	{
 		class InsertRecord
 		{
@@ -33,19 +33,14 @@ namespace Insight.Tests
 		[Test]
 		public void SingleInsertShouldFillInIdentities()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int) AS SELECT Id=1, Id2=@Value");
+			InsertRecord i = new InsertRecord();
+			i.Value = 5;
 
-				InsertRecord i = new InsertRecord();
-				i.Value = 5;
+			var result = Connection().Insert("InsertIdentityReturn", i);
 
-				var result = connection.Insert("InsightTestProc", i);
-
-				Assert.AreEqual(i, result);
-				Assert.AreEqual(1, i.Id);
-				Assert.AreEqual(5, i.Id2);
-			}
+			Assert.AreEqual(i, result);
+			Assert.AreEqual(1, i.Id);
+			Assert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -55,19 +50,14 @@ namespace Insight.Tests
 		[Test]
 		public void SingleInsertShouldAllowParameters()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProcSingleInsert (@OtherValue int) AS SELECT Id=1, Id2=@OtherValue");
+			InsertRecord i = new InsertRecord();
+			List<InsertRecord> list = new List<InsertRecord>() { i };
 
-				InsertRecord i = new InsertRecord();
-				List<InsertRecord> list = new List<InsertRecord>() { i };
+			var result = Connection().Insert("InsertIdentityReturn2", i, i.Expand(new { OtherValue = 5 }));
 
-				var result = connection.Insert("InsightTestProcSingleInsert", i, i.Expand(new { OtherValue = 5 }));
-
-				Assert.AreEqual(i, result);
-				Assert.AreEqual(1, i.Id);
-				Assert.AreEqual(5, i.Id2);
-			}
+			Assert.AreEqual(i, result);
+			Assert.AreEqual(1, i.Id);
+			Assert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -77,35 +67,17 @@ namespace Insight.Tests
 		[Test]
 		public void MultipleInsertShouldFillInIdentities()
 		{
-			try
-			{
-				_connection.ExecuteSql(@"CREATE TABLE InsightTestTableMultiInsert (ID [int] IDENTITY, ID2 [int] DEFAULT (2), Text [varchar](128), Value int)");
-				_connection.ExecuteSql(@"CREATE TYPE InsightTestTableTypeMultiInsert AS TABLE (Text [varchar](128), Value int)");
-				_connection.ExecuteSql(@"
-						CREATE PROC InsightTestProcMultiInsert (@OtherValue int, @Items [InsightTestTableTypeMultiInsert] READONLY) AS 
-							INSERT INTO InsightTestTableMultiInsert (Text, Value)
-								OUTPUT inserted.ID, inserted.ID2
-								SELECT Text, @OtherValue FROM @Items
-						");
+			InsertRecord i = new InsertRecord();
+			InsertRecord i2 = new InsertRecord();
+			List<InsertRecord> list = new List<InsertRecord>() { i, i2 };
 
-				InsertRecord i = new InsertRecord();
-				InsertRecord i2 = new InsertRecord();
-				List<InsertRecord> list = new List<InsertRecord>() { i, i2 };
+			var result = Connection().InsertList("InsertByTable", list, new { OtherValue = 5, Items = list });
 
-				var result = _connection.InsertList("InsightTestProcMultiInsert", list, new { OtherValue = 5, Items = list });
-
-				Assert.AreEqual(list, result);
-				Assert.AreEqual(1, i.Id);
-				Assert.AreEqual(2, i.Id2);
-				Assert.AreEqual(2, i2.Id);
-				Assert.AreEqual(2, i2.Id2);
-			}
-			finally
-			{
-				Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestProcMultiInsert') DROP PROCEDURE [InsightTestProcMultiInsert]");
-				Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestTableTypeMultiInsert') DROP TYPE [InsightTestTableTypeMultiInsert]");
-				Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestTableMultiInsert') DROP TABLE [InsightTestTableMultiInsert]");
-			}
+			Assert.AreEqual(list, result);
+			Assert.AreEqual(1, i.Id);
+			Assert.AreEqual(2, i.Id2);
+			Assert.AreEqual(2, i2.Id);
+			Assert.AreEqual(2, i2.Id2);
 		}
 
 		[Test]
@@ -115,7 +87,7 @@ namespace Insight.Tests
 			List<InsertRecord> list = new List<InsertRecord>() { i };
 
 			// this would normally be INSERT INTO blah VALUES (@blah) SELECT @@SCOPE_IDENTITY
-			var result = _connection.InsertSql<InsertRecord>("SELECT Id=1, Id2=2", i);
+			var result = Connection().InsertSql<InsertRecord>("SELECT Id=1, Id2=2", i);
 
 			Assert.AreEqual(i, result);
 			Assert.AreEqual(1, i.Id);
@@ -130,19 +102,14 @@ namespace Insight.Tests
 		[Test]
 		public void AsyncSingleInsertShouldFillInIdentities()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int) AS SELECT Id=1, Id2=@Value");
+			InsertRecord i = new InsertRecord();
+			i.Value = 5;
 
-				InsertRecord i = new InsertRecord();
-				i.Value = 5;
+			var result = Connection().InsertAsync("InsertIdentityReturn", i).Result;
 
-				var result = connection.InsertAsync("InsightTestProc", i).Result;
-
-				Assert.AreEqual(i, result);
-				Assert.AreEqual(1, i.Id);
-				Assert.AreEqual(5, i.Id2);
-			}
+			Assert.AreEqual(i, result);
+			Assert.AreEqual(1, i.Id);
+			Assert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -152,19 +119,14 @@ namespace Insight.Tests
 		[Test]
 		public void AsyncSingleInsertShouldAllowParameters()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProcSingleInsert (@OtherValue int) AS SELECT Id=1, Id2=@OtherValue");
+			InsertRecord i = new InsertRecord();
+			List<InsertRecord> list = new List<InsertRecord>() { i };
 
-				InsertRecord i = new InsertRecord();
-				List<InsertRecord> list = new List<InsertRecord>() { i };
+			var result = Connection().InsertAsync("InsertIdentityReturn2", i, i.Expand(new { OtherValue = 5 })).Result;
 
-				var result = connection.InsertAsync("InsightTestProcSingleInsert", i, i.Expand(new { OtherValue = 5 })).Result;
-
-				Assert.AreEqual(i, result);
-				Assert.AreEqual(1, i.Id);
-				Assert.AreEqual(5, i.Id2);
-			}
+			Assert.AreEqual(i, result);
+			Assert.AreEqual(1, i.Id);
+			Assert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -174,35 +136,17 @@ namespace Insight.Tests
 		[Test]
 		public void AsyncMultipleInsertShouldFillInIdentities()
 		{
-			try
-			{
-				_connection.ExecuteSql(@"CREATE TABLE InsightTestTableMultiInsert (ID [int] IDENTITY, ID2 [int] DEFAULT (2), Text [varchar](128), Value int)");
-				_connection.ExecuteSql(@"CREATE TYPE InsightTestTableTypeMultiInsert AS TABLE (Text [varchar](128), Value int)");
-				_connection.ExecuteSql(@"
-						CREATE PROC InsightTestProcMultiInsert (@OtherValue int, @Items [InsightTestTableTypeMultiInsert] READONLY) AS 
-							INSERT INTO InsightTestTableMultiInsert (Text, Value)
-								OUTPUT inserted.ID, inserted.ID2
-								SELECT Text, @OtherValue FROM @Items
-						");
+			InsertRecord i = new InsertRecord();
+			InsertRecord i2 = new InsertRecord();
+			List<InsertRecord> list = new List<InsertRecord>() { i, i2 };
 
-				InsertRecord i = new InsertRecord();
-				InsertRecord i2 = new InsertRecord();
-				List<InsertRecord> list = new List<InsertRecord>() { i, i2 };
+			var result = Connection().InsertListAsync("InsertByTable", list, new { OtherValue = 5, Items = list }).Result;
 
-				var result = _connection.InsertListAsync("InsightTestProcMultiInsert", list, new { OtherValue = 5, Items = list }).Result;
-
-				Assert.AreEqual(list, result);
-				Assert.AreEqual(1, i.Id);
-				Assert.AreEqual(2, i.Id2);
-				Assert.AreEqual(2, i2.Id);
-				Assert.AreEqual(2, i2.Id2);
-			}
-			finally
-			{
-				Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestProcMultiInsert') DROP PROCEDURE [InsightTestProcMultiInsert]");
-				Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestTableTypeMultiInsert') DROP TYPE [InsightTestTableTypeMultiInsert]");
-				Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestTableMultiInsert') DROP TABLE [InsightTestTableMultiInsert]");
-			}
+			Assert.AreEqual(list, result);
+			Assert.AreEqual(1, i.Id);
+			Assert.AreEqual(2, i.Id2);
+			Assert.AreEqual(2, i2.Id);
+			Assert.AreEqual(2, i2.Id2);
 		}
 
 		[Test]
@@ -212,7 +156,7 @@ namespace Insight.Tests
 			List<InsertRecord> list = new List<InsertRecord>() { i };
 
 			// this would normally be INSERT INTO blah VALUES (@blah) SELECT @@SCOPE_IDENTITY
-			var result = _connection.InsertSqlAsync<InsertRecord>("SELECT Id=1, Id2=2", i).Result;
+			var result = Connection().InsertSqlAsync<InsertRecord>("SELECT Id=1, Id2=2", i).Result;
 
 			Assert.AreEqual(i, result);
 			Assert.AreEqual(1, i.Id);

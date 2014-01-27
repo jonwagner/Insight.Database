@@ -13,7 +13,7 @@ namespace Insight.Tests
 	/// Tests that dynamic objects can be sent to the database and retrieved.
 	/// </summary>
 	[TestFixture]
-	public class DynamicParameterTests : BaseDbTest
+	public class DynamicParameterTests : BaseTest
 	{
 		[Test]
 		public void TestThatDynamicObjectCanBeUsedAsParameters()
@@ -23,7 +23,7 @@ namespace Insight.Tests
 			pd["Int"] = 1;
 			pd["Text"] = "foo";
 
-			var list = _connection.QuerySql("SELECT Int=CONVERT (int, @Int), Text=@Text", p);
+			var list = Connection().QuerySql("SELECT Int=CONVERT (int, @Int), Text=@Text", p);
 
 			Assert.IsNotNull(list);
 			Assert.AreEqual(1, list.Count);
@@ -78,7 +78,7 @@ namespace Insight.Tests
 			var o = new { Id = 1, Text = "foo" };
 			var p = new { Id = 2, Guest = "boo" };
 
-			var list = _connection.QuerySql("SELECT ID=CONVERT (int, @ID), Text=@Text, Guest=@Guest", o.Expand(p));
+			var list = Connection().QuerySql("SELECT ID=CONVERT (int, @ID), Text=@Text, Guest=@Guest", o.Expand(p));
 			FastExpando f = list[0];
 			dynamic d = f;
 
@@ -99,7 +99,7 @@ namespace Insight.Tests
 			// expand the dynamic
 			var p = new { Id = 2, Guest = "boo" };
 
-			var list = _connection.QuerySql("SELECT ID=CONVERT (int, @ID), Text=@Text, Guest=@Guest", (object)o.Expand(p));
+			var list = Connection().QuerySql("SELECT ID=CONVERT (int, @ID), Text=@Text, Guest=@Guest", (object)o.Expand(p));
 			FastExpando f = list[0];
 			dynamic d = f;
 
@@ -112,21 +112,16 @@ namespace Insight.Tests
 		[Test]
 		public void TestExpandoNullFields()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Value int = 5) AS SELECT Value=@Value");
+			// an expando with a null value passes in null
+			dynamic f = new FastExpando();
+			f["Value"] = null;
+			dynamic result = Connection().Query("ReflectInt", (object)f).FirstOrDefault();
+			Assert.IsNull(result["Value"]);
 
-				// an expando with a null value passes in null
-				dynamic f = new FastExpando();
-				f["Value"] = null;
-				dynamic result = connection.Query("InsightTestProc", (object)f).FirstOrDefault();
-				Assert.IsNull(result["Value"]);
-
-				// an expando with a NO value passes in DEFAULT
-				f = new FastExpando();
-				result = connection.Query("InsightTestProc", (object)f).FirstOrDefault();
-				Assert.AreEqual(5, result["Value"]);
-			}
+			// an expando with a NO value passes in DEFAULT
+			f = new FastExpando();
+			result = Connection().Query("ReflectInt", (object)f).FirstOrDefault();
+			Assert.AreEqual(5, result["Value"]);
 		}
 	}
 }

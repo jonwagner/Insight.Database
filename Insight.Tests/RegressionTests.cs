@@ -9,7 +9,7 @@ using Insight.Database;
 namespace Insight.Tests
 {
 	[TestFixture]
-	public class RegressionTests : BaseDbTest
+	public class RegressionTests : BaseTest
 	{
 		#region Git Issue #18
 		class Beer
@@ -22,19 +22,19 @@ namespace Insight.Tests
 		[Test]
 		public void TestIssue18()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = ConnectionWithTransaction())
 			{
-				connection.ExecuteSql("CREATE TABLE Beer (id int identity, name varchar(256), alcoholpts int)");
+				connection.ExecuteSql("CREATE TABLE Beer18 (id int identity, name varchar(256), alcoholpts int)");
 				connection.ExecuteSql(@"
-					CREATE PROC InsertBeer @id int, @name varchar(256), @alcoholpts [int] AS 
-						INSERT INTO Beer (Name, AlcoholPts)
+					CREATE PROC InsertBeer18 @id int, @name varchar(256), @alcoholpts [int] AS 
+						INSERT INTO Beer18 (Name, AlcoholPts)
 						OUTPUT Inserted.Id
 						VALUES (@Name, @AlcoholPts)
 				");
 
 				Beer b = new Beer() { AlcoholPts = 11 };
-				connection.ExecuteScalar<int>("InsertBeer", b);
-				Assert.AreEqual(11, connection.ExecuteScalarSql<int>("SELECT AlcoholPts FROM Beer"));
+				connection.ExecuteScalar<int>("InsertBeer18", b);
+				Assert.AreEqual(11, connection.ExecuteScalarSql<int>("SELECT AlcoholPts FROM Beer18"));
 			}
 		}
 		#endregion

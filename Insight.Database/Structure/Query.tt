@@ -1,0 +1,43 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+<#@ include file="..\GenericTypes.tt" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
+using Insight.Database.Structure;
+
+namespace Insight.Database
+{
+	public static partial class Query
+	{
+<#
+for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+	var previousTypeList = GetGenericList(typeCount - 1, GenericTypeFormat);
+#>
+		/// <summary>
+		/// Extends the reader by reading another set of records.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of objects in the <#= ConvertToOrdinal(typeIndex) #> set of results.</typeparam>
+<# } #>
+		/// <param name="previous">The previous reader.</param>
+		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
+		/// <returns>A reader that reads a Results object with multiple results.</returns>
+		public static ResultsReader<<#= typeList #>> Then<<#= typeList #>>(
+			this IQueryReader<Results<<#= previousTypeList #>>> previous,
+			IRecordReader<T<#= typeCount #>> recordReader)
+		{
+			return new ResultsReader<<#= typeList #>>(previous, recordReader);
+		}
+
+<# } #>
+	}
+}

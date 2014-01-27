@@ -11,7 +11,7 @@ using System.Dynamic;
 namespace Insight.Tests
 {
 	[TestFixture]
-	public class DbReaderTests : BaseDbTest
+	public class DbReaderTests : BaseTest
 	{
 		#region Helper Classes
 		class Data
@@ -25,7 +25,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatSingleClassIsDeserialized()
 		{
-			var list = _connection.QuerySql<Data>("SELECT Int=1, String='foo'", new { });
+			var list = Connection().QuerySql<Data>("SELECT Int=1, String='foo'", new { });
 
 			Assert.IsNotNull(list);
 			Assert.AreEqual(1, list.Count);
@@ -38,7 +38,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatMultipleClassIsDeserialized()
 		{
-			var list = _connection.QuerySql<Data>("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
+			var list = Connection().QuerySql<Data>("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
 
 			Assert.IsNotNull(list);
 			Assert.AreEqual(2, list.Count);
@@ -57,7 +57,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatDynamicObjectIsDeserialized()
 		{
-			var list = _connection.QuerySql("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
+			var list = Connection().QuerySql("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
 
 			Assert.IsNotNull(list);
 			Assert.AreEqual(2, list.Count);
@@ -76,7 +76,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatDynamicImpliesFastExpando()
 		{
-			var list = _connection.QuerySql<dynamic>("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
+			var list = Connection().QuerySql<dynamic>("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
 
 			Assert.IsNotNull(list);
 			Assert.AreEqual(2, list.Count);
@@ -102,7 +102,7 @@ namespace Insight.Tests
 			for (int i = 0; i < 3; i++)
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
-				var items = _connection.QuerySql(sql, new { p = array });
+				var items = Connection().QuerySql(sql, new { p = array });
 				Assert.IsNotNull(items);
 				Assert.AreEqual(i, items.Count);
 			}
@@ -113,7 +113,8 @@ namespace Insight.Tests
 		{
 			string sql = "SELECT p=1 SELECT p=2";
 
-			using (var reader = _connection.GetReaderSql(sql, Parameters.Empty))
+			using (var connection = Connection().OpenConnection())
+			using (var reader = connection.GetReaderSql(sql, Parameters.Empty))
 			{
 				var first = reader.AsEnumerable<int>().ToList();
 				var next = reader.AsEnumerable<int>().ToList();
@@ -125,7 +126,8 @@ namespace Insight.Tests
 		{
 			string sql = "SELECT p=1 SELECT p=2";
 
-			using (var reader = _connection.GetReaderSql(sql, Parameters.Empty))
+			using (var connection = Connection().OpenConnection())
+			using (var reader = connection.GetReaderSql(sql, Parameters.Empty))
 			{
 				var first = reader.Single<int>();
 				var next = reader.Single<int>();
@@ -137,7 +139,7 @@ namespace Insight.Tests
 		[Test]
 		public void ReaderShouldTranslateTimeColumnsToTimestamp()
 		{
-			var list = _connection.QuerySql<Data>("SELECT TimeSpan=CONVERT(time, '00:01:01')", new { });
+			var list = Connection().QuerySql<Data>("SELECT TimeSpan=CONVERT(time, '00:01:01')", new { });
 
 			Assert.IsNotNull(list);
 			Assert.AreEqual(1, list.Count);

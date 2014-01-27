@@ -17,6 +17,12 @@ namespace Insight.Database
 		public static readonly object Empty = new object();
 
 		/// <summary>
+		/// An empty parameter array.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2105:ArrayFieldsShouldNotBeReadOnly", Justification = "The array is immutable and the object is immutable")]
+		public static readonly object[] EmptyArray = new object[0];
+
+		/// <summary>
 		/// An empty list.
 		/// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "The array is immutable and the object is immutable")]

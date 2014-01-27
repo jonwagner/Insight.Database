@@ -1,28 +1,25 @@
 ﻿using System.Data;
 using System.Data.SqlClient;
-using Insight.Database;
-using Insight.Tests.TestDataClasses;
-using Microsoft.SqlServer.Types;
-using NUnit.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database;
+using Microsoft.SqlServer.Types;
+using NUnit.Framework;
 
 #pragma warning disable 0649
 
 namespace Insight.Tests
 {
 	[TestFixture]
-	public class MappingTests : BaseDbTest
+	public class MappingTests : BaseTest
 	{
 		[TearDown]
-		public override void TearDown()
+		public void TearDown()
 		{
 			ColumnMapping.All.ResetHandlers();
-
-			base.TearDown();
 		}
 
 		#region Table Tests
@@ -33,7 +30,7 @@ namespace Insight.Tests
 
 			var sql = ParentTestData.Sql.Replace("ParentX", "_Parent_X");
 			Assert.AreNotEqual(sql, ParentTestData.Sql);
-			var results = _connection.QuerySql<ParentTestData>(sql, withGraph: typeof(Graph<ParentTestData, TestData>));
+			var results = Connection().QuerySql<ParentTestData, TestData>(sql);
 			ParentTestData.Verify(results);
 		}
 
@@ -44,7 +41,7 @@ namespace Insight.Tests
 
 			var sql = ParentTestData.Sql.Replace("ParentX", "intParentX");
 			Assert.AreNotEqual(sql, ParentTestData.Sql);
-			var results = _connection.QuerySql<ParentTestData>(sql, withGraph: typeof(Graph<ParentTestData, TestData>));
+			var results = Connection().QuerySql<ParentTestData, TestData>(sql);
 			ParentTestData.Verify(results);
 		}
 
@@ -55,7 +52,7 @@ namespace Insight.Tests
 
 			var sql = ParentTestData.Sql.Replace("ParentX", "ParentXint");
 			Assert.AreNotEqual(sql, ParentTestData.Sql);
-			var results = _connection.QuerySql<ParentTestData>(sql, withGraph: typeof(Graph<ParentTestData, TestData>));
+			var results = Connection().QuerySql<ParentTestData, TestData>(sql);
 			ParentTestData.Verify(results);
 		}
 
@@ -66,7 +63,7 @@ namespace Insight.Tests
 
 			var sql = ParentTestData.Sql.Replace("ParentX", "_Parent_X_Foo");
 			Assert.AreNotEqual(sql, ParentTestData.Sql);
-			var results = _connection.QuerySql<ParentTestData>(sql, withGraph: typeof(Graph<ParentTestData, TestData>));
+			var results = Connection().QuerySql<ParentTestData, TestData>(sql);
 			ParentTestData.Verify(results);
 		}
 		#endregion
@@ -81,17 +78,12 @@ namespace Insight.Tests
 		[Test]
 		public void OutputParameterShouldHonorParameterMappings()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROCEDURE OutputParameterMappingTest @out_foo int = NULL OUTPUT AS SELECT @out_foo = 5");
+			ColumnMapping.Parameters.RemovePrefixes("out_");
 
-				ColumnMapping.Parameters.RemovePrefixes("out_");
-
-				var output = new OutputParameters();
-				connection.Execute("OutputParameterMappingTest", outputParameters: output);
-				Assert.AreEqual(0, output.out_foo);
-				Assert.AreEqual(5, output.foo);
-			}
+			var output = new OutputParameters();
+			Connection().Execute("OutputParameterMappingTest", outputParameters: output);
+			Assert.AreEqual(0, output.out_foo);
+			Assert.AreEqual(5, output.foo);
 		}
 		#endregion
 
@@ -113,16 +105,11 @@ namespace Insight.Tests
 		{
 			ColumnMapping.All.AddHandler(new SerializationMappingHandler() { SerializationMode = SerializationMode.Xml });
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC MappingAsJson1 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+			var input = new JsonClass();
+			input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
-				var input = new JsonClass();
-				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
-
-				var s = connection.Single<string>("MappingAsJson1", input);
-				Assert.IsTrue(connection.Single<string>("MappingAsJson1", input).StartsWith("<MappingTests."));
-			}
+			var s = Connection().Single<string>("MappingAsJson1", input);
+			Assert.IsTrue(Connection().Single<string>("MappingAsJson1", input).StartsWith("<MappingTests."));
 		}
 
 		[Test]
@@ -134,16 +121,11 @@ namespace Insight.Tests
 				SerializationMode = SerializationMode.Xml
 			});
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC MappingAsJson2 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+			var input = new JsonClass();
+			input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
-				var input = new JsonClass();
-				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
-
-				var s = connection.Single<string>("MappingAsJson2", input);
-				Assert.IsTrue(connection.Single<string>("MappingAsJson2", input).StartsWith("<MappingTests."));
-			}
+			var s = Connection().Single<string>("MappingAsJson2", input);
+			Assert.IsTrue(Connection().Single<string>("MappingAsJson2", input).StartsWith("<MappingTests."));
 		}
 
 		[Test]
@@ -155,16 +137,11 @@ namespace Insight.Tests
 				SerializationMode = SerializationMode.Xml
 			});
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC MappingAsJson3 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+			var input = new JsonClass();
+			input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
-				var input = new JsonClass();
-				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
-
-				var s = connection.Single<string>("MappingAsJson3", input);
-				Assert.IsTrue(connection.Single<string>("MappingAsJson3", input).StartsWith("<MappingTests."));
-			}
+			var s = Connection().Single<string>("MappingAsJson3", input);
+			Assert.IsTrue(Connection().Single<string>("MappingAsJson3", input).StartsWith("<MappingTests."));
 		}
 
 #if !NET35
@@ -177,16 +154,11 @@ namespace Insight.Tests
 				SerializationMode = SerializationMode.Xml
 			});
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC MappingAsJson4 @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+			var input = new JsonClass();
+			input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
-				var input = new JsonClass();
-				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
-
-				var s = connection.Single<string>("MappingAsJson4", input);
-				Assert.IsFalse(connection.Single<string>("MappingAsJson4", input).StartsWith("<MappingTests."));
-			}
+			var s = Connection().Single<string>("MappingAsJson4", input);
+			Assert.IsFalse(Connection().Single<string>("MappingAsJson4", input).StartsWith("<MappingTests."));
 		}
 #endif
 		#endregion
@@ -196,41 +168,13 @@ namespace Insight.Tests
 	/// Tests dynamic connection.
 	/// </summary>
 	[TestFixture]
-	public class MappingProcTests : BaseDbTest
+	public class MappingProcTests : BaseTest
 	{
 		#region SetUp and TearDown
-		[TestFixtureSetUp]
-		public override void SetUpFixture()
-		{
-			base.SetUpFixture();
-
-			// clean up old stuff first
-			CleanupObjects();
-
-			_connection.ExecuteSql("CREATE TYPE [InsightTestDataTable] AS TABLE ([IntParentX] [int], [IntX][int])");
-			_connection.ExecuteSql("CREATE PROCEDURE [TestProc] @p [InsightTestDataTable] READONLY AS SELECT * FROM @p");
-			_connection.ExecuteSql("CREATE TABLE [InsightTestDataTable2] ([IntParentX] [int], [IntX][int])");
-			_connection.ExecuteSql("CREATE PROCEDURE [TestProc2] @intParentX [int] AS SELECT @intParentX");
-			_connection.ExecuteSql("CREATE PROCEDURE [TestProc3] @geo [geography] AS SELECT GEO=@geo");
-		}
-
-		[TestFixtureTearDown]
-		public override void TearDownFixture()
+		[TearDown]
+		public void TearDownFixture()
 		{
 			ColumnMapping.Tables.ResetHandlers();
-
-			CleanupObjects();
-
-			base.TearDownFixture();
-		}
-
-		private void CleanupObjects()
-		{
-			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'TestProc3') DROP PROCEDURE [TestProc3]");
-			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'TestProc2') DROP PROCEDURE [TestProc2]");
-			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'TestProc') DROP PROCEDURE [TestProc]");
-			Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'InsightTestDataTable') DROP TYPE [InsightTestDataTable]");
-			Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestDataTable2') DROP TABLE [InsightTestDataTable2]");
 		}
 		#endregion
 
@@ -239,13 +183,13 @@ namespace Insight.Tests
 		public void MappingsAreAppliedToTableValuedParameters()
 		{
 			// get a stanard set of objects from the server
-			var original = _connection.QuerySql<ParentTestData>(ParentTestData.Sql);
+			var original = Connection().QuerySql<ParentTestData>(ParentTestData.Sql);
 			ParentTestData.Verify(original, false);
 
 			ColumnMapping.Tables.RemovePrefixes("int");
 
 			// send the object up to the server and get them back
-			var results = _connection.Query<ParentTestData>("TestProc", original);
+			var results = Connection().Query<ParentTestData>("MappingTestProc", original);
 			ParentTestData.Verify(results, false);
 		}
 
@@ -265,7 +209,7 @@ namespace Insight.Tests
 			var list = new List<ParentTestDataWithColumn>() { original };
 
 			// send the object up to the server and get them back
-			var results = _connection.Query<ParentTestDataWithColumn>("TestProc", list).First();
+			var results = Connection().Query<ParentTestDataWithColumn>("MappingTestProc", list).First();
 			Assert.AreEqual(original.ParentX, results.ParentX);
 			Assert.AreEqual(original.X, results.X);
 		}
@@ -285,16 +229,15 @@ namespace Insight.Tests
 					array[j] = new ParentTestData() { ParentX = j };
 
 				// bulk load the data
-				_sqlConnection.BulkCopy("InsightTestDataTable2", array);
+				Connection().ExecuteSql("DELETE FROM MappingBulkCopyTestTable");
+				Connection().BulkCopy("MappingBulkCopyTestTable", array);
 
 				// run the query
-				var items = _connection.QuerySql<ParentTestData>("SELECT * FROM InsightTestDataTable2");
+				var items = Connection().QuerySql<ParentTestData>("SELECT * FROM MappingBulkCopyTestTable");
 				Assert.IsNotNull(items);
 				Assert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
 					Assert.AreEqual(j, items[j].ParentX);
-
-				_connection.ExecuteSql("DELETE FROM InsightTestDataTable2");
 			}
 		}
 		#endregion
@@ -306,7 +249,7 @@ namespace Insight.Tests
 
 			var parentTestData = new ParentTestData() { ParentX = 5 };
 
-			var results = _connection.Query<int>("TestProc2", parentTestData);
+			var results = Connection().Query<int>("MappingTestProc2", parentTestData);
 			int data = results.First();
 
 			Assert.AreEqual(parentTestData.ParentX, data);
@@ -323,21 +266,21 @@ namespace Insight.Tests
 		{
 			// single value query
 			var point = SqlGeography.Point(0, 0, 4326);
-			var results = _connection.Query<SqlGeography>("TestProc3", new { geo = point });
+			var results = Connection().Query<SqlGeography>("MappingTestProcGeography", new { geo = point });
 			Assert.That(results[0].STEquals(point).IsTrue);
 
 			// class return value
-			var list = _connection.Query<TestGeography>("TestProc3", new { geo = point });
+			var list = Connection().Query<TestGeography>("MappingTestProcGeography", new { geo = point });
 			Assert.That(list[0].Geo.STEquals(point).IsTrue);
 
 			// dynamic parameter
 			dynamic p = new FastExpando();
 			p["Geo"] = point;
-			results = _connection.Query<SqlGeography>("TestProc3", (object)p);
+			results = Connection().Query<SqlGeography>("MappingTestProcGeography", (object)p);
 			Assert.That(results[0].STEquals(point).IsTrue);
 
 			// dynamic results
-			var dynamicList = _connection.Query("TestProc3", new { geo = point });
+			var dynamicList = Connection().Query("MappingTestProcGeography", new { geo = point });
 			Assert.That(results[0].STEquals(point).IsTrue);
 		}
 		#endregion

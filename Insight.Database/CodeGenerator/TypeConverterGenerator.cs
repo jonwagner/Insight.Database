@@ -113,7 +113,10 @@ namespace Insight.Database.CodeGenerator
 
 				// after: stack => [target][xDocument]
 			}
-			else if (sourceType == typeof(string) && targetType != typeof(string) && (!TypeHelper.IsAtomicType(targetType)))
+			else if (sourceType == typeof(string) && 
+				targetType != typeof(string) && 
+				targetType != typeof(object) && 
+				(!TypeHelper.IsAtomicType(targetType)))
 			{
 				// we are getting a string from the database, but the target is not a string, and it's a reference type
 				// assume the column is a serialized data type and that we want to deserialize it

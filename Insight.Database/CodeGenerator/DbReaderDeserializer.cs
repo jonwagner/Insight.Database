@@ -13,7 +13,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
-using Insight.Database.CodeGenerator;
+using Insight.Database.Structure;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -94,26 +94,24 @@ namespace Insight.Database.CodeGenerator
 		/// Get a deserializer to read class T from the given reader.
 		/// </summary>
 		/// <param name="reader">The reader to read from.</param>
-		/// <param name="withGraph">An optional type representing the object graph to deserialize.</param>
-		/// <param name="idColumns">An optional dictionary of the ID columns of the types.</param>
+		/// <param name="structure">The structure of the objects in the record.</param>
 		/// <typeparam name="T">The type of object to deserialize.</typeparam>
 		/// <returns>A function that can deserialize a T from the reader.</returns>
-		public static Func<IDataReader, T> GetDeserializer<T>(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
+		public static Func<IDataReader, T> GetDeserializer<T>(IDataReader reader, IRecordStructure structure)
 		{
-			return (Func<IDataReader, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, SchemaMappingType.NewObject);
+			return (Func<IDataReader, T>)GetDeserializer(reader, typeof(T), structure, SchemaMappingType.NewObject);
 		}
 
 		/// <summary>
 		/// Get a deserializer to read class T from the given reader.
 		/// </summary>
 		/// <param name="reader">The reader to read from.</param>
-		/// <param name="withGraph">An optional type representing the object graph to deserialize.</param>
-		/// <param name="idColumns">An optional dictionary of the ID columns of the types.</param>
+		/// <param name="structure">The structure of the objects in the record.</param>
 		/// <typeparam name="T">The type of object to deserialize.</typeparam>
 		/// <returns>A function that can deserialize a T from the reader.</returns>
-		public static Func<IDataReader, Action<object[]>, T> GetDeserializerWithCallback<T>(IDataReader reader, Type withGraph = null, Dictionary<Type, string> idColumns = null)
+		public static Func<IDataReader, Action<object[]>, T> GetDeserializerWithCallback<T>(IDataReader reader, IRecordStructure structure)
 		{
-			return (Func<IDataReader, Action<object[]>, T>)GetDeserializer(reader, typeof(T), withGraph, idColumns, SchemaMappingType.NewObjectWithCallback);
+			return (Func<IDataReader, Action<object[]>, T>)GetDeserializer(reader, typeof(T), structure, SchemaMappingType.NewObjectWithCallback);
 		}
 
 		/// <summary>
@@ -125,7 +123,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A function that can deserialize a T from the reader.</returns>
 		public static Func<IDataReader, T, T> GetMerger<T>(IDataReader reader)
 		{
-			var merger = GetDeserializer(reader, typeof(T), null, null, SchemaMappingType.ExistingObject);
+			var merger = GetDeserializer(reader, typeof(T), OneToOne<T>.Records, SchemaMappingType.ExistingObject);
 
 			// if we have returned a value deserializer, then we can't do a merge
 			if (merger is Func<IDataReader, T>)
@@ -139,12 +137,13 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="type">The type of object to deserialize.</param>
-		/// <param name="withGraph">An optional type representing the object graph to deserialize.</param>
-		/// <param name="idColumns">An optional dictionary of the ID columns of the types.</param>
+		/// <param name="structure">The structure of the objects in the record.</param>
 		/// <param name="mappingType">The type of mapping to return.</param>
 		/// <returns>A function that can deserialize a T from the reader.</returns>
-		private static Delegate GetDeserializer(IDataReader reader, Type type, Type withGraph, Dictionary<Type, string> idColumns, SchemaMappingType mappingType)
+		private static Delegate GetDeserializer(IDataReader reader, Type type, IRecordStructure structure, SchemaMappingType mappingType)
 		{
+			if (structure == null) throw new ArgumentNullException("structure");
+
 			// This method should try to return the deserializer with as little work as possible.
 			// Calculating the SchemaMappingIdentity is relatively expensive, so we will take care of the simple cases first,
 			// Where we can just look up a type in a dictionary.
@@ -157,19 +156,20 @@ namespace Insight.Database.CodeGenerator
 			// we have a simple deserializer
 			if (deserializer != null)
 			{
-				if (withGraph != null)
-					throw new ArgumentException("withGraph must be null for single column deserialization", "withGraph");
+				var genericArgs = structure.GetObjectTypes();
+				if (genericArgs.Length != 1 || genericArgs[0] != type)
+					throw new ArgumentException("Column Mapper does not match single column deserialization", "structure");
 				return deserializer;
 			}
 
 			// at this point, we know that we aren't returning a value type or simple object that doesn't depend on the schema.
 			// so we need to calculate a mapping identity and then create or return a deserializer.
-			SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, withGraph ?? type, idColumns, mappingType);
+			SchemaMappingIdentity identity = new SchemaMappingIdentity(reader, structure, mappingType);
 
 			// try to get the deserializer. if not found, create one.
 			return _deserializers.GetOrAdd(
 				identity,
-				key => ClassDeserializerGenerator.CreateDeserializer(reader, type, withGraph, idColumns, mappingType));
+				key => ClassDeserializerGenerator.CreateDeserializer(reader, type, structure, mappingType));
 		}
 		#endregion
 

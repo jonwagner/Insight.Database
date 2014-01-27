@@ -43,6 +43,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			Type = memberInfo.ReflectedType;
 			Name = memberInfo.Name;
+			MemberInfo = memberInfo;
 
 			// try to look up a field with the name
 			FieldInfo = memberInfo as FieldInfo;
@@ -104,6 +105,12 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <value>The FieldInfo this is bound to.</value>
 		public FieldInfo FieldInfo { get; private set; }
+
+		/// <summary>
+		/// Gets the MemberInfo for this member.
+		/// </summary>
+		/// <value>The MemberInfo this is bound to.</value>
+		public MemberInfo MemberInfo { get; private set; }
 
 		/// <summary>
 		/// Gets a value indicating whether the member can be set.
@@ -224,6 +231,64 @@ namespace Insight.Database.CodeGenerator
 			}
 			else
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.FullName, Name));
+		}
+		#endregion
+
+		#region Accessor Members
+		/// <summary>
+		/// Creates a method that gets the property from the object.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the object.</typeparam>
+		/// <typeparam name="TValue">The type of the value.</typeparam>
+		/// <returns>An accessor function.</returns>
+		public Func<TObject, TValue> CreateGetMethod<TObject, TValue>()
+		{
+			var dm = new DynamicMethod(
+				String.Format(CultureInfo.InvariantCulture, "Get-{0}-{1}-{2}", typeof(TObject).FullName, Name, Guid.NewGuid()),
+				typeof(TValue),
+				new Type[] { typeof(TObject) },
+				true);
+			var il = dm.GetILGenerator();
+
+			il.Emit(OpCodes.Ldarg_0);
+			if (FieldInfo != null)
+				il.Emit(OpCodes.Ldfld, FieldInfo);
+			else
+				il.Emit(OpCodes.Call, GetMethodInfo);
+
+			if (typeof(TValue) == typeof(object) && MemberType.IsValueType)
+				il.Emit(OpCodes.Box, MemberType);				
+
+			il.Emit(OpCodes.Ret);
+
+			return (Func<TObject, TValue>)dm.CreateDelegate(typeof(Func<TObject, TValue>));
+		}
+
+		/// <summary>
+		/// Creates a method that sets the property from the object.
+		/// </summary>
+		/// <typeparam name="TObject">The type of the object.</typeparam>
+		/// <typeparam name="TValue">The type of the value.</typeparam>
+		/// <returns>An accessor function.</returns>
+		public Action<TObject, TValue> CreateSetMethod<TObject, TValue>()
+		{
+			var dm = new DynamicMethod(
+				String.Format(CultureInfo.InvariantCulture, "Set-{0}-{1}-{2}", typeof(TObject).FullName, Name, Guid.NewGuid()),
+				null,
+				new Type[] { typeof(TObject), typeof(TValue) },
+				true);
+			var il = dm.GetILGenerator();
+
+			il.Emit(OpCodes.Ldarg_0);
+			il.Emit(OpCodes.Ldarg_1);
+			if (FieldInfo != null)
+				il.Emit(OpCodes.Stfld, FieldInfo);
+			else
+				il.Emit(OpCodes.Call, SetMethodInfo);
+
+			il.Emit(OpCodes.Ret);
+
+			return (Action<TObject, TValue>)dm.CreateDelegate(typeof(Action<TObject, TValue>));
 		}
 		#endregion
 	}

@@ -9,12 +9,12 @@ using System.Threading.Tasks;
 
 #pragma warning disable 0649
 
-namespace Insight.Tests.TestDataClasses
+namespace Insight.Tests
 {
 	/// <summary>
 	/// Test class to remove some repetition from test cases.
 	/// </summary>
-	class ParentTestData
+	public class ParentTestData
 	{
 		public TestData TestData;
 		public int ParentX;
@@ -48,15 +48,7 @@ namespace Insight.Tests.TestDataClasses
 	/// <summary>
 	/// Test class to remove some repetition from test cases.
 	/// </summary>
-	[DefaultGraph(typeof(Graph<ParentTestDataWithDefaultGraph, TestData>))]
-	class ParentTestDataWithDefaultGraph : ParentTestData
-	{
-	}
-
-	/// <summary>
-	/// Test class to remove some repetition from test cases.
-	/// </summary>
-	class TestData
+	public class TestData
 	{
 		public int X;
 		public int Z;
@@ -65,7 +57,7 @@ namespace Insight.Tests.TestDataClasses
 	/// <summary>
 	/// Test class to remove some repetition from test cases.
 	/// </summary>
-	class TestData2
+	public class TestData2
 	{
 		public int Y;
 

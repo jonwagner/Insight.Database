@@ -10,36 +10,18 @@ using System.Data;
 namespace Insight.Tests
 {
 	[TestFixture]
-	class BulkCopyTests : BaseDbTest
+	class BulkCopyTests : BaseTest
 	{
 		#region SetUp and TearDown
-		[TestFixtureSetUp]
-		public override void SetUpFixture()
+		[SetUp]
+		public void SetUp()
 		{
-			base.SetUpFixture();
-
-			// clean up old stuff first
-			CleanupObjects();
-
-			_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestData') DROP TABLE [InsightTestData]");
-			_connection.ExecuteSql("CREATE TABLE [InsightTestData] ([Int] [int])");
+			Cleanup();
 		}
 
-		[TestFixtureTearDown]
-		public override void TearDownFixture()
+		private void Cleanup()
 		{
-			CleanupObjects();
-
-			base.TearDownFixture();
-		}
-
-		private void CleanupObjects()
-		{
-			try
-			{
-				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestData') DROP TABLE [InsightTestData]");
-			}
-			catch { }
+			Connection().ExecuteSql("DELETE FROM [BulkCopyData]");
 		}
 		#endregion
 
@@ -54,6 +36,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestBulkLoad()
 		{
+			var connection = Connection();
+
 			for (int i = 0; i < 3; i++)
 			{
 				// build test data
@@ -62,18 +46,19 @@ namespace Insight.Tests
 					array[j] = new InsightTestData() { Int = j };
 
 				// bulk load the data
-				_connection.BulkCopy("InsightTestData", array);
+				Cleanup();
+				connection.BulkCopy("BulkCopyData", array);
 
-				VerifyRecordsInserted(_connection, i);
-
-				_connection.ExecuteSql("DELETE FROM InsightTestData");
+				VerifyRecordsInserted(connection, i);
 			}
 		}
 
         [Test]
         public void TestBulkLoadCount()
         {
-            const int RowCount = 3;
+			var connection = Connection();
+			
+			const int RowCount = 3;
             for (int i = 0; i < RowCount; i++)
             {
                 // build test data
@@ -82,17 +67,18 @@ namespace Insight.Tests
                     array[j] = new InsightTestData() { Int = j };
 
                 // bulk load the data
-                var count = _connection.BulkCopy("InsightTestData", array);
+				Cleanup();
+				var count = connection.BulkCopy("BulkCopyData", array);
 
                 Assert.AreEqual(i, count);
-
-                _connection.ExecuteSql("DELETE FROM InsightTestData");
             }
         }
 
 		[Test]
 		public void TestBulkLoadWithConfiguration()
 		{
+			var connection = Connection();
+
 			const int ItemCount = 10;
 
 			// build test data
@@ -102,16 +88,14 @@ namespace Insight.Tests
 
 			// bulk load the data
 			long totalRows = 0;
-			_connection.BulkCopy("InsightTestData", array, configure: (InsightBulkCopy bulkCopy) =>
+			connection.BulkCopy("BulkCopyData", array, configure: (InsightBulkCopy bulkCopy) =>
 			{
 				bulkCopy.NotifyAfter = 1;
 				bulkCopy.RowsCopied += (sender, args) => totalRows = args.RowsCopied;
 			});
 
-			VerifyRecordsInserted(_connection, ItemCount);
+			VerifyRecordsInserted(connection, ItemCount);
 			Assert.AreEqual(ItemCount, totalRows);
-
-			_connection.ExecuteSql("DELETE FROM InsightTestData");
 		}
 
 		[Test]
@@ -119,7 +103,7 @@ namespace Insight.Tests
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = ConnectionWithTransaction())
 				{
 					// build test data
 					InsightTestData[] array = new InsightTestData[i];
@@ -127,16 +111,15 @@ namespace Insight.Tests
 						array[j] = new InsightTestData() { Int = j };
 
 					// bulk load the data
-					connection.BulkCopy("InsightTestData", array);
+					Cleanup();
+					connection.BulkCopy("BulkCopyData", array);
 
 					// records should be there
 					VerifyRecordsInserted(connection, i);
 				}
 
 				// records should be gone
-				VerifyRecordsInserted(_connection, 0);
-
-				_connection.ExecuteSql("DELETE FROM InsightTestData");
+				VerifyRecordsInserted(Connection(), 0);
 			}
 		}
 
@@ -145,31 +128,35 @@ namespace Insight.Tests
 		{
 			for (int i = 0; i < 3; i++)
 			{
-				using (var tx = _connection.BeginTransaction())
+				using (var connection = Connection())
 				{
-					// build test data
-					InsightTestData[] array = new InsightTestData[i];
-					for (int j = 0; j < i; j++)
-						array[j] = new InsightTestData() { Int = j };
+					connection.Open();
 
-					// bulk load the data
-					_connection.BulkCopy("InsightTestData", array, transaction: tx);
+					using (var tx = connection.BeginTransaction())
+					{
+						// build test data
+						InsightTestData[] array = new InsightTestData[i];
+						for (int j = 0; j < i; j++)
+							array[j] = new InsightTestData() { Int = j };
 
-					// records should be there
-					VerifyRecordsInserted(_connection, i, tx);
+						// bulk load the data
+						Cleanup();
+						connection.BulkCopy("BulkCopyData", array, transaction: tx);
+
+						// records should be there
+						VerifyRecordsInserted(connection, i, tx);
+					}
+
+					// records should be gone
+					VerifyRecordsInserted(connection, 0);
 				}
-
-				// records should be gone
-				VerifyRecordsInserted(_connection, 0);
-
-				_connection.ExecuteSql("DELETE FROM InsightTestData");
 			}
 		}
 
 		private void VerifyRecordsInserted(IDbConnection connection, int count, IDbTransaction transaction = null)
 		{
 			// run the query
-			var items = connection.QuerySql<InsightTestData>("SELECT * FROM InsightTestData", transaction: transaction);
+			var items = connection.QuerySql<InsightTestData>("SELECT * FROM BulkCopyData ORDER BY Int", transaction: transaction);
 			Assert.IsNotNull(items);
 			Assert.AreEqual(count, items.Count);
 			for (int j = 0; j < count; j++)

@@ -8,6 +8,7 @@ using NUnit.Framework;
 using System.Transactions;
 using System.Data.Common;
 using System.Threading.Tasks;
+using System.Data;
 
 #pragma warning disable 0649
 
@@ -17,7 +18,7 @@ namespace Insight.Tests
 	/// Tests that output parameters function properly.
 	/// </summary>
 	[TestFixture]
-	public class OutputParameterTests : BaseDbTest
+	public class OutputParameterTests : BaseTest
 	{
 		#region Tests to Verify Parameter Returns
 		public class OutputData
@@ -31,11 +32,10 @@ namespace Insight.Tests
 		[Test]
 		public void TestClassOutputParameterWithDefault()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = Connection())
 			{
-				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9");
-
-				var command = connection.CreateCommand("Insight_TestOutput", new { p = 5 });
+				connection.Open();
+				var command = connection.CreateCommand("TestOutputParameters", new { p = 5 });
 				var result = command.ExecuteNonQuery();
 
 				var outputData = new OutputData();
@@ -51,15 +51,14 @@ namespace Insight.Tests
 		[Test]
 		public void TestExpandoOutputParameterWithDefault()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = Connection())
 			{
-				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 11");
-
-				var command = connection.CreateCommand("Insight_TestOutput");
+				connection.Open();
+				var command = connection.CreateCommand("TestOutputParameters");
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
-				Assert.AreEqual(11, output["p"]);
+				Assert.AreEqual(9, output["p"]);
 			}
 		}
 
@@ -69,15 +68,14 @@ namespace Insight.Tests
 		[Test]
 		public void TestExpandoOutputParameterWithoutDefault()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = Connection())
 			{
-				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int OUTPUT AS SET @p = 6");
-
-				var command = connection.CreateCommand("Insight_TestOutput", new { p = 5 });
+				connection.Open();
+				var command = connection.CreateCommand("TestOutputParameters", new { p = 5 });
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
-				Assert.AreEqual(6, output["p"]);
+				Assert.AreEqual(9, output["p"]);
 			}
 		}
 		#endregion
@@ -87,9 +85,9 @@ namespace Insight.Tests
 		{
 			public T p;
 
-			public static void Test(T value, DbConnection connection, string sqlType)
+			public static void Test(T value, IDbConnection connection, string sqlType)
 			{
-				using (DbTransaction t = connection.BeginTransaction())
+				using (IDbTransaction t = connection.BeginTransaction())
 				{
 					// special case for formatting enums in our proc definition
 					string stringValue = value.ToString();
@@ -136,47 +134,50 @@ namespace Insight.Tests
 		[Test]
 		public void TestTypes()
 		{
-			// value types
-			// NOTE: unsigned types are not supported by sql so we won't test them here
-			ReturnTypeTest<string>.Test("string", _connection, "varchar(32)");
-			ReturnTypeTest<string>.Test("string", _connection, "nvarchar(32)");
-			ReturnTypeTest<string>.Test("string", _connection, "char(6)");
-			ReturnTypeTest<string>.Test("string", _connection, "nchar(6)");
+			using (var _connection = Connection().OpenConnection())
+			{
+				// value types
+				// NOTE: unsigned types are not supported by sql so we won't test them here
+				ReturnTypeTest<string>.Test("string", _connection, "varchar(32)");
+				ReturnTypeTest<string>.Test("string", _connection, "nvarchar(32)");
+				ReturnTypeTest<string>.Test("string", _connection, "char(6)");
+				ReturnTypeTest<string>.Test("string", _connection, "nchar(6)");
 
-			ReturnTypeTest<byte>.Test(1, _connection, "tinyint");
-			ReturnTypeTest<short>.Test(-2, _connection, "smallint");
-			ReturnTypeTest<int>.Test(-120, _connection, "int");
-			ReturnTypeTest<long>.Test(-120000000, _connection, "bigint");
-			ReturnTypeTest<float>.Test(123.456f, _connection, "float");
-			ReturnTypeTest<double>.Test(567, _connection, "real");
-			ReturnTypeTest<decimal>.Test(890.12345m, _connection, "decimal(18,5)");
-			ReturnTypeTest<bool>.Test(false, _connection, "bit");
-			ReturnTypeTest<bool>.Test(true, _connection, "bit");
-			ReturnTypeTest<char>.Test('c', _connection, "char");
-			ReturnTypeTest<Guid>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
-			ReturnTypeTest<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
-			ReturnTypeTest<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
-			ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
-			ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
+				ReturnTypeTest<byte>.Test(1, _connection, "tinyint");
+				ReturnTypeTest<short>.Test(-2, _connection, "smallint");
+				ReturnTypeTest<int>.Test(-120, _connection, "int");
+				ReturnTypeTest<long>.Test(-120000000, _connection, "bigint");
+				ReturnTypeTest<float>.Test(123.456f, _connection, "float");
+				ReturnTypeTest<double>.Test(567, _connection, "real");
+				ReturnTypeTest<decimal>.Test(890.12345m, _connection, "decimal(18,5)");
+				ReturnTypeTest<bool>.Test(false, _connection, "bit");
+				ReturnTypeTest<bool>.Test(true, _connection, "bit");
+				ReturnTypeTest<char>.Test('c', _connection, "char");
+				ReturnTypeTest<Guid>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
+				ReturnTypeTest<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
+				ReturnTypeTest<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
+				ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
+				ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
 
-			ReturnTypeTest<Nullable<byte>>.Test(1, _connection, "tinyint");
-			ReturnTypeTest<Nullable<short>>.Test(-2, _connection, "smallint");
-			ReturnTypeTest<Nullable<int>>.Test(-120, _connection, "int");
-			ReturnTypeTest<Nullable<long>>.Test(-120000000, _connection, "bigint");
-			ReturnTypeTest<Nullable<float>>.Test(123.456f, _connection, "float");
-			ReturnTypeTest<Nullable<double>>.Test(567, _connection, "real");
-			ReturnTypeTest<Nullable<decimal>>.Test(890.12345m, _connection, "decimal(18,5)");
-			ReturnTypeTest<Nullable<bool>>.Test(false, _connection, "bit");
-			ReturnTypeTest<Nullable<bool>>.Test(true, _connection, "bit");
-			ReturnTypeTest<Nullable<char>>.Test('c', _connection, "char");
-			ReturnTypeTest<Nullable<Guid>>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
-			ReturnTypeTest<Nullable<DateTime>>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
-			ReturnTypeTest<Nullable<DateTimeOffset>>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
-			ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
-			ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
+				ReturnTypeTest<Nullable<byte>>.Test(1, _connection, "tinyint");
+				ReturnTypeTest<Nullable<short>>.Test(-2, _connection, "smallint");
+				ReturnTypeTest<Nullable<int>>.Test(-120, _connection, "int");
+				ReturnTypeTest<Nullable<long>>.Test(-120000000, _connection, "bigint");
+				ReturnTypeTest<Nullable<float>>.Test(123.456f, _connection, "float");
+				ReturnTypeTest<Nullable<double>>.Test(567, _connection, "real");
+				ReturnTypeTest<Nullable<decimal>>.Test(890.12345m, _connection, "decimal(18,5)");
+				ReturnTypeTest<Nullable<bool>>.Test(false, _connection, "bit");
+				ReturnTypeTest<Nullable<bool>>.Test(true, _connection, "bit");
+				ReturnTypeTest<Nullable<char>>.Test('c', _connection, "char");
+				ReturnTypeTest<Nullable<Guid>>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
+				ReturnTypeTest<Nullable<DateTime>>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
+				ReturnTypeTest<Nullable<DateTimeOffset>>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
+				ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
+				ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
 
-			// enums
-			ReturnTypeTest<TestEnum>.Test(TestEnum.Two, _connection, "int");
+				// enums
+				ReturnTypeTest<TestEnum>.Test(TestEnum.Two, _connection, "int");
+			}
 		}
 		#endregion
 
@@ -187,15 +188,10 @@ namespace Insight.Tests
 		[Test]
 		public void TestQueryResults()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1");
+			var result = Connection().QueryResults<Results<int>>("TestOutputParameters", new { p = 5 });
 
-				var result = connection.QueryResults<Results<int>>("Insight_TestOutput", new { p = 5 });
-
-				Assert.IsNotNull(result.Outputs);
-				Assert.AreEqual(9, result.Outputs["p"]);
-			}
+			Assert.IsNotNull(result.Outputs);
+			Assert.AreEqual(9, result.Outputs["p"]);
 		}
 
 		/// <summary>
@@ -204,15 +200,10 @@ namespace Insight.Tests
 		[Test]
 		public void TestAsyncQueryResults()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9 SELECT 1");
+			var result = Connection().QueryResultsAsync<Results<int>>("TestOutputParameters", new { p = 5 }).Result;
 
-				var result = connection.QueryResultsAsync<Results<int>>("Insight_TestOutput", new { p = 5 }).Result;
-
-				Assert.IsNotNull(result.Outputs);
-				Assert.AreEqual(9, result.Outputs["p"]);
-			}
+			Assert.IsNotNull(result.Outputs);
+			Assert.AreEqual(9, result.Outputs["p"]);
 		}
 		#endregion
 
@@ -225,39 +216,24 @@ namespace Insight.Tests
 		[Test]
 		public void ExecuteProcShouldReturnValue()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC ReturnAValue AS RETURN 11");
-
-				var output = new ReturnValue();
-				connection.Execute("ReturnAValue", outputParameters: output);
-				Assert.AreEqual(11, output.Return_Value);
-			}
+			var output = new ReturnValue();
+			Connection().Execute("ReturnAValue", outputParameters: output);
+			Assert.AreEqual(11, output.Return_Value);
 		}
 
 		[Test]
 		public void ReturnValueCanFillInADynamic()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC ReturnAValue AS RETURN 11");
-
-				dynamic output = new FastExpando();
-				connection.Execute("ReturnAValue", outputParameters: (object)output);
-				Assert.AreEqual(11, output["Return_Value"]);
-			}
+			dynamic output = new FastExpando();
+			Connection().Execute("ReturnAValue", outputParameters: (object)output);
+			Assert.AreEqual(11, output["Return_Value"]);
 		}
 
 		[Test]
 		public void ReturnValueCanFillQueryResults()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC ReturnAValue AS RETURN 11");
-
-				var results = connection.QueryResults("ReturnAValue");
-				Assert.AreEqual(11, results.Outputs["Return_Value"]);
-			}
+			var results = Connection().Query("ReturnAValue", null, Query.ReturnsResults<Results>());
+			Assert.AreEqual(11, results.Outputs["Return_Value"]);
 		}
 		#endregion
 
@@ -268,22 +244,17 @@ namespace Insight.Tests
 		[Test]
 		public void TestAsyncWithOutputParameters()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9");
+			var outputData = new OutputData();
+			var task = Connection().ExecuteAsync("TestOutputParameters", new { p = 5 }, outputParameters: outputData);
 
-				var outputData = new OutputData();
-				var task = connection.ExecuteAsync("Insight_TestOutput", new { p = 5 }, outputParameters: outputData);
+			task.Wait();
 
-				task.Wait();
-
-				Assert.AreEqual(9, outputData.p);
-			}
+			Assert.AreEqual(9, outputData.p);
 		}
 
 		public interface IAsyncWithOutputParameters
 		{
-			Task Insight_TestOutput(OutputData data);
+			Task TestOutputParameters(OutputData data);
 		}
 
 		/// <summary>
@@ -292,19 +263,14 @@ namespace Insight.Tests
 		[Test]
 		public void TestIAsyncWithOutputParameters()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROCEDURE Insight_TestOutput @p int = 1 OUTPUT AS SET @p = 9");
+			var i = Connection().As<IAsyncWithOutputParameters>();
 
-				var i = connection.As<IAsyncWithOutputParameters>();
+			var outputData = new OutputData() { p = 10 };
+			var task = i.TestOutputParameters(outputData);
 
-				var outputData = new OutputData() { p = 10 };
-				var task = i.Insight_TestOutput(outputData);
+			task.Wait();
 
-				task.Wait();
-
-				Assert.AreEqual(9, outputData.p);
-			}
+			Assert.AreEqual(9, outputData.p);
 		}
 		#endregion
 	}

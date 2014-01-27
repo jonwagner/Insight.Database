@@ -5,20 +5,20 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
-using Insight.Tests.TestDataClasses;
+using Insight.Tests.Cases;
 
 #pragma warning disable 0649
 
 namespace Insight.Tests
 {
 	[TestFixture]
-	public class MultipleResultsTests : BaseDbTest
+	public class MultipleResultsTests : BaseTest
 	{
 		#region Multiple Recordset Tests
 		[Test]
 		public void TwoRecordsetsAreReturned()
 		{
-			var results = _connection.QueryResultsSql<ParentTestData, TestData2>(ParentTestData.Sql + TestData2.Sql);
+			var results = Connection().QueryResultsSql<ParentTestData, TestData2>(ParentTestData.Sql + TestData2.Sql);
 
 			Assert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: false);
@@ -30,7 +30,7 @@ namespace Insight.Tests
 		{
 			// expect one recordsets, but retrieve none. remaining recordsets should be null, not empty.
 
-			var results = _connection.QueryResultsSql<Results<ParentTestData>>("--");
+			var results = Connection().QueryResultsSql<Results<ParentTestData>>("--");
 			Assert.IsNotNull(results);
 			Assert.IsNotNull(results.Set1);
 			Assert.AreEqual(0, results.Set1.Count);
@@ -41,7 +41,7 @@ namespace Insight.Tests
 		{
 			// expect two recordsets, but retrieve one. remaining recordsets should be null, not empty.
 
-			var results = _connection.QueryResultsSql<ParentTestData, TestData2>(ParentTestData.Sql);
+			var results = Connection().QueryResultsSql<ParentTestData, TestData2>(ParentTestData.Sql);
 			Assert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: false);
 			Assert.IsNotNull(results.Set2);
@@ -53,7 +53,7 @@ namespace Insight.Tests
 		{
 			// expect one recordsets, but retrieve none. remaining recordsets should be null, not empty.
 
-			var results = _connection.QueryResultsSqlAsync<Results<ParentTestData>>("--").Result;
+			var results = Connection().QueryResultsSqlAsync<Results<ParentTestData>>("--").Result;
 			Assert.IsNotNull(results);
 			Assert.IsNotNull(results.Set1);
 			Assert.AreEqual(0, results.Set1.Count);
@@ -64,7 +64,7 @@ namespace Insight.Tests
 		{
 			// expect two recordsets, but retrieve one. remaining recordsets should be null, not empty.
 
-			var results = _connection.QueryResultsSqlAsync<ParentTestData, TestData2>(ParentTestData.Sql).Result;
+			var results = Connection().QueryResultsSqlAsync<ParentTestData, TestData2>(ParentTestData.Sql).Result;
 			Assert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: false);
 			Assert.IsNotNull(results.Set2);
@@ -75,35 +75,11 @@ namespace Insight.Tests
 		public void EmptyListDoesNotTerminateResults()
 		{
 			// expect two recordsets, first set is empty. first set should be empty, second should be full
-			var results = _connection.QueryResultsSql<ParentTestData, TestData2>("SELECT 0 WHERE 0=1;" + TestData2.Sql);
+			var results = Connection().QueryResultsSql<ParentTestData, TestData2>("SELECT 0 WHERE 0=1;" + TestData2.Sql);
 
 			Assert.IsNotNull(results);
 			Assert.IsNotNull(results.Set1);
 			Assert.AreEqual(0, results.Set1.Count);
-			TestData2.Verify(results.Set2);
-		}
-		#endregion
-
-		#region Multiple Recordset WithGraph Tests
-		[Test]
-		public void RecordsetWithDefaultGraphIsReturned()
-		{
-			var results = _connection.QueryResultsSql<ParentTestDataWithDefaultGraph, TestData2>(ParentTestData.Sql + TestData2.Sql);
-
-			Assert.IsNotNull(results);
-			ParentTestData.Verify(results.Set1, withGraph: true);
-			TestData2.Verify(results.Set2);
-		}
-
-		[Test]
-		public void RecordsetWithGraphIsReturned()
-		{
-			var results = _connection.QueryResultsSql<ParentTestData, TestData2>(
-				ParentTestData.Sql + TestData2.Sql,
-				withGraphs: new[] { typeof(Graph<ParentTestData, TestData>) });
-
-			Assert.IsNotNull(results);
-			ParentTestData.Verify(results.Set1, withGraph: true);
 			TestData2.Verify(results.Set2);
 		}
 		#endregion
@@ -115,7 +91,7 @@ namespace Insight.Tests
 			// Results<dynamic> gets compiled as Results<object>
 			// Insight will assume that if you want an object, you are really saying dynamic
 			// Because, seriously, why would you just want an object back from the database?
-			var results = _connection.QueryResultsSql<Results<dynamic>>("SELECT x=1, y=2");
+			var results = Connection().QueryResultsSql<Results<dynamic>>("SELECT x=1, y=2");
 			
 			Assert.AreEqual(1, results.Set1.Count);
 			var item = results.Set1[0];
@@ -125,19 +101,10 @@ namespace Insight.Tests
 		#endregion
 
 		#region Derived Recordsets Tests
-		class PageData
-		{
-			public int TotalCount;
-		}
-		class PageData<T> : Results<T, PageData>
-		{
-			public int TotalCount { get { return Set2.First().TotalCount; } }
-		}
-
 		[Test]
 		public void DerivedRecordsetsCanBeReturned()
 		{
-			var results = _connection.QueryResultsSql<PageData<ParentTestData>>(ParentTestData.Sql + "SELECT TotalCount=70");
+			var results = Connection().QueryResultsSql<PageData<ParentTestData>>(ParentTestData.Sql + "SELECT TotalCount=70");
 
 			Assert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: false);

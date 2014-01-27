@@ -1,7 +1,7 @@
 ﻿using System;
-#if NET35
 using System.Collections.Generic;
 using System.Linq;
+#if NET35
 using System.Text;
 
 // don't yell at us for not documenting these classes
@@ -121,9 +121,22 @@ namespace Insight.Database
 			Item2 = item2;
 		}
 
+		internal static int CombineHashCodes(int h1, int h2)
+		{
+			return (((h1 << 5) + h1) ^ h2);
+		}
+
+		internal static int GetHashCode<T>(T t)
+		{
+			if (t == null)
+				return 0;
+			else
+				return t.GetHashCode();
+		}
+
 		public override int GetHashCode()
 		{
-			return Item1.GetHashCode() + Item2.GetHashCode();
+			return CombineHashCodes(GetHashCode(Item1), GetHashCode(Item2));
 		}
 
 		public override bool Equals(object obj)
@@ -241,6 +254,8 @@ namespace Insight.Database
 		public TaskStatus Status { get; private set; }
 		public AggregateException Exception { get; private set; }
 		public bool IsCompleted { get { return true; } }
+		public bool IsCanceled { get { return false; } }
+		public bool IsFaulted { get { return Exception != null; } }
 		protected object InternalResult { get; set; }
 
 		internal Task(Action action) : this(() => { action(); return null; })
@@ -410,7 +425,7 @@ namespace Insight.Database
 /// <summary>
 /// Adds missing methods.
 /// </summary>
-static class StringExtensions
+static class MissingExtensions
 {
 	/// <summary>
 	/// Determines if a string is null or all whitespace.
@@ -434,5 +449,21 @@ static class StringExtensions
 #else
 		return String.IsNullOrWhiteSpace(value);
 #endif
+	}
+
+	/// <summary>
+	/// Returns the maximum value in a sequence or the default.
+	/// </summary>
+	/// <typeparam name="T1">The type of the sequence.</typeparam>
+	/// <typeparam name="T2">The type of the value.</typeparam>
+	/// <param name="list">The list to evaluate.</param>
+	/// <param name="selector">A function to select the value.</param>
+	/// <returns>The maximum selected value or the default.</returns>
+	public static T2 MaxOrDefault<T1, T2>(this IEnumerable<T1> list, Func<T1, T2> selector)
+	{
+		if (!list.Any())
+			return default(T2);
+
+		return list.Max(selector);
 	}
 }

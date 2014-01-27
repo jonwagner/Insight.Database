@@ -10,7 +10,7 @@ using Insight.Database.Json;
 namespace Insight.Tests.Json
 {
 	[TestFixture]
-    public class JsonTests : BaseDbTest
+    public class JsonTests : BaseTest
     {
 		public class JsonClass
 		{
@@ -29,16 +29,16 @@ namespace Insight.Tests.Json
 		{
 			JsonNetObjectSerializer.Initialize();
 
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = ConnectionWithTransaction())
 			{
-				connection.ExecuteSql("CREATE PROC ClassAsJsonParameter @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
+				connection.ExecuteSql("CREATE PROC ClassAsJsonNetParameter @SubClass [varchar](max) AS SELECT SubClass=@SubClass");
 
 				var input = new JsonClass();
 				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
-				Assert.AreEqual("{\"Foo\":\"foo\",\"Bar\":5}", connection.Single<string>("ClassAsJsonParameter", input));
+				Assert.AreEqual("{\"Foo\":\"foo\",\"Bar\":5}", connection.Single<string>("ClassAsJsonNetParameter", input));
 
-				var result = connection.Query<JsonClass, JsonSubClass>("ClassAsJsonParameter", input).First();
+				var result = connection.Query<JsonClass, JsonSubClass>("ClassAsJsonNetParameter", input).First();
 				Assert.IsNotNull(result.SubClass);
 				Assert.AreEqual(input.SubClass.Foo, result.SubClass.Foo);
 				Assert.AreEqual(input.SubClass.Bar, result.SubClass.Bar);
@@ -48,7 +48,7 @@ namespace Insight.Tests.Json
 		[Test]
 		public void TestNullValue()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = ConnectionWithTransaction())
 			{
 				var result = connection.QuerySql<JsonClass, JsonSubClass>("SELECT SubClass=CONVERT (varchar(MAX),NULL)").First();
 				Assert.IsNull(result.SubClass);

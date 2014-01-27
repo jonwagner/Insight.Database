@@ -17,7 +17,7 @@ using System.Data.Common;
 namespace Insight.Tests
 {
 	[TestFixture]
-	public class XmlTests : BaseDbTest
+	public class XmlTests : BaseTest
 	{
 		class Result
 		{
@@ -38,7 +38,7 @@ namespace Insight.Tests
 		[Test]
 		public void XmlSingleColumnCanDeserializeToXmlDocument()
 		{
-			var list = _connection.QuerySql<XmlDocument>("SELECT CONVERT(xml, '<data/>')", new { });
+			var list = Connection().QuerySql<XmlDocument>("SELECT CONVERT(xml, '<data/>')", new { });
 
 			Assert.IsNotNull(list);
 			var doc = list[0];
@@ -49,7 +49,7 @@ namespace Insight.Tests
 		[Test]
 		public void XmlSingleColumnCanDeserializeToXDocument()
 		{
-			var list = _connection.QuerySql<XDocument>("SELECT CONVERT(xml, '<data/>')", new { });
+			var list = Connection().QuerySql<XDocument>("SELECT CONVERT(xml, '<data/>')", new { });
 
 			Assert.IsNotNull(list);
 			var doc = list[0];
@@ -60,7 +60,7 @@ namespace Insight.Tests
 		[Test]
 		public void XmlSingleColumnCanDeserializeToString()
 		{
-			var list = _connection.QuerySql<string>("SELECT CONVERT(xml, '<data/>')", new { });
+			var list = Connection().QuerySql<string>("SELECT CONVERT(xml, '<data/>')", new { });
 
 			Assert.IsNotNull(list);
 			var s = list[0];
@@ -73,7 +73,7 @@ namespace Insight.Tests
 		[Test]
 		public void XmlColumnCanDeserializeToString()
 		{
-			var list = _connection.QuerySql<Result>("SELECT String=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
+			var list = Connection().QuerySql<Result>("SELECT String=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
 
 			Assert.IsNotNull(list);
 			var result = list[0];
@@ -85,7 +85,7 @@ namespace Insight.Tests
 		[Test]
 		public void XmlColumnCanDeserializeToXmlDocument()
 		{
-			var list = _connection.QuerySql<Result>("SELECT XmlDocument=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
+			var list = Connection().QuerySql<Result>("SELECT XmlDocument=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
 
 			Assert.IsNotNull(list);
 			var result = list[0];
@@ -97,7 +97,7 @@ namespace Insight.Tests
 		[Test]
 		public void XmlColumnCanDeserializeToXDocument()
 		{
-			var list = _connection.QuerySql<Result>("SELECT XDocument=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
+			var list = Connection().QuerySql<Result>("SELECT XDocument=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
 
 			Assert.IsNotNull(list);
 			var result = list[0];
@@ -109,7 +109,7 @@ namespace Insight.Tests
 		[Test]
 		public void XmlColumnCanDeserializeToObject()
 		{
-			var list = _connection.QuerySql<Result>("SELECT Data=CONVERT(xml, '<XmlTests.Data xmlns=\"http://schemas.datacontract.org/2004/07/Insight.Tests\"><Text>foo</Text></XmlTests.Data>')", new { });
+			var list = Connection().QuerySql<Result>("SELECT Data=CONVERT(xml, '<XmlTests.Data xmlns=\"http://schemas.datacontract.org/2004/07/Insight.Tests\"><Text>foo</Text></XmlTests.Data>')", new { });
 
 			Assert.IsNotNull(list);
 			var result = list[0];
@@ -123,79 +123,59 @@ namespace Insight.Tests
 		[Test]
 		public void XmlDocumentCanSerializeToXmlParameter()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml");
+			// create a document
+			XmlDocument doc = new XmlDocument();
+			doc.LoadXml("<Data><Text>foo</Text></Data>");
 
-				// create a document
-				XmlDocument doc = new XmlDocument();
-				doc.LoadXml("<Data><Text>foo</Text></Data>");
-
-				var list = connection.Query<XmlDocument>("InsightTestProc", new { Xml = doc });
-				var data = list[0];
-				Assert.IsNotNull(data);
-				Assert.AreEqual(doc.OuterXml, data.OuterXml);
-			}
+			var list = Connection().Query<XmlDocument>("ReflectXml", new { Xml = doc });
+			var data = list[0];
+			Assert.IsNotNull(data);
+			Assert.AreEqual(doc.OuterXml, data.OuterXml);
 		}
 
 		[Test]
 		public void XDocumentCanSerializeToXmlParameter()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml");
+			// create a document
+			XDocument doc = XDocument.Parse("<Data><Text>foo</Text></Data>");
 
-				// create a document
-				XDocument doc = XDocument.Parse("<Data><Text>foo</Text></Data>");
-
-				var list = connection.Query<XDocument>("InsightTestProc", new { Xml = doc });
-				var data = list[0];
-				Assert.IsNotNull(data);
-				Assert.AreEqual(doc.ToString(), data.ToString());
-			}
+			var list = Connection().Query<XDocument>("ReflectXml", new { Xml = doc });
+			var data = list[0];
+			Assert.IsNotNull(data);
+			Assert.AreEqual(doc.ToString(), data.ToString());
 		}
 
 		[Test]
 		public void ObjectCanSerializeToXmlParameter()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			// create a document
+			Data d = new Data()
 			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Data=@Xml");
+				Text = "foo"
+			};
 
-				// create a document
-				Data d = new Data()
-				{
-					Text = "foo"
-				};
-
-				var list = connection.Query<Result>("InsightTestProc", new { Xml = d });
-				var data = list[0];
-				Assert.IsNotNull(data);
-				Assert.AreEqual(d.Text, data.Data.Text);
-			}
+			var list = Connection().Query<Result>("ReflectXmlAsData", new { Xml = d });
+			var data = list[0];
+			Assert.IsNotNull(data);
+			Assert.AreEqual(d.Text, data.Data.Text);
 		}
 
 		[Test]
 		public void StringCanSerializeToXmlParameter()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
-			{
-				connection.ExecuteSql("CREATE PROC InsightTestProc (@Xml xml) AS SELECT Xml=@Xml");
+			// create a document
+			string doc = "<Data><Text>foo</Text></Data>";
 
-				// create a document
-				string doc = "<Data><Text>foo</Text></Data>";
-
-				var list = connection.Query<string>("InsightTestProc", new { Xml = doc });
-				var data = list[0];
-				Assert.IsNotNull(data);
-				Assert.AreEqual(doc, data);
-			}
+			var list = Connection().Query<string>("ReflectXml", new { Xml = doc });
+			var data = list[0];
+			Assert.IsNotNull(data);
+			Assert.AreEqual(doc, data);
 		}
 		#endregion
 	}
 
 	[TestFixture]
-	public class XmlTVPTests : BaseDbTest
+	public class XmlTVPTests : BaseTest
 	{
 		class Result
 		{
@@ -209,47 +189,6 @@ namespace Insight.Tests
 			public string Text;
 		}
 
-		#region SetUp and TearDown
-		[TestFixtureSetUp]
-		public override void SetUpFixture()
-		{
-			base.SetUpFixture();
-
-			// clean up old stuff first
-			CleanupObjects();
-
-			_connection.ExecuteSql("CREATE TYPE [XmlDataTable] AS TABLE ([id] int, [Data] [Xml])");
-			_connection.ExecuteSql("CREATE PROCEDURE [XmlTestProc] @p [XmlDataTable] READONLY AS SELECT * FROM @p");
-			_connection.ExecuteSql("CREATE PROCEDURE [XmlTestProc2] @p [XmlDataTable] READONLY AS SELECT CONVERT(varchar(MAX),Data) FROM @p");
-		}
-
-		[TestFixtureTearDown]
-		public override void TearDownFixture()
-		{
-			CleanupObjects();
-
-			base.TearDownFixture();
-		}
-
-		private void CleanupObjects()
-		{
-			try
-			{
-				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'XmlTestProc2') DROP PROCEDURE [XmlTestProc2]");
-			}
-			catch { } try
-			{
-				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'XmlTestProc') DROP PROCEDURE [XmlTestProc]");
-			}
-			catch { }
-			try
-			{
-				_connection.ExecuteSql("IF EXISTS (SELECT * FROM sys.types WHERE name = 'XmlDataTable') DROP TYPE [XmlDataTable]");
-			}
-			catch { }
-		}
-		#endregion
-
 		[Test]
 		public void XmlFieldCanBeSerializedInTVP()
 		{
@@ -257,7 +196,7 @@ namespace Insight.Tests
 			r.Data = new Data();
 			r.Data.Text = "foo";
 
-			var list = _connection.Query<Result>("XmlTestProc", new { p = new List<Result>() { r } });
+			var list = Connection().Query<Result>("ReflectXmlTable", new { p = new List<Result>() { r } });
 			var item = list[0];
 
 			Assert.AreEqual(r.Data.Text, item.Data.Text);
@@ -269,7 +208,7 @@ namespace Insight.Tests
 			string s = "<xml>text</xml>";
 			var input = new List<string>() { s };
 
-			var list = _connection.Query<string>("XmlTestProc2", new { p = input.Select(x => new { id=1, data=x }).ToList() });
+			var list = Connection().Query<string>("ReflectXmlTableAsVarChar", new { p = input.Select(x => new { id=1, data=x }).ToList() });
 			var item = list[0];
 
 			Assert.AreEqual(s, item);

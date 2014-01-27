@@ -194,9 +194,6 @@ namespace Insight.Database.CodeGenerator
 				};
 			}
 
-			// store the list of parameters in the static field of a class so we don't have to call the server again
-			var parameterTemplate = new ParameterTemplateStorage(provider, parameters);
-
 			// get the mapping of the properties for the type
 			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, 0, parameters.Count, true);
 
@@ -226,9 +223,9 @@ namespace Insight.Database.CodeGenerator
 				}
 
 				// copy the parameters into the command object, returning the parameters list
-				il.Emit(OpCodes.Ldsfld, parameterTemplate.ProviderField);
+				new StaticFieldStorage(provider).EmitLoad(il);
 				il.Emit(OpCodes.Ldarg_0);
-				il.Emit(OpCodes.Ldsfld, parameterTemplate.ParameterField);
+				new StaticFieldStorage(parameters).EmitLoad(il);
 				il.Emit(OpCodes.Ldc_I4, i);
 				il.Emit(OpCodes.Call, typeof(InsightDbProvider).GetMethod("CopyParameter", BindingFlags.NonPublic | BindingFlags.Instance));
 
@@ -727,44 +724,6 @@ namespace Insight.Database.CodeGenerator
 			{
 				InsightDbProvider.For(command).SetupTableValuedParameter(command, parameter, list, listType);
 			}
-		}
-		#endregion
-
-		#region ParameterTemplateStorage Class
-		/// <summary>
-		/// Allows storage of the information needed to copy a parameter template.
-		/// </summary>
-		/// <remarks>
-		/// We store the information in the static fields of a class because it is easy to access them
-		/// in the IL of a DynamicMethod.
-		/// We can't use this class for the mapper code because we require a DynamicMethod to access private methods.
-		/// I suppose that we could just use DynamicMethod for prop.EmitGetValue/SetValue, but that is a refactor for another day.
-		/// </remarks>
-		class ParameterTemplateStorage
-		{
-			public ParameterTemplateStorage(InsightDbProvider provider, IList<IDataParameter> parameters)
-			{
-				// create a new assembly
-				AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-				AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-				ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
-
-				// create a type based on DbConnectionWrapper and call the default constructor
-				TypeBuilder tb = mb.DefineType(Guid.NewGuid().ToString());
-				tb.DefineField("_provider", typeof(InsightDbProvider), FieldAttributes.Static | FieldAttributes.Private);
-				tb.DefineField("_parameters", typeof(IList<IDataParameter>), FieldAttributes.Static | FieldAttributes.Private);
-				Type t = tb.CreateType();
-
-				ProviderField = t.GetField("_provider", BindingFlags.Static | BindingFlags.NonPublic);
-				ProviderField.SetValue(null, provider);
-
-				ParameterField = t.GetField("_parameters", BindingFlags.Static | BindingFlags.NonPublic);
-				ParameterField.SetValue(null, parameters);
-			}
-
-			public FieldInfo ParameterField { get; private set; }
-
-			public FieldInfo ProviderField { get; private set; }
 		}
 		#endregion
 	}

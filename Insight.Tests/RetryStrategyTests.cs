@@ -17,17 +17,15 @@ namespace Insight.Tests
 	/// Test the automatic retry strategies for connections.
 	/// </summary>
 	[TestFixture]
-	public class RetryStrategyTests : BaseDbTest
+	public class RetryStrategyTests : BaseTest
 	{
 		private Mock<RetryStrategy> _mockRetryStrategy;
 		private RetryStrategy RetryStrategy { get { return _mockRetryStrategy.Object; } }
 		private int Retries;
 
 		[SetUp]
-		public override void SetUp()
+		public void SetUp()
 		{
-			base.SetUp();
-
 			Retries = 0;
 
 			// set up all exceptions as transient, since it is hard to reproduce them
@@ -86,7 +84,7 @@ namespace Insight.Tests
 			_mockRetryStrategy.Setup(r => r.IsTransientException(It.IsAny<Exception>())).Returns(false);
 
 			// try a bad connection
-			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(ConnectionString);
 			b.InitialCatalog = "bad";
 			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
 
@@ -105,7 +103,7 @@ namespace Insight.Tests
 		public void BadOpenPerformsRetry()
 		{
 			// try a bad connection
-			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(ConnectionString);
 			b.InitialCatalog = "bad";
 			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
 
@@ -130,7 +128,7 @@ namespace Insight.Tests
 			RetryStrategy.MaxRetryCount = 5;
 
 			// try a bad connection
-			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(ConnectionString);
 			b.InitialCatalog = "bad";
 			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
 
@@ -150,7 +148,7 @@ namespace Insight.Tests
 		[Test]
 		public void StoredProcedureParametersDetectedWithReliableSqlConnection()
 		{
-			using (ReliableConnection retry = new ReliableConnection<SqlConnection>(_connection.ConnectionString, RetryStrategy))
+			using (ReliableConnection retry = new ReliableConnection<SqlConnection>(ConnectionString, RetryStrategy))
 			{
 				retry.Open();
 
@@ -171,26 +169,15 @@ namespace Insight.Tests
 		[Test]
 		public void ExecuteStoredProcWithTVPThroughReliableConnection()
 		{
-			using (ReliableConnection retry = new ReliableConnection<SqlConnection>(_connection.ConnectionString, RetryStrategy))
+			using (ReliableConnection retry = new ReliableConnection<SqlConnection>(ConnectionString, RetryStrategy))
 			{
 				retry.Open();
 
-				try
-				{
-					retry.ExecuteSql("CREATE TYPE [Int32Table] AS TABLE ([Value] [int])");
-					retry.ExecuteSql("CREATE PROC InsightTestProc (@Value Int32Table READONLY) AS SELECT * FROM @Value");
+				// the ListParameterHelper.AddEnumerableClassParameters code looks specifically for SqlCommand. 
+				// This test ensures that reliable connections work with this.
+				var result = retry.Query<int>("ReflectInt32Table", new int[] { 1, 2, 3, 4, 5 });
 
-					// the ListParameterHelper.AddEnumerableClassParameters code looks specifically for SqlCommand. 
-					// This test ensures that reliable connections work with this.
-					var result = retry.Query<int>("InsightTestProc", new int[] { 1, 2, 3, 4, 5 });
-
-					Assert.AreEqual(5, result.Count());
-				}
-				finally
-				{
-					Cleanup("IF EXISTS (SELECT * FROM sys.objects WHERE name = 'InsightTestProc') DROP PROCEDURE [InsightTestProc]");
-					Cleanup("IF EXISTS (SELECT * FROM sys.types WHERE name = 'Int32Table') DROP TYPE [Int32Table]");
-				}
+				Assert.AreEqual(5, result.Count());
 			}
 		}
 		#endregion
@@ -200,7 +187,7 @@ namespace Insight.Tests
 		public void AsyncBadOpenPerformsRetry()
 		{
 			// try a bad connection
-			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(ConnectionString);
 			b.InitialCatalog = "bad";
 			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
 
@@ -220,7 +207,7 @@ namespace Insight.Tests
 		public void AsyncBadQueryPerformsRetry()
 		{
 			// try a bad connection
-			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(ConnectionString);
 			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
 
 			RetryStrategy.MaxRetryCount = 5;
@@ -239,7 +226,7 @@ namespace Insight.Tests
 		public void AsyncWorksWithReliableConnection()
 		{
 			// try a bad connection
-			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(_connection.ConnectionString);
+			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(ConnectionString);
 			ReliableConnection<SqlConnection> retry = new ReliableConnection<SqlConnection>(b.ConnectionString, RetryStrategy);
 
 			int result = retry.QuerySqlAsync<int>("SELECT 10").Result.First();

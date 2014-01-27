@@ -13,7 +13,7 @@ namespace Insight.Tests
 	/// <summary>
 	/// Tests the ColumnAttribute overrides.
 	/// </summary>
-	class ColumnAttributeTests : BaseDbTest
+	class ColumnAttributeTests : BaseTest
 	{
 		class Data
 		{
@@ -31,7 +31,7 @@ namespace Insight.Tests
 		[Test]
 		public void ColumnMappingFillsInField()
 		{
-			Data data = _connection.QuerySql<Data>("SELECT [Column]=4").First();
+			Data data = Connection().QuerySql<Data>("SELECT [Column]=4").First();
 
 			Assert.AreEqual(4, data.ColumnA);
 			Assert.AreEqual(0, data.Column);
@@ -40,7 +40,7 @@ namespace Insight.Tests
 		[Test]
 		public void ColumnMappingFillsInProperty()
 		{
-			Data data = _connection.QuerySql<Data>("SELECT [OtherProperty]=4").First();
+			Data data = Connection().QuerySql<Data>("SELECT [OtherProperty]=4").First();
 
 			Assert.AreEqual(4, data.Property);
 			Assert.AreEqual(0, data.OtherProperty);

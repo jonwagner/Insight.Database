@@ -16,19 +16,18 @@ namespace Insight.Tests
 	/// Tests that the mini-profiler connection wrapper does not interfere with SQL parameter detection.
 	/// </summary>
 	[TestFixture]
-	class MiniProfilerTests : BaseDbTest
+	class MiniProfilerTests : BaseTest
 	{
-		public override void SetUpFixture()
+		[SetUp]
+		public void SetUpFixture()
 		{
 			MiniProfilerInsightDbProvider.RegisterProvider();
-
-			base.SetUpFixture();
 		}
 
 		[Test]
 		public void TestProfiledSqlQuery()
 		{
-			var profiled = new ProfiledDbConnection(_connection, MiniProfiler.Current);
+			var profiled = new ProfiledDbConnection((DbConnection)Connection(), MiniProfiler.Current);
 			var result = profiled.QuerySql<int>("SELECT @p --MiniProfiler", new { p = 1 }).First();
 
 			Assert.AreEqual((int)1, result);
@@ -40,11 +39,11 @@ namespace Insight.Tests
 		[Test]
 		public void TestProfiledStoredProcWithParameters()
 		{
-			using (var connection = _connectionStringBuilder.OpenWithTransaction())
+			using (var connection = ConnectionWithTransaction())
 			{
 				connection.ExecuteSql("CREATE PROC InsightTestProcMiniProfiler (@Value int = 5) AS SELECT Value=@Value");
 
-				var profiled = new ProfiledDbConnection(connection, MiniProfiler.Current);
+				var profiled = new ProfiledDbConnection((DbConnection)connection, MiniProfiler.Current);
 				var result = profiled.Query<int>("InsightTestProcMiniProfiler", new { Value = 1 }).First();
 
 				Assert.AreEqual((int)1, result);

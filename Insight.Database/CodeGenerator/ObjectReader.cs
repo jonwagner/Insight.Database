@@ -10,6 +10,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.Providers;
+using Insight.Database.Structure;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -22,7 +23,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Global cache of accessors.
 		/// </summary>
-		private static ConcurrentDictionary<SchemaMappingIdentity, ObjectReader> _readerDataCache = new ConcurrentDictionary<SchemaMappingIdentity, ObjectReader>();
+		private static ConcurrentDictionary<Tuple<SchemaIdentity, Type>, ObjectReader> _readerDataCache = new ConcurrentDictionary<Tuple<SchemaIdentity, Type>, ObjectReader>();
 
 		/// <summary>
 		/// Gets an array containing the types of the members of the given type.
@@ -45,11 +46,11 @@ namespace Insight.Database.CodeGenerator
 		/// Initializes a new instance of the ObjectReader class.
 		/// </summary>
 		/// <param name="command">The command associated with the reader.</param>
-		/// <param name="identity">The schema identity to analyze.</param>
+		/// <param name="type">The type of object to read.</param>
 		/// <param name="reader">The reader that contains the schema.</param>
 		/// <returns>A list of accessor functions to get values from the type.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-		private ObjectReader(IDbCommand command, SchemaMappingIdentity identity, IDataReader reader)
+		private ObjectReader(IDbCommand command, Type type, IDataReader reader)
 		{
 			var provider = InsightDbProvider.For(command);
 
@@ -73,11 +74,7 @@ namespace Insight.Database.CodeGenerator
 				}
 			}
 
-			// get the type we are binding to
-		    Type graph = identity.Graph;
-            Type type = Graph.GetFirstGenericArgument(graph) ?? identity.Graph;
-
-		    IsAtomicType = TypeHelper.IsAtomicType(identity.Graph);
+		    IsAtomicType = TypeHelper.IsAtomicType(type);
 			if (!IsAtomicType)
 			{
 				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, 0, reader.FieldCount, uniqueMatches: true);
@@ -201,9 +198,10 @@ namespace Insight.Database.CodeGenerator
 		public static ObjectReader GetObjectReader(IDbCommand command, IDataReader reader, Type type)
 		{
 			SchemaIdentity schemaIdentity = new SchemaIdentity(reader);
-			SchemaMappingIdentity mappingIdentity = new SchemaMappingIdentity(schemaIdentity, type, null, SchemaMappingType.ExistingObject);
 
-			return _readerDataCache.GetOrAdd(mappingIdentity, i => new ObjectReader(command, i, reader));
+			var key = Tuple.Create(schemaIdentity, type);
+
+			return _readerDataCache.GetOrAdd(key, k => new ObjectReader(command, k.Item2, reader));
 		}
 
 		/// <summary>

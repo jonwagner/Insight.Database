@@ -1,0 +1,229 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+<#@ include file="..\GenericTypes.tt" #>
+using System;
+using System.Collections;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Globalization;
+using System.Linq;
+using System.Reflection;
+using System.Reflection.Emit;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
+using Insight.Database.Reliable;
+using Insight.Database.Structure;
+
+namespace Insight.Database
+{
+	/// <summary>
+	/// Extension methods for DbConnection to make it easier to call the database.
+	/// </summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+	public static partial class DBConnectionExtensions
+	{
+		#region Query Methods
+<#
+for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+	var argList = GetGenericList(typeCount, GenericArgumentFormat);
+	var paramList = GetGenericList(typeCount, GenericParameterFormat);
+#>
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static IList<T1> Query<<#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.Query(sql, parameters, ListReader<<#= typeList #>>.Default, commandType, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static IList<T1> QuerySql<<#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.Query(sql, parameters, ListReader<<#= typeList #>>.Default, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+<# } #>
+	#endregion
+
+		#region QueryResults Methods
+<#
+for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+	var argList = GetGenericList(typeCount, GenericArgumentFormat);
+	var paramList = GetGenericList(typeCount, GenericParameterFormat);
+#>
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<<#= typeList #>> QueryResults<<#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.Query(sql, parameters, ResultsReader<<#= typeList #>>.Default, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
+		}
+
+		/// <summary>
+		/// Executes a query that returns multiple result sets and reads the results.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> set of data.</typeparam>
+<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>The results object filled with the data.</returns>
+		public static Results<<#= typeList #>> QueryResultsSql<<#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.Query(sql, parameters, ResultsReader<<#= typeList #>>.Default, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, outputParameters);
+		}
+
+<# } #>
+		#endregion
+
+		#region Single Methods
+<#
+for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
+{
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+	var argList = GetGenericList(typeCount, GenericArgumentFormat);
+	var paramList = GetGenericList(typeCount, GenericParameterFormat);
+#>
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandType">The type of the command.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static T1 Single<<#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandType commandType = CommandType.StoredProcedure,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.Query(sql, parameters, SingleReader<<#= typeList #>>.Default, commandType, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+		/// <summary>
+		/// Create a command, execute it, and translate the result set. This method supports auto-open.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="sql">The sql to execute.</param>
+		/// <param name="parameters">The parameter to pass.</param>
+		/// <param name="commandBehavior">The behavior of the command when executed.</param>
+		/// <param name="commandTimeout">The timeout of the command.</param>
+		/// <param name="transaction">The transaction to participate in.</param>
+		/// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
+		/// <returns>A data reader with the results.</returns>
+		public static T1 SingleSql<<#= typeList #>>(
+			this IDbConnection connection,
+			string sql,
+			object parameters = null,
+			CommandBehavior commandBehavior = CommandBehavior.Default,
+			int? commandTimeout = null,
+			IDbTransaction transaction = null,
+			object outputParameters = null)
+		{
+			return connection.Query(sql, parameters, SingleReader<<#= typeList #>>.Default, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
+		}
+
+<# } #>
+		#endregion
+    }
+}
