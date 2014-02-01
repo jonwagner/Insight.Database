@@ -496,6 +496,21 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+
+		#region Schema Tests
+		[Sql(Schema="MySchema")]
+		public interface IBeerRepositoryWithSchema
+		{
+			[Sql("MyOtherInsertProc")]
+			void InsertBeer(int beer);
+		}
+
+		[Test, ExpectedException(ExpectedMessage = "The stored procedure 'MySchema.MyOtherInsertProc' doesn't exist.")]
+		public void SchemaShouldBeInherited()
+		{
+			_connection.As<IBeerRepositoryWithSchema>().InsertBeer(1);
+		}
+		#endregion
 	}
 
 	public interface IEmailRepository

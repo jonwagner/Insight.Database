@@ -236,7 +236,7 @@ namespace Insight.Database.CodeGenerator
 			var sql = sqlAttribute.Sql ?? typeSqlAttribute.Sql ?? procName;
 			var commandType = sqlAttribute.CommandType ?? typeSqlAttribute.CommandType ?? (sql.Contains(' ') ? CommandType.Text : CommandType.StoredProcedure);
 			if (commandType == CommandType.StoredProcedure && !schema.IsNullOrWhiteSpace() && !sql.Contains('.'))
-				procName = schema.Trim() + "." + procName;
+				sql = schema.Trim() + "." + sql;
 
 			// see if the interface method has a graph defined
 			var graphAttribute = interfaceMethod.GetCustomAttributes(false).OfType<DefaultGraphAttribute>().FirstOrDefault();
