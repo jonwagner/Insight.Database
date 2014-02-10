@@ -182,12 +182,6 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AsyncExtensions.generated.cs</LastGenOutput>
     </None>
-    <None Include="CodeSnippets\InsightCodeSnippets.vscontent" />
-    <None Include="CodeSnippets\InsightForEach.snippet" />
-    <None Include="CodeSnippets\InsightMultiResults.snippet" />
-    <None Include="CodeSnippets\InsightRepository.snippet">
-      <SubType>Designer</SubType>
-    </None>
     <None Include="DBConnectionExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>DBConnectionExtensions.generated.cs</LastGenOutput>

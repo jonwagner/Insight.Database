@@ -166,11 +166,6 @@ Task Test45 -depends Build45, Test45Only {
 Task PackageOnly {
     Wipe-Folder $outputDir
  
-    # package the snippets
-    Exec {
-        Invoke-Expression "$baseDir\Build\zip.exe $outputDir\InsightCodeSnippets.vsi $baseDir\Insight.Database\CodeSnippets\*.*"
-    }
-
     # package nuget
 	Get-ChildItem $baseDir\Insight* |% { Get-ChildItem -Path $_ } |? Extension -eq .nuspec |% {
 		Exec {

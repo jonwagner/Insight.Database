@@ -2,7 +2,7 @@
 <package>
   <metadata>
     <id>Insight.Database</id>
-    <version>2.1.3</version>
+    <version>4.0</version>
     <title>Insight.Database</title>
     <authors>Jon Wagner</authors>
     <description>A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.</description>
@@ -23,6 +23,5 @@
     <file src="\bin\NET35\Insight.Database.dll" target="lib\NET35" />
     <file src="\bin\NET35\Insight.Database.xml" target="lib\NET35" />
     <file src="\bin\NET35\Insight.Database.pdb" target="lib\NET35" />
-    <file src="..\Build\Output\InsightCodeSnippets.vsi" target="tools" />
   </files>
 </package>
