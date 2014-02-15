@@ -23,6 +23,7 @@ namespace Insight.Tests
 		void ExecuteSomethingWithParameters(int p, string q);
 		int ExecuteSomethingScalar(int p);
 		ParentTestData SingleObject();
+		ParentTestData SingleObjectWithNoData();
 		IList<int> QueryValue(int p);
 		List<int> QueryValueList(int p);
 		IEnumerable<int> QueryValueEnumerable(int p);
@@ -116,6 +117,7 @@ namespace Insight.Tests
 			i.ExecuteSomethingWithParameters(5, "6");
 			Assert.AreEqual(9, i.ExecuteSomethingScalar(9));
 			i.SingleObject().Verify(false);
+			Assert.IsNull(i.SingleObjectWithNoData());
 			Assert.AreEqual(2, i.QueryValue(9).Count());
 			ParentTestData.Verify(i.QueryObject(), false);
 			Assert.AreEqual(11, i.ObjectAsParameter(new ParentTestData() { ParentX = 11 }));
@@ -144,8 +146,6 @@ namespace Insight.Tests
 			Assert.AreEqual(99, i.InlineSqlProcOverride(99));
 			Assert.AreEqual(98, i.InlineSqlWithSchema(98));
 			Assert.AreEqual(98, connection.As<ITestWithSqlAttribute>().ExecuteSomethingScalar(98));
-
-			// TODO: test interface with results on attribute
 		}
 		#endregion
 

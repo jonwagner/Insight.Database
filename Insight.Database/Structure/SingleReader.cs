@@ -48,11 +48,7 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public T Read(IDbCommand command, IDataReader reader)
 		{
-			// only read in one record
-			var results = reader.AsEnumerable(RecordReader).FirstOrDefault();
-
-			// skip the rest of the data
-			reader.Advance();
+			var results = reader.Single<T>(RecordReader);
 
 			// read in the children
 			ReadChildren(reader, Enumerable.Range(1, 1).Select(i => results));
@@ -65,12 +61,12 @@ namespace Insight.Database.Structure
 		{
 			IList<T> results = null;
 
-			return reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: false)
+			return reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: true)
 				.ContinueWith(
 					t =>
 					{
 						results = t.Result;
-						return reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: false);
+						return ReadChildrenAsync(reader, results, cancellationToken);
 					},
 					TaskContinuationOptions.ExecuteSynchronously)
 				.Unwrap()

@@ -217,7 +217,9 @@ CREATE PROC QueryValue @p int AS SELECT @p UNION ALL SELECT @p
 GO
 CREATE PROC QueryObject AS SELECT ParentX=2, X=5 
 GO
-CREATE PROC SingleObject AS SELECT ParentX=2, X=5 
+CREATE PROC SingleObject AS SELECT ParentX=2, X=5
+GO
+CREATE PROC SingleObjectWithNoData AS SELECT ParentX=2, X=5 WHERE 0=1
 GO
 CREATE PROC ObjectAsParameter @ParentX [int] AS SELECT @ParentX
 GO
