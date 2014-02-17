@@ -52,8 +52,6 @@ namespace Insight.Tests
 		int InlineSqlProcOverride(int p);
 		[Sql(Schema="dbo", Sql="ExecuteSomethingScalar")]
 		int InlineSqlWithSchema(int p);
-
-		// TODO: override structure with attributes
 	}
 
 	interface ITestWithSpecialParameters
@@ -519,6 +517,10 @@ namespace Insight.Tests
 			[Recordset(2, typeof(Wine), IsChild = true, Id = "Foo")]
 			[Recordset(3, typeof(Beer))]
 			Results<LiquorStoreNeedingFieldOverrides, Beer> GetLiquorStoreWithChildrenAndMoreWithOverrides();
+
+			[Sql("SELECT ID=1, ID=2")]
+			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
+			InfiniteBeer GetSingleBeerWithAttribute();
 		}
 
 		[Test]
@@ -664,6 +666,19 @@ namespace Insight.Tests
 			Assert.AreEqual(2, result[0].OtherBeer[0].ID);
 			Assert.AreEqual(1, result[0].Wine.Count);
 			Assert.AreEqual(3, result[0].Wine[0].ID);
+		}
+
+		[Test]
+		public void CanGetSingleWithAttribute()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetSingleBeerWithAttribute();
+
+			var beer = result;
+			Assert.IsNotNull(beer);
+			Assert.AreEqual(1, beer.ID);
+			Assert.IsNotNull(beer.More);
+			Assert.AreEqual(2, beer.More.ID);
 		}
 		#endregion
 	}

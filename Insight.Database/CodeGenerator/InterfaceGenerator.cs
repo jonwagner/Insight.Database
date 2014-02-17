@@ -36,14 +36,12 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _executeScalarMethod = typeof(DBConnectionExtensions).GetMethod("ExecuteScalar", _executeParameterTypes);
 		private static readonly MethodInfo _queryMethod = typeof(DBConnectionExtensions).GetMethods().Single(mi => mi.Name == "Query" && mi.GetParameters().Any(p => p.Name == "returns") && mi.GetParameters().Any(p => p.Name == "connection"));
 
-		private static readonly MethodInfo _singleMethod = typeof(DBConnectionExtensions).GetMethods().Single(mi => mi.Name == "Single" && mi.GetGenericArguments().Length == 1);
 		private static readonly MethodInfo _insertMethod = typeof(DBConnectionExtensions).GetMethod("Insert");
 		private static readonly MethodInfo _insertListMethod = typeof(DBConnectionExtensions).GetMethod("InsertList");
 
 		private static readonly MethodInfo _executeAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "ExecuteAsync");
 		private static readonly MethodInfo _executeScalarAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "ExecuteScalarAsync");
 		private static readonly MethodInfo _queryAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "QueryAsync" && mi.GetParameters().Any(p => p.Name == "returns") && mi.GetParameters().Any(p => p.Name == "connection"));
-		private static readonly MethodInfo _singleAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "SingleAsync" && mi.GetGenericArguments().Length == 1);
 		private static readonly MethodInfo _insertAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertAsync");
 		private static readonly MethodInfo _insertListAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertListAsync");
 
@@ -364,12 +362,12 @@ namespace Insight.Database.CodeGenerator
 			mIL.Emit(OpCodes.Ret);
 		}
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
 		private static void GenerateReturnsStructure(MethodInfo interfaceMethod, ModuleBuilder moduleBuilder, ILGenerator mIL)
 		{
 			// if we are returning a task, unwrap the task result
 			var returnType = interfaceMethod.ReturnType;
-			if (returnType.GetGenericTypeDefinition() == typeof(Task<>))
+			if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
 				returnType = returnType.GetGenericArguments()[0];
 			
 			// if there are returns attributes specified, then build the structure for the coder
@@ -382,8 +380,10 @@ namespace Insight.Database.CodeGenerator
 			}
 			else
 			{
+				bool isSingle = !returnType.IsSubclassOf(typeof(Results)) && !IsGenericListType(returnType);
+
 				// we are returning results<T...>, or IList<T...>
-				var returnTypeArgs = returnType.GetGenericArguments();
+				var returnTypeArgs = isSingle ? new Type[] { returnType } : returnType.GetGenericArguments();
 				Type currentType = null;
 
 				// go through all of the type arguments or recordsets
@@ -404,10 +404,17 @@ namespace Insight.Database.CodeGenerator
 					if (i == 0)
 					{
 						// start the chain of calls
-						MethodInfo method;
-						if (returnType.IsSubclassOf(typeof(Results)))
+						if (isSingle)
 						{
-							method = typeof(Query).GetMethod("ReturnsResults", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(types[0]);
+							var recordReader = typeof(IRecordReader<>).MakeGenericType(returnType);
+							var readerType = typeof(SingleReader<>).MakeGenericType(returnType);
+							var constructor = readerType.GetConstructor(new Type[] { recordReader });
+							mIL.Emit(OpCodes.Newobj, constructor);
+							currentType = readerType;
+						}
+						else if (returnType.IsSubclassOf(typeof(Results)))
+						{
+							var method = typeof(Query).GetMethod("ReturnsResults", BindingFlags.Public | BindingFlags.Static).MakeGenericMethod(types[0]);
 							currentType = method.ReturnType;
 							mIL.Emit(OpCodes.Call, method);
 						}
@@ -443,8 +450,8 @@ namespace Insight.Database.CodeGenerator
 
 						var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
 							.Single(
-								mi => mi.Name == "ThenChildren" && 
-									mi.GetGenericArguments().Length == 3 && 
+								mi => mi.Name == "ThenChildren" &&
+									mi.GetGenericArguments().Length == 3 &&
 									currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name)
 							.MakeGenericMethod(
 								new Type[]
@@ -519,10 +526,6 @@ namespace Insight.Database.CodeGenerator
 				return _executeMethod;
 			}
 
-			// if returntype is IList<T>, or Results<T> then we call Query
-			if (IsGenericListType(method.ReturnType) || method.ReturnType.IsSubclassOf(typeof(Results)))
-				return _queryMethod.MakeGenericMethod(method.ReturnType);
-
 			// check for async signatures
 			var asyncMethod = GetExecuteAsyncMethod(method);
 			if (asyncMethod != null)
@@ -539,7 +542,7 @@ namespace Insight.Database.CodeGenerator
 				return _executeScalarMethod.MakeGenericMethod(method.ReturnType);
 
 			// if returntype is not an atomic object, then we call Single
-			return _singleMethod.MakeGenericMethod(method.ReturnType);
+			return _queryMethod.MakeGenericMethod(method.ReturnType);
 		}
 
 		/// <summary>
@@ -580,16 +583,12 @@ namespace Insight.Database.CodeGenerator
 				// get the inside of the task
 				var taskResultType = method.ReturnType.GetGenericArguments()[0];
 
-				// if returntype is Task<IList<T>>, or Task<Results<T>>, then we call QueryAsync
-				if (IsGenericListType(taskResultType) || taskResultType.IsSubclassOf(typeof(Results)))
-					return _queryAsyncMethod.MakeGenericMethod(taskResultType);
-
 				// if returntype is Task<T>, and T is an atomic object, then we call ExecuteScalarAsync
 				if (TypeHelper.IsAtomicType(taskResultType))
-					return _executeScalarAsyncMethod.MakeGenericMethod(method.ReturnType.GetGenericArguments()[0]);
+					return _executeScalarAsyncMethod.MakeGenericMethod(taskResultType);
 
-				// if returntype if Task<T> and T is not an atomic object, then we call SingleAsync
-				return _singleAsyncMethod.MakeGenericMethod(taskResultType);
+				// if returntype is Task<IList<T>>, or Task<Results<T>>, then we call QueryAsync
+				return _queryAsyncMethod.MakeGenericMethod(taskResultType);
 			}
 
 			return null;
