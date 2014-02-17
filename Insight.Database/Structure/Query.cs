@@ -249,7 +249,7 @@ namespace Insight.Database
 		/// <param name="types">The list of types to convert.</param>
 		/// <returns>The OneToOne mapping.</returns>
 		[SuppressMessage("Microsoft.StyleCop.CSharp.ReadabilityRules", "SA1107:CodeMustNotContainMultipleStatementsOnOneLine")]
-		public static Type GetOneToOneType(Type[] types)
+		internal static Type GetOneToOneType(Type[] types)
 		{
 			if (types == null) throw new ArgumentNullException("types");
 

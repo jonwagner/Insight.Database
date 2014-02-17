@@ -171,10 +171,12 @@ namespace Insight.Database
 						specialParameters++;
 						break;
 
+#if !NOCOMPATIBILITY
 					case "withGraph":
 						{
-							var type = (Type)args[i + unnamedParameterCount];
-							returns = (IQueryReader)type.GetMethod("GetDefinition", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).Invoke(null, new object[] { returnType, type });
+							var withGraph = (Type)args[i + unnamedParameterCount];
+							dynamic graph = System.Activator.CreateInstance(withGraph);
+							returns = graph.GetListReader();
 							specialParameters++;
 							break;
 						}
@@ -182,10 +184,11 @@ namespace Insight.Database
 					case "withGraphs":
 						{
 							var types = (Type[])args[i + unnamedParameterCount];
-							returns = (IQueryReader)types[0].GetMethod("GetDefinitionFromGraphArray", BindingFlags.Static | BindingFlags.Public | BindingFlags.FlattenHierarchy).Invoke(null, new object[] { returnType, types });
+							returns = (IQueryReader)types[0].GetMethod("GetDefinitionFromGraphArray", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy).Invoke(null, new object[] { returnType, types });
 							specialParameters++;
 							break;
 						}
+#endif
 				}
 			}
 
@@ -236,9 +239,11 @@ namespace Insight.Database
 							argumentName == "commandTimeout" ||
 							argumentName == "returnType" ||
 							argumentName == "returns" ||
-							argumentName == "outputParameters" ||
+#if !NOCOMPATIBILITY
 							argumentName == "withGraph" ||
-							argumentName == "withGraphs")
+							argumentName == "withGraphs" || 
+#endif
+							argumentName == "outputParameters")
 							continue;
 
 						IDataParameter p = cmd.Parameters.OfType<IDataParameter>().First(parameter => String.Equals(parameter.ParameterName, argumentName, StringComparison.OrdinalIgnoreCase));

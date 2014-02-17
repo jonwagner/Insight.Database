@@ -1,0 +1,28 @@
+﻿<#+
+/// <summary>
+/// Helper constants for T4 templates for generic types.
+/// </summary>
+
+private const int GenericTypeMax = 16;
+private const string GenericTypeFormat = "T{0}";
+private const string GenericArgumentFormat = "T{0} arg{0}";
+private const string GenericParameterFormat = "arg{0}";
+
+private static readonly string[] ordinalNumbers = new[] { "first", "second", "third", "fourth", "fifth", "sixth", "seventh", "eighth", "nineth", "tenth", "eleventh", "twelfth", "thirteenth", "fourteenth", "fifteenth", "sixteenth" };
+private static readonly string[] wordNumbers = new[] { "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen", "sixteen" };
+
+public static string ConvertToWord(int number)
+{
+	return wordNumbers[number - 1];
+}
+
+public static string ConvertToOrdinal(int number)
+{
+	return ordinalNumbers[number - 1];
+}
+
+private static string GetGenericList(int typeCount, string format, string separator = ", ")
+{
+	return string.Join(separator, Enumerable.Range(1, typeCount).Select(n => string.Format(format, n)).ToArray());
+}
+#>

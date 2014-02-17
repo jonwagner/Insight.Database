@@ -165,7 +165,7 @@ namespace Insight.Database
 			Source = source;
 		}
 
-		internal void ThrowIfCancellationRequested()
+		public void ThrowIfCancellationRequested()
 		{
 			if (Source != null && Source.IsCancelled)
 				throw new AggregateException("Task was cancelled.");
@@ -308,17 +308,17 @@ namespace Insight.Database
 		{
 		}
 
-		internal Task ContinueWith(Action<Task<T>> action)
+		public Task ContinueWith(Action<Task<T>> action)
 		{
 			return new Task(() => action(this));
 		}
 
-		internal Task<TResult> ContinueWith<TResult>(Func<Task<T>, TResult> action, CancellationToken ct)
+		public Task<TResult> ContinueWith<TResult>(Func<Task<T>, TResult> action, CancellationToken ct)
 		{
 			return new Task<TResult>(() => action(this));
 		}
 
-		internal Task<TResult> ContinueWith<TResult>(Func<Task<T>, TResult> action, TaskContinuationOptions options)
+		public Task<TResult> ContinueWith<TResult>(Func<Task<T>, TResult> action, TaskContinuationOptions options)
 		{
 			return new Task<TResult>(() => action(this));
 		}
@@ -345,9 +345,9 @@ namespace Insight.Database
 		}
 	}
 
-	static class TaskHelpers
+	public static class TaskHelpers
 	{
-		internal static Task<T> Unwrap<T>(this Task<Task<T>> task)
+		public static Task<T> Unwrap<T>(this Task<Task<T>> task)
 		{
 			return new Task<T>(() => task.Result.Result);
 		}
