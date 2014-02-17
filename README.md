@@ -2,6 +2,8 @@
 
 **Insight.Database** is a fast, lightweight, (and dare we say awesome) micro-orm for .NET. It's available as a [NuGet Package](http://www.nuget.org/packages/Insight.Database/).
 
+Whoops. Forgot to mention easy. It's easy too. And you can also take control of pieces if you want to.
+
 Let's say you have a database and a class and you want them to work together. Something like this:
 
 	CREATE TABLE Beer ([ID] [int], [Type] varchar(128), [Description] varchar(128)) GO
@@ -67,6 +69,19 @@ Feel free to return multiple result sets. We can handle them:
 	IList<Beer> beer = results.Set1;
 	IList<Chip> chips = results.Set2;
 
+Or perhaps you want to return multiple independent recordsets, with one-to-many and one-to-one relationships. It's not possible! Or is it?
+
+	var results = conn.Query("GetLotsOfStuff", parameters,
+		Query.Returns(OneToOne<Beer, Glass>.Records)
+			.ThenChildren(Some<Napkin>.Records)
+			.Then(Some<Wine>.Records));
+	var beer = results.Set1;
+	var glass = beer.Glass;
+	var napkins = beer.Napkins.ToList();
+	var wine = results.Set2;
+
+But...but how? To that, I say: it's magic! Insight can decode the records and figure out one-to-one and parent-child relationships automatically. Almost all the time, it does this with no work or configuration on your part. But if you have a wacky model, there are plenty of non-scary ways to tell Insight how to work with your data. Read the [wiki](https://github.com/jonwagner/Insight.Database/wiki) for details.
+
 Full async support. Just add `Async`:
 
 	var task = c.QueryAsync<Beer>("FindBeer", new { Name = "IPA" });
@@ -90,26 +105,31 @@ Oh, wait. You want to inline your SQL. We do that too. Just add Sql.
 	var beerList = conn.QuerySql<Beer>("SELECT * FROM Beer WHERE Name LIKE @Name", new { Name = "%ipa%" });
 	conn.ExecuteSql ("INSERT INTO Beer VALUES (ID, Name)", beer);
 
-But if you *really* want to control every aspect of mapping, see the [wiki](https://github.com/jonwagner/Insight.Database/wiki).
+Seriously, everything just works automatically. But if you *really* want to control every aspect of mapping, see the [wiki](https://github.com/jonwagner/Insight.Database/wiki).
 
-# v3.0 - Now Supporting Lots of Databases and Tools #
+## Motto ##
 
-Insight.Database v3.0 now supports multiple database providers and several testing frameworks. See [the list of supported providers](https://github.com/jonwagner/Insight.Database/wiki/Insight-and-Data-Providers).
+Insight.Database is the .NET micro-ORM that nobody knows about because it's so easy, automatic, and fast, (and well-documented) that nobody asks questions about it on StackOverflow.
 
-If your database or toolset isn't listed, just open an issue on Github. Good things have been known to happen.
+## Licensing ##
 
-# v2.1 - Now with Automatic Interface Mapping #
+Insight.Database is available under any of the following licenses:
 
-- Insight will now automatically convert your .NET interface to SQL calls! See the wiki for some automajikal love!
-- Also now with handy wrappers for managing transactions.
+* The "Tell Everyone You Know How Awesome Insight Is" License
+* The "Answer Every Stackoverflow ORM question with 'Use Insight.Database'" License
+* The "Buy A Friend A Beer" License
+* The "Do Some Good" (Karmic) License
+* MS-Public License (a.k.a the "yes it's free, but don't try to steal the IP and charge for it or the universe will haunt you" License)
 
-# v2.0 - Faster Than Ever #
+## Major Insight Releases ##
 
-- v2.0 has full async reads in .NET 4.5, automatic multi-recordset processing, customizable binding rules, tons of optimizations, and more code than I can remember.
-- v2.0 should be compile-compatible with v1.x. (Except for a few APIs I'm pretty sure nobody is using.) It's not binary-compatible with v1.x.
-- If you are using Insight.Database.Schema, please upgrade to v2.0.8, which no longer has a dependency on Insight.Database v1.0.
+* v4.0 - Read one-to-one, one-to-many, and many-to-many relationships automatically, with ways to extend it.
+* v3.0 - Support for most common database and tools. See [the list of supported providers](https://github.com/jonwagner/Insight.Database/wiki/Insight-and-Data-Providers).
+* v2.1 - Automatically [implement an interface](https://github.com/jonwagner/Insight.Database/wiki/Auto-Interface-Implementation) with database calls.
+* v2.0 - Performance and asynchronous release.
+* v1.0 - Let the magic begin!
 
-# Documentation #
+## Documentation ##
 
 **Full documentation is available on the [wiki](https://github.com/jonwagner/Insight.Database/wiki)**
 
