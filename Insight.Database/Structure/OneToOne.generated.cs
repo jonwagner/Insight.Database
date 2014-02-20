@@ -43,8 +43,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -58,6 +59,17 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1]
+			);
 		}
 	}
 
@@ -100,8 +112,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -115,6 +128,18 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2]
+			);
 		}
 	}
 
@@ -159,8 +184,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -174,6 +200,19 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3]
+			);
 		}
 	}
 
@@ -220,8 +259,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -235,6 +275,20 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4]
+			);
 		}
 	}
 
@@ -283,8 +337,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -298,6 +353,21 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5]
+			);
 		}
 	}
 
@@ -348,8 +418,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -363,6 +434,22 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6]
+			);
 		}
 	}
 
@@ -415,8 +502,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -430,6 +518,23 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7]
+			);
 		}
 	}
 
@@ -484,8 +589,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -499,6 +605,24 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8]
+			);
 		}
 	}
 
@@ -555,8 +679,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -570,6 +695,25 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8],
+				(T10)objects[9]
+			);
 		}
 	}
 
@@ -628,8 +772,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -643,6 +788,26 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8],
+				(T10)objects[9],
+				(T11)objects[10]
+			);
 		}
 	}
 
@@ -703,8 +868,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -718,6 +884,27 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8],
+				(T10)objects[9],
+				(T11)objects[10],
+				(T12)objects[11]
+			);
 		}
 	}
 
@@ -780,8 +967,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -795,6 +983,28 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8],
+				(T10)objects[9],
+				(T11)objects[10],
+				(T12)objects[11],
+				(T13)objects[12]
+			);
 		}
 	}
 
@@ -859,8 +1069,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -874,6 +1085,29 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8],
+				(T10)objects[9],
+				(T11)objects[10],
+				(T12)objects[11],
+				(T13)objects[12],
+				(T14)objects[13]
+			);
 		}
 	}
 
@@ -940,8 +1174,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -955,6 +1190,30 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Records;
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8],
+				(T10)objects[9],
+				(T11)objects[10],
+				(T12)objects[11],
+				(T13)objects[12],
+				(T14)objects[13],
+				(T15)objects[14]
+			);
 		}
 	}
 
@@ -1023,8 +1282,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -1038,6 +1298,31 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 			throw new NotImplementedException();
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>)Callback)(
+				(T1)objects[0],
+				(T2)objects[1],
+				(T3)objects[2],
+				(T4)objects[3],
+				(T5)objects[4],
+				(T6)objects[5],
+				(T7)objects[6],
+				(T8)objects[7],
+				(T9)objects[8],
+				(T10)objects[9],
+				(T11)objects[10],
+				(T12)objects[11],
+				(T13)objects[12],
+				(T14)objects[13],
+				(T15)objects[14],
+				(T16)objects[15]
+			);
 		}
 	}
 

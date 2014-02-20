@@ -29,7 +29,11 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 	{
 		internal override OneToOne<T1> GetOneToOneMapping(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null)
 		{
-			return new OneToOne<<#= typeList #>>(callback, idColumns);
+			Action<<#= typeList #>> handler = null;
+			if (callback != null)
+				handler = (<#= String.Join(",", Enumerable.Range(1, typeCount).Select(i => String.Format(" T{0} t{0}", i)))#>) => callback(new object[] { <#= String.Join(",", Enumerable.Range(1, typeCount).Select(i => String.Format(" t{0}", i))) #> });
+
+			return new OneToOne<<#= typeList #>>(handler, idColumns);
 		}
 	}
 

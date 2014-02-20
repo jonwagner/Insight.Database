@@ -217,11 +217,10 @@ namespace Insight.Tests
 				var results = reader.AsEnumerable<TestData>
 				(new OneToOne<TestData, TestOtherData, TestSubData>(
 					// test custom callback function
-					callback: (object[] objects) =>
+					callback: (t, t2, t3) =>
 					{
-						TestData t = (TestData)objects[0];
-						t.OtherData = (TestOtherData)objects[1];
-						t.OtherData.SubData = (TestSubData)objects[2];
+						t.OtherData = t2;
+						t.OtherData.SubData = t3;
 					},
 					// test custom ID mapper
 					idColumns: new Dictionary<Type, string>() { { typeof(TestOtherData), "OtherID" } }

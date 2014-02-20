@@ -51,9 +51,15 @@ namespace Insight.Database
 		/// <returns>A RecordReader that can read objects of the give graph.</returns>
 		internal static OneToOne<T> GetOneToOne<T>(Type withGraph, Action<object[]> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+
 			// if there is no graph, then just call the base
 			if (withGraph == null)
-				return new OneToOne<T>(callback, idColumns);
+			{
+				Action<T> handler = null;
+				if (callback != null)
+					handler = (T t1) => callback(new object[] { t1 });
+				return new OneToOne<T>(handler, idColumns);
+			}
 
 			// we have a graph, so instantiate an instance of it, and tell it to convert to a onetoone mapping
 			var graph = (Graph<T>)System.Activator.CreateInstance(withGraph);
@@ -196,7 +202,11 @@ namespace Insight.Database
 	{
 		internal virtual OneToOne<T> GetOneToOneMapping(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null)
 		{
-			return new OneToOne<T>(callback, idColumns);
+			Action<T> handler = null;
+			if (callback != null)
+				handler = (T t1) => callback(new object[] { t1 });
+
+			return new OneToOne<T>(handler, idColumns);
 		}
 
 		/// <summary>

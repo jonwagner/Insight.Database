@@ -32,7 +32,11 @@ namespace Insight.Database
 			Action<object[]> callback = null,
 			Dictionary<Type, string> idColumns = null)
 		{
-			var oneToOne = Graph.GetOneToOne<T>(withGraph, callback, idColumns) ?? new OneToOne<T>(callback, idColumns);
+			Action<T> handler = null;
+			if (callback != null)
+				handler = (T t1) => callback(new object[] { t1 });
+
+			var oneToOne = Graph.GetOneToOne<T>(withGraph, callback, idColumns) ?? new OneToOne<T>(handler, idColumns);
 
 			return reader.AsEnumerable(oneToOne);
 		}

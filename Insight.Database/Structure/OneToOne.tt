@@ -56,8 +56,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null) : base(callback, idColumns)
+		public OneToOne(Action<<#= typeList #>> callback = null, Dictionary<Type, string> idColumns = null)
 		{
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -75,6 +76,19 @@ namespace Insight.Database
 <# } else { #>
 			throw new NotImplementedException();
 <# } #>
+		}
+
+		/// <inheritdoc/>
+		protected override void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<<#= typeList #>>)Callback)(
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) {#>
+				(T<#= typeIndex #>)objects[<#= typeIndex - 1 #>]<# if (typeIndex < typeCount) { #>,<# } #>
+
+<# } #>
+			);
 		}
 	}
 

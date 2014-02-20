@@ -67,18 +67,9 @@ namespace Insight.Database
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
 		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<object[]> callback = null, Dictionary<Type, string> idColumns = null)
+		public OneToOne(Action<T> callback = null, Dictionary<Type, string> idColumns = null)
 		{
-			Callback = callback;
-			_idColumns = idColumns;
-
-			unchecked
-			{
-				_hashCode = GetType().GetHashCode();
-				_hashCode *= 13;
-				if (callback != null)
-					_hashCode += callback.GetHashCode();
-			}
+			Initialize(callback, idColumns);
 		}
 		#endregion
 
@@ -86,7 +77,7 @@ namespace Insight.Database
 		/// <summary>
 		/// Gets an optional callback that can be used to assemble the records.
 		/// </summary>
-		internal Action<object[]> Callback { get; private set; }
+		internal Delegate Callback { get; private set; }
 		#endregion
 
 		#region Methods
@@ -152,7 +143,7 @@ namespace Insight.Database
 			if (Callback != null)
 			{
 				var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, this);
-				return r => mapper(r, Callback);
+				return r => mapper(r, HandleCallback);
 			}
 			else
 				return DbReaderDeserializer.GetDeserializer<T>(reader, this);
@@ -166,6 +157,37 @@ namespace Insight.Database
 		public virtual IRecordReader<Guardian<T, TId>> GetGuardianReader<TId>()
 		{
 			return OneToOne<Guardian<T, TId>, T>.Records;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the OneToOne class.
+		/// </summary>
+		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
+		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
+		protected void Initialize(Delegate callback, Dictionary<Type, string> idColumns)
+		{
+			Callback = callback;
+			_idColumns = idColumns;
+
+			unchecked
+			{
+				_hashCode = GetType().GetHashCode();
+				_hashCode *= 13;
+				if (callback != null)
+					_hashCode += callback.GetHashCode();
+			}
+		}
+
+		/// <summary>
+		/// Handles a callback to assemble the objects.
+		/// </summary>
+		/// <param name="objects">The objects read from the record.</param>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "objects")]
+		protected virtual void HandleCallback(object[] objects)
+		{
+			if (objects == null) throw new ArgumentNullException("objects");
+
+			((Action<T>)Callback)((T)objects[0]);
 		}
 		#endregion
 	}
