@@ -268,6 +268,10 @@ namespace Insight.Database
 				if (returnType == null)
 					returnType = typeof(FastExpando);
 
+				// if there was no named returns definition, check for an unnamed IQueryParameter
+				if (returns == null)
+					returns = args.OfType<IQueryReader>().FirstOrDefault();
+
 				// if there is no returns definition supplied, get one from the return type
 				if (returns == null)
 				{

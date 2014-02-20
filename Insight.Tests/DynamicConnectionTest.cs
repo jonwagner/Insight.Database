@@ -142,6 +142,13 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void TestReturnTypeOverrideWithUnnamedParameter()
+		{
+			IList<ParentTestData> results = Connection().Dynamic().GetParentTestData(Query.Returns(Some<ParentTestData>.Records));
+			ParentTestData.Verify(results, false);
+		}
+
+		[Test]
 		public void TestMultipleRecordsets()
 		{
 			// going to infer the return type of the stored procedure rather than specifying it
