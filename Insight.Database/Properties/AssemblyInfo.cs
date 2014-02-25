@@ -20,6 +20,6 @@ using System.Diagnostics.CodeAnalysis;
 [assembly: AssemblyCopyright("Copyright © Jon Wagner, used by permission")]
 [assembly: ComVisible(false)]
 
-[assembly: AssemblyVersion("3.3.0.0")]
+[assembly: AssemblyVersion("4.0.0.0")]
 [assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: CLSCompliant(true)]
