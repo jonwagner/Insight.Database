@@ -1035,7 +1035,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior for the command.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
 		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		internal static Task<IDataReader> GetReaderAsync(this IDbCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken)
+		public static Task<IDataReader> GetReaderAsync(this IDbCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken)
 		{
 #if NODBASYNC
 			// Only SqlCommand supports async
