@@ -33,7 +33,7 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			if (callback != null)
 				handler = (<#= String.Join(",", Enumerable.Range(1, typeCount).Select(i => String.Format(" T{0} t{0}", i)))#>) => callback(new object[] { <#= String.Join(",", Enumerable.Range(1, typeCount).Select(i => String.Format(" t{0}", i))) #> });
 
-			return new OneToOne<<#= typeList #>>(handler, idColumns);
+			return new OneToOne<<#= typeList #>>(handler, null, idColumns);
 		}
 	}
 

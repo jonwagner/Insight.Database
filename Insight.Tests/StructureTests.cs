@@ -82,5 +82,22 @@ namespace Insight.Tests
 			Assert.AreEqual(2, result.List[0].ID);
 		}
 		#endregion
+
+		#region Inline Column Overrides
+		[Test]
+		public void CanOverrideColumnsInline()
+		{
+			var mappedRecords = new OneToOne<HasDefaultRecordset>(
+				new ColumnOverride<HasDefaultRecordset>("Foo", "ID"));
+
+			var result = Connection().QuerySql(
+				"SELECT Foo=1, ID=2",
+				null,
+				Query.Returns(mappedRecords)).First();
+
+			Assert.AreEqual(1, result.ID);
+			Assert.AreEqual(2, result.Beer.ID);
+		}
+		#endregion
 	}
 }

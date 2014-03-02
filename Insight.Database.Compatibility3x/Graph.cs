@@ -58,7 +58,7 @@ namespace Insight.Database
 				Action<T> handler = null;
 				if (callback != null)
 					handler = (T t1) => callback(new object[] { t1 });
-				return new OneToOne<T>(handler, idColumns);
+				return new OneToOne<T>(handler, null, idColumns);
 			}
 
 			// we have a graph, so instantiate an instance of it, and tell it to convert to a onetoone mapping
@@ -206,7 +206,7 @@ namespace Insight.Database
 			if (callback != null)
 				handler = (T t1) => callback(new object[] { t1 });
 
-			return new OneToOne<T>(handler, idColumns);
+			return new OneToOne<T>(handler, null, idColumns);
 		}
 
 		/// <summary>

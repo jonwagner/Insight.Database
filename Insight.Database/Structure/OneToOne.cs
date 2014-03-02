@@ -36,9 +36,15 @@ namespace Insight.Database
 		private int _hashCode;
 
 		/// <summary>
-		/// An optional mapping of the name of ID columns that is used to split the recordset.
+		/// An optional column mapping override;
+		/// Type is the type it applies to, then column name, then field name.
 		/// </summary>
-		private Dictionary<Type, string> _idColumns;
+		private List<ColumnOverride> _columnOverride;
+
+		/// <summary>
+		/// An optional mapping of the name of columns that is used to split the recordset.
+		/// </summary>
+		private IDictionary<Type, string> _splitColumns;
 		#endregion
 
 		#region Constructors
@@ -58,18 +64,35 @@ namespace Insight.Database
 		/// <summary>
 		/// Initializes a new instance of the OneToOne class.
 		/// </summary>
-		public OneToOne() : this(null, null)
+		public OneToOne()
 		{
+			Initialize(null, null, null);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the OneToOne class.
+		/// </summary>
+		/// <param name="columnOverride">
+		/// An optional column mapping to use to override the default mapping.
+		/// Keys are column names, values are property names.
+		/// </param>
+		public OneToOne(params ColumnOverride[] columnOverride)
+		{
+			Initialize(null, columnOverride, null);
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the OneToOne class.
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
-		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T> callback = null, Dictionary<Type, string> idColumns = null)
+		/// <param name="columnOverride">
+		/// An optional column mapping to use to override the default mapping.
+		/// Keys are column names, values are property names.
+		/// </param>
+		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
+		public OneToOne(Action<T> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
-			Initialize(callback, idColumns);
+			Initialize(callback, columnOverride, splitColumns);
 		}
 		#endregion
 
@@ -97,21 +120,21 @@ namespace Insight.Database
 				return false;
 
 			// validate that the columns are the same object
-			if (_idColumns != o._idColumns)
+			if (_splitColumns != o._splitColumns)
 			{
 				// different objects, so we have to check the contents.
 				// this is a performance hit, so you should pass in the same id mapping each time!
-				var otherIdColumns = o._idColumns;
+				var otherSplitColumns = o._splitColumns;
 
 				// check the count first as a short-circuit
-				if (_idColumns.Count != otherIdColumns.Count)
+				if (_splitColumns.Count != otherSplitColumns.Count)
 					return false;
 
 				// check the id mappings individually
-				foreach (var pair in _idColumns)
+				foreach (var pair in _splitColumns)
 				{
 					string otherID;
-					if (!otherIdColumns.TryGetValue(pair.Key, out otherID))
+					if (!otherSplitColumns.TryGetValue(pair.Key, out otherID))
 						return false;
 
 					if (pair.Value != otherID)
@@ -131,7 +154,21 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		Dictionary<Type, string> IRecordStructure.GetSplitColumns() { return _idColumns; }
+		IDictionary<Type, string> IRecordStructure.GetSplitColumns() { return _splitColumns; }
+
+		/// <inheritdoc/>
+		void IRecordStructure.MapColumn(ColumnMappingEventArgs e)
+		{
+			if (_columnOverride == null)
+				return;
+
+			var match = _columnOverride.SingleOrDefault(
+				t =>
+					(t.TargetType == null || t.TargetType == e.TargetType) && 
+					String.Compare(t.ColumnName, e.TargetFieldName, StringComparison.OrdinalIgnoreCase) == 0);
+			if (match != null)
+				e.TargetFieldName = match.FieldName;
+		}
 
 		/// <summary>
 		/// Returns a function that can read a single record from a given data reader.
@@ -163,11 +200,17 @@ namespace Insight.Database
 		/// Initializes a new instance of the OneToOne class.
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
-		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		protected void Initialize(Delegate callback, Dictionary<Type, string> idColumns)
+		/// <param name="columnOverride">
+		/// An optional column mapping to use to override the default mapping.
+		/// Keys are column names, values are property names.
+		/// </param>
+		/// <param name="splitColumns">An optional map of the names of columns that can be used to split the recordset.</param>
+		protected void Initialize(Delegate callback, IEnumerable<ColumnOverride> columnOverride, IDictionary<Type, string> splitColumns)
 		{
 			Callback = callback;
-			_idColumns = idColumns;
+			if (columnOverride != null)
+				_columnOverride = columnOverride.ToList();
+			_splitColumns = splitColumns;
 
 			unchecked
 			{

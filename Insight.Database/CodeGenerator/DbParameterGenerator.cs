@@ -195,7 +195,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// get the mapping of the properties for the type
-			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, 0, parameters.Count, true);
+			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true);
 
 			// start creating a dynamic method
 			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
@@ -519,7 +519,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Stloc, localParameters);
 
 			// go through all of the mappings
-			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, 0, parameters.Count, true);
+			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true);
 			for (int i = 0; i < mappings.Length; i++)
 			{
 				// if there is no parameter for this property, then skip it

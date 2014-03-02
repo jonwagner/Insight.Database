@@ -11,6 +11,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
+using Insight.Database.Structure;
 
 namespace Insight.Database
 {
@@ -272,11 +273,20 @@ namespace Insight.Database
 		/// <param name="reader">The reader to read.</param>
 		/// <param name="command">The command that is currently being mapped.</param>
 		/// <param name="parameters">The list of parameters used in the mapping operation.</param>
+		/// <param name="structure">The structure of the record being read.</param>
 		/// <param name="startColumn">The index of the first column to map.</param>
 		/// <param name="columnCount">The number of columns to map.</param>
 		/// <param name="uniqueMatches">True to only return the first match per field, false to return all matches per field.</param>
 		/// <returns>An array of setters.</returns>
-		internal ColumnMappingEventArgs[] CreateMapping(Type type, IDataReader reader, IDbCommand command, IList<IDataParameter> parameters, int startColumn, int columnCount, bool uniqueMatches)
+		internal ColumnMappingEventArgs[] CreateMapping(
+			Type type,
+			IDataReader reader,
+			IDbCommand command,
+			IList<IDataParameter> parameters,
+			IRecordStructure structure,
+			int startColumn,
+			int columnCount,
+			bool uniqueMatches)
 		{
 			ColumnMappingEventArgs[] mapping = new ColumnMappingEventArgs[columnCount];
 
@@ -315,6 +325,10 @@ namespace Insight.Database
 				// if no mapping was returned, then skip the column
 				if (e.Canceled || String.IsNullOrEmpty(e.TargetFieldName.Trim()))
 					continue;
+
+				// if a column mapping override was specified, then attempt an override
+				if (structure != null)
+					structure.MapColumn(e);
 
 				// get the target property based on the result
 				string targetFieldName = e.TargetFieldName;

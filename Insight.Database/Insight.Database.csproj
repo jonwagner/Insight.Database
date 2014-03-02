@@ -109,6 +109,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DbReaderExtensions.tt</DependentUpon>
     </Compile>
+    <Compile Include="Structure\ColumnOverride.cs" />
     <Compile Include="Structure\DerivedResultsReader.cs" />
     <Compile Include="Structure\IChildRecordReader.cs" />
     <Compile Include="Structure\IQueryReader.cs" />

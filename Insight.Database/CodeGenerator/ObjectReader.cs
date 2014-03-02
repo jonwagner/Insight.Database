@@ -77,7 +77,7 @@ namespace Insight.Database.CodeGenerator
 		    IsAtomicType = TypeHelper.IsAtomicType(type);
 			if (!IsAtomicType)
 			{
-				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, 0, reader.FieldCount, uniqueMatches: true);
+				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, true);
 
 				_accessors = new Func<object, object>[mappings.Length];
 				_memberNames = new string[mappings.Length];

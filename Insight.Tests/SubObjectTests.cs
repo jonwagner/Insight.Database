@@ -223,7 +223,7 @@ namespace Insight.Tests
 						t.OtherData.SubData = t3;
 					},
 					// test custom ID mapper
-					idColumns: new Dictionary<Type, string>() { { typeof(TestOtherData), "OtherID" } }
+					splitColumns: new Dictionary<Type, string>() { { typeof(TestOtherData), "OtherID" } }
 				)).ToList();
 
 				Assert.IsNotNull(results);

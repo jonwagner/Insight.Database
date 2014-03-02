@@ -47,18 +47,35 @@ namespace Insight.Database
 		/// <summary>
 		/// Initializes a new instance of the OneToOne class.
 		/// </summary>
-		public OneToOne() : this(null, null)
+		public OneToOne()
 		{
+			Initialize(null, null, null);
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the OneToOne class.
+		/// </summary>
+		/// <param name="columnOverride">
+		/// An optional column mapping to use to override the default mapping.
+		/// Keys are column names, values are property names.
+		/// </param>
+		public OneToOne(params ColumnOverride[] columnOverride)
+		{
+			Initialize(null, columnOverride, null);
 		}
 
 		/// <summary>
 		/// Initializes a new instance of the OneToOne class.
 		/// </summary>
 		/// <param name="callback">An optional callback that can be used to assemble the records.</param>
-		/// <param name="idColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<<#= typeList #>> callback = null, Dictionary<Type, string> idColumns = null)
+		/// <param name="columnOverride">
+		/// An optional column mapping to use to override the default mapping.
+		/// Keys are column names, values are property names.
+		/// </param>
+		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
+		public OneToOne(Action<<#= typeList #>> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
 		{
-			Initialize(callback, idColumns);
+			Initialize(callback, columnOverride, splitColumns);
 		}
 		#endregion
 

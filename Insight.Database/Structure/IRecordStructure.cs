@@ -18,9 +18,15 @@ namespace Insight.Database.Structure
 		Type[] GetObjectTypes();
 
 		/// <summary>
+		/// Processes a column mapping for this record.
+		/// </summary>
+		/// <param name="e">The column mapping event.</param>
+		void MapColumn(ColumnMappingEventArgs e);
+
+		/// <summary>
 		/// Gets a mapping of types to column names. The column names are used to override how Insight splits records into objects.
 		/// </summary>
 		/// <returns>A mapping of the split columns or null to use the default.</returns>
-		Dictionary<Type, string> GetSplitColumns();
+		IDictionary<Type, string> GetSplitColumns();
 	}
 }

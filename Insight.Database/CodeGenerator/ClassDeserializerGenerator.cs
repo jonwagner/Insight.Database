@@ -47,7 +47,7 @@ namespace Insight.Database.CodeGenerator
 			// if the graph type is not a graph, or just the object, and we don't want a callback function
 			// then just return a one-level graph.
 			if (subTypes.Length == 1 && !mappingType.HasFlag(SchemaMappingType.WithCallback))
-				return CreateClassDeserializer(type, reader, 0, (reader.IsClosed) ? 0 : reader.FieldCount, mappingType.HasFlag(SchemaMappingType.NewObject));
+				return CreateClassDeserializer(type, reader, structure, 0, (reader.IsClosed) ? 0 : reader.FieldCount, mappingType.HasFlag(SchemaMappingType.NewObject));
 
 			// we can't deserialize an object graph in an insert/merge because we don't know whether to create subobjects or leave them null.
 			if (!mappingType.HasFlag(SchemaMappingType.NewObject))
@@ -55,9 +55,9 @@ namespace Insight.Database.CodeGenerator
 
 			// create the graph deserializer
 			if (mappingType.HasFlag(SchemaMappingType.WithCallback))
-				return CreateGraphDeserializerWithCallback(subTypes, reader, structure.GetSplitColumns());
+				return CreateGraphDeserializerWithCallback(subTypes, reader, structure);
 			else
-				return CreateGraphDeserializer(subTypes, reader, structure.GetSplitColumns());
+				return CreateGraphDeserializer(subTypes, reader, structure);
 		}
 
 		#region Single Class Deserialization
@@ -66,13 +66,14 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="type">The type of object to deserialize.</param>
 		/// <param name="reader">The reader to analyze.</param>
+		/// <param name="structure">The structure of the record being read.</param>
 		/// <param name="startColumn">The index of the first column to read.</param>
 		/// <param name="columnCount">The number of columns to read.</param>
 		/// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
-		private static Delegate CreateClassDeserializer(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject)
+		private static Delegate CreateClassDeserializer(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject)
 		{
-			var method = CreateClassDeserializerDynamicMethod(type, reader, startColumn, columnCount, createNewObject, true);
+			var method = CreateClassDeserializerDynamicMethod(type, reader, structure, startColumn, columnCount, createNewObject, true);
 
 			// create a generic type for the delegate we are returning
 			Type delegateType;
@@ -89,20 +90,21 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="type">The type of object to deserialize.</param>
 		/// <param name="reader">The reader to analyze.</param>
+		/// <param name="structure">The structure of the record being read.</param>
 		/// <param name="startColumn">The index of the first column to read.</param>
 		/// <param name="columnCount">The number of columns to read.</param>
 		/// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
 		/// <param name="isRootObject">True if this object is the root object and should always be created.</param>
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		/// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
-		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, int startColumn, int columnCount, bool createNewObject, bool isRootObject)
+		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject, bool isRootObject)
 		{
 			// if there are no columns detected for the class, then the deserializer is null
 			if (columnCount == 0 && !isRootObject)
 				return null;
 
 			// get the mapping from the reader to the type
-			var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, startColumn, columnCount, true);
+			var mapping = ColumnMapping.Tables.CreateMapping(type, reader, null, null, structure, startColumn, columnCount, true);
 
 			// need to know the constructor for the object (except for structs)
 			bool isStruct = type.IsValueType;
@@ -254,15 +256,15 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="subTypes">The types of the subobjects.</param>
 		/// <param name="reader">The reader to analyze.</param>
-		/// <param name="idColumns">An optional mapping of type to Id columns used for splitting.</param>
+		/// <param name="structure">The structure of the record we are reading.</param>
 		/// <returns>A function that takes an IDataReader and deserializes an object of type T.</returns>
-		private static Delegate CreateGraphDeserializer(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
+		private static Delegate CreateGraphDeserializer(Type[] subTypes, IDataReader reader, IRecordStructure structure)
 		{
 			Type type = subTypes[0];
 			bool isStruct = type.IsValueType;
 
 			// go through each of the subtypes
-			var deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
+			var deserializers = CreateDeserializersForSubObjects(subTypes, reader, structure);
 
 			// create a new anonymous method that takes an IDataReader and returns T
 			var dm = new DynamicMethod(
@@ -376,14 +378,14 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="subTypes">The types of the subobjects.</param>
 		/// <param name="reader">The reader to analyze.</param>
-		/// <param name="idColumns">An optional mapping of type to Id columns used for splitting.</param>
+		/// <param name="structure">The structure of the record we are reading.</param>
 		/// <returns>A function that takes an IDataReader and deserializes an object of type T.</returns>
-		private static Delegate CreateGraphDeserializerWithCallback(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
+		private static Delegate CreateGraphDeserializerWithCallback(Type[] subTypes, IDataReader reader, IRecordStructure structure)
 		{
 			Type type = subTypes[0];
 
 			// go through each of the subtypes
-			var deserializers = CreateDeserializersForSubObjects(subTypes, reader, idColumns);
+			var deserializers = CreateDeserializersForSubObjects(subTypes, reader, structure);
 
 			// create a new anonymous method that takes an IDataReader and returns T
 			var dm = new DynamicMethod(
@@ -440,9 +442,9 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="subTypes">The list of sub-object types to parse.</param>
 		/// <param name="reader">The reader to analyze.</param>
-		/// <param name="idColumns">A mapping from type to names of ID columns to be used for splitting.</param>
+		/// <param name="structure">The structure of the record we are reading.</param>
 		/// <returns>An array of delegates.</returns>
-		private static DynamicMethod[] CreateDeserializersForSubObjects(Type[] subTypes, IDataReader reader, Dictionary<Type, string> idColumns)
+		private static DynamicMethod[] CreateDeserializersForSubObjects(Type[] subTypes, IDataReader reader, IRecordStructure structure)
 		{
 			// take up to the first NoClass
 			int subTypeCount = subTypes.Length;
@@ -452,10 +454,10 @@ namespace Insight.Database.CodeGenerator
 			for (int i = 0; i < subTypeCount; i++)
 			{
 				// determine the end of this type and the beginning of the next
-				int endColumn = DetectEndColumn(reader, idColumns, column, subTypes, i);
+				int endColumn = DetectEndColumn(reader, structure, column, subTypes, i);
 
 				// generate a deserializer for the class
-				deserializers[i] = CreateClassDeserializerDynamicMethod(subTypes[i], reader, column, endColumn - column, createNewObject: true, isRootObject: (i == 0));
+				deserializers[i] = CreateClassDeserializerDynamicMethod(subTypes[i], reader, structure, column, endColumn - column, true, (i == 0));
 
 				column = endColumn;
 			}
@@ -467,25 +469,31 @@ namespace Insight.Database.CodeGenerator
 		/// Detect the boundary between tOther and tNext in the reader.
 		/// </summary>
 		/// <param name="reader">The reader to analyze.</param>
-		/// <param name="idColumns">Caller-specified column to look for.</param>
+		/// <param name="structure">The structure of the record we are reading.</param>
 		/// <param name="columnIndex">The index of the next column to look at.</param>
 		/// <param name="types">The list of types to be deserialized.</param>
 		/// <param name="typeIndex">The index of the current type being deserialized.</param>
 		/// <returns>The end boundary for the current object.</returns>
-		private static int DetectEndColumn(IDataReader reader, Dictionary<Type, string> idColumns, int columnIndex, Type[] types, int typeIndex)
+		private static int DetectEndColumn(
+			IDataReader reader,
+			IRecordStructure structure,
+			int columnIndex,
+			Type[] types,
+			int typeIndex)
 		{
 			Type currentType = types[typeIndex];
 			Type nextType = (typeIndex + 1 < types.Length) ? types[typeIndex + 1] : typeof(object);
 
 			// if the caller specified columns to split on then use that
-			if (idColumns != null)
+			var splitColumns = structure.GetSplitColumns();
+			if (splitColumns != null)
 			{
 				// go through all of the remaining types
 				for (int t = typeIndex + 1; t < types.Length; t++)
 				{
 					// get the column name for the id of the next type
 					string columnName;
-					if (!idColumns.TryGetValue(types[t], out columnName))
+					if (!splitColumns.TryGetValue(types[t], out columnName))
 						continue;
 						
 					for (; columnIndex < reader.FieldCount; columnIndex++)
@@ -501,7 +509,7 @@ namespace Insight.Database.CodeGenerator
 			// for the next set, we want to find all applicable matches, so we can detect the transition to the next object
 			int fieldCount = reader.FieldCount;
 			int columnsLeft = fieldCount - columnIndex;
-			var currentSetters = ColumnMapping.Tables.CreateMapping(currentType, reader, null, null, columnIndex, columnsLeft, uniqueMatches: true);
+			var currentSetters = ColumnMapping.Tables.CreateMapping(currentType, reader, null, null, structure, columnIndex, columnsLeft, true);
 
 			// go through the remaining types to see if anything will claim the column
 			int i = 0;
@@ -515,7 +523,7 @@ namespace Insight.Database.CodeGenerator
 				for (int t = typeIndex + 1; t < types.Length; t++)
 				{
 					// one of the next types can claim the column, so quit now
-					var nextSetters = ColumnMapping.Tables.CreateMapping(types[t], reader, null, null, columnIndex + i, 1, uniqueMatches: false);
+					var nextSetters = ColumnMapping.Tables.CreateMapping(types[t], reader, null, null, structure, columnIndex + i, 1, false);
 					if (nextSetters[0] != null)
 						return columnIndex + i;
 				}
