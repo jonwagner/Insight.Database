@@ -55,9 +55,9 @@ namespace Insight.Database.CodeGenerator
 
 			// create the graph deserializer
 			if (mappingType.HasFlag(SchemaMappingType.WithCallback))
-				return CreateGraphDeserializerWithCallback(subTypes, reader, structure.GetIDColumns());
+				return CreateGraphDeserializerWithCallback(subTypes, reader, structure.GetSplitColumns());
 			else
-				return CreateGraphDeserializer(subTypes, reader, structure.GetIDColumns());
+				return CreateGraphDeserializer(subTypes, reader, structure.GetSplitColumns());
 		}
 
 		#region Single Class Deserialization

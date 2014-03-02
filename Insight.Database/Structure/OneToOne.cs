@@ -131,7 +131,7 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		Dictionary<Type, string> IRecordStructure.GetIDColumns() { return _idColumns; }
+		Dictionary<Type, string> IRecordStructure.GetSplitColumns() { return _idColumns; }
 
 		/// <summary>
 		/// Returns a function that can read a single record from a given data reader.

@@ -18,9 +18,9 @@ namespace Insight.Database.Structure
 		Type[] GetObjectTypes();
 
 		/// <summary>
-		/// Gets a mapping of the ID columns.
+		/// Gets a mapping of types to column names. The column names are used to override how Insight splits records into objects.
 		/// </summary>
-		/// <returns>A mapping of the ID columns or null to use the default.</returns>
-		Dictionary<Type, string> GetIDColumns();
+		/// <returns>A mapping of the split columns or null to use the default.</returns>
+		Dictionary<Type, string> GetSplitColumns();
 	}
 }
