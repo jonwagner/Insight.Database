@@ -26,13 +26,6 @@ namespace Insight.Database.Providers.Oracle
 		};
 
 		/// <summary>
-		/// Prevents a default instance of the <see cref="OracleInsightDbProvider"/> class from being created.
-		/// </summary>
-		private OracleInsightDbProvider()
-		{
-		}
-
-		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -58,9 +51,9 @@ namespace Insight.Database.Providers.Oracle
 		/// <summary>
 		/// Registers the Oracle Provider.
 		/// </summary>
+		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
-			new OracleInsightDbProvider().Register();
 		}
 
 		/// <summary>

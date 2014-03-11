@@ -18,12 +18,6 @@ namespace Insight.Tests
 	[TestFixture]
 	class MiniProfilerTests : BaseTest
 	{
-		[SetUp]
-		public void SetUpFixture()
-		{
-			MiniProfilerInsightDbProvider.RegisterProvider();
-		}
-
 		[Test]
 		public void TestProfiledSqlQuery()
 		{

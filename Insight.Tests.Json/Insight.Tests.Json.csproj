@@ -63,6 +63,10 @@
       <Project>{a54bac21-88c8-4605-9505-8ca7fc807648}</Project>
       <Name>Insight.Database.Json</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj">
+      <Project>{03743f67-e234-42c8-a1e9-38b8ba12efad}</Project>
+      <Name>Insight.Database.Providers.Default</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj">
       <Project>{bdf3afb9-9689-48db-ac12-b9087f774452}</Project>
       <Name>Insight.Database</Name>

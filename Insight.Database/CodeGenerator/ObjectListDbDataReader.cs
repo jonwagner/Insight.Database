@@ -14,12 +14,13 @@ namespace Insight.Database.CodeGenerator
 {
 	/// <summary>
 	/// Reads an object list as a data reader.
+	/// Not intended to be used directly from object code.
 	/// </summary>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1204:StaticElementsMustAppearBeforeInstanceElements", Justification = "This class only implements certain members")]
-	class ObjectListDbDataReader : DbDataReader
+	internal class ObjectListDbDataReader : DbDataReader
 	{
 		#region Private Fields
 		/// <summary>

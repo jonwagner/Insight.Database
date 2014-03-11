@@ -34,8 +34,6 @@ namespace Insight.Tests.DB2
 		[TestFixtureSetUp]
 		public void SetUpFixture()
 		{
-			DB2InsightDbProvider.RegisterProvider();
-
 			DB2ConnectionStringBuilder connectionStringBuilder = new DB2ConnectionStringBuilder();
 			connectionStringBuilder.ConnectionString = "Server=testserver:50000;Database=SAMPLE";
 			connectionStringBuilder.UserID = "db2admin";

@@ -70,6 +70,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Compatibil
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.Compatibility3x", "Insight.Tests.Compatibility3x\Insight.Tests.Compatibility3x.csproj", "{717EB3D2-1B57-4B32-B236-B98CA4ED132C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.Default", "Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj", "{03743F67-E234-42C8-A1E9-38B8BA12EFAD}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -320,6 +322,16 @@ Global
 		{717EB3D2-1B57-4B32-B236-B98CA4ED132C}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{717EB3D2-1B57-4B32-B236-B98CA4ED132C}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{717EB3D2-1B57-4B32-B236-B98CA4ED132C}.Release|x86.ActiveCfg = Release|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{03743F67-E234-42C8-A1E9-38B8BA12EFAD}.Release|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

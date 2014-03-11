@@ -18,7 +18,7 @@ namespace Insight.Database.Providers
 	/// <summary>
 	/// Implements the Insight provider for Sql connections.
 	/// </summary>
-	class SqlInsightDbProvider : InsightDbProvider
+	public class SqlInsightDbProvider : InsightDbProvider
 	{
 		/// <summary>
 		/// The prefix used on parameter names.
@@ -28,7 +28,7 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Cache for Table-Valued Parameter schemas.
 		/// </summary>
-		private static ConcurrentDictionary<Tuple<string, Type>, ObjectReader> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, ObjectReader>();
+		private static ConcurrentDictionary<Tuple<string, Type>, object> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, object>();
 
 		/// <summary>
 		/// The list of types supported by this provider.
@@ -119,7 +119,7 @@ namespace Insight.Database.Providers
 			base.FixupParameter(command, parameter, dbType, type);
 
 			// when calling sql text, we have to fill in the udttypename for some parameters
-			if (command.CommandType != CommandType.StoredProcedure && TypeHelper.IsSqlUserDefinedType(type))
+			if (command.CommandType != CommandType.StoredProcedure && IsSqlUserDefinedType(type))
 			{
 				SqlParameter p = (SqlParameter)parameter;
 				p.SqlDbType = SqlDbType.Udt;
@@ -176,7 +176,7 @@ namespace Insight.Database.Providers
 			// see if we already have a reader for the given type and table type name
 			// we can't use the schema cache because we don't have a schema yet
 			var key = Tuple.Create<string, Type>(tableTypeName, listType);
-			ObjectReader objectReader = _tvpReaders.GetOrAdd(
+			ObjectReader objectReader = (ObjectReader)_tvpReaders.GetOrAdd(
 				key,
 				k => command.Connection.ExecuteAndAutoClose(
 					_ => null,
@@ -393,6 +393,16 @@ namespace Insight.Database.Providers
 			}
 
 			return p.TypeName;
+		}
+
+		/// <summary>
+		/// Determines if a type is a sql user defined type.
+		/// </summary>
+		/// <param name="type">The type to examine.</param>
+		/// <returns>True if it is a Sql UDT.</returns>
+		private static bool IsSqlUserDefinedType(Type type)
+		{
+			return type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
 		}
 
 		#region Bulk Copy Support

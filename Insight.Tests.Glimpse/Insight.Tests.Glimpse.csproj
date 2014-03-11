@@ -65,6 +65,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj">
+      <Project>{03743f67-e234-42c8-a1e9-38b8ba12efad}</Project>
+      <Name>Insight.Database.Providers.Default</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Insight.Database.Providers.Glimpse\Insight.Database.Providers.Glimpse.csproj">
       <Project>{35d1b878-0d4b-4f85-ace8-176a58216293}</Project>
       <Name>Insight.Database.Providers.Glimpse</Name>

@@ -14,13 +14,6 @@ namespace Insight.Database.Providers.MiniProfiler
 	public class MiniProfilerInsightDbProvider : WrappedInsightDbProvider
 	{
 		/// <summary>
-		/// Prevents a default instance of the <see cref="MiniProfilerInsightDbProvider"/> class from being created.
-		/// </summary>
-		private MiniProfilerInsightDbProvider()
-		{
-		}
-
-		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -35,9 +28,9 @@ namespace Insight.Database.Providers.MiniProfiler
 		/// <summary>
 		/// Registers the MiniProfiler Provider
 		/// </summary>
+		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
-			new MiniProfilerInsightDbProvider().Register();
 		}
 
 		/// <summary>

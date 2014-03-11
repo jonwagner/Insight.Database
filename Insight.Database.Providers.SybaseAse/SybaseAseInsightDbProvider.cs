@@ -31,13 +31,6 @@ namespace Insight.Database.Providers.SybaseAse
 		};
 
 		/// <summary>
-		/// Prevents a default instance of the <see cref="SybaseAseInsightDbProvider"/> class from being created.
-		/// </summary>
-		private SybaseAseInsightDbProvider()
-		{
-		}
-
-		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -68,9 +61,9 @@ namespace Insight.Database.Providers.SybaseAse
 		/// <summary>
 		/// Registers the Oracle Provider.
 		/// </summary>
+		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
-			new SybaseAseInsightDbProvider().Register();
 		}
 
 		/// <summary>

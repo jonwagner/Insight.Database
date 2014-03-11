@@ -136,8 +136,6 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Providers\DbConnectionWrapperInsightDbProvider.cs" />
-    <Compile Include="Providers\OdbcInsightDbProvider.cs" />
-    <Compile Include="Providers\OleDbInsightDbProvider.cs" />
     <Compile Include="Providers\WrappedInsightDbProvider.cs" />
     <Compile Include="GlobalSuppressions.cs" />
     <Compile Include="Providers\InsightDbProvider.cs" />
@@ -229,6 +227,9 @@
       <LastGenOutput>DbReaderExtensions.generated.cs</LastGenOutput>
     </None>
     <None Include="GenericTypes.tt" />
+    <None Include="Insight.Database.Core.nuspec">
+      <SubType>Designer</SubType>
+    </None>
     <None Include="Insight.Database.nuspec">
       <SubType>Designer</SubType>
     </None>
@@ -241,7 +242,6 @@
       <LastGenOutput>OneToOne.generated.cs</LastGenOutput>
     </None>
     <None Include="packages.config" />
-    <Compile Include="Providers\SqlInsightDbProvider.cs" />
     <None Include="Structure\Query.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Query.generated.cs</LastGenOutput>

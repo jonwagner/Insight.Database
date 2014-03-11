@@ -30,13 +30,6 @@ namespace Insight.Database.Providers.MySql
 		};
 
 		/// <summary>
-		/// Prevents a default instance of the <see cref="MySqlInsightDbProvider"/> class from being created.
-		/// </summary>
-		private MySqlInsightDbProvider()
-		{
-		}
-
-		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -51,9 +44,9 @@ namespace Insight.Database.Providers.MySql
 		/// <summary>
 		/// Registers the Oracle Provider
 		/// </summary>
+		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
-			new MySqlInsightDbProvider().Register();
 		}
 
 		/// <summary>

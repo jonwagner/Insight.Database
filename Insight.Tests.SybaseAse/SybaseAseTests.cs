@@ -38,8 +38,6 @@ namespace Insight.Tests.SybaseAse
 		[TestFixtureSetUp]
 		public void SetUpFixture()
 		{
-			SybaseAseInsightDbProvider.RegisterProvider();
-
 			_connectionStringBuilder = new AseConnectionStringBuilder();
 			_connectionStringBuilder.ConnectionString = "Data Source=testserver;Port=5000;User ID=sa;Password=Password1";
 			_connection = new AseConnection(_connectionStringBuilder.ConnectionString);

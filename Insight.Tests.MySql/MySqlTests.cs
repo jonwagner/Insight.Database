@@ -38,8 +38,6 @@ namespace Insight.Tests.MySql
 		[TestFixtureSetUp]
 		public void SetUpFixture()
 		{
-			MySqlInsightDbProvider.RegisterProvider();
-
 			_connectionStringBuilder = new MySqlConnectionStringBuilder();
 			_connectionStringBuilder.ConnectionString = "Server = testserver; Database = test; User Id = root; Password = Password1";
 			_connection = _connectionStringBuilder.Open();

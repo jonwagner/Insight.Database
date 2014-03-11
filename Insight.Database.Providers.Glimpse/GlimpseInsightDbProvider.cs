@@ -15,13 +15,6 @@ namespace Insight.Database.Providers.Glimpse
     public class GlimpseInsightDbProvider : WrappedInsightDbProvider
     {
 		/// <summary>
-		/// Prevents a default instance of the <see cref="GlimpseInsightDbProvider"/> class from being created.
-		/// </summary>
-		private GlimpseInsightDbProvider()
-		{
-		}
-
-		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -36,9 +29,9 @@ namespace Insight.Database.Providers.Glimpse
 		/// <summary>
 		/// Registers the Glimpse Provider
 		/// </summary>
+		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
-			new GlimpseInsightDbProvider().Register();
 		}
 
 		/// <summary>

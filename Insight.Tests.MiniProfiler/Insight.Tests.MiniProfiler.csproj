@@ -62,6 +62,10 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj">
+      <Project>{03743f67-e234-42c8-a1e9-38b8ba12efad}</Project>
+      <Name>Insight.Database.Providers.Default</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Insight.Database.Providers.MiniProfiler\Insight.Database.Providers.MiniProfiler.csproj">
       <Project>{ec7ae6ec-45b0-4e5f-9097-4f4cb6a5296d}</Project>
       <Name>Insight.Database.Providers.MiniProfiler</Name>

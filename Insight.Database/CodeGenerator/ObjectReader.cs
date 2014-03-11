@@ -16,8 +16,9 @@ namespace Insight.Database.CodeGenerator
 {
 	/// <summary>
 	/// Encapsulates the information needed to read from an object list into a given schema.
+	/// Not intended to be used by application code.
 	/// </summary>
-	class ObjectReader
+	public class ObjectReader
 	{
 		#region Fields
 		/// <summary>

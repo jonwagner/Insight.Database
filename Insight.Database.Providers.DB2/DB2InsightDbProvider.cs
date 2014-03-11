@@ -25,13 +25,6 @@ namespace Insight.Database.Providers.DB2
 		};
 
 		/// <summary>
-		/// Prevents a default instance of the <see cref="DB2InsightDbProvider"/> class from being created.
-		/// </summary>
-		private DB2InsightDbProvider()
-		{
-		}
-
-		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -59,9 +52,9 @@ namespace Insight.Database.Providers.DB2
 		/// <summary>
 		/// Registers this provider.
 		/// </summary>
+		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
-			new DB2InsightDbProvider().Register();
 		}
 
 		/// <summary>

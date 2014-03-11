@@ -6,12 +6,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Insight.Database.Providers.MiniProfiler")]
+[assembly: AssemblyTitle("Insight.Database.Providers.Default")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("Insight.Database Micro ORM")]
-[assembly: AssemblyProduct("Insight.Database")]
-[assembly: AssemblyCopyright("Copyright © Jon Wagner, used by permission")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("Insight.Database.Providers.Default")]
+[assembly: AssemblyCopyright("Copyright ©  2014")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -21,7 +21,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("1c22bbdc-ee5f-48de-854f-4c376660e70e")]
+[assembly: Guid("764b63fd-6817-4a46-ab9d-8425f4ea6eff")]
 
 // Version information for an assembly consists of the following four values:
 //

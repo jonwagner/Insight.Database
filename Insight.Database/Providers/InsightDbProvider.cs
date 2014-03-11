@@ -4,7 +4,9 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
@@ -21,7 +23,7 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// The map from object types to providers. This includes DbCommand and DbConnectionString types.
 		/// </summary>
-		private static Dictionary<Type, InsightDbProvider> _providerMap = new Dictionary<Type, InsightDbProvider>();
+		private static Lazy<Dictionary<Type, InsightDbProvider>> _providerMap = new Lazy<Dictionary<Type, InsightDbProvider>>(LoadProviders);
 
 		/// <summary>
 		/// Regex to detect parameters in sql text.
@@ -32,21 +34,6 @@ namespace Insight.Database.Providers
 		/// The default provider to use if we don't understand a given type.
 		/// </summary>
 		private static InsightDbProvider _defaultProvider = new InsightDbProvider();
-		#endregion
-
-		#region Constructors
-		/// <summary>
-		/// Initializes static members of the InsightDbProvider class.
-		/// </summary>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
-		static InsightDbProvider()
-		{
-			// only automatically initialize providers that are built into the framework
-			new SqlInsightDbProvider().Register();
-			new DbConnectionWrapperInsightDbProvider().Register();
-			new OdbcInsightDbProvider().Register();
-			new OleDbInsightDbProvider().Register();
-		}
 		#endregion
 
 		#region Properties
@@ -67,22 +54,6 @@ namespace Insight.Database.Providers
 		/// </summary>
 		public virtual InsightBulkCopyOptions SupportedBulkCopyOptions { get { return 0; } }
 		#endregion
-
-		/// <summary>
-		/// Registers this provider.
-		/// </summary>
-		public void Register()
-		{
-			var supportedTypes = SupportedTypes;
-			if (supportedTypes == null)
-				return;
-
-			lock (_providerMap)
-			{
-				foreach (var type in supportedTypes)
-					_providerMap[type] = this;
-			}
-		}
 
 		#region Overrideables
 		/// <summary>
@@ -314,7 +285,7 @@ namespace Insight.Database.Providers
 			// walk the base classes to see if we know anything about what class it is derived from
 			for (Type type = o.GetType(); type != null; type = type.BaseType)
 			{
-				if (_providerMap.TryGetValue(type, out provider) && provider != null)
+				if (_providerMap.Value.TryGetValue(type, out provider) && provider != null)
 					return provider;
 			}
 
@@ -334,5 +305,50 @@ namespace Insight.Database.Providers
 			command.Parameters.Add(p);
 			return p;
 		}
+
+		#region Registration
+		/// <summary>
+		/// Initializes static members of the InsightDbProvider class.
+		/// </summary>
+		/// <returns>The set of providers.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
+		static Dictionary<Type, InsightDbProvider> LoadProviders()
+		{
+			var providerMap = new Dictionary<Type, InsightDbProvider>();
+
+			// load the internal providers
+			RegisterProvider(providerMap, new DbConnectionWrapperInsightDbProvider());
+
+			// look for any provider assemblies and load them automatically
+			var uri = new Uri(Assembly.GetExecutingAssembly().CodeBase);
+			string path = Path.GetDirectoryName(uri.LocalPath);
+			foreach (string assemblyFile in Directory.GetFiles(path, "Insight.Database.Providers.*.dll"))
+			{
+				var assembly = Assembly.LoadFrom(assemblyFile);
+				foreach (var type in assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(InsightDbProvider))))
+					RegisterProvider(providerMap, (InsightDbProvider)System.Activator.CreateInstance(type));
+			}
+
+			return providerMap;
+		}
+
+		/// <summary>
+		/// Registers a provider.
+		/// </summary>
+		/// <param name="providerMap">The provider map.</param>
+		/// <param name="provider">The provider to register.</param>
+		static void RegisterProvider(Dictionary<Type, InsightDbProvider> providerMap, InsightDbProvider provider)
+		{
+			var supportedTypes = provider.SupportedTypes;
+			if (supportedTypes == null)
+				return;
+
+			lock (providerMap)
+			{
+				foreach (var type in supportedTypes)
+					providerMap[type] = provider;
+			}
+		}
+		#endregion
 	}
 }

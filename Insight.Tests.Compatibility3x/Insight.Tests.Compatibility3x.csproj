@@ -59,6 +59,10 @@
       <Project>{40fe51d4-c011-4d38-a3a5-407a2c0f8f15}</Project>
       <Name>Insight.Database.Compatibility3x</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj">
+      <Project>{03743f67-e234-42c8-a1e9-38b8ba12efad}</Project>
+      <Name>Insight.Database.Providers.Default</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj">
       <Project>{bdf3afb9-9689-48db-ac12-b9087f774452}</Project>
       <Name>Insight.Database</Name>

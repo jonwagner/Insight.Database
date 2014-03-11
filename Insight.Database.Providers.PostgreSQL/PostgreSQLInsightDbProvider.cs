@@ -55,13 +55,6 @@ namespace Insight.Database.Providers.PostgreSQL
 		#endregion
 
 		/// <summary>
-		/// Prevents a default instance of the <see cref="PostgreSQLInsightDbProvider"/> class from being created.
-		/// </summary>
-		private PostgreSQLInsightDbProvider()
-		{
-		}
-
-		/// <summary>
 		/// Gets the types of objects that this provider supports.
 		/// Include connectionstrings, connections, commands, and readers.
 		/// </summary>
@@ -87,9 +80,9 @@ namespace Insight.Database.Providers.PostgreSQL
 		/// <summary>
 		/// Registers the Oracle Provider
 		/// </summary>
+		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
-			new PostgreSQLInsightDbProvider().Register();
 		}
 
 		/// <summary>

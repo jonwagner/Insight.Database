@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Data.OleDb;
+using System.Data.Odbc;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -10,16 +10,16 @@ using System.Threading.Tasks;
 namespace Insight.Database.Providers
 {
 	/// <summary>
-	/// Implements the Insight provider for OleDb connections.
+	/// Implements the Insight provider for Odbc connections.
 	/// </summary>
-	class OleDbInsightDbProvider : InsightDbProvider
+	public class OdbcInsightDbProvider : InsightDbProvider
 	{
 		/// <summary>
 		/// The list of types supported by this provider.
 		/// </summary>
 		private static Type[] _supportedTypes = new Type[]
 		{
-			typeof(OleDbConnectionStringBuilder), typeof(OleDbConnection), typeof(OleDbCommand), typeof(OleDbDataReader), typeof(OleDbException)
+			typeof(OdbcConnectionStringBuilder), typeof(OdbcConnection), typeof(OdbcCommand), typeof(OdbcDataReader), typeof(OdbcException)
 		};
 
 		/// <summary>
@@ -40,7 +40,7 @@ namespace Insight.Database.Providers
 		/// <returns>A new DbConnection.</returns>
 		public override DbConnection CreateDbConnection()
 		{
-			return new OleDbConnection();
+			return new OdbcConnection();
 		}
 
 		/// <summary>
@@ -49,9 +49,9 @@ namespace Insight.Database.Providers
 		/// <param name="command">The command to derive.</param>
 		public override void DeriveParametersFromStoredProcedure(IDbCommand command)
 		{
-			OleDbCommandBuilder.DeriveParameters(command as OleDbCommand);
+			OdbcCommandBuilder.DeriveParameters(command as OdbcCommand);
 		}
-
+	
 		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
 		/// </summary>
@@ -60,10 +60,10 @@ namespace Insight.Database.Providers
 		/// <returns>The clone.</returns>
 		public override IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
 		{
-			OleDbParameter p = (OleDbParameter)base.CloneParameter(command, parameter);
+			OdbcParameter p = (OdbcParameter)base.CloneParameter(command, parameter);
 
-			OleDbParameter template = (OleDbParameter)parameter;
-			p.OleDbType = template.OleDbType;
+			OdbcParameter template = (OdbcParameter)parameter;
+			p.OdbcType = template.OdbcType;
 
 			return p;
 		}

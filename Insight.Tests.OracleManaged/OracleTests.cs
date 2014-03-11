@@ -41,8 +41,6 @@ namespace Insight.Tests.OracleManaged
 		[TestFixtureSetUp]
 		public void SetUpFixture()
 		{
-			OracleInsightDbProvider.RegisterProvider();
-
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
 			_connectionStringBuilder.ConnectionString = "Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=))(ADDRESS=(PROTOCOL=TCP)(HOST=testserver)(PORT=1521))); User Id = system; Password = Password1";
 			_connection = _connectionStringBuilder.Open();

@@ -17,12 +17,6 @@ namespace Insight.Tests
 	[TestFixture]
 	public class GlimpseTests : BaseTest
 	{
-		[SetUp]
-		public void SetUpFixture()
-		{
-			GlimpseInsightDbProvider.RegisterProvider();
-		}
-
 		/// <summary>
 		/// Make sure that we can connect to the database
 		/// </summary>
