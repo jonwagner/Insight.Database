@@ -68,6 +68,9 @@ Task Build35 {
             Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
 		}
         Exec {
+            Invoke-Expression "$msbuild $baseDir\Insight.Database.Configuration\Insight.Database.Configuration.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
+		}
+        Exec {
             Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
 		}
         Exec {
@@ -86,6 +89,7 @@ Task Build35 {
         # copy the binaries to the net35 folder
         Wipe-Folder $net35Path
         Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net35Path
+        Copy-Item $baseDir\Insight.Database.Configuration\bin\Release\*.* $net35Path
         Copy-Item $baseDir\Insight.Database.Providers.Default\bin\Release\*.* $net35Path
         Copy-Item $baseDir\Insight.Database.Compatibility3x\bin\Release\*.* $net35Path
         Copy-Item $baseDir\Insight.Database.Json\bin\Release\*.* $net35Path
@@ -105,6 +109,9 @@ Task Build40 {
         # build the NET40 binaries
         Exec {
             Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
+        }
+        Exec {
+            Invoke-Expression "$msbuild $baseDir\Insight.Database.Configuration\Insight.Database.Configuration.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
         }
         Exec {
             Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
@@ -128,6 +135,7 @@ Task Build40 {
         # copy the binaries to the net40 folder
         Wipe-Folder $net40Path
         Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net40Path
+        Copy-Item $baseDir\Insight.Database.Configuration\bin\Release\*.* $net40Path
         Copy-Item $baseDir\Insight.Database.Providers.Default\bin\Release\*.* $net40Path
         Copy-Item $baseDir\Insight.Database.Compatibility3x\bin\Release\*.* $net40Path
         Copy-Item $baseDir\Insight.Database.Json\bin\Release\*.* $net40Path
