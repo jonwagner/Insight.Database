@@ -160,6 +160,16 @@ namespace Insight.Database.Providers
 		/// <param name="listType">The type of object in the list.</param>
 		public override void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, System.Collections.IEnumerable list, Type listType)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+			if (list == null) throw new ArgumentNullException("list");
+
+			// if the list is empty, then we can optimize by omitting the table
+			if (command.CommandType == CommandType.StoredProcedure && !list.GetEnumerator().MoveNext())
+			{
+				parameter.Value = null;
+				return;
+			}
+
 			// allow the provider to make sure the table parameter is set up properly
 			string tableTypeName = GetTableParameterTypeName(parameter, listType);
 

@@ -276,7 +276,7 @@ namespace Insight.Tests
 					Assert.Throws<InvalidOperationException>(() => connection.Query("ProcWithMissingTable"));
 
 					// so you should be able to specify an empty list
-					connection.Query("ProcWithMissingTable", new { Table = Parameters.EmptyList });
+					connection.Query("ProcWithMissingTable", new { Table = Parameters.EmptyListOf<int>() });
 				}
 			}
 			finally

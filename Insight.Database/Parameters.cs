@@ -27,5 +27,15 @@ namespace Insight.Database
 		/// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes", Justification = "The array is immutable and the object is immutable")]
 		public static readonly IEnumerable<object> EmptyList = new object[0];
+
+		/// <summary>
+		/// Returns an empty list of a given type.
+		/// </summary>
+		/// <typeparam name="T">The type contained in the list.</typeparam>
+		/// <returns>An empty enumerator of the given type.</returns>
+		public static IEnumerable<T> EmptyListOf<T>()
+		{
+			yield break;
+		}
 	}
 }
