@@ -18,6 +18,41 @@ namespace Insight.Database.CodeGenerator
 	static class TypeHelper
 	{
 		/// <summary>
+		/// Initializes static members of the TypeHelper class.
+		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1031:DoNotCatchGeneralExceptionTypes")]
+		static TypeHelper()
+		{
+			try
+			{
+				var assemblyName = new AssemblyName("System.Data.Linq, Version=3.5.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089");
+				LinqBinaryType = Assembly.Load(assemblyName).GetType("System.Data.Linq.Binary");
+			}
+			catch
+			{
+				LinqBinaryType = typeof(LinqBinaryPlaceHolder);
+			}
+
+			LinqBinaryCtor = LinqBinaryType.GetConstructor(new Type[] { typeof(byte[]) });
+			LinqBinaryToArray = LinqBinaryType.GetMethod("ToArray", BindingFlags.Public | BindingFlags.Instance);
+		}
+
+		/// <summary>
+		/// Gets the type object for Linq.Binary.
+		/// </summary>
+		internal static Type LinqBinaryType { get; private set; }
+
+		/// <summary>
+		/// Gets the constructor for Linq.Binary.
+		/// </summary>
+		internal static ConstructorInfo LinqBinaryCtor { get; private set; }
+
+		/// <summary>
+		/// Gets the ToArray method for Linq.Binary.
+		/// </summary>
+		internal static MethodInfo LinqBinaryToArray { get; private set; }
+
+		/// <summary>
 		/// Determines whether the given type is is an atomic type that does not have members.
 		/// </summary>
 		/// <param name="type">The type to check.</param>
@@ -133,6 +168,15 @@ namespace Insight.Database.CodeGenerator
 				var parameter = parameters[i];
 				targetMethod.DefineParameter(i + 1, parameter.Attributes, parameter.Name);
 			}
+		}
+		#endregion
+
+		#region LinqBinaryPlaceHolder
+		/// <summary>
+		/// Stand-in for Linq.Binary
+		/// </summary>
+		class LinqBinaryPlaceHolder
+		{
 		}
 		#endregion
 	}

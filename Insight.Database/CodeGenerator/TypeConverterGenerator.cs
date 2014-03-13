@@ -27,7 +27,6 @@ namespace Insight.Database.CodeGenerator
 		internal static readonly MethodInfo CreateDataExceptionMethod = typeof(TypeConverterGenerator).GetMethod("CreateDataException");
 		internal static readonly MethodInfo IsAllDbNullMethod = typeof(TypeConverterGenerator).GetMethod("IsAllDbNull");
 		private static readonly MethodInfo _enumParse = typeof(Enum).GetMethod("Parse", new Type[] { typeof(Type), typeof(string), typeof(bool) });
-		private static readonly ConstructorInfo _linqBinaryCtor = typeof(System.Data.Linq.Binary).GetConstructor(new Type[] { typeof(byte[]) });
 		private static readonly MethodInfo _readChar = typeof(TypeConverterGenerator).GetMethod("ReadChar");
 		private static readonly MethodInfo _readNullableChar = typeof(TypeConverterGenerator).GetMethod("ReadNullableChar");
 		private static readonly MethodInfo _readXmlDocument = typeof(TypeConverterGenerator).GetMethod("ReadXmlDocument");
@@ -84,7 +83,7 @@ namespace Insight.Database.CodeGenerator
 				// char?
 				il.EmitCall(OpCodes.Call, _readNullableChar, null);
 			}
-			else if (targetType == typeof(System.Data.Linq.Binary))
+			else if (targetType == TypeHelper.LinqBinaryType)
 			{
 				// unbox sql byte arrays to Linq.Binary
 
@@ -93,7 +92,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Unbox_Any, typeof(byte[])); // stack is now [target][byte-array]
 				// before: stack => [target][byte-array-value]
 				// after: stack => [target][Linq.Binary-value]
-				il.Emit(OpCodes.Newobj, _linqBinaryCtor);
+				il.Emit(OpCodes.Newobj, TypeHelper.LinqBinaryCtor);
 			}
 			else if (targetType == typeof(XmlDocument))
 			{

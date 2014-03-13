@@ -39,7 +39,6 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _iDataParameterSetValue = typeof(IDataParameter).GetProperty("Value").GetSetMethod();
 		private static readonly MethodInfo _iDbDataParameterSetSize = typeof(IDbDataParameter).GetProperty("Size").GetSetMethod();
 		private static readonly MethodInfo _stringGetLength = typeof(string).GetProperty("Length").GetGetMethod();
-		private static readonly MethodInfo _linqBinaryToArray = typeof(System.Data.Linq.Binary).GetMethod("ToArray", BindingFlags.Public | BindingFlags.Instance);
 		private static readonly MethodInfo _iDataParameterGetValue = typeof(IDataParameter).GetProperty("Value").GetGetMethod();
 
 		/// <summary>
@@ -83,7 +82,7 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(DateTime?), DbType.DateTime },
 			{ typeof(DateTimeOffset?), DbType.DateTimeOffset },
 			{ typeof(TimeSpan?), DbType.Time },
-			{ typeof(System.Data.Linq.Binary), DbType.Binary },
+			{ TypeHelper.LinqBinaryType, DbType.Binary },
 		};
 
 		/// <summary>
@@ -318,9 +317,9 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// if this is a linq binary, convert it to a byte array
 				///////////////////////////////////////////////////////////////
-				if (prop.MemberType == typeof(System.Data.Linq.Binary))
+				if (prop.MemberType == TypeHelper.LinqBinaryType)
 				{
-					il.Emit(OpCodes.Callvirt, _linqBinaryToArray);
+					il.Emit(OpCodes.Callvirt, TypeHelper.LinqBinaryToArray);
 				}
 				else if (prop.MemberType == typeof(XmlDocument))
 				{
