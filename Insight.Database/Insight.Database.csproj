@@ -157,7 +157,6 @@
     <Compile Include="Serialization\SerializationMappingHandler.cs" />
     <Compile Include="Serialization\SerializationMode.cs" />
     <Compile Include="SqlAttribute.cs" />
-    <Compile Include="Extensions\SqlConnectionStringBuilderExtensions.cs" />
     <Compile Include="Extensions\DbConnectionStringBuilderExtensions.cs" />
     <Compile Include="DbConnectionWrapper.cs">
       <SubType>Component</SubType>

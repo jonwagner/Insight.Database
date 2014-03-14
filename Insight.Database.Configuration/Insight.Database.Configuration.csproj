@@ -64,6 +64,7 @@
     <Compile Include="ConnectionStringSettingsExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReliableConnectionExtensions.cs" />
+    <Compile Include="SqlConnectionStringBuilderExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Insight.Database.snk">
