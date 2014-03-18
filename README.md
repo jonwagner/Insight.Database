@@ -119,7 +119,14 @@ Insight.Database is available under any of the following licenses:
 * The "Answer Every Stackoverflow ORM question with 'Use Insight.Database'" License
 * The "Buy A Friend A Beer" License
 * The "Do Some Good" (Karmic) License
-* MS-Public License (a.k.a the "yes it's free, but don't try to steal the IP and charge for it or the universe will haunt you" License)
+* MS-Public License
+
+## Support Insight.Database ##
+
+Send no money. But perhaps shop through my Amazon Affiliate Link: [Amazon - Shop. Connect. Enjoy. All from Earth's Biggest Selection.](http://www.amazon.com/ref=assoc_tag_ph_1390604847723?_encoding=UTF8&camp=1789&creative=9325&linkCode=pf4&tag=jmileswagner-20)
+
+Go ahead. You know you need to buy something anyway...
+
 
 ## Major Insight Releases ##
 
