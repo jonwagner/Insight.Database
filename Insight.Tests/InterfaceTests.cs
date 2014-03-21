@@ -521,6 +521,10 @@ namespace Insight.Tests
 			[Sql("SELECT ID=1, ID=2")]
 			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
 			InfiniteBeer GetSingleBeerWithAttribute();
+			[Sql("SELECT ID=1; SELECT ParentID=1, ID=2")]
+			[Recordset(0, typeof(InfiniteBeerList))]
+			[Recordset(1, typeof(InfiniteBeerList), IsChild = true)]
+			InfiniteBeerList GetSingleBeerWithChildren();
 		}
 
 		[Test]
@@ -679,6 +683,19 @@ namespace Insight.Tests
 			Assert.AreEqual(1, beer.ID);
 			Assert.IsNotNull(beer.More);
 			Assert.AreEqual(2, beer.More.ID);
+		}
+
+		[Test]
+		public void CanGetSingleWithChildren()
+		{
+			var i = Connection().As<IHaveStructure>();
+			var result = i.GetSingleBeerWithChildren();
+
+			var beer = result;
+			Assert.IsNotNull(beer);
+			Assert.AreEqual(1, beer.ID);
+			Assert.AreEqual(1, beer.List.Count);
+			Assert.AreEqual(2, beer.List[0].ID);
 		}
 		#endregion
 	}

@@ -108,6 +108,51 @@ namespace Insight.Database
 		/// <param name="previous">The previous reader.</param>
 		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
 		/// <param name="into">A function that assigns the children to their parent.</param>
+		/// <returns>A reader that reads a list of objects and their children.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+		public static SingleReader<T1> ThenChildren<T1, T2>(
+			this SingleReader<T1> previous,
+			IChildRecordReader<T2> recordReader,
+			Action<T1, List<T2>> into = null)
+		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
+			return previous.AddChild(new Children<T1, T2, object>(recordReader.GetGuardianReader<object>(), new ChildMapper<T1, T2, object>(null, into)));
+		}
+
+		/// <summary>
+		/// Extends the reader by reading another set of records that are children of the previous results.
+		/// </summary>
+		/// <typeparam name="T1">The type of objects in the first set of results.</typeparam>
+		/// <typeparam name="T2">The type of objects in the second set of results.</typeparam>
+		/// <typeparam name="TId">The type of the ID value.</typeparam>
+		/// <param name="previous">The previous reader.</param>
+		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
+		/// <param name="id">An optional function that extracts an ID from the object. Use when this row is a parent in a parent-child relationship.</param>
+		/// <param name="into">A function that assigns the children to their parent.</param>
+		/// <returns>A reader that reads a list of objects and their children.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+		public static SingleReader<T1> ThenChildren<T1, T2, TId>(
+			this SingleReader<T1> previous,
+			IChildRecordReader<T2> recordReader,
+			Func<T1, TId> id,
+			Action<T1, List<T2>> into = null)
+		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
+			return previous.AddChild(new Children<T1, T2, TId>(recordReader.GetGuardianReader<TId>(), new ChildMapper<T1, T2, TId>(id, into)));
+		}
+
+		/// <summary>
+		/// Extends the reader by reading another set of records that are children of the previous results.
+		/// </summary>
+		/// <typeparam name="T1">The type of objects in the first set of results.</typeparam>
+		/// <typeparam name="T2">The type of objects in the second set of results.</typeparam>
+		/// <param name="previous">The previous reader.</param>
+		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
+		/// <param name="into">A function that assigns the children to their parent.</param>
 		/// <returns>A reader that reads a Results object with child records.</returns>
 		public static ResultsReader<T1> ThenChildren<T1, T2>(
 			this ResultsReader<T1> previous,

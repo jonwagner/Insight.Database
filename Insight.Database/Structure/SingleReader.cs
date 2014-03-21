@@ -76,6 +76,16 @@ namespace Insight.Database.Structure
 				.ContinueWith(t => { t.Wait(); return results.FirstOrDefault(); }, TaskContinuationOptions.ExecuteSynchronously);
 #endif
 		}
+
+		/// <summary>
+		/// Adds a child reader to this reader.
+		/// </summary>
+		/// <param name="child">The child reader to add.</param>
+		/// <returns>A list reader that also reads the specified child.</returns>
+		internal new SingleReader<T> AddChild(Children<T> child)
+		{
+			return (SingleReader<T>)base.AddChild(child);
+		}
 		#endregion
 	}
 }
