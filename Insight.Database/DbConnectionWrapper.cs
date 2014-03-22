@@ -200,7 +200,7 @@ namespace Insight.Database
 		{
 			get
 			{
-#if !NODBASYNC
+#if !NODBASYNC && !MONO
 				// get the provider for the connection
 				var innerProviderFactory = DbProviderFactories.GetFactory(InnerConnection);
 #else

@@ -15,18 +15,15 @@
 	<iconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</iconUrl>
     <tags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
+	<dependencies>
+		<dependency id="Insight.Database.Core" version="4.1"></dependency>
+	</dependencies>
+	<frameworkAssemblies>
+		<frameworkAssembly assemblyName="System.Data" />
+		<frameworkAssembly assemblyName="System.Configuration"  />
+	</frameworkAssemblies>
   </metadata>
   <files>
-    <file src="\bin\NET45\Insight.Database.dll" target="lib\NET45" />
-    <file src="\bin\NET45\Insight.Database.xml" target="lib\NET45" />
-    <file src="\bin\NET45\Insight.Database.pdb" target="lib\NET45" />
-    <file src="\bin\NET40\Insight.Database.dll" target="lib\NET40" />
-    <file src="\bin\NET40\Insight.Database.xml" target="lib\NET40" />
-    <file src="\bin\NET40\Insight.Database.pdb" target="lib\NET40" />
-    <file src="\bin\NET35\Insight.Database.dll" target="lib\NET35" />
-    <file src="\bin\NET35\Insight.Database.xml" target="lib\NET35" />
-    <file src="\bin\NET35\Insight.Database.pdb" target="lib\NET35" />
-
 	<file src="\bin\NET45\Insight.Database.Providers.Default.dll" target="lib\NET45" />
 	<file src="\bin\NET45\Insight.Database.Providers.Default.xml" target="lib\NET45" />
 	<file src="\bin\NET45\Insight.Database.Providers.Default.pdb" target="lib\NET45" />
@@ -46,6 +43,5 @@
 	<file src="\bin\NET35\Insight.Database.Configuration.dll" target="lib\NET35" />
 	<file src="\bin\NET35\Insight.Database.Configuration.xml" target="lib\NET35" />
 	<file src="\bin\NET35\Insight.Database.Configuration.pdb" target="lib\NET35" />
-
   </files>
 </package>

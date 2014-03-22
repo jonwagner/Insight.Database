@@ -16,6 +16,9 @@
 	<iconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</iconUrl>
     <tags>Insight orm micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
+	<dependencies>
+		<dependency id="Insight.Database" version="4.1"></dependency>
+	</dependencies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Compatibility3x.dll" target="lib\NET45" />

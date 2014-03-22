@@ -16,6 +16,9 @@
 	<iconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</iconUrl>
     <tags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
+	<frameworkAssemblies>
+		<frameworkAssembly assemblyName="Microsoft.CSharp" />
+	</frameworkAssemblies>	  
   </metadata>
   <files>
     <file src="\bin\NET45\Insight.Database.dll" target="lib\NET45" />
@@ -27,5 +30,8 @@
     <file src="\bin\NET35\Insight.Database.dll" target="lib\NET35" />
     <file src="\bin\NET35\Insight.Database.xml" target="lib\NET35" />
     <file src="\bin\NET35\Insight.Database.pdb" target="lib\NET35" />
+    <file src="\bin\Mono\Insight.Database.dll" target="lib\MonoAndroid" />
+    <file src="\bin\Mono\Insight.Database.xml" target="lib\MonoAndroid" />
+    <file src="\bin\Mono\Insight.Database.pdb" target="lib\MonoAndroid" />
   </files>
 </package>

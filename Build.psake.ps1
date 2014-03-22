@@ -17,6 +17,7 @@ properties {
     $net35Path = "$baseDir\Insight.Database\bin\NET35"
     $net40Path = "$baseDir\Insight.Database\bin\NET40"
     $net45Path = "$baseDir\Insight.Database\bin\NET45"
+    $monoPath = "$baseDir\Insight.Database\bin\Mono"
 
     $framework = "$env:systemroot\Microsoft.NET\Framework\v4.0.30319\"
     $msbuild = $framework + "msbuild.exe"
@@ -27,7 +28,7 @@ properties {
 }
 
 Task default -depends Build
-Task Build -depends Build45,Build40,Build35
+Task Build -depends Build45,Build40,Build35,BuildMono
 Task Test -depends Test45,Test40,Test35
 
 function Replace-Version {
@@ -161,7 +162,25 @@ Task Build45 {
         # copy the binaries to the net45 folder
         Wipe-Folder $net45Path
         Copy-Item $baseDir\*.*\bin\Release\*.* $net45Path
-   }
+	}
+    finally {
+        RestoreVersions
+    }
+}
+
+Task BuildMono {
+    ReplaceVersions
+
+    try {
+        # build the binaries for mono
+        Exec {
+            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:DefineConstants=```"MONO```" '/t:Clean;Build'"
+        }
+ 
+        # copy the binaries to the mono folder
+        Wipe-Folder $monoPath
+        Copy-Item $baseDir\Insight.Database\bin\Release\*.* $monoPath
+	}
     finally {
         RestoreVersions
     }
