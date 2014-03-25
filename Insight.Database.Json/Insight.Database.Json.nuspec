@@ -13,7 +13,7 @@
     <tags>Insight orm sql sqlserver micro-orm json</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
-		<dependency id="Insight.Database" version="3.1.4"></dependency>
+		<dependency id="Insight.Database.Core" version="4.1"></dependency>
 		<dependency id="Newtonsoft.Json"></dependency>
 	</dependencies>   
   </metadata>

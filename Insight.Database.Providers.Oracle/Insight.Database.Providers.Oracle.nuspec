@@ -16,7 +16,12 @@
     <tags>Insight orm sql oracle micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	  <dependencies>
-		  <dependency id="Insight.Database" version="3.0.1"></dependency>
+		  <group>
+			  <dependency id="Insight.Database" version="3.0.1"></dependency>
+		  </group>
+		  <group targetFramework="MonoAndroid">
+			  <dependency id="Insight.Database.Core" version="4.1"></dependency>
+		  </group>
 	  </dependencies>
   </metadata>
   <files>

@@ -15,8 +15,14 @@
     <tags>Insight orm sql micro-orm profiler glimpse</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
-		<dependency id="Insight.Database" version="3.0.2"></dependency>
-		<dependency id="Glimpse.Ado"></dependency>
+		<group>
+			<dependency id="Insight.Database" version="3.0.2"></dependency>
+			<dependency id="Glimpse.Ado"></dependency>
+		</group>
+		<group targetFramework="MonoAndroid">
+			<dependency id="Insight.Database.Core" version="4.1"></dependency>
+			<dependency id="Glimpse.Ado"></dependency>
+		</group>
 	</dependencies>
   </metadata>
   <files>
