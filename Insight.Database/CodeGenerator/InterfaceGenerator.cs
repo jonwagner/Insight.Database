@@ -91,7 +91,7 @@ namespace Insight.Database.CodeGenerator
 			ctor0IL.Emit(OpCodes.Ret);
 
 			// for each method on the interface, try to implement it with a call to the database
-			foreach (MethodInfo interfaceMethod in interfaceType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod))
+			foreach (MethodInfo interfaceMethod in DiscoverMethods(interfaceType))
 				EmitMultiThreadedMethodImpl(tb, interfaceMethod, connectionField);
 
 			// create a static create method that we can invoke directly as a delegate
@@ -179,7 +179,7 @@ namespace Insight.Database.CodeGenerator
 			ctor0IL.Emit(OpCodes.Ret);
 
 			// for each method on the interface, try to implement it with a call to the database
-			foreach (MethodInfo interfaceMethod in interfaceType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod))
+			foreach (MethodInfo interfaceMethod in DiscoverMethods(interfaceType))
 				EmitMethodImpl(mb, tb, interfaceMethod);
 
 			// create a static create method that we can invoke directly as a delegate
@@ -198,6 +198,17 @@ namespace Insight.Database.CodeGenerator
 		#endregion
 
 		#region Internal Members
+		/// <summary>
+		/// Finds all of the methods on a given interface.
+		/// </summary>
+		/// <param name="interfaceType">The type to explore.</param>
+		/// <returns>All of the methods defined on the interface.</returns>
+		private static IEnumerable<MethodInfo> DiscoverMethods(Type interfaceType)
+		{
+			return interfaceType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
+				.Union(interfaceType.GetInterfaces().Where(i => !i.FullName.StartsWith("System")).SelectMany(i => DiscoverMethods(i)));
+		}
+
 		/// <summary>
 		/// Emits an implementation of a given method.
 		/// </summary>

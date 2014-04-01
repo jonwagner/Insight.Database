@@ -91,6 +91,18 @@ namespace Insight.Tests
 	{
 		int ExecuteSomethingScalar(int p);
 	}
+
+	interface IBaseSql
+	{
+		[Sql("SELECT 'base'")]
+		string Base();
+	}
+
+	interface IDerivedSql : IBaseSql
+	{
+		[Sql("SELECT 'derived'")]
+		string Derived();
+	}
 	#endregion
 
 	[TestFixture]
@@ -696,6 +708,25 @@ namespace Insight.Tests
 			Assert.AreEqual(1, beer.ID);
 			Assert.AreEqual(1, beer.List.Count);
 			Assert.AreEqual(2, beer.List[0].ID);
+		}
+		#endregion
+
+		#region Inheritance Tests
+		[Test]
+		public void TestInheritedInterface()
+		{
+			var connection = Connection();
+
+			// make sure that we can create an interface
+			var i = connection.As<IDerivedSql>();
+			Assert.IsNotNull(i);
+			Assert.AreEqual("base", i.Base());
+			Assert.AreEqual("derived", i.Derived());
+
+			i = connection.AsParallel<IDerivedSql>();
+			Assert.IsNotNull(i);
+			Assert.AreEqual("base", i.Base());
+			Assert.AreEqual("derived", i.Derived());
 		}
 		#endregion
 	}
