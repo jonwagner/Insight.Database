@@ -600,11 +600,15 @@ namespace Insight.Database.Sample
 			IBeerRepository repo = Database.As<IBeerRepository>();
 
 			// single object operations
-			Beer b = new Beer() { Name = "Double IPA" };
+			Beer b = new Beer() { Name = "Double IPA", Flavor = "IPA" };
 			repo.InsertBeer(b);
 			b.Name = "Tripel IPA";
 			repo.UpdateBeer(b);
 			repo.UpsertBeer(b);
+
+			int totalRows;
+			var results = repo.FindBeersByFlavor("IPA", out totalRows);
+
 			repo.DeleteBeer(b.Id);
 
 			// multiple object operations

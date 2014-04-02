@@ -86,6 +86,15 @@ namespace Insight.Database.Sample
 		/// <param name="filter">The filter to use.</param>
 		/// <returns>The selected Beers.</returns>
         IList<Beer> FindBeers(object filter);
+
+		/// <summary>
+		/// Finds Beers matching a filter object.
+		/// </summary>
+		/// <param name="flavor">The flavor to search on.</param>
+		/// <param name="totalRows">The total number of rows.</param>
+		/// <returns>The selected Beers.</returns>
+		[Sql("FindBeers")]
+		IList<Beer> FindBeersByFlavor(string flavor, out int totalRows);
         #endregion
 
         #region Single Async CRUD Methods
