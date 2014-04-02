@@ -483,6 +483,10 @@ namespace Insight.Database.CodeGenerator
 						}
 					}
 
+					// explicitly set the type of the parameter
+					if (value != null && _typeToDbTypeMap.ContainsKey(value.GetType()))
+						dbDataParameter.DbType = _typeToDbTypeMap[value.GetType()];
+
 					cmd.Parameters.Add(p);
 				}
 			};

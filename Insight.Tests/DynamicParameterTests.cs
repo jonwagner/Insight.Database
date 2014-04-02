@@ -137,5 +137,21 @@ namespace Insight.Tests
 			Assert.AreEqual(p["Int"], result["Int"]);
 			Assert.AreEqual(p["Text"], result["Text"]);
 		}
+
+		[Test]
+		public void TestGuidConversionInDynamicParameter()
+		{
+			var p = new FastExpando();
+			dynamic pd = p;
+			pd["g"] = Guid.NewGuid();
+
+			var list = Connection().QuerySql("SELECT G=@g", p);
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(1, list.Count);
+
+			dynamic result = list[0];
+			Assert.AreEqual(pd["g"], result["g"]);
+		}
 	}
 }
