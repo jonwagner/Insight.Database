@@ -145,6 +145,8 @@ namespace Insight.Database.CodeGenerator
 				{
 					if (type.IsSubclassOf(typeof(DynamicObject)))
 						return CreateDynamicInputParameterGenerator(command);
+					else if (type == typeof(Dictionary<string, object>))
+						return CreateDynamicInputParameterGenerator(command);
 					else
 						return CreateClassInputParameterGenerator(command, type);
 				});

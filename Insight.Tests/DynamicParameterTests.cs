@@ -123,5 +123,19 @@ namespace Insight.Tests
 			result = Connection().Query("ReflectInt", (object)f).FirstOrDefault();
 			Assert.AreEqual(5, result["Value"]);
 		}
+
+		[Test]
+		public void TestThatDictionaryCanBeUsedAsParameters()
+		{
+			var p = new Dictionary<string, object>() { { "Int", 1 }, { "Text", "foo" } };
+			var list = Connection().QuerySql("SELECT Int=CONVERT (int, @Int), Text=@Text", p);
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(1, list.Count);
+
+			dynamic result = list[0];
+			Assert.AreEqual(p["Int"], result["Int"]);
+			Assert.AreEqual(p["Text"], result["Text"]);
+		}
 	}
 }
