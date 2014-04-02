@@ -6,7 +6,7 @@
     <title>Insight.Database.Providers.MiniProfiler</title>
     <authors>Jon Wagner</authors>
 	  <description>
-		An Insight.Database provider for MiniProfiler profiling framework so the two can play together nicely.
+An Insight.Database provider for MiniProfiler profiling framework so the two can play together nicely.
 	  </description>
 	  <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
@@ -15,15 +15,14 @@
     <tags>Insight orm sql micro-orm profiler miniprofiler</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
-		<group>
-			<dependency id="Insight.Database" version="3.0.1"></dependency>
-			<dependency id="MiniProfiler" version="2.0.0"></dependency>
-		</group>
-		<group targetFramework="MonoAndroid">
-			<dependency id="Insight.Database.Core" version="4.1"></dependency>
-			<dependency id="MiniProfiler" version="2.0.0"></dependency>
-		</group>
+		<dependency id="Insight.Database.Core" version="4.1"></dependency>
+		<dependency id="MiniProfiler" version="2.0.0"></dependency>
 	</dependencies>
+	  <frameworkAssemblies>
+		  <frameworkAssembly assemblyName="System" />
+		  <frameworkAssembly assemblyName="System.Core" />
+		  <frameworkAssembly assemblyName="System.Data" />
+	  </frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.MiniProfiler.dll" target="lib" />

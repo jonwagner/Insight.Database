@@ -6,9 +6,9 @@
     <title>Insight.Database.Core</title>
     <authors>Jon Wagner</authors>
     <description>
-		A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.
-		The Core package only includes the core engine. It does not include the default providers.
-		Install this package if you don't need the SQL Server, ODBC or OLEDB providers, for example, when building a mobile app.
+A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.
+The Core package only includes the core engine. It does not include the default providers.
+Install this package if you don't need the SQL Server, ODBC or OLEDB providers, for example, when building a mobile app.
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
@@ -18,6 +18,12 @@
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<frameworkAssemblies>
 		<frameworkAssembly assemblyName="Microsoft.CSharp" />
+		<frameworkAssembly assemblyName="System" />
+		<frameworkAssembly assemblyName="System.Core" />
+		<frameworkAssembly assemblyName="System.Data" />
+		<frameworkAssembly assemblyName="System.Runtime.Serialization" />
+		<frameworkAssembly assemblyName="System.Xml" />
+		<frameworkAssembly assemblyName="System.Xml.Linq" />
 	</frameworkAssemblies>	  
   </metadata>
   <files>

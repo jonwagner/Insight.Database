@@ -6,9 +6,9 @@
     <title>Insight.Database.Compatibility3x</title>
     <authors>Jon Wagner</authors>
     <description>
-		Allows code written against Insight.Database 3.x to run with the Insight.Database 4.x library
-		with almost no changes. You only need this if you use certain deprecated features and don't have
-		time to make minor changes.
+Allows code written against Insight.Database 3.x to run with the Insight.Database 4.x library
+with almost no changes. You only need this if you use certain deprecated features and don't have
+time to make minor changes.
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
@@ -19,6 +19,12 @@
 	<dependencies>
 		<dependency id="Insight.Database" version="4.1"></dependency>
 	</dependencies>
+	  <frameworkAssemblies>
+		  <frameworkAssembly assemblyName="Microsoft.CSharp" />
+		  <frameworkAssembly assemblyName="System" />
+		  <frameworkAssembly assemblyName="System.Core" />
+		  <frameworkAssembly assemblyName="System.Data" />
+	  </frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Compatibility3x.dll" target="lib\NET45" />

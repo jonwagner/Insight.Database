@@ -6,8 +6,8 @@
     <title>Insight.Database.Providers.OracleManaged</title>
     <authors>Jon Wagner</authors>
     <description>
-		An Oracle ODP.NET Managed Driver provider for Insight.Database so Insight.Database can do its magic on Oracle.
-		Automatically installs Oracle ODP.NET Managed Driver. Depends on Insight.Database.
+An Oracle ODP.NET Managed Driver provider for Insight.Database so Insight.Database can do its magic on Oracle.
+Automatically installs Oracle ODP.NET Managed Driver. Depends on Insight.Database.
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
@@ -15,16 +15,16 @@
 	<iconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</iconUrl>
     <tags>Insight orm sql oracle managed micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
-	  <dependencies>
-		  <group>
-			  <dependency id="Insight.Database" version="3.0.1"></dependency>
-			  <dependency id="odp.net.managed"></dependency>
-		  </group>
-		  <group targetFramework="MonoAndroid">
-			  <dependency id="Insight.Database.Core" version="4.1"></dependency>
-			  <dependency id="odp.net.managed"></dependency>
-		  </group>
-	  </dependencies>
+	<dependencies>
+		<dependency id="Insight.Database.Core" version="4.1"></dependency>
+		<dependency id="odp.net.managed"></dependency>
+	</dependencies>
+	<frameworkAssemblies>
+		<frameworkAssembly assemblyName="System" />
+		<frameworkAssembly assemblyName="System.Core" />
+		<frameworkAssembly assemblyName="System.Data" />
+		<frameworkAssembly assemblyName="System.Xml" />
+	</frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.dll" target="lib" />

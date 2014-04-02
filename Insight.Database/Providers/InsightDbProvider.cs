@@ -320,9 +320,17 @@ namespace Insight.Database.Providers
 			RegisterProvider(providerMap, new DbConnectionWrapperInsightDbProvider());
 
 			// look for any provider assemblies and load them automatically
-			var uri = new Uri(Assembly.GetExecutingAssembly().CodeBase);
-			string path = Path.GetDirectoryName(uri.LocalPath);
-			foreach (string assemblyFile in Directory.GetFiles(path, "Insight.Database.Providers.*.dll"))
+			var paths = new List<string>();
+			paths.Add(AppDomain.CurrentDomain.BaseDirectory);
+			try
+			{
+				paths.Add(Path.GetDirectoryName(new Uri(Assembly.GetExecutingAssembly().CodeBase).LocalPath));
+			}
+			catch (ArgumentException)
+			{
+			}
+
+			foreach (string assemblyFile in paths.Distinct().SelectMany(path => Directory.GetFiles(path, "Insight.Database.Providers.*.dll").Distinct()))
 			{
 				var assembly = Assembly.LoadFrom(assemblyFile);
 				foreach (var type in assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(InsightDbProvider))))

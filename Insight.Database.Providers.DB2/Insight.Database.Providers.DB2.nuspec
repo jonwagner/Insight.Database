@@ -6,8 +6,8 @@
     <title>Insight.Database.Providers.DB2</title>
     <authors>Jon Wagner</authors>
     <description>
-		An DB2 ODP.NET provider for Insight.Database so Insight.Database can do its magic on DB2.
-		Requires DB2's .NET provider.
+An DB2 ODP.NET provider for Insight.Database so Insight.Database can do its magic on DB2.
+Requires DB2's .NET provider.
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
@@ -16,13 +16,14 @@
     <tags>Insight orm sql DB2 micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	  <dependencies>
-		  <group>
-			<dependency id="Insight.Database" version="3.0.1"></dependency>
-		  </group>
-		  <group targetFramework="MonoAndroid">
-			  <dependency id="Insight.Database.Core" version="4.1"></dependency>
-		  </group>
+		  <dependency id="Insight.Database.Core" version="4.1"></dependency>
 	  </dependencies>
+	  <frameworkAssemblies>
+		  <frameworkAssembly assemblyName="System" />
+		  <frameworkAssembly assemblyName="System.Core" />
+		  <frameworkAssembly assemblyName="System.Data" />
+		  <frameworkAssembly assemblyName="System.Xml" />
+	  </frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.dll" target="lib" />

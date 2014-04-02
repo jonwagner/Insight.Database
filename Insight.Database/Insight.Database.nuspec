@@ -6,8 +6,8 @@
     <title>Insight.Database</title>
     <authors>Jon Wagner</authors>
     <description>
-		A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.
-		This package includes the core library and the providers for SQL Server, ODBC and OLEDB.
+A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.
+This package includes the core library and the providers for SQL Server, ODBC and OLEDB.
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
@@ -19,8 +19,11 @@
 		<dependency id="Insight.Database.Core" version="4.1"></dependency>
 	</dependencies>
 	<frameworkAssemblies>
+		<frameworkAssembly assemblyName="Microsoft.CSharp" />
+		<frameworkAssembly assemblyName="System" />
+		<frameworkAssembly assemblyName="System.Configuration" />
 		<frameworkAssembly assemblyName="System.Data" />
-		<frameworkAssembly assemblyName="System.Configuration"  />
+		<frameworkAssembly assemblyName="System.Xml" />
 	</frameworkAssemblies>
   </metadata>
   <files>

@@ -15,16 +15,16 @@
 	<iconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</iconUrl>
     <tags>Insight orm sql postgre postgresql managed micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
-	  <dependencies>
-		  <group>
-			  <dependency id="Insight.Database" version="3.0.1"></dependency>
-			  <dependency id="Npgsql"></dependency>
-		  </group>
-		  <group targetFramework="MonoAndroid">
-			  <dependency id="Insight.Database.Core" version="4.1"></dependency>
-			  <dependency id="Npgsql"></dependency>
-		  </group>
-	  </dependencies>
+	<dependencies>
+		<dependency id="Insight.Database.Core" version="4.1"></dependency>
+		<dependency id="Npgsql"></dependency>
+	</dependencies>
+	<frameworkAssemblies>
+		<frameworkAssembly assemblyName="System" />
+		<frameworkAssembly assemblyName="System.Core" />
+		<frameworkAssembly assemblyName="System.Data" />
+		<frameworkAssembly assemblyName="System.Xml" />
+	</frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.PostgreSQL.dll" target="lib\NET45" />

@@ -14,14 +14,15 @@
 	<iconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</iconUrl>
     <tags>Insight orm sql sybase ase sybasease micro-orm</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
-	  <dependencies>
-		  <group>
-			  <dependency id="Insight.Database" version="3.1.2"></dependency>
-		  </group>
-		  <group targetFramework="MonoAndroid">
-			  <dependency id="Insight.Database.Core" version="4.1"></dependency>
-		  </group>
-	  </dependencies>
+	<dependencies>
+		<dependency id="Insight.Database.Core" version="4.1"></dependency>
+	</dependencies>
+	<frameworkAssemblies>
+		<frameworkAssembly assemblyName="System" />
+		<frameworkAssembly assemblyName="System.Core" />
+		<frameworkAssembly assemblyName="System.Data" />
+		<frameworkAssembly assemblyName="System.Xml" />
+	</frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.SybaseAse.dll" target="lib" />
