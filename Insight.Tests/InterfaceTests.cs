@@ -784,4 +784,45 @@ namespace Insight.Tests
 	}
 #endif
 	#endregion
+
+	#region Abstract Class Implementation Tests
+	public abstract class AbstractClass
+	{
+		[Sql("SELECT 'abstract'")]
+		public abstract string AbstractMethod();
+	}
+
+	public abstract class DerivedAbstractClass : AbstractClass
+	{
+		[Sql("SELECT 'derived'")]
+		public abstract string DerivedAbstractMethod();
+	}
+
+	[TestFixture]
+	public class AbstractClassTests : BaseTest
+	{
+		[Test]
+		public void TestAbstractClass()
+		{
+			var connection = Connection();
+
+			// make sure that we can create an interface
+			var i = connection.As<AbstractClass>();
+			Assert.IsNotNull(i);
+			Assert.AreEqual("abstract", i.AbstractMethod());
+			i = connection.AsParallel<AbstractClass>();
+			Assert.IsNotNull(i);
+			Assert.AreEqual("abstract", i.AbstractMethod());
+
+			var derived = connection.As<DerivedAbstractClass>();
+			Assert.IsNotNull(derived);
+			Assert.AreEqual("abstract", derived.AbstractMethod());
+			Assert.AreEqual("derived", derived.DerivedAbstractMethod());
+			derived = connection.AsParallel<DerivedAbstractClass>();
+			Assert.IsNotNull(derived);
+			Assert.AreEqual("abstract", derived.AbstractMethod());
+			Assert.AreEqual("derived", derived.DerivedAbstractMethod());
+		}
+	}
+	#endregion
 }

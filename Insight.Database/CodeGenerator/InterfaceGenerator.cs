@@ -58,10 +58,12 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An implmementor of the given interface.</returns>
 		public static object GetImplementorOf(Func<IDbConnection> provider, Type interfaceType)
 		{
-			if (!interfaceType.IsInterface)
-				throw new ArgumentException("interfaceType must be an interface", "interfaceType");
+			if (!interfaceType.IsInterface && !interfaceType.IsAbstract)
+				throw new ArgumentException("interfaceType must be an interface or abstract class", "interfaceType");
 
-			return _multiThreadedConstructors.GetOrAdd(interfaceType, t => CreateMultiThreadedImplementorOf(t))(provider);
+			return _multiThreadedConstructors.GetOrAdd(
+				interfaceType,
+				t => t.IsInterface ? CreateMultiThreadedImplementorOf(t) : CreateMultiThreadedAbstractImplementorOf(t))(provider);
 		}
 
 		/// <summary>
@@ -134,7 +136,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Ldarg, i);
 
 			// call the method - it's the same method on the interface
-			il.Emit(OpCodes.Call, interfaceMethod);											// connection().As<T>().Method(...);
+			il.Emit(OpCodes.Callvirt, interfaceMethod);											// connection().As<T>().Method(...);
 
 			il.Emit(OpCodes.Ret);
 		}
@@ -149,10 +151,12 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An implmementor of the given interface.</returns>
 		public static object GetImplementorOf(IDbConnection connection, Type interfaceType)
 		{
-			if (!interfaceType.IsInterface)
+			if (!interfaceType.IsInterface && !interfaceType.IsAbstract)
 				throw new ArgumentException("interfaceType must be an interface", "interfaceType");
 
-			return _singleThreadedConstructors.GetOrAdd(interfaceType, t => CreateImplementorOf(t))(connection);
+			return _singleThreadedConstructors.GetOrAdd(
+				interfaceType,
+				t => t.IsInterface ? CreateImplementorOf(t) : CreateAbstractImplementorOf(t))(connection);
 		}
 
 		/// <summary>
@@ -180,7 +184,7 @@ namespace Insight.Database.CodeGenerator
 
 			// for each method on the interface, try to implement it with a call to the database
 			foreach (MethodInfo interfaceMethod in DiscoverMethods(interfaceType))
-				EmitMethodImpl(mb, tb, interfaceMethod);
+				EmitMethodImpl(mb, tb, interfaceMethod, null);
 
 			// create a static create method that we can invoke directly as a delegate
 			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, interfaceType, _idbConnectionParameterTypes);
@@ -197,16 +201,110 @@ namespace Insight.Database.CodeGenerator
 		}
 		#endregion
 
+		#region Abstract Class Implementors
+		private static Func<IDbConnection, object> CreateAbstractImplementorOf(Type abstractType)
+		{
+			// create a new assembly
+			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
+			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
+
+			// create a type based on abstract class
+			TypeBuilder tb = mb.DefineType(abstractType.FullName + "_Connection", TypeAttributes.Class, abstractType, null);
+
+			// create a field to store the interface
+			var connectionField = tb.DefineField("_connection", typeof(IDbConnection), FieldAttributes.Private);
+
+			// create a constructor for the type
+			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _idbConnectionParameterTypes);
+			ILGenerator ctor0IL = ctor0.GetILGenerator();
+			ctor0IL.Emit(OpCodes.Ldarg_0);
+			ctor0IL.Emit(OpCodes.Ldarg_1);
+			ctor0IL.Emit(OpCodes.Stfld, connectionField);
+			ctor0IL.Emit(OpCodes.Ret);
+
+			// emit methods that just call the interface
+			// for each method on the interface, try to implement it with a call to the database
+			foreach (MethodInfo interfaceMethod in DiscoverMethods(abstractType))
+				EmitMethodImpl(mb, tb, interfaceMethod, connectionField);
+
+			// create a static create method that we can invoke directly as a delegate
+			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, abstractType, _idbConnectionParameterTypes);
+			ILGenerator createIL = m.GetILGenerator();
+			createIL.Emit(OpCodes.Ldarg_0);
+			createIL.Emit(OpCodes.Newobj, ctor0);
+			createIL.Emit(OpCodes.Ret);
+
+			// create the type
+			Type t = tb.CreateType();
+
+			// return the create method
+			return (Func<IDbConnection, object>)Delegate.CreateDelegate(typeof(Func<IDbConnection, object>), t.GetMethod("Create"));
+		}
+
+		/// <summary>
+		/// Creates a delegate that returns an instance of a multi-threaded implementor of the given interface.
+		/// </summary>
+		/// <param name="abstractType">The type of interface to implement.</param>
+		/// <returns>A delegate that can create the implementor.</returns>
+		private static Func<Func<IDbConnection>, object> CreateMultiThreadedAbstractImplementorOf(Type abstractType)
+		{
+			// create a new assembly
+			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
+			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
+
+			// create a type based on DbConnectionWrapper and call the default constructor
+			TypeBuilder tb = mb.DefineType(abstractType.FullName + "_MultiConnection", TypeAttributes.Class, abstractType, null);
+
+			// create a field for the provider
+			var connectionField = tb.DefineField("_connection", typeof(Func<IDbConnection>), FieldAttributes.Private);
+
+			// create a constructor for the type - just store the field
+			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _ifuncDbConnectionParameterTypes);
+			ILGenerator ctor0IL = ctor0.GetILGenerator();
+			ctor0IL.Emit(OpCodes.Ldarg_0);
+			ctor0IL.Emit(OpCodes.Ldarg_1);
+			ctor0IL.Emit(OpCodes.Stfld, connectionField);
+			ctor0IL.Emit(OpCodes.Ret);
+
+			// for each method on the interface, try to implement it with a call to the database
+			foreach (MethodInfo interfaceMethod in DiscoverMethods(abstractType))
+				EmitMultiThreadedMethodImpl(tb, interfaceMethod, connectionField);
+
+			// create a static create method that we can invoke directly as a delegate
+			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, abstractType, _ifuncDbConnectionParameterTypes);
+			ILGenerator createIL = m.GetILGenerator();
+			createIL.Emit(OpCodes.Ldarg_0);
+			createIL.Emit(OpCodes.Newobj, ctor0);
+			createIL.Emit(OpCodes.Ret);
+
+			// create the type
+			Type t = tb.CreateType();
+
+			// return the create method
+			return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), t.GetMethod("Create"));
+		}
+		#endregion
+
 		#region Internal Members
 		/// <summary>
 		/// Finds all of the methods on a given interface.
 		/// </summary>
-		/// <param name="interfaceType">The type to explore.</param>
+		/// <param name="type">The type to explore.</param>
 		/// <returns>All of the methods defined on the interface.</returns>
-		private static IEnumerable<MethodInfo> DiscoverMethods(Type interfaceType)
+		private static IEnumerable<MethodInfo> DiscoverMethods(Type type)
 		{
-			return interfaceType.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
-				.Union(interfaceType.GetInterfaces().Where(i => !i.FullName.StartsWith("System")).SelectMany(i => DiscoverMethods(i)));
+			if (type.IsInterface)
+			{
+				return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
+					.Union(type.GetInterfaces().Where(i => !i.FullName.StartsWith("System", StringComparison.OrdinalIgnoreCase)).SelectMany(i => DiscoverMethods(i)));
+			}
+			else
+			{
+				return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
+					.Where(m => m.IsAbstract);
+			}
 		}
 
 		/// <summary>
@@ -215,8 +313,9 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="mb">The ModuleBuilder to emit to.</param>
 		/// <param name="tb">The TypeBuilder to emit to.</param>
 		/// <param name="interfaceMethod">The interface method to implement.</param>
+		/// <param name="connectionField">The optional field that stores a reference to the connection.</param>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod)
+		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod, FieldInfo connectionField)
 		{
 			// look at the parameters on the interface
 			var parameters = interfaceMethod.GetParameters();
@@ -252,6 +351,9 @@ namespace Insight.Database.CodeGenerator
 					case "connection":
 						// 'this' is the connection
 						mIL.Emit(OpCodes.Ldarg_0);
+						if (connectionField != null)
+							mIL.Emit(OpCodes.Ldfld, connectionField);
+
 						break;
 
 					case "sql":
