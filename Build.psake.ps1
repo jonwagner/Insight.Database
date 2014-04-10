@@ -22,7 +22,7 @@ properties {
     $framework = "$env:systemroot\Microsoft.NET\Framework\v4.0.30319\"
     $msbuild = $framework + "msbuild.exe"
     $configuration = "Release"
-    $nuget = "$baseDir\.nuget\nuget.exe"
+    $nuget = "nuget.exe"
     $nunit = Get-ChildItem "$baseDir\packages" -Recurse -Include nunit-console.exe
     $nunitx86 = Get-ChildItem "$baseDir\packages" -Recurse -Include nunit-console-x86.exe
 }
