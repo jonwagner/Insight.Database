@@ -76,5 +76,17 @@ namespace Insight.Tests
 			Assert.IsFalse(dict.ContainsKey("A"));
 			Assert.IsTrue(dict.ContainsKey("B"));
 		}
+
+		[Test]
+		public void ExpandoShouldPreserveCase()
+		{
+			string key = "UlUl";
+
+			FastExpando o = new FastExpando();
+			var d = (IDictionary<string, object>)o;
+			o[key] = "goo";
+
+			Assert.AreEqual(key, d.Keys.First());
+		}
 	}
 }

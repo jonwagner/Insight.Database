@@ -20,7 +20,7 @@ namespace Insight.Database
 		/// <summary>
 		/// The internal data structure.
 		/// </summary>
-		private IDictionary<string, object> data = new Dictionary<string, object>();
+		private IDictionary<string, object> data = new Dictionary<string, object>(StringComparer.OrdinalIgnoreCase);
 		#endregion
 
 		#region Constructors
@@ -51,7 +51,7 @@ namespace Insight.Database
 		{
 			if (binder == null) throw new ArgumentNullException("binder");
 
-			data[binder.Name.ToUpperInvariant()] = value;
+			data[binder.Name] = value;
 			return true;
 		}
 
@@ -65,7 +65,7 @@ namespace Insight.Database
 		{
 			if (binder == null) throw new ArgumentNullException("binder");
 
-			return data.TryGetValue(binder.Name.ToUpperInvariant(), out result);
+			return data.TryGetValue(binder.Name, out result);
 		}
 		#endregion
 
@@ -80,7 +80,7 @@ namespace Insight.Database
 			if (expando == null) throw new ArgumentNullException("expando");
 
 			foreach (var pair in expando)
-				data[pair.Key.ToUpperInvariant()] = pair.Value;
+				data[pair.Key] = pair.Value;
 
 			return this;
 		}
@@ -114,14 +114,14 @@ namespace Insight.Database
 			{
 				if (key == null) throw new ArgumentNullException("key");
 
-				return data[key.ToUpperInvariant()];
+				return data[key];
 			}
 
 			set
 			{
 				if (key == null) throw new ArgumentNullException("key");
 
-				data[key.ToUpperInvariant()] = value;
+				data[key] = value;
 			}
 		}
 
@@ -134,7 +134,7 @@ namespace Insight.Database
 		{
 			if (key == null) throw new ArgumentNullException("key");
 
-			data[key.ToUpperInvariant()] = value;
+			data[key] = value;
 		}
 
 		/// <summary>
@@ -146,7 +146,7 @@ namespace Insight.Database
 		{
 			if (key == null) throw new ArgumentNullException("key");
 
-			return data.ContainsKey(key.ToUpperInvariant());
+			return data.ContainsKey(key);
 		}
 
 		/// <summary>
@@ -166,7 +166,7 @@ namespace Insight.Database
 		{
 			if (key == null) throw new ArgumentNullException("key");
 
-			return data.Remove(key.ToUpperInvariant());
+			return data.Remove(key);
 		}
 
 		/// <summary>
@@ -179,7 +179,7 @@ namespace Insight.Database
 		{
 			if (key == null) throw new ArgumentNullException("key");
 
-			return data.TryGetValue(key.ToUpperInvariant(), out value);
+			return data.TryGetValue(key, out value);
 		}
 
 		/// <summary>
@@ -289,13 +289,13 @@ namespace Insight.Database
 
 			foreach (KeyValuePair<string, string> pair in map)
 			{
-				string key = pair.Key.ToUpperInvariant();
+				string key = pair.Key;
 
 				object value;
 				if (data.TryGetValue(key, out value))
 				{
 					data.Remove(key);
-					data.Add(pair.Value.ToUpperInvariant(), value);
+					data.Add(pair.Value, value);
 				}
 			}
 		}
@@ -326,7 +326,7 @@ namespace Insight.Database
 		/// <param name="value">The value of the property.</param>
 		private void SetValue(string name, object value)
 		{
-			data[name.ToUpperInvariant()] = value;
+			data[name] = value;
 		}
 		#endregion
 	}
