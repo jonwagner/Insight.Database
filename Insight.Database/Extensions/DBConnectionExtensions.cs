@@ -1207,7 +1207,7 @@ namespace Insight.Database
 		public static T As<T>(this IDbConnection connection) where T : class
 		{
 			// if the connection already supports T, then return it, otherwise we need a wrapper
-			return (connection as T) ?? (T)InterfaceGenerator.GetImplementorOf(connection, typeof(T));
+			return (connection as T) ?? (T)InterfaceGenerator.GetImplementorOf(typeof(T), () => connection, singleThreaded: true);
 		}
 
 		/// <summary>
@@ -1235,7 +1235,7 @@ namespace Insight.Database
 		/// <returns>A closed connection that implements the given interface.</returns>
 		public static T AsParallel<T>(this Func<IDbConnection> provider) where T : class
 		{
-			return (T)InterfaceGenerator.GetImplementorOf(provider, typeof(T));
+			return (T)InterfaceGenerator.GetImplementorOf(typeof(T), provider, singleThreaded: false);
 		}
 		#endregion
 

@@ -45,235 +45,72 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _insertAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertAsync");
 		private static readonly MethodInfo _insertListAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertListAsync");
 
-		private static readonly ConcurrentDictionary<Type, Func<IDbConnection, object>> _singleThreadedConstructors = new ConcurrentDictionary<Type, Func<IDbConnection, object>>();
-		private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _multiThreadedConstructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
+		private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _constructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
+		private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _singleThreadedConstructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
 		#endregion
 
-		#region Multi-Threaded Implementors
+		#region Class Implementors
 		/// <summary>
 		/// Gets an implementor of an interface that can handle multiple concurrent calls.
 		/// </summary>
-		/// <param name="provider">A provider of a connection to wrap.</param>
-		/// <param name="interfaceType">The interface to implmement.</param>
+		/// <param name="type">The interface to implmement.</param>
+		/// <param name="connectionProvider">A provider of a connection to wrap.</param>
+		/// <param name="singleThreaded">True to get a single-threaded implementation.</param>
 		/// <returns>An implmementor of the given interface.</returns>
-		public static object GetImplementorOf(Func<IDbConnection> provider, Type interfaceType)
+		public static object GetImplementorOf(Type type, Func<IDbConnection> connectionProvider, bool singleThreaded)
 		{
-			if (!interfaceType.IsInterface && !interfaceType.IsAbstract)
-				throw new ArgumentException("interfaceType must be an interface or abstract class", "interfaceType");
+			if (!type.IsInterface && !type.IsAbstract)
+				throw new ArgumentException("type must be an interface or abstract class", "type");
 
-			return _multiThreadedConstructors.GetOrAdd(
-				interfaceType,
-				t => t.IsInterface ? CreateMultiThreadedImplementorOf(t) : CreateMultiThreadedAbstractImplementorOf(t))(provider);
+			var constructors = singleThreaded ? _singleThreadedConstructors : _constructors;
+
+			return constructors.GetOrAdd(
+				type,
+				t => CreateImplementorOf(t, singleThreaded))(connectionProvider);
 		}
 
 		/// <summary>
-		/// Creates a delegate that returns an instance of a multi-threaded implementor of the given interface.
+		/// Creates an implementation of the given type.
+		/// If the type is an interface, the implementation is derived from DbConnectionWrapper.
+		/// If the type is an abstract class, the implementation is derived from the class and the abstract methods are auto-implemented.
 		/// </summary>
-		/// <param name="interfaceType">The type of interface to implement.</param>
-		/// <returns>A delegate that can create the implementor.</returns>
-		private static Func<Func<IDbConnection>, object> CreateMultiThreadedImplementorOf(Type interfaceType)
+		/// <param name="type">The type to implement.</param>
+		/// <param name="singleThreaded">True to create a single-threaded implementation.</param>
+		/// <returns>A construction function that takes a connection provider and returns the implementation.</returns>
+		private static Func<Func<IDbConnection>, object> CreateImplementorOf(Type type, bool singleThreaded)
 		{
 			// create a new assembly
 			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
 			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
 			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
-
-			// create a type based on DbConnectionWrapper and call the default constructor
-			TypeBuilder tb = mb.DefineType(interfaceType.FullName + "_MultiConnection", TypeAttributes.Class, typeof(object), new Type[] { interfaceType });
-
-			// create a field for the provider
-			var connectionField = tb.DefineField("_connection", typeof(Func<IDbConnection>), FieldAttributes.Private);
-
-			// create a constructor for the type - just store the field
-			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _ifuncDbConnectionParameterTypes);
-			ILGenerator ctor0IL = ctor0.GetILGenerator();
-			ctor0IL.Emit(OpCodes.Ldarg_0);
-			ctor0IL.Emit(OpCodes.Ldarg_1);
-			ctor0IL.Emit(OpCodes.Stfld, connectionField);
-			ctor0IL.Emit(OpCodes.Ret);
-
-			// for each method on the interface, try to implement it with a call to the database
-			foreach (MethodInfo interfaceMethod in DiscoverMethods(interfaceType))
-				EmitMultiThreadedMethodImpl(tb, interfaceMethod, connectionField);
-
-			// create a static create method that we can invoke directly as a delegate
-			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, interfaceType, _ifuncDbConnectionParameterTypes);
-			ILGenerator createIL = m.GetILGenerator();
-			createIL.Emit(OpCodes.Ldarg_0);
-			createIL.Emit(OpCodes.Newobj, ctor0);
-			createIL.Emit(OpCodes.Ret);
 
 			// create the type
-			Type t = tb.CreateType();
+			string typeName = type.FullName + Guid.NewGuid().ToString();
+			TypeBuilder tb;
+			if (type.IsInterface)
+			{
+				if (singleThreaded)
+					tb = mb.DefineType(typeName, TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { type });
+				else
+					tb = mb.DefineType(typeName, TypeAttributes.Class, typeof(object), new Type[] { type });
+			}
+			else
+			{
+				tb = mb.DefineType(typeName, TypeAttributes.Class, type, null);
+			}
 
-			// return the create method
-			return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), t.GetMethod("Create"));
-		}
+			// create a field for the connection provider
+			FieldBuilder connectionField = tb.DefineField("_connection", singleThreaded ? typeof(IDbConnection) : typeof(Func<IDbConnection>), FieldAttributes.Private);
 
-		/// <summary>
-		/// Implements the multi-threaded interface implementation by creating a new connection.
-		/// </summary>
-		/// <param name="tb">The type builder.</param>
-		/// <param name="interfaceMethod">The method to proxy.</param>
-		/// <param name="connectionField">The field containing the provider of the connection.</param>
-		private static void EmitMultiThreadedMethodImpl(TypeBuilder tb, MethodInfo interfaceMethod, FieldInfo connectionField)
-		{
-			// start a new method and copy the signature
-			MethodBuilder m = tb.DefineMethod(interfaceMethod.Name, MethodAttributes.Public | MethodAttributes.Virtual);
-			TypeHelper.CopyMethodSignature(interfaceMethod, m);
-			ILGenerator il = m.GetILGenerator();
-
-			// we just want:
-			// return _connection().As<T>().Method(params);
-			il.Emit(OpCodes.Ldarg_0);
-			il.Emit(OpCodes.Ldfld, connectionField);									// connection
-			il.Emit(OpCodes.Call, typeof(Func<IDbConnection>).GetMethod("Invoke"));		// connection()
-			var asMethod = typeof(DBConnectionExtensions).GetMethod("As").MakeGenericMethod(interfaceMethod.DeclaringType);
-			il.Emit(OpCodes.Call, asMethod);											// connection().As<T>()
-
-			// now add the parameters
-			for (int i = 1; i <= interfaceMethod.GetParameters().Length; i++)
-				il.Emit(OpCodes.Ldarg, i);
-
-			// call the method - it's the same method on the interface
-			il.Emit(OpCodes.Callvirt, interfaceMethod);											// connection().As<T>().Method(...);
-
-			il.Emit(OpCodes.Ret);
-		}
-		#endregion
-
-		#region Single-Threaded Implementors
-		/// <summary>
-		/// Gets the implementor of the given interface for a DbConnection.
-		/// </summary>
-		/// <param name="connection">The connection to wrap.</param>
-		/// <param name="interfaceType">The interface to implmement.</param>
-		/// <returns>An implmementor of the given interface.</returns>
-		public static object GetImplementorOf(IDbConnection connection, Type interfaceType)
-		{
-			if (!interfaceType.IsInterface && !interfaceType.IsAbstract)
-				throw new ArgumentException("interfaceType must be an interface", "interfaceType");
-
-			return _singleThreadedConstructors.GetOrAdd(
-				interfaceType,
-				t => t.IsInterface ? CreateImplementorOf(t) : CreateAbstractImplementorOf(t))(connection);
-		}
-
-		/// <summary>
-		/// Creates the implementor of the given interface for a DbConnection.
-		/// </summary>
-		/// <param name="interfaceType">The interface to implmement.</param>
-		/// <returns>An implmementor of the given interface.</returns>
-		private static Func<IDbConnection, object> CreateImplementorOf(Type interfaceType)
-		{
-			// create a new assembly
-			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
-
-			// create a type based on DbConnectionWrapper and call the default constructor
-			TypeBuilder tb = mb.DefineType(interfaceType.FullName + "_Connection", TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { interfaceType });
-
-			// create a constructor for the type
-			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _idbConnectionParameterTypes);
-			ILGenerator ctor0IL = ctor0.GetILGenerator();
-			ctor0IL.Emit(OpCodes.Ldarg_0);
-			ctor0IL.Emit(OpCodes.Ldarg_1);
-			ctor0IL.Emit(OpCodes.Call, typeof(DbConnectionWrapper).GetConstructor(_idbConnectionParameterTypes));
-			ctor0IL.Emit(OpCodes.Ret);
+			// define the constructor
+			ConstructorBuilder ctor0 = EmitConstructor(tb, type, connectionField, singleThreaded);
 
 			// for each method on the interface, try to implement it with a call to the database
-			foreach (MethodInfo interfaceMethod in DiscoverMethods(interfaceType))
-				EmitMethodImpl(mb, tb, interfaceMethod, null);
-
-			// create a static create method that we can invoke directly as a delegate
-			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, interfaceType, _idbConnectionParameterTypes);
-			ILGenerator createIL = m.GetILGenerator();
-			createIL.Emit(OpCodes.Ldarg_0);
-			createIL.Emit(OpCodes.Newobj, ctor0);
-			createIL.Emit(OpCodes.Ret);
-
-			// create the type
-			Type t = tb.CreateType();
-
-			// return the create method
-			return (Func<IDbConnection, object>)Delegate.CreateDelegate(typeof(Func<IDbConnection, object>), t.GetMethod("Create"));
-		}
-		#endregion
-
-		#region Abstract Class Implementors
-		private static Func<IDbConnection, object> CreateAbstractImplementorOf(Type abstractType)
-		{
-			// create a new assembly
-			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
-
-			// create a type based on abstract class
-			TypeBuilder tb = mb.DefineType(abstractType.FullName + "_Connection", TypeAttributes.Class, abstractType, null);
-
-			// create a field to store the interface
-			var connectionField = tb.DefineField("_connection", typeof(IDbConnection), FieldAttributes.Private);
-
-			// create a constructor for the type
-			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _idbConnectionParameterTypes);
-			ILGenerator ctor0IL = ctor0.GetILGenerator();
-			ctor0IL.Emit(OpCodes.Ldarg_0);
-			ctor0IL.Emit(OpCodes.Ldarg_1);
-			ctor0IL.Emit(OpCodes.Stfld, connectionField);
-			ctor0IL.Emit(OpCodes.Ret);
-
-			// emit methods that just call the interface
-			// for each method on the interface, try to implement it with a call to the database
-			foreach (MethodInfo interfaceMethod in DiscoverMethods(abstractType))
+			foreach (MethodInfo interfaceMethod in DiscoverMethods(type))
 				EmitMethodImpl(mb, tb, interfaceMethod, connectionField);
 
 			// create a static create method that we can invoke directly as a delegate
-			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, abstractType, _idbConnectionParameterTypes);
-			ILGenerator createIL = m.GetILGenerator();
-			createIL.Emit(OpCodes.Ldarg_0);
-			createIL.Emit(OpCodes.Newobj, ctor0);
-			createIL.Emit(OpCodes.Ret);
-
-			// create the type
-			Type t = tb.CreateType();
-
-			// return the create method
-			return (Func<IDbConnection, object>)Delegate.CreateDelegate(typeof(Func<IDbConnection, object>), t.GetMethod("Create"));
-		}
-
-		/// <summary>
-		/// Creates a delegate that returns an instance of a multi-threaded implementor of the given interface.
-		/// </summary>
-		/// <param name="abstractType">The type of interface to implement.</param>
-		/// <returns>A delegate that can create the implementor.</returns>
-		private static Func<Func<IDbConnection>, object> CreateMultiThreadedAbstractImplementorOf(Type abstractType)
-		{
-			// create a new assembly
-			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
-
-			// create a type based on DbConnectionWrapper and call the default constructor
-			TypeBuilder tb = mb.DefineType(abstractType.FullName + "_MultiConnection", TypeAttributes.Class, abstractType, null);
-
-			// create a field for the provider
-			var connectionField = tb.DefineField("_connection", typeof(Func<IDbConnection>), FieldAttributes.Private);
-
-			// create a constructor for the type - just store the field
-			ConstructorBuilder ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _ifuncDbConnectionParameterTypes);
-			ILGenerator ctor0IL = ctor0.GetILGenerator();
-			ctor0IL.Emit(OpCodes.Ldarg_0);
-			ctor0IL.Emit(OpCodes.Ldarg_1);
-			ctor0IL.Emit(OpCodes.Stfld, connectionField);
-			ctor0IL.Emit(OpCodes.Ret);
-
-			// for each method on the interface, try to implement it with a call to the database
-			foreach (MethodInfo interfaceMethod in DiscoverMethods(abstractType))
-				EmitMultiThreadedMethodImpl(tb, interfaceMethod, connectionField);
-
-			// create a static create method that we can invoke directly as a delegate
-			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, abstractType, _ifuncDbConnectionParameterTypes);
+			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, type, _ifuncDbConnectionParameterTypes);
 			ILGenerator createIL = m.GetILGenerator();
 			createIL.Emit(OpCodes.Ldarg_0);
 			createIL.Emit(OpCodes.Newobj, ctor0);
@@ -284,6 +121,47 @@ namespace Insight.Database.CodeGenerator
 
 			// return the create method
 			return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), t.GetMethod("Create"));
+		}
+
+		/// <summary>
+		/// Emits the constructor for the type.
+		/// </summary>
+		/// <param name="tb">The type we are implementing.</param>
+		/// <param name="type">The base type we are implementing.</param>
+		/// <param name="connectionField">The field containing the connection to use.</param>
+		/// <param name="singleThreaded">True for a single-threaded implementation.</param>
+		/// <returns>The constructor.</returns>
+		private static ConstructorBuilder EmitConstructor(TypeBuilder tb, Type type, FieldBuilder connectionField, bool singleThreaded)
+		{
+			// create a constructor for the type - just store the connection provider
+			var ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _ifuncDbConnectionParameterTypes);
+			var ctor0IL = ctor0.GetILGenerator();
+			ctor0IL.Emit(OpCodes.Ldarg_0);
+			ctor0IL.Emit(OpCodes.Ldarg_1);
+			if (singleThreaded)
+			{
+				// for single-threaded, unwrap the connection provider once at construction time
+				ctor0IL.Emit(OpCodes.Call, typeof(Func<IDbConnection>).GetMethod("Invoke"));
+
+				if (type.IsInterface)
+				{
+					// we are implementing a single-threaded wrapper. pass the connection the base constructor.
+					var lb = ctor0IL.DeclareLocal(typeof(IDbConnection));
+					ctor0IL.Emit(OpCodes.Stloc, lb);
+					ctor0IL.Emit(OpCodes.Ldarg_0);
+					ctor0IL.Emit(OpCodes.Ldloc, lb);
+					ctor0IL.Emit(OpCodes.Call, typeof(DbConnectionWrapper).GetConstructor(_idbConnectionParameterTypes));
+
+					// the connection is *this*
+					ctor0IL.Emit(OpCodes.Ldarg_0);
+				}
+			}
+
+			// store off the connection field
+			ctor0IL.Emit(OpCodes.Stfld, connectionField);
+			ctor0IL.Emit(OpCodes.Ret);
+
+			return ctor0;
 		}
 		#endregion
 
@@ -313,9 +191,9 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="mb">The ModuleBuilder to emit to.</param>
 		/// <param name="tb">The TypeBuilder to emit to.</param>
 		/// <param name="interfaceMethod">The interface method to implement.</param>
-		/// <param name="connectionField">The optional field that stores a reference to the connection.</param>
+		/// <param name="connectionField">The fields storing the connection to the database.</param>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod, FieldInfo connectionField)
+		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod, FieldBuilder connectionField)
 		{
 			// look at the parameters on the interface
 			var parameters = interfaceMethod.GetParameters();
@@ -349,11 +227,11 @@ namespace Insight.Database.CodeGenerator
 				switch (executeParameters[i].Name)
 				{
 					case "connection":
-						// 'this' is the connection
+						// get the connection from the getConnection method
 						mIL.Emit(OpCodes.Ldarg_0);
-						if (connectionField != null)
-							mIL.Emit(OpCodes.Ldfld, connectionField);
-
+						mIL.Emit(OpCodes.Ldfld, connectionField);
+						if (connectionField.FieldType == typeof(Func<IDbConnection>))
+							mIL.Emit(OpCodes.Call, connectionField.FieldType.GetMethod("Invoke"));
 						break;
 
 					case "sql":
