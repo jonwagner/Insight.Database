@@ -321,9 +321,12 @@ namespace Insight.Database.Providers
 
 			// look for any provider assemblies and load them automatically
 			var paths = new List<string>();
-			paths.Add(AppDomain.CurrentDomain.BaseDirectory);
+			string relativeSearchPath = AppDomain.CurrentDomain.RelativeSearchPath ?? String.Empty;
+			paths.AddRange(relativeSearchPath.Split(';'));
 
-			foreach (string assemblyFile in paths.Distinct().SelectMany(path => Directory.GetFiles(path, "Insight.Database.Providers.*.dll").Distinct()))
+			foreach (string assemblyFile in paths.Distinct()
+				.SelectMany(path => Directory.GetFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path), "Insight.Database.Providers.*.dll")
+					.Distinct()))
 			{
 				var assembly = Assembly.LoadFrom(assemblyFile);
 				foreach (var type in assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(InsightDbProvider))))
