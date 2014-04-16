@@ -11,7 +11,8 @@ properties {
 
     $version = git describe --abbrev=0 --tags
     $changeset = (git log -1 $version --pretty=format:%H)
-	$assemblyversion = $version.Split('-', 2)[0]
+	$assemblyfileversion = $version.Split('-', 2)[0]
+	$assemblyversion = "4.1.2"
 
     $outputDir = "$baseDir\Build\Output"
     $net35Path = "$baseDir\Insight.Database\bin\NET35"
@@ -37,7 +38,8 @@ function Replace-Version {
     )
 
     (Get-Content $Path) |
-		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyversion`")]" } |
+		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } |
+		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyfileversion`")]" } |
 		Set-Content $Path
 }
 
