@@ -15,6 +15,11 @@ namespace Insight.Database.CodeGenerator
 	{
 		#region Private Members
 		/// <summary>
+		/// The type of the command.
+		/// </summary>
+		private Type _commandType;
+
+		/// <summary>
 		/// The command text that we are bound to.
 		/// </summary>
 		private string _commandText;
@@ -37,6 +42,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="type">The type of the parameters for the command.</param>
 		public QueryIdentity(IDbCommand command, Type type)
 		{
+			_commandType = command.GetType();
 			_commandText = command.CommandText;
 			_type = type;
 
@@ -46,6 +52,8 @@ namespace Insight.Database.CodeGenerator
 				_hashCode = 17 + type.GetHashCode();
 				_hashCode *= 23;
 				_hashCode += _commandText.GetHashCode();
+				_hashCode *= 23;
+				_hashCode += _commandType.GetHashCode();
 			}
 		}
 
@@ -77,6 +85,9 @@ namespace Insight.Database.CodeGenerator
 		public bool Equals(QueryIdentity other)
 		{
 			if (other == null)
+				return false;
+
+			if (_commandType != other._commandType)
 				return false;
 
 			if (_type != other._type)
