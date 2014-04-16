@@ -36,8 +36,5 @@ Install this package if you don't need the SQL Server, ODBC or OLEDB providers, 
     <file src="\bin\NET35\Insight.Database.dll" target="lib\NET35" />
     <file src="\bin\NET35\Insight.Database.xml" target="lib\NET35" />
     <file src="\bin\NET35\Insight.Database.pdb" target="lib\NET35" />
-    <file src="\bin\Mono\Insight.Database.dll" target="lib\MonoAndroid" />
-    <file src="\bin\Mono\Insight.Database.xml" target="lib\MonoAndroid" />
-    <file src="\bin\Mono\Insight.Database.pdb" target="lib\MonoAndroid" />
   </files>
 </package>
