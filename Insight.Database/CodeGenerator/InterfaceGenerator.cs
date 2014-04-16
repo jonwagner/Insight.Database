@@ -102,11 +102,14 @@ namespace Insight.Database.CodeGenerator
 			// create a field for the connection provider
 			FieldBuilder connectionField = tb.DefineField("_connection", singleThreaded ? typeof(IDbConnection) : typeof(Func<IDbConnection>), FieldAttributes.Private);
 
+			// implement GetConnection
+			var getConnection = EmitGetConnection(tb, type, connectionField);
+
 			// define the constructor
-			ConstructorBuilder ctor0 = EmitConstructor(tb, type, connectionField, singleThreaded);
+			ConstructorBuilder ctor0 = EmitConstructor(tb, connectionField, singleThreaded);
 
 			// for each method on the interface, try to implement it with a call to the database
-			foreach (MethodInfo interfaceMethod in DiscoverMethods(type))
+			foreach (MethodInfo interfaceMethod in DiscoverMethods(type).Where(method => method != getConnection))
 				EmitMethodImpl(mb, tb, interfaceMethod, connectionField);
 
 			// create a static create method that we can invoke directly as a delegate
@@ -127,11 +130,10 @@ namespace Insight.Database.CodeGenerator
 		/// Emits the constructor for the type.
 		/// </summary>
 		/// <param name="tb">The type we are implementing.</param>
-		/// <param name="type">The base type we are implementing.</param>
 		/// <param name="connectionField">The field containing the connection to use.</param>
 		/// <param name="singleThreaded">True for a single-threaded implementation.</param>
 		/// <returns>The constructor.</returns>
-		private static ConstructorBuilder EmitConstructor(TypeBuilder tb, Type type, FieldBuilder connectionField, bool singleThreaded)
+		private static ConstructorBuilder EmitConstructor(TypeBuilder tb, FieldBuilder connectionField, bool singleThreaded)
 		{
 			// create a constructor for the type - just store the connection provider
 			var ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _ifuncDbConnectionParameterTypes);
@@ -143,14 +145,16 @@ namespace Insight.Database.CodeGenerator
 				// for single-threaded, unwrap the connection provider once at construction time
 				ctor0IL.Emit(OpCodes.Call, typeof(Func<IDbConnection>).GetMethod("Invoke"));
 
-				if (type.IsInterface)
+				// if the base constructor takes an IDbConnection, then invoke that constructor
+				var baseConstructor = tb.BaseType.GetConstructor(_idbConnectionParameterTypes);
+				if (baseConstructor != null)
 				{
 					// we are implementing a single-threaded wrapper. pass the connection the base constructor.
 					var lb = ctor0IL.DeclareLocal(typeof(IDbConnection));
 					ctor0IL.Emit(OpCodes.Stloc, lb);
 					ctor0IL.Emit(OpCodes.Ldarg_0);
 					ctor0IL.Emit(OpCodes.Ldloc, lb);
-					ctor0IL.Emit(OpCodes.Call, typeof(DbConnectionWrapper).GetConstructor(_idbConnectionParameterTypes));
+					ctor0IL.Emit(OpCodes.Call, baseConstructor);
 
 					// the connection is *this*
 					ctor0IL.Emit(OpCodes.Ldarg_0);
@@ -162,6 +166,35 @@ namespace Insight.Database.CodeGenerator
 			ctor0IL.Emit(OpCodes.Ret);
 
 			return ctor0;
+		}
+
+		/// <summary>
+		/// Emits a GetConnection method if the class needs one.
+		/// </summary>
+		/// <param name="tb">The TypeBuilder.</param>
+		/// <param name="baseType">The type being implemented.</param>
+		/// <param name="connectionField">The field containing the connection provider.</param>
+		/// <returns>The GetConnection MethodInfo from the base class.</returns>
+		private static MethodInfo EmitGetConnection(TypeBuilder tb, Type baseType, FieldBuilder connectionField)
+		{
+			const string GetConnectionName = "GetConnection";
+
+			var getConnection = baseType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+				.FirstOrDefault(m => String.Compare(m.Name, GetConnectionName, StringComparison.OrdinalIgnoreCase) == 0 && m.ReturnType == typeof(IDbConnection) && m.GetParameters().Length == 0);
+			if (getConnection != null && getConnection.IsAbstract)
+			{
+				var gc = tb.DefineMethod(GetConnectionName, MethodAttributes.Public | MethodAttributes.Virtual);
+				TypeHelper.CopyMethodSignature(getConnection, gc);
+				var mIL = gc.GetILGenerator();
+
+				mIL.Emit(OpCodes.Ldarg_0);
+				mIL.Emit(OpCodes.Ldfld, connectionField);
+				if (connectionField.FieldType == typeof(Func<IDbConnection>))
+					mIL.Emit(OpCodes.Call, connectionField.FieldType.GetMethod("Invoke"));
+				mIL.Emit(OpCodes.Ret);
+			}
+
+			return getConnection;
 		}
 		#endregion
 

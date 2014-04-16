@@ -798,6 +798,38 @@ namespace Insight.Tests
 		public abstract string DerivedAbstractMethod();
 	}
 
+	public abstract class AbstractClassWithProtectedGetConnection
+	{
+		protected abstract IDbConnection GetConnection();
+
+		public void Test()
+		{
+			Assert.IsNotNull(GetConnection());
+		}
+	}
+
+	public abstract class AbstractClassWithPublicGetConnection
+	{
+		public abstract IDbConnection GetConnection();
+	}
+
+	public abstract class AbstractClassOfDbConnectionWrapper : DbConnectionWrapper
+	{
+		public abstract IDbConnection GetConnection();
+
+		public AbstractClassOfDbConnectionWrapper(IDbConnection connection)
+			: base(connection)
+		{
+		}
+
+		public void Test()
+		{
+			Assert.AreNotEqual(this, InnerConnection);
+			Assert.IsNotNull(InnerConnection);
+			Assert.AreEqual(this, GetConnection());
+		}
+	}
+
 	[TestFixture]
 	public class AbstractClassTests : BaseTest
 	{
@@ -822,6 +854,45 @@ namespace Insight.Tests
 			Assert.IsNotNull(derived);
 			Assert.AreEqual("abstract", derived.AbstractMethod());
 			Assert.AreEqual("derived", derived.DerivedAbstractMethod());
+		}
+
+		[Test]
+		public void ProtectedGetConnectionIsImplemented()
+		{
+			var connection = Connection();
+
+			// make sure that we can create an interface
+			var i = connection.As<AbstractClassWithProtectedGetConnection>();
+			i.Test();
+		}
+
+		[Test]
+		public void PublicGetConnectionIsImplemented()
+		{
+			var connection = Connection();
+
+			// make sure that we can create an interface
+			var i = connection.As<AbstractClassWithPublicGetConnection>();
+			Assert.IsNotNull(i.GetConnection());
+		}
+
+		[Test]
+		public void DbConnectionWrapperIsImplemented()
+		{
+			var connection = Connection();
+
+			// make sure that we can create an interface
+			var i = connection.As<AbstractClassOfDbConnectionWrapper>();
+			i.Test();
+		}
+
+		[Test]
+		public void DbConnectionWrapperCannotBeInvokedAsParallel()
+		{
+			var connection = Connection();
+
+			// make sure that we can create an interface
+			Assert.Throws<InvalidOperationException>(() => connection.AsParallel<AbstractClassOfDbConnectionWrapper>());
 		}
 	}
 	#endregion

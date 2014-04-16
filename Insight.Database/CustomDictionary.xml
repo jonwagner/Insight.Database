@@ -2,6 +2,8 @@
 <Dictionary>
 	<Words>
 		<Recognized>
+			<Word>AsParallel</Word>
+			<Word>DbConnectionWrapper</Word>
 			<Word>DefaultMappingHandler</Word>
 			<Word>GetProperty</Word>
 			<Word>IDictionary</Word>
@@ -9,6 +11,8 @@
 			<Word>SqlCommand</Word>
 		</Recognized>
 		<DiscreteExceptions>
+			<Term>AsParallel</Term>
+			<Term>DbConnectionWrapper</Term>
 			<Term>DefaultMappingHandler</Term>
 			<Term>GetProperty</Term>
 			<Term>IDictionary</Term>

@@ -1224,6 +1224,11 @@ namespace Insight.Database
 		{
 			if (connection == null) throw new ArgumentNullException("connection");
 
+			// can't invoke DbConnectionWrapper AsParallel. AsParallel creates a new instance for each call.
+			// This would be confusing to developers.
+			if (typeof(T).IsSubclassOf(typeof(DbConnectionWrapper)))
+				throw new InvalidOperationException("Types derived from DbConnectionWrapper cannot be invoked AsParallel.");
+
 			var provider = InsightDbProvider.For(connection);
 			Func<IDbConnection> constructor = () => provider.CloneDbConnection(connection);
 			return constructor.AsParallel<T>();

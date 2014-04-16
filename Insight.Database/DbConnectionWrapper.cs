@@ -22,7 +22,7 @@ namespace Insight.Database
 		/// <summary>
 		/// Gets the inner connection to use to execute the database commands.
 		/// </summary>
-		internal DbConnection InnerConnection { get; private set; }
+		public DbConnection InnerConnection { get; private set; }
 		#endregion
 
 		#region Constructors
