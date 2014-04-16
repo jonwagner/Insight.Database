@@ -83,9 +83,16 @@ namespace Insight.Database.CodeGenerator
 		public ObjectListDbDataReader(ObjectReader objectReader, IEnumerable list)
 		{
 			_objectReader = objectReader;
-			_schemaTable = objectReader.SchemaTable;
 			_enumerable = list;
 			_enumerator = list.GetEnumerator();
+
+			// copy the schema, except for readonly columns
+			_schemaTable = objectReader.SchemaTable.Copy();
+			if (_schemaTable.Columns.Contains("IsReadOnly"))
+			{
+				foreach (var row in _schemaTable.Rows.OfType<DataRow>().Where(r => (bool)r["IsReadOnly"]).ToList())
+					_schemaTable.Rows.Remove(row);
+			}
 		}
 		#endregion
 
