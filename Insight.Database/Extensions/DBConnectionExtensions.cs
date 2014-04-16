@@ -846,6 +846,9 @@ namespace Insight.Database
 			int? commandTimeout = null,
 			IDbTransaction transaction = null)
 		{
+			if (returns == null)
+				returns = OneToOne<T>.Records;
+
 			connection.ExecuteAndAutoClose(
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
 				(cmd, r) =>
