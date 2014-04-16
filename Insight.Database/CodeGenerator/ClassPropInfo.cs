@@ -136,6 +136,11 @@ namespace Insight.Database.CodeGenerator
 		/// Gets or sets the type that this is bound to.
 		/// </summary>
 		public Type Type { get; set; }
+
+		/// <summary>
+		/// Gets a value indicating whether the column name has been overridden.
+		/// </summary>
+		public bool ColumnNameIsOverridden { get { return ColumnName != Name; } }
 		#endregion
 
 		#region Method List Members
@@ -178,13 +183,11 @@ namespace Insight.Database.CodeGenerator
 						&& t != typeof(XmlDocument)
 						&& t != typeof(XDocument))
 					{
-						// get properties first
-						foreach (var p in t.GetProperties(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
-							if (!members.Any(m => String.Compare(m.ColumnName, p.ColumnName, StringComparison.OrdinalIgnoreCase) == 0))
-								members.Add(p);
-
-						// then get fields
-						foreach (var p in t.GetFields(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
+						// get fields and properties. Prioritize explicitly mapped members first, then properties over fields.
+						foreach (var p in t.GetProperties(DefaultBindingFlags).Select(m => new ClassPropInfo(m))
+							.Union(t.GetFields(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
+							.OrderBy(m => !m.ColumnNameIsOverridden)
+							.ThenBy(m => (m.FieldInfo == null) ? 0 : 1))
 							if (!members.Any(m => String.Compare(m.ColumnName, p.ColumnName, StringComparison.OrdinalIgnoreCase) == 0))
 								members.Add(p);
 					}

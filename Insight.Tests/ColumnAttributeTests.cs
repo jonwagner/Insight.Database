@@ -17,15 +17,13 @@ namespace Insight.Tests
 	{
 		class Data
 		{
+			public int Column;
 			[Column("Column")]
 			public int ColumnA;
 
-			public int Column;
-
+			public int OtherProperty { get; set; }
 			[Column("OtherProperty")]
 			public int Property { get; set; }
-
-			public int OtherProperty { get; set; }
 		}
 
 		[Test]

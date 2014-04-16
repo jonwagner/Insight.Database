@@ -883,6 +883,14 @@ namespace Insight.Tests
 			var results = Connection().Query<DateTime>("TestDateTimeConvert", new { p = d.ToString() }).First();
 			Assert.AreEqual(d, results);
 		}
+
+		[Test]
+		public void ZeroDateShouldConvertToDbNull()
+		{
+			DateTime d = DateTime.MinValue;
+			var results = Connection().Query<DateTime>("TestDateTime2", new { date = d }).First();
+			Assert.AreEqual(d, results);
+		}
 		#endregion
 
 		#region Guid Tests
