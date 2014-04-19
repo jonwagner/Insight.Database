@@ -24,11 +24,6 @@ namespace Insight.Database.CodeGenerator
 	{
 		#region Private Fields
 		/// <summary>
-		/// The DataTable representing the structure of the data.
-		/// </summary>
-		private DataTable _schemaTable;
-
-		/// <summary>
 		/// The list of objects to enumerate through.
 		/// </summary>
 		private IEnumerable _enumerable;
@@ -85,14 +80,6 @@ namespace Insight.Database.CodeGenerator
 			_objectReader = objectReader;
 			_enumerable = list;
 			_enumerator = list.GetEnumerator();
-
-			// copy the schema, except for readonly columns
-			_schemaTable = objectReader.SchemaTable.Copy();
-			if (_schemaTable.Columns.Contains("IsReadOnly"))
-			{
-				foreach (var row in _schemaTable.Rows.OfType<DataRow>().Where(r => (bool)r["IsReadOnly"]).ToList())
-					_schemaTable.Rows.Remove(row);
-			}
 		}
 		#endregion
 
@@ -103,7 +90,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The schema table for the data.</returns>
 		public override DataTable GetSchemaTable()
 		{
-			return _schemaTable;
+			return _objectReader.SchemaTable;
 		}
 
 		/// <summary>
@@ -238,7 +225,7 @@ namespace Insight.Database.CodeGenerator
 		#region Stub Methods
 		public override int FieldCount
 		{
-			get { return _schemaTable.Rows.Count; }
+			get { return _objectReader.SchemaTable.Rows.Count; }
 		}
 
 		public override bool GetBoolean(int ordinal)

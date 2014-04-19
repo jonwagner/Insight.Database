@@ -65,7 +65,8 @@ GO
 ----------------------------------------------------------
 CREATE TABLE BulkCopyData (
 	[Int] int,
-	[Computed] AS [Int] + 1
+	[Computed] AS [Int] + 1,
+	[Geometry] [geometry]
 )
 GO
 

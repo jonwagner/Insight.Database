@@ -148,6 +148,7 @@ namespace Insight.Database.Providers.DB2
 		/// <param name="transaction">An optional transaction to participate in.</param>
 		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
 			if (transaction != null)
 				throw new ArgumentException("OracleProvider does not support external transactions for bulk copy", "transaction");
 
@@ -163,6 +164,11 @@ namespace Insight.Database.Providers.DB2
 			using (var insightBulk = new DB2InsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
+
+				// map the columns by name, in case we skipped a readonly column
+				foreach (DataRow row in reader.GetSchemaTable().Rows)
+					bulk.ColumnMappings.Add((string)row["ColumnName"], (string)row["ColumnName"]);
+
 				if (configure != null)
 					configure(insightBulk);
 				bulk.WriteToServer(reader);

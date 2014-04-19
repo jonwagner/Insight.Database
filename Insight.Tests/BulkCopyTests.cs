@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using NUnit.Framework;
-using Insight.Database;
 using System.Data.SqlClient;
 using System.Data;
+using Microsoft.SqlServer.Types;
+using NUnit.Framework;
+using Insight.Database;
 
 namespace Insight.Tests
 {
@@ -30,6 +31,7 @@ namespace Insight.Tests
 		{
 			public int Int;
 			public int? IntNull { get; set; }
+			public SqlGeometry Geometry;
 		}
 		#endregion
 
@@ -43,7 +45,7 @@ namespace Insight.Tests
 				// build test data
 				InsightTestData[] array = new InsightTestData[i];
 				for (int j = 0; j < i; j++)
-					array[j] = new InsightTestData() { Int = j };
+					array[j] = new InsightTestData() { Int = j, Geometry = new SqlGeometry() };
 
 				// bulk load the data
 				Cleanup();

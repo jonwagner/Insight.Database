@@ -125,6 +125,8 @@ namespace Insight.Database.Providers.SybaseAse
 		/// <param name="transaction">An optional transaction to participate in.</param>
 		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			AseBulkCopyOptions aseOptions = AseBulkCopyOptions.Default;
 			if (options.HasFlag(InsightBulkCopyOptions.CheckConstraints))
 				aseOptions |= AseBulkCopyOptions.CheckConstraints;
@@ -143,6 +145,11 @@ namespace Insight.Database.Providers.SybaseAse
 			using (var insightBulk = new SybaseAseInsightBulkCopy(bulk))
 			{
 				bulk.DestinationTableName = tableName;
+
+				// map the columns by name, in case we skipped a readonly column
+				foreach (DataRow row in reader.GetSchemaTable().Rows)
+					bulk.ColumnMappings.Add(new AseBulkCopyColumnMapping((string)row["ColumnName"], (string)row["ColumnName"]));
+
 				if (configure != null)
 					configure(insightBulk);
 				bulk.WriteToServer(reader);

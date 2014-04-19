@@ -240,6 +240,8 @@ namespace Insight.Database.Providers
 		/// <remarks>Number of rows copied if supported, -1 otherwise.</remarks>
 		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			SqlBulkCopyOptions sqlOptions = SqlBulkCopyOptions.Default;
 			if (options.HasFlag(InsightBulkCopyOptions.KeepIdentity))
 				sqlOptions |= SqlBulkCopyOptions.KeepIdentity;
@@ -261,6 +263,11 @@ namespace Insight.Database.Providers
 #if !NODBASYNC
 				bulk.EnableStreaming = true;
 #endif
+
+				// map the columns by name, in case we skipped a readonly column
+				foreach (DataRow row in reader.GetSchemaTable().Rows)
+					bulk.ColumnMappings.Add((string)row["ColumnName"], (string)row["ColumnName"]);
+
 				if (configure != null)
 					configure(insightBulk);
 				bulk.WriteToServer(reader);

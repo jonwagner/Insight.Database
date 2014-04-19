@@ -1,15 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.Common;
+using System.Data.SqlClient;
+using System.Data.SqlTypes;
+using System.Dynamic;
 using System.Linq;
 using System.Text;
+using Insight.Database;
 using Microsoft.SqlServer.Types;
 using NUnit.Framework;
-using Insight.Database;
-using System.Data.SqlClient;
-using System.Data;
-using System.Dynamic;
-using System.Data.Common;
-using System.Data.SqlTypes;
 
 #pragma warning disable 0649
 

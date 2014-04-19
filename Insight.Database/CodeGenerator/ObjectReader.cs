@@ -29,11 +29,6 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Gets an array containing the types of the members of the given type.
 		/// </summary>
-		private string[] _memberNames;
-
-		/// <summary>
-		/// Gets an array containing the types of the members of the given type.
-		/// </summary>
 		private Type[] _memberTypes;
 
 		/// <summary>
@@ -55,33 +50,19 @@ namespace Insight.Database.CodeGenerator
 		{
 			var provider = InsightDbProvider.For(command);
 
-			SchemaTable = reader.GetSchemaTable();
-
-			// SQL Server tells us the precision of the columns
-			// but the TDS parser doesn't like the ones set on money, smallmoney and date
-			// so we have to override them
-			if (SchemaTable.Columns.Contains("DataTypeName"))
-			{
-				SchemaTable.Columns["NumericScale"].ReadOnly = false;
-				foreach (DataRow row in SchemaTable.Rows)
-				{
-					string dataType = row["DataTypeName"].ToString();
-					if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
-						row["NumericScale"] = 4;
-					else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
-						row["NumericScale"] = 4;
-					else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
-						row["NumericScale"] = 0;
-				}
-			}
+			// copy the schema and fix it
+			SchemaTable = reader.GetSchemaTable().Copy();
+			FixupSchemaNumericScale();
+			FixupSchemaRemoveReadOnlyColumns();
 
 		    IsAtomicType = TypeHelper.IsAtomicType(type);
 			if (!IsAtomicType)
 			{
+				// create a mapping, and only keep mappings that match our modified schema
 				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, true);
+				mappings = mappings.Where((m, index) => !(bool)reader.GetSchemaTable().Rows[index]["IsReadOnly"]).ToArray();
 
 				_accessors = new Func<object, object>[mappings.Length];
-				_memberNames = new string[mappings.Length];
 				_memberTypes = new Type[mappings.Length];
 
 				for (int i = 0; i < mappings.Length; i++)
@@ -140,9 +121,9 @@ namespace Insight.Database.CodeGenerator
 						sourceType = underlyingType;
 					}
 
-					// if the provider type is Xml, then serialize the value
-					if (!sourceType.IsValueType && sourceType != typeof(string))
+					if (sourceType != targetType && !sourceType.IsValueType && sourceType != typeof(string))
 					{
+						// if the provider type is Xml, then serialize the value
 						var serializerMethod = mapping.Serializer.GetMethod("Serialize", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(object), typeof(Type) }, null);
 						if (serializerMethod == null)
 							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Serializer type {0} needs the method 'public static string Serialize(object, Type)'", mapping.Serializer.Name));
@@ -162,7 +143,6 @@ namespace Insight.Database.CodeGenerator
 
 					il.Emit(OpCodes.Ret);
 
-					_memberNames[i] = propInfo.Name;
 					_memberTypes[i] = propInfo.MemberType;
 					_accessors[i] = (Func<object, object>)dm.CreateDelegate(typeof(Func<object, object>));
 				}
@@ -170,7 +150,6 @@ namespace Insight.Database.CodeGenerator
 			else
 			{
 				// we are working off a single-column atomic type
-				_memberNames = new string[1] { "value" };
 				_memberTypes = new Type[1] { type };
 				_accessors = new Func<object, object>[] { o => o };
 			}
@@ -212,7 +191,8 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The name of the column, or null if there is no mapping.</returns>
 		public string GetName(int ordinal)
 		{
-			return _memberNames[ordinal];
+			var row = (DataRow)SchemaTable.Rows[ordinal];
+			return (string)row["ColumnName"];
 		}
 
 		/// <summary>
@@ -222,11 +202,9 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The matching ordinal.</returns>
 		public int GetOrdinal(string name)
 		{
-			for (int i = 0; i < _memberNames.Length; i++)
-			{
-				if (String.Compare(name, _memberNames[i], StringComparison.OrdinalIgnoreCase) == 0)
+			for (int i = 0; i < SchemaTable.Rows.Count; i++)
+				if (String.Compare(name, GetName(i), StringComparison.OrdinalIgnoreCase) == 0)
 					return i;
-			}
 
 			return -1;
 		}
@@ -249,6 +227,54 @@ namespace Insight.Database.CodeGenerator
 		public Func<object, object> GetAccessor(int ordinal)
 		{
 			return _accessors[ordinal];
+		}
+
+		/// <summary>
+		/// SQL Server tells us the precision of the columns
+		/// but the TDS parser doesn't like the ones set on money, smallmoney and date
+		/// so we have to override them
+		/// </summary>
+		private void FixupSchemaNumericScale()
+		{
+			if (SchemaTable.Columns.Contains("DataTypeName"))
+			{
+				SchemaTable.Columns["NumericScale"].ReadOnly = false;
+				foreach (DataRow row in SchemaTable.Rows)
+				{
+					string dataType = row["DataTypeName"].ToString();
+					if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
+						row["NumericScale"] = 4;
+					else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
+						row["NumericScale"] = 4;
+					else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
+						row["NumericScale"] = 0;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Fix the schema by removing any readonly columns and adjusting the column ordinal
+		/// </summary>
+		private void FixupSchemaRemoveReadOnlyColumns()
+		{
+			const string ColumnOrdinal = "ColumnOrdinal";
+			const string IsReadOnly = "IsReadOnly";
+
+			// remove any mappings for readonly columns
+			if (SchemaTable.Columns.Contains(IsReadOnly))
+			{
+				SchemaTable.Columns[ColumnOrdinal].ReadOnly = false;
+				for (int i = 0; i < SchemaTable.Rows.Count; i++)
+				{
+					var row = SchemaTable.Rows[i];
+					row[ColumnOrdinal] = i;
+					if ((bool)row[IsReadOnly])
+					{
+						SchemaTable.Rows.Remove(row);
+						i--;
+					}
+				}
+			}
 		}
 	}
 }
