@@ -817,7 +817,7 @@ namespace Insight.Tests
 	{
 		public abstract IDbConnection GetConnection();
 
-		public AbstractClassOfDbConnectionWrapper(IDbConnection connection)
+		protected AbstractClassOfDbConnectionWrapper(IDbConnection connection)
 			: base(connection)
 		{
 		}
@@ -891,7 +891,6 @@ namespace Insight.Tests
 		{
 			var connection = Connection();
 
-			// make sure that we can create an interface
 			Assert.Throws<InvalidOperationException>(() => connection.AsParallel<AbstractClassOfDbConnectionWrapper>());
 		}
 	}

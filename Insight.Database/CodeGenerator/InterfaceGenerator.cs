@@ -146,7 +146,7 @@ namespace Insight.Database.CodeGenerator
 				ctor0IL.Emit(OpCodes.Call, typeof(Func<IDbConnection>).GetMethod("Invoke"));
 
 				// if the base constructor takes an IDbConnection, then invoke that constructor
-				var baseConstructor = tb.BaseType.GetConstructor(_idbConnectionParameterTypes);
+				var baseConstructor = tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, _idbConnectionParameterTypes, null);
 				if (baseConstructor != null)
 				{
 					// we are implementing a single-threaded wrapper. pass the connection the base constructor.
