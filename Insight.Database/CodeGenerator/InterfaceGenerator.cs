@@ -458,13 +458,41 @@ namespace Insight.Database.CodeGenerator
 							currentType = readerType;
 						}
 					}
+					else if (r != null && r.IsChild && r.Id == null && TypeIsSingleReader(currentType))
+					{
+						// the parent is single and we haven't overridden the id field
+						var parentType = currentType.GetGenericArguments()[0];
+						var childType = types[0];
+
+						var list = ChildMapperHelper.GetListSetter(parentType, childType, r.Into);
+						var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
+
+						// previous and recordReader are on the stack, add the id and list methods
+						new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
+
+						var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
+							.Single(
+								mi => mi.Name == "ThenChildren" &&
+									mi.GetGenericArguments().Length == 2 &&
+									currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name)
+							.MakeGenericMethod(
+								new Type[]
+								{
+									parentType,		// TParent
+									childType		// TChild
+								});
+						mIL.Emit(OpCodes.Call, method);
+						currentType = method.ReturnType;
+					}
 					else if (r != null && r.IsChild)
 					{
 						var parentType = currentType.GetGenericArguments()[0];
 						var childType = types[0];
+
 						var id = ChildMapperHelper.GetIDAccessor(parentType, r.Id);
 						var idType = id.MemberType;
 						var idMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(parentType, idType).Invoke(id, Parameters.EmptyArray);
+
 						var list = ChildMapperHelper.GetListSetter(parentType, childType, r.Into);
 						var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
 
@@ -497,6 +525,20 @@ namespace Insight.Database.CodeGenerator
 					}
 				}
 			}
+		}
+
+		/// <summary>
+		/// Determines if the given type is a single reader.
+		/// </summary>
+		/// <param name="type">The type to inspect.</param>
+		/// <returns>True if the type is a single reader.</returns>
+		private static bool TypeIsSingleReader(Type type)
+		{
+			if (!type.IsGenericType)
+				return false;
+
+			var generic = type.GetGenericTypeDefinition();
+			return generic == typeof(SingleReader<>) || generic.IsSubclassOf(typeof(SingleReader<>));
 		}
 
 		/// <summary>

@@ -533,10 +533,19 @@ namespace Insight.Tests
 			[Sql("SELECT ID=1, ID=2")]
 			[Recordset(0, typeof(InfiniteBeer), typeof(InfiniteBeer))]
 			InfiniteBeer GetSingleBeerWithAttribute();
-			[Sql("SELECT ID=1; SELECT ParentID=1, ID=2")]
+		}
+
+		internal interface IHaveStructure2
+		{
+			[Sql("SELECT ID=1; SELECT ID=2 UNION SELECT ID=3")]
 			[Recordset(0, typeof(InfiniteBeerList))]
 			[Recordset(1, typeof(InfiniteBeerList), IsChild = true)]
 			InfiniteBeerList GetSingleBeerWithChildren();
+
+			[Sql("SELECT ID=1; SELECT ID=2 UNION SELECT ID=3")]
+			[Recordset(0, typeof(InfiniteBeerList))]
+			[Recordset(1, typeof(InfiniteBeerList), IsChild = true, Id="ID")]
+			InfiniteBeerList GetSingleBeerWithChildrenWithIDOverride();
 		}
 
 		[Test]
@@ -700,14 +709,27 @@ namespace Insight.Tests
 		[Test]
 		public void CanGetSingleWithChildren()
 		{
-			var i = Connection().As<IHaveStructure>();
+			var i = Connection().As<IHaveStructure2>();
 			var result = i.GetSingleBeerWithChildren();
 
 			var beer = result;
 			Assert.IsNotNull(beer);
 			Assert.AreEqual(1, beer.ID);
-			Assert.AreEqual(1, beer.List.Count);
+			Assert.AreEqual(2, beer.List.Count);
 			Assert.AreEqual(2, beer.List[0].ID);
+			Assert.AreEqual(3, beer.List[1].ID);
+		}
+
+		[Test]
+		public void SingleWithChildrenAndIDFiltersOutChildren()
+		{
+			var i = Connection().As<IHaveStructure2>();
+			var result = i.GetSingleBeerWithChildrenWithIDOverride();
+
+			var beer = result;
+			Assert.IsNotNull(beer);
+			Assert.AreEqual(1, beer.ID);
+			Assert.AreEqual(0, beer.List.Count);
 		}
 		#endregion
 

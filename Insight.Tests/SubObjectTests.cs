@@ -5,6 +5,7 @@ using System.Text;
 using NUnit.Framework;
 using Insight.Database;
 using Insight.Tests.Cases;
+using Insight.Database.Structure;
 
 #pragma warning disable 0649
 
@@ -358,6 +359,17 @@ namespace Insight.Tests
 			Assert.AreEqual(1, result[0].List.Count);
 			Assert.AreEqual(1, result[1].List.Count);
 			Assert.AreEqual(result[0].List[0], result[1].List[0]);
+		}
+
+		[Test]
+		public void SingleParentHandlesAllChildren()
+		{
+			// the ParentID column is always the first column
+			var result = Connection().QuerySql("EXEC " + Beer.SelectAllProc + "; SELECT ID=1 UNION SELECT ID=2", null,
+				returns: SingleReader<InfiniteBeerList>.Default
+					.ThenChildren(Some<InfiniteBeerList>.Records, (b, l) => b.List = l.ToList()));
+
+			Assert.AreEqual(2, result.List.Count);
 		}
 		#endregion
 	}

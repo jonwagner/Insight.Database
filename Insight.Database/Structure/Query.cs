@@ -112,13 +112,13 @@ namespace Insight.Database
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
 		public static SingleReader<T1> ThenChildren<T1, T2>(
 			this SingleReader<T1> previous,
-			IChildRecordReader<T2> recordReader,
+			IRecordReader<T2> recordReader,
 			Action<T1, List<T2>> into = null)
 		{
 			if (previous == null) throw new ArgumentNullException("previous");
 			if (recordReader == null) throw new ArgumentNullException("recordReader");
 
-			return previous.AddChild(new Children<T1, T2, object>(recordReader.GetGuardianReader<object>(), new ChildMapper<T1, T2, object>(null, into)));
+			return previous.AddChild(new SingleChildren<T1, T2>(recordReader, new SingleChildMapper<T1, T2>(into)));
 		}
 
 		/// <summary>
