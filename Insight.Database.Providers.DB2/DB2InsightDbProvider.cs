@@ -36,25 +36,12 @@ namespace Insight.Database.Providers.DB2
 			}
 		}
 
-		/// <summary>
-		/// Gets the set of bulk copy options supported by this provider.
-		/// </summary>
-		public override InsightBulkCopyOptions SupportedBulkCopyOptions
+		/// <inheritdoc/>
+		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
 		{
-			get
-			{
-				return InsightBulkCopyOptions.KeepIdentity |
-					InsightBulkCopyOptions.TableLock |
-					InsightBulkCopyOptions.Truncate;
-			}
-		}
-
-		/// <summary>
-		/// Registers this provider.
-		/// </summary>
-		[Obsolete("Providers no longer need to be registered manually.")]
-		public static void RegisterProvider()
-		{
+			return InsightBulkCopyOptions.KeepIdentity |
+				InsightBulkCopyOptions.TableLock |
+				InsightBulkCopyOptions.Truncate;
 		}
 
 		/// <summary>

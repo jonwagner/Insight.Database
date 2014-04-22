@@ -164,5 +164,55 @@ namespace Insight.Tests
 			for (int j = 0; j < count; j++)
 				Assert.AreEqual(j, items[j].Int);
 		}
+
+		class MerchNameTermTransaction
+		{
+			public int Id { get; set; }
+			public int TranId { get; set; }
+			public int TermId { get; set; }
+		}
+
+		[Test]
+		public void TestIssue103()
+		{
+			var m = new MerchNameTermTransaction()
+			{
+				TranId = 2,
+				TermId = 3
+			};
+
+			using (var connection = ConnectionWithTransaction())
+			{
+				connection.BulkCopy("MerchNameTermsTransactions", new List<MerchNameTermTransaction>() { m });
+
+				var items = connection.QuerySql<MerchNameTermTransaction>("SELECT * FROM MerchNameTermsTransactions");
+				Assert.AreEqual(1, items.Count);
+				Assert.AreNotEqual(0, items[0].Id);
+				Assert.AreEqual(2, items[0].TranId);
+				Assert.AreEqual(3, items[0].TermId);
+			}
+		}
+
+		[Test]
+		public void TestIssue103WithKeepIdentity()
+		{
+			var m = new MerchNameTermTransaction()
+			{
+				Id = 99,
+				TranId = 2,
+				TermId = 3
+			};
+
+			using (var connection = ConnectionWithTransaction())
+			{
+				connection.BulkCopy("MerchNameTermsTransactions", new List<MerchNameTermTransaction>() { m }, options: InsightBulkCopyOptions.KeepIdentity);
+
+				var items = connection.QuerySql<MerchNameTermTransaction>("SELECT * FROM MerchNameTermsTransactions");
+				Assert.AreEqual(1, items.Count);
+				Assert.AreEqual(99, items[0].Id);
+				Assert.AreEqual(2, items[0].TranId);
+				Assert.AreEqual(3, items[0].TermId);
+			}
+		}
 	}
 }

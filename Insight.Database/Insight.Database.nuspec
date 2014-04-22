@@ -16,7 +16,7 @@ This package includes the core library and the providers for SQL Server, ODBC an
     <tags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
-		<dependency id="Insight.Database.Core" version="4.1"></dependency>
+		<dependency id="Insight.Database.Core" version="4.1.3"></dependency>
 	</dependencies>
 	<frameworkAssemblies>
 		<frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="net40,net45" />

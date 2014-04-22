@@ -44,6 +44,11 @@ namespace Insight.Database
 		public int FieldIndex { get; internal set; }
 
 		/// <summary>
+		/// Gets the name of the column that is being mapped.
+		/// </summary>
+		public string ColumnName { get; internal set; }
+
+		/// <summary>
 		/// Gets or sets the name of the target field. This will be pre-set to the field that the mapper believes is the correct field.
 		/// The default logic will use the name of the property or the ColumnNameAttribute on the property.
 		/// Set this value to the desired target column.

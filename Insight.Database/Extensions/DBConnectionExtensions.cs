@@ -1335,7 +1335,7 @@ namespace Insight.Database
 			var provider = InsightDbProvider.For(connection);
 
 			// see if there are any invalid bulk copy options set
-			var invalidOptions = (options & ~(provider.SupportedBulkCopyOptions));
+			var invalidOptions = (options & ~(provider.GetSupportedBulkCopyOptions(connection)));
 			if (invalidOptions != 0)
 				throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "BulkCopyOption {0} is not supported for this provider", invalidOptions));
 

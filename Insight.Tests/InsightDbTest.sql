@@ -64,10 +64,28 @@ GO
 -- BulkCopyData
 ----------------------------------------------------------
 CREATE TABLE BulkCopyData (
-	[Int] int,
+	[Int] [int],
 	[Computed] AS [Int] + 1,
 	[Geometry] [geometry]
 )
+GO
+
+CREATE TABLE [MerchNameTermsTransactions] (
+    [Id]     INT IDENTITY (1, 1) NOT NULL,
+    [TermId] INT NOT NULL,
+    [TranId] INT NOT NULL,
+);
+GO
+
+CREATE TABLE [CardTransactions] (
+    [TranId] INT IDENTITY (1, 1) NOT NULL,
+);
+GO
+
+ALTER TABLE [CardTransactions] ADD CONSTRAINT [PK_CardTransactions] PRIMARY KEY ([TranId])
+GO
+
+ALTER TABLE [MerchNameTermsTransactions] ADD CONSTRAINT [FK_MerchNameTermsTransactions_CardTransactions] FOREIGN KEY ([TranId]) REFERENCES [dbo].[CardTransactions] ([TranID])
 GO
 
 ----------------------------------------------------------

@@ -59,15 +59,17 @@ namespace Insight.Database.CodeGenerator
 			if (!IsAtomicType)
 			{
 				// create a mapping, and only keep mappings that match our modified schema
-				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, true);
-				mappings = mappings.Where((m, index) => !(bool)reader.GetSchemaTable().Rows[index]["IsReadOnly"]).ToArray();
+				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, true)
+					.Where(m => m != null).ToArray();
 
-				_accessors = new Func<object, object>[mappings.Length];
-				_memberTypes = new Type[mappings.Length];
+				int columnCount = SchemaTable.Rows.Count;
+				_accessors = new Func<object, object>[columnCount];
+				_memberTypes = new Type[columnCount];
 
-				for (int i = 0; i < mappings.Length; i++)
+				for (int i = 0; i < columnCount; i++)
 				{
-					var mapping = mappings[i];
+					var columnName = SchemaTable.Rows[i]["ColumnName"].ToString();
+					var mapping = mappings.FirstOrDefault(m => String.Compare(m.ColumnName, columnName, StringComparison.OrdinalIgnoreCase) == 0);
 					if (mapping == null)
 						continue;
 					ClassPropInfo propInfo = mapping.ClassPropInfo;
@@ -259,16 +261,18 @@ namespace Insight.Database.CodeGenerator
 		{
 			const string ColumnOrdinal = "ColumnOrdinal";
 			const string IsReadOnly = "IsReadOnly";
+			const string IsIdentity = "IsIdentity";
 
-			// remove any mappings for readonly columns
-			if (SchemaTable.Columns.Contains(IsReadOnly))
+			// remove any mappings for readonly columns, except identities, which we may want to insert
+			if (SchemaTable.Columns.Contains(IsReadOnly) && SchemaTable.Columns.Contains(IsIdentity))
 			{
 				SchemaTable.Columns[ColumnOrdinal].ReadOnly = false;
 				for (int i = 0; i < SchemaTable.Rows.Count; i++)
 				{
 					var row = SchemaTable.Rows[i];
 					row[ColumnOrdinal] = i;
-					if ((bool)row[IsReadOnly])
+
+					if ((bool)row[IsReadOnly] && !(bool)row[IsIdentity])
 					{
 						SchemaTable.Rows.Remove(row);
 						i--;

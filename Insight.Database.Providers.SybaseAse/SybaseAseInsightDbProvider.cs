@@ -42,28 +42,15 @@ namespace Insight.Database.Providers.SybaseAse
 			}
 		}
 
-		/// <summary>
-		/// Gets the set of bulk copy options supported by this provider.
-		/// </summary>
-		public override InsightBulkCopyOptions SupportedBulkCopyOptions
+		/// <inheritdoc/>
+		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
 		{
-			get
-			{
-				return InsightBulkCopyOptions.CheckConstraints |
-					InsightBulkCopyOptions.FireTriggers |
-					InsightBulkCopyOptions.KeepIdentity |
-					InsightBulkCopyOptions.KeepNulls |
-					InsightBulkCopyOptions.TableLock |
-					InsightBulkCopyOptions.UseInternalTransaction;
-			}
-		}
-
-		/// <summary>
-		/// Registers the Oracle Provider.
-		/// </summary>
-		[Obsolete("Providers no longer need to be registered manually.")]
-		public static void RegisterProvider()
-		{
+			return InsightBulkCopyOptions.CheckConstraints |
+				InsightBulkCopyOptions.FireTriggers |
+				InsightBulkCopyOptions.KeepIdentity |
+				InsightBulkCopyOptions.KeepNulls |
+				InsightBulkCopyOptions.TableLock |
+				InsightBulkCopyOptions.UseInternalTransaction;
 		}
 
 		/// <summary>

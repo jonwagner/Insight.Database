@@ -66,23 +66,10 @@ namespace Insight.Database.Providers.PostgreSQL
 			}
 		}
 
-		/// <summary>
-		/// Gets the set of bulk copy options supported by this provider.
-		/// </summary>
-		public override InsightBulkCopyOptions SupportedBulkCopyOptions
+		/// <inheritdoc/>
+		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
 		{
-			get
-			{
-				return 0;
-			}
-		}
-
-		/// <summary>
-		/// Registers the Oracle Provider
-		/// </summary>
-		[Obsolete("Providers no longer need to be registered manually.")]
-		public static void RegisterProvider()
-		{
+			return 0;
 		}
 
 		/// <summary>

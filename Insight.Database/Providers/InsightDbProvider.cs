@@ -52,7 +52,12 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Gets the set of bulk copy options supported by this provider.
 		/// </summary>
-		public virtual InsightBulkCopyOptions SupportedBulkCopyOptions { get { return 0; } }
+		/// <param name="connection">The connection to inspect for bulk copy options.</param>
+		/// <returns>The supported bulk copy options.</returns>
+		public virtual InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
+		{
+			return 0;
+		}
 		#endregion
 
 		#region Overrideables

@@ -317,6 +317,9 @@ namespace Insight.Database
 					e.CommandType = command.CommandType;
 				}
 
+				if (reader != null)
+					e.ColumnName = reader.GetSchemaTable().Rows[i]["ColumnName"].ToString();
+
 				lock (_lock)
 				{
 					_mappings(null, e);

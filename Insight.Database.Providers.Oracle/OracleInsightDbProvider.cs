@@ -37,23 +37,10 @@ namespace Insight.Database.Providers.Oracle
 			}
 		}
 
-		/// <summary>
-		/// Gets the set of bulk copy options supported by this provider.
-		/// </summary>
-		public override InsightBulkCopyOptions SupportedBulkCopyOptions
+		/// <inheritdoc/>
+		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
 		{
-			get
-			{
-				return InsightBulkCopyOptions.UseInternalTransaction;
-			}
-		}
-
-		/// <summary>
-		/// Registers the Oracle Provider.
-		/// </summary>
-		[Obsolete("Providers no longer need to be registered manually.")]
-		public static void RegisterProvider()
-		{
+			return InsightBulkCopyOptions.UseInternalTransaction;
 		}
 
 		/// <summary>
