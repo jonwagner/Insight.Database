@@ -20,10 +20,7 @@ time to make minor changes.
 		<dependency id="Insight.Database" version="4.1"></dependency>
 	</dependencies>
 	  <frameworkAssemblies>
-		  <frameworkAssembly assemblyName="Microsoft.CSharp" />
-		  <frameworkAssembly assemblyName="System" />
-		  <frameworkAssembly assemblyName="System.Core" />
-		  <frameworkAssembly assemblyName="System.Data" />
+		  <frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="net40,net45" />
 	  </frameworkAssemblies>
   </metadata>
   <files>

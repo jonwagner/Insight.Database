@@ -19,11 +19,6 @@ Automatically installs MySql.Data driver.
 		<dependency id="Insight.Database.Core" version="4.1"></dependency>
 		<dependency id="MySql.Data"></dependency>
 	</dependencies>
-	  <frameworkAssemblies>
-		  <frameworkAssembly assemblyName="System" />
-		  <frameworkAssembly assemblyName="System.Core" />
-		  <frameworkAssembly assemblyName="System.Data" />
-	  </frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.MySql.dll" target="lib" />

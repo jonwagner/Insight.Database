@@ -18,12 +18,6 @@ Requires DB2's .NET provider.
 	  <dependencies>
 		  <dependency id="Insight.Database.Core" version="4.1"></dependency>
 	  </dependencies>
-	  <frameworkAssemblies>
-		  <frameworkAssembly assemblyName="System" />
-		  <frameworkAssembly assemblyName="System.Core" />
-		  <frameworkAssembly assemblyName="System.Data" />
-		  <frameworkAssembly assemblyName="System.Xml" />
-	  </frameworkAssemblies>
   </metadata>
   <files>
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.dll" target="lib" />

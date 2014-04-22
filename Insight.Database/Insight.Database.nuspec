@@ -19,11 +19,7 @@ This package includes the core library and the providers for SQL Server, ODBC an
 		<dependency id="Insight.Database.Core" version="4.1"></dependency>
 	</dependencies>
 	<frameworkAssemblies>
-		<frameworkAssembly assemblyName="Microsoft.CSharp" />
-		<frameworkAssembly assemblyName="System" />
-		<frameworkAssembly assemblyName="System.Configuration" />
-		<frameworkAssembly assemblyName="System.Data" />
-		<frameworkAssembly assemblyName="System.Xml" />
+		<frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="net40,net45" />
 	</frameworkAssemblies>
   </metadata>
   <files>
