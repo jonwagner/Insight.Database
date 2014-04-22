@@ -36,6 +36,13 @@ namespace Insight.Database.Providers.DB2
 			}
 		}
 
+		/// <summary>
+		/// Registers this provider. This is generally not needed, unless you want to force an assembly reference to this provider.
+		/// </summary>
+		public static void RegisterProvider()
+		{
+		}
+
 		/// <inheritdoc/>
 		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
 		{

@@ -26,9 +26,8 @@ namespace Insight.Database.Providers.MiniProfiler
 		}
 
 		/// <summary>
-		/// Registers the MiniProfiler Provider
+		/// Registers this provider. This is generally not needed, unless you want to force an assembly reference to this provider.
 		/// </summary>
-		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
 		}

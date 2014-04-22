@@ -35,6 +35,13 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Registers this provider. This is generally not needed, unless you want to force an assembly reference to this provider.
+		/// </summary>
+		public static void RegisterProvider()
+		{
+		}
+
+		/// <summary>
 		/// Creates a new DbConnection supported by this provider.
 		/// </summary>
 		/// <returns>A new DbConnection.</returns>

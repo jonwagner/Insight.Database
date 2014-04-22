@@ -42,9 +42,8 @@ namespace Insight.Database.Providers.MySql
 		}
 
 		/// <summary>
-		/// Registers the Oracle Provider
+		/// Registers this provider. This is generally not needed, unless you want to force an assembly reference to this provider.
 		/// </summary>
-		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
 		}
