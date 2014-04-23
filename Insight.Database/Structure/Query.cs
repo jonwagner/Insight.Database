@@ -37,6 +37,17 @@ namespace Insight.Database
 		{
 			return new ResultsReader<T>(recordReader ?? OneToOne<T>.Records);
 		}
+
+		/// <summary>
+		/// Defines a reader that returns a single record.
+		/// </summary>
+		/// <typeparam name="T">The type of object in the list of records.</typeparam>
+		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
+		/// <returns>A reader that reads a list of objects.</returns>
+		public static SingleReader<T> ReturnsSingle<T>(IRecordReader<T> recordReader = null)
+		{
+			return new SingleReader<T>(recordReader ?? OneToOne<T>.Records);
+		}
 		#endregion
 
 		#region Then Methods
@@ -194,14 +205,13 @@ namespace Insight.Database
 		/// <typeparam name="TRoot">The type of the root object that is returned.</typeparam>
 		/// <typeparam name="TParent">The type of the parent object in the parent-child relationship.</typeparam>
 		/// <typeparam name="TChild">The type of the child in the parent-child relationship.</typeparam>
-		/// <typeparam name="TId">The type of the ID value.</typeparam>
 		/// <param name="previous">The previous reader.</param>
 		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
 		/// <param name="parents">A function that selects the list of parents from the root object.</param>
 		/// <param name="into">A function that assigns the children to their parent.</param>
 		/// <returns>A reader that reads a list of objects with children.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
-		public static ListReader<TRoot> ThenChildren<TRoot, TParent, TChild, TId>(
+		public static ListReader<TRoot> ThenChildren<TRoot, TParent, TChild>(
 			this ListReader<TRoot> previous,
 			IChildRecordReader<TChild> recordReader,
 			Func<TRoot, IEnumerable<TParent>> parents,
@@ -234,8 +244,7 @@ namespace Insight.Database
 			if (previous == null) throw new ArgumentNullException("previous");
 			if (recordReader == null) throw new ArgumentNullException("recordReader");
 
-			previous.AddChild(new Children<TRoot, TChild, TId>(recordReader.GetGuardianReader<TId>(), new ChildMapper<TRoot, TParent, TChild, TId>(parents, id, into)));
-			return previous;
+			return previous.AddChild(new Children<TRoot, TChild, TId>(recordReader.GetGuardianReader<TId>(), new ChildMapper<TRoot, TParent, TChild, TId>(parents, id, into)));
 		}
 
 		/// <summary>
@@ -244,13 +253,12 @@ namespace Insight.Database
 		/// <typeparam name="TRoot">The type of the root object that is returned.</typeparam>
 		/// <typeparam name="TParent">The type of the parent object in the parent-child relationship.</typeparam>
 		/// <typeparam name="TChild">The type of the child in the parent-child relationship.</typeparam>
-		/// <typeparam name="TId">The type of the ID value.</typeparam>
 		/// <param name="previous">The previous reader.</param>
 		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
 		/// <param name="parents">A function that selects the list of parents from the root object.</param>
 		/// <param name="into">A function that assigns the children to their parent.</param>
 		/// <returns>A reader that reads a Results objects with children.</returns>
-		public static ResultsReader<TRoot> ThenChildren<TRoot, TParent, TChild, TId>(
+		public static ResultsReader<TRoot> ThenChildren<TRoot, TParent, TChild>(
 			this ResultsReader<TRoot> previous,
 			IChildRecordReader<TChild> recordReader,
 			Func<TRoot, IEnumerable<TParent>> parents,
@@ -274,6 +282,54 @@ namespace Insight.Database
 		/// <returns>A reader that reads a Results objects with children.</returns>
 		public static ResultsReader<TRoot> ThenChildren<TRoot, TParent, TChild, TId>(
 			this ResultsReader<TRoot> previous,
+			IChildRecordReader<TChild> recordReader,
+			Func<TRoot, IEnumerable<TParent>> parents,
+			Func<TParent, TId> id,
+			Action<TParent, List<TChild>> into = null)
+		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
+			return previous.AddChild(new Children<TRoot, TChild, TId>(recordReader.GetGuardianReader<TId>(), new ChildMapper<TRoot, TParent, TChild, TId>(parents, id, into)));
+		}
+
+		/// <summary>
+		/// Extends the reader by reading another set of records that are children of a subobject of the previous results.
+		/// </summary>
+		/// <typeparam name="TRoot">The type of the root object that is returned.</typeparam>
+		/// <typeparam name="TParent">The type of the parent object in the parent-child relationship.</typeparam>
+		/// <typeparam name="TChild">The type of the child in the parent-child relationship.</typeparam>
+		/// <param name="previous">The previous reader.</param>
+		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
+		/// <param name="parents">A function that selects the list of parents from the root object.</param>
+		/// <param name="into">A function that assigns the children to their parent.</param>
+		/// <returns>A reader that reads a list of objects with children.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+		public static SingleReader<TRoot> ThenChildren<TRoot, TParent, TChild>(
+			this SingleReader<TRoot> previous,
+			IChildRecordReader<TChild> recordReader,
+			Func<TRoot, IEnumerable<TParent>> parents,
+			Action<TParent, List<TChild>> into = null)
+		{
+			return previous.ThenChildren(recordReader, parents, (Func<TParent, object>)null, into);
+		}
+
+		/// <summary>
+		/// Extends the reader by reading another set of records that are children of a subobject of the previous results.
+		/// </summary>
+		/// <typeparam name="TRoot">The type of the root object that is returned.</typeparam>
+		/// <typeparam name="TParent">The type of the parent object in the parent-child relationship.</typeparam>
+		/// <typeparam name="TChild">The type of the child in the parent-child relationship.</typeparam>
+		/// <typeparam name="TId">The type of the ID value.</typeparam>
+		/// <param name="previous">The previous reader.</param>
+		/// <param name="recordReader">The mapping that defines the layout of the records in each row.</param>
+		/// <param name="parents">A function that selects the list of parents from the root object.</param>
+		/// <param name="id">A function taht selects the ID from a parent.</param>
+		/// <param name="into">A function that assigns the children to their parent.</param>
+		/// <returns>A reader that reads a list of objects with children.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
+		public static SingleReader<TRoot> ThenChildren<TRoot, TParent, TChild, TId>(
+			this SingleReader<TRoot> previous,
 			IChildRecordReader<TChild> recordReader,
 			Func<TRoot, IEnumerable<TParent>> parents,
 			Func<TParent, TId> id,

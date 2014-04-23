@@ -364,12 +364,26 @@ namespace Insight.Tests
 		[Test]
 		public void SingleParentHandlesAllChildren()
 		{
-			// the ParentID column is always the first column
+			// the ParentID column is ignored for singles
 			var result = Connection().QuerySql("EXEC " + Beer.SelectAllProc + "; SELECT ID=1 UNION SELECT ID=2", null,
-				returns: SingleReader<InfiniteBeerList>.Default
-					.ThenChildren(Some<InfiniteBeerList>.Records, (b, l) => b.List = l.ToList()));
+				Query.ReturnsSingle<InfiniteBeerList>()
+					.ThenChildren(Some<InfiniteBeerList>.Records));
 
 			Assert.AreEqual(2, result.List.Count);
+		}
+
+		[Test]
+		public void SingleParentCanHaveMultipleLevels()
+		{
+			// the ParentID column is always the first column
+			var result = Connection().QuerySql("EXEC " + Beer.SelectAllProc + "; SELECT ID=1 UNION SELECT ID=2; SELECT ParentID=1, ID=1 UNION SELECT ParentID=2, ID=2", null,
+				Query.ReturnsSingle<InfiniteBeerList>()
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List));
+
+			Assert.AreEqual(2, result.List.Count);
+			Assert.AreEqual(1, result.List[0].List[0].ID);
+			Assert.AreEqual(2, result.List[1].List[0].ID);
 		}
 		#endregion
 	}

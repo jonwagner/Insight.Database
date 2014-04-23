@@ -504,7 +504,8 @@ namespace Insight.Database.CodeGenerator
 							.Single(
 								mi => mi.Name == "ThenChildren" &&
 									mi.GetGenericArguments().Length == 3 &&
-									currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name)
+									currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
+									mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0))
 							.MakeGenericMethod(
 								new Type[]
 								{
