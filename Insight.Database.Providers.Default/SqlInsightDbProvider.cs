@@ -12,8 +12,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
 
-namespace Insight.Database.Providers
+namespace Insight.Database
 {
 	/// <summary>
 	/// Implements the Insight provider for Sql connections.
@@ -55,6 +56,7 @@ namespace Insight.Database.Providers
 		/// </summary>
 		public static void RegisterProvider()
 		{
+			InsightDbProvider.RegisterProvider(new SqlInsightDbProvider());
 		}
 
 		/// <inheritdoc/>

@@ -48,7 +48,20 @@ namespace Insight.Database.Providers
 				return null;
 			}
 		}
+		#endregion
 
+		#region Static Members
+		/// <summary>
+		/// Manually registers a provider.
+		/// </summary>
+		/// <param name="provider">The provider to register.</param>
+		public static void RegisterProvider(InsightDbProvider provider)
+		{
+			RegisterProvider(_providerMap.Value, provider);
+		}
+		#endregion
+
+		#region Overrideables
 		/// <summary>
 		/// Gets the set of bulk copy options supported by this provider.
 		/// </summary>
@@ -58,9 +71,7 @@ namespace Insight.Database.Providers
 		{
 			return 0;
 		}
-		#endregion
 
-		#region Overrideables
 		/// <summary>
 		/// Creates a new DbConnection supported by this provider.
 		/// </summary>
@@ -102,7 +113,7 @@ namespace Insight.Database.Providers
 					else if (command.CommandType == System.Data.CommandType.StoredProcedure)
 						DeriveParametersFromStoredProcedure(command);
 					else
-						throw new InvalidOperationException("Cannot derive parameters from this command");
+						throw new InvalidOperationException("Cannot derive parameters from this command. Have you loaded the provider for your database?");
 
 					return null;
 				},
@@ -121,7 +132,7 @@ namespace Insight.Database.Providers
 		/// <param name="command">The command to derive.</param>
 		public virtual void DeriveParametersFromStoredProcedure(IDbCommand command)
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException("Cannot derive parameters from this stored procedure. Have you loaded the provider for your database?");
 		}
 
 		/// <summary>
@@ -227,7 +238,7 @@ namespace Insight.Database.Providers
 		/// <param name="listType">The type of object in the list.</param>
 		public virtual void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, IEnumerable list, Type listType)
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException("Cannot set up this table valued parameter. Have you loaded the provider for your database?");
 		}
 
 		/// <summary>
@@ -238,7 +249,7 @@ namespace Insight.Database.Providers
 		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
 		public virtual string GetTableSchemaSql(IDbConnection connection, string tableName)
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException("Cannot get the schema for this table. Have you loaded the provider for your database?");
 		}
 
 		/// <summary>
@@ -264,7 +275,7 @@ namespace Insight.Database.Providers
 		/// <param name="transaction">An optional transaction to participate in.</param>
 		public virtual void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
-			throw new NotImplementedException();
+			throw new NotImplementedException("Cannot bulk copy into this database. Have you loaded the provider for your database?");
 		}
 
 		/// <summary>
@@ -324,14 +335,13 @@ namespace Insight.Database.Providers
 			// load the internal providers
 			RegisterProvider(providerMap, new DbConnectionWrapperInsightDbProvider());
 
-			// look for any provider assemblies and load them automatically
+			// look for any provider assemblies in the search path and load them automatically
 			var paths = new List<string>();
 			string relativeSearchPath = AppDomain.CurrentDomain.RelativeSearchPath ?? String.Empty;
-			paths.AddRange(relativeSearchPath.Split(';'));
+			paths.AddRange(relativeSearchPath.Split(';').Select(p => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, p)));
 
 			foreach (string assemblyFile in paths.Distinct()
-				.SelectMany(path => Directory.GetFiles(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path), "Insight.Database.Providers.*.dll")
-					.Distinct()))
+				.SelectMany(path => Directory.GetFiles(path, "Insight.Database.Providers.*.dll").Distinct()))
 			{
 				var assembly = Assembly.LoadFrom(assemblyFile);
 				foreach (var type in assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(InsightDbProvider))))

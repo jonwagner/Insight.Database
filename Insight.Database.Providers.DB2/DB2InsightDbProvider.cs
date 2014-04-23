@@ -41,6 +41,7 @@ namespace Insight.Database.Providers.DB2
 		/// </summary>
 		public static void RegisterProvider()
 		{
+			InsightDbProvider.RegisterProvider(new DB2InsightDbProvider());
 		}
 
 		/// <inheritdoc/>

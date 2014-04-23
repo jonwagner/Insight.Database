@@ -31,6 +31,7 @@ namespace Insight.Database.Providers.Glimpse
 		/// </summary>
 		public static void RegisterProvider()
 		{
+			InsightDbProvider.RegisterProvider(new GlimpseInsightDbProvider());
 		}
 
 		/// <summary>

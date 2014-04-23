@@ -30,6 +30,7 @@ namespace Insight.Database.Providers.MiniProfiler
 		/// </summary>
 		public static void RegisterProvider()
 		{
+			InsightDbProvider.RegisterProvider(new MiniProfilerInsightDbProvider());
 		}
 
 		/// <summary>

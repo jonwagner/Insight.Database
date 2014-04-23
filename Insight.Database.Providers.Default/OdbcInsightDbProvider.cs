@@ -6,8 +6,9 @@ using System.Data.Odbc;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database.Providers;
 
-namespace Insight.Database.Providers
+namespace Insight.Database
 {
 	/// <summary>
 	/// Implements the Insight provider for Odbc connections.
@@ -39,6 +40,7 @@ namespace Insight.Database.Providers
 		/// </summary>
 		public static void RegisterProvider()
 		{
+			InsightDbProvider.RegisterProvider(new OdbcInsightDbProvider());
 		}
 
 		/// <summary>

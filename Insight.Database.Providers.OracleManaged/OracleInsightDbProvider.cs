@@ -38,11 +38,11 @@ namespace Insight.Database.Providers.OracleManaged
 		}
 
 		/// <summary>
-		/// Registers the Oracle Provider
+		/// Registers the Oracle Provider.
 		/// </summary>
-		[Obsolete("Providers no longer need to be registered manually.")]
 		public static void RegisterProvider()
 		{
+			InsightDbProvider.RegisterProvider(new OracleInsightDbProvider());
 		}
 
 		/// <summary>

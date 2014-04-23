@@ -46,6 +46,7 @@ namespace Insight.Database.Providers.MySql
 		/// </summary>
 		public static void RegisterProvider()
 		{
+			InsightDbProvider.RegisterProvider(new MySqlInsightDbProvider());
 		}
 
 		/// <summary>
