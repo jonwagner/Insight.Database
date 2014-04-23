@@ -228,6 +228,9 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A delegate that can return the given column.</returns>
 		public Func<object, object> GetAccessor(int ordinal)
 		{
+			if (ordinal >= _accessors.Length)
+				return null;
+
 			return _accessors[ordinal];
 		}
 
@@ -260,19 +263,24 @@ namespace Insight.Database.CodeGenerator
 		private void FixupSchemaRemoveReadOnlyColumns()
 		{
 			const string ColumnOrdinal = "ColumnOrdinal";
-			const string IsReadOnly = "IsReadOnly";
-			const string IsIdentity = "IsIdentity";
+
+			var isReadOnlyColumn = SchemaTable.Columns.IndexOf("IsReadOnly");
+			var isIdentityColumn = SchemaTable.Columns.IndexOf("IsIdentity");
 
 			// remove any mappings for readonly columns, except identities, which we may want to insert
-			if (SchemaTable.Columns.Contains(IsReadOnly) && SchemaTable.Columns.Contains(IsIdentity))
+			if (isReadOnlyColumn != -1)
 			{
 				SchemaTable.Columns[ColumnOrdinal].ReadOnly = false;
+
 				for (int i = 0; i < SchemaTable.Rows.Count; i++)
 				{
 					var row = SchemaTable.Rows[i];
 					row[ColumnOrdinal] = i;
 
-					if ((bool)row[IsReadOnly] && !(bool)row[IsIdentity])
+					bool isReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture);
+					bool isIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture);
+
+					if (isReadOnly && !isIdentity)
 					{
 						SchemaTable.Rows.Remove(row);
 						i--;

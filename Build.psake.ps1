@@ -12,7 +12,7 @@ properties {
     $version = git describe --abbrev=0 --tags
     $changeset = (git log -1 $version --pretty=format:%H)
 	$assemblyfileversion = $version.Split('-', 2)[0]
-	$assemblyversion = "4.1.3"
+	$assemblyversion = "4.1.4"
 
     $outputDir = "$baseDir\Build\Output"
     $net35Path = "$baseDir\Insight.Database\bin\NET35"

@@ -2,12 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Insight.Database.Sample;
 using System.Data.SqlClient;
 using System.Configuration;
 using System.Data;
 using System.Threading.Tasks;
 using System.Data.Common;
+using Insight.Database;
+using Insight.Database.Sample;
 using Ninject;
 using System.Runtime.CompilerServices;
 
@@ -24,6 +25,8 @@ namespace Insight.Database.Sample
 
 		static void Main(string[] args)
 		{
+			SqlInsightDbProvider.RegisterProvider();
+
             #region Performance Tests
             if (args.Length > 0 && args[0] == "perf")
             {
@@ -203,7 +206,7 @@ namespace Insight.Database.Sample
 			Beer beer = new Beer() { Name = "IPA" };
 
 			// map a beer the stored procedure parameters
-			Database.Connection().Execute("InsertBeer", beer);
+			Database.Connection().Insert("InsertBeer", beer);
 
 			// map an anonymous object to the stored procedure parameters
 			Database.Connection().Execute("DeleteBeer", beer);
@@ -430,6 +433,7 @@ namespace Insight.Database.Sample
 			beer.Add(new Beer() { Id = 1, Name = "Sly Fox IPA", Flavor = "yummy", OriginalGravity = 4.2m });
 			beer.Add(new Beer() { Id = 2, Name = "Hoppopotamus", Flavor = "hoppy", OriginalGravity = 3.0m });
 
+			Database.Connection().InsertList("InsertBeers", beer);
 			Database.Connection().Execute("UpdateBeers", new { Beer = beer });
 		}
 
