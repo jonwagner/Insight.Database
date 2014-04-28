@@ -332,3 +332,11 @@ CREATE TYPE [VarcharIDTableType] AS TABLE ([ID] [varchar](300))
 GO
 CREATE PROCEDURE [VarCharProc] (@p [VarcharIDTableType] READONLY) AS SELECT * FROM @p
 GO
+CREATE FUNCTION [ReflectTableFunction](@p [BeerTable] READONLY)
+RETURNS TABLE AS
+	RETURN SELECT ID FROM @p
+GO
+CREATE FUNCTION [ReflectTableFunction2](@p [BeerTable] READONLY, @q int)
+RETURNS TABLE AS
+	RETURN SELECT ID FROM @p
+GO

@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace Insight.Tests.Cases
 {
-	class Beer
+	public class Beer
 	{
 		public int ID { get; set; }
 		public string Name { get; set; }

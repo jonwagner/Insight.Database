@@ -751,6 +751,31 @@ namespace Insight.Tests
 			Assert.AreEqual("derived", i.Derived());
 		}
 		#endregion
+
+		public interface IHaveTVPWithSQL
+		{
+			[Sql("SELECT * FROM dbo.ReflectTableFunction(@p)")]
+			IEnumerable<Beer> ReflectBeer(IEnumerable<Beer> p);
+
+			[Sql("SELECT * FROM dbo.ReflectTableFunction2(@p, @q)")]
+			IEnumerable<Beer> ReflectBeer2(IEnumerable<Beer> p, int q);
+		}
+
+		[Test]
+		public void CanPassTVPToFunctionInSQLText()
+		{
+			var beer = new List<Beer>()
+			{
+				new Beer()
+			};
+
+			var i = Connection().As<IHaveTVPWithSQL>();
+			var result = i.ReflectBeer(beer);
+			Assert.AreEqual(1, result.Count());
+
+			result = i.ReflectBeer2(beer, 2);
+			Assert.AreEqual(1, result.Count());
+		}
 	}
 
 	#region Interface Update Tests

@@ -184,12 +184,12 @@ namespace Insight.Database.CodeGenerator
 			// look for the parameter that is a Structured object and pass the array to the TVP
 			// note that string supports ienumerable, so exclude atomic types
 			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-			if (enumerable != null && type != typeof(string))
+			if (enumerable != null && type != typeof(string) && parameters.OfType<IDataParameter>().Where(p => p.Direction.HasFlag(ParameterDirection.Input)).Count() == 1)
 			{
-				return (IDbCommand cmd, object o) => 
+				return (IDbCommand cmd, object o) =>
 				{
 					// don't use the provider above. The command may be unwrapped by the time we get back here
-					var tableParameter = InsightDbProvider.For(cmd).CloneParameter(cmd, parameters.OfType<IDataParameter>().FirstOrDefault(p => provider.IsTableValuedParameter(command, p)));
+					var tableParameter = InsightDbProvider.For(cmd).CloneParameter(cmd, parameters.OfType<IDataParameter>().Single(p => p.Direction.HasFlag(ParameterDirection.Input)));
 					cmd.Parameters.Add(tableParameter);
 					ListParameterHelper.AddListParameter(tableParameter, o, cmd);
 				};
