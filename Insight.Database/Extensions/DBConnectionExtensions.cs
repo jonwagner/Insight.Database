@@ -1214,6 +1214,18 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Uses a DbConnection to implement an interface. Calls to the interface are automatically mapped to stored procedure calls.
+		/// </summary>
+		/// <param name="connection">The connection to use for database calls.</param>
+		/// <param name="type">The type of interface to implement.</param>
+		/// <returns>An implementation of the interface that executes database calls.</returns>
+		public static object As(this IDbConnection connection, Type type)
+		{
+			// if the connection already supports T, then return it, otherwise we need a wrapper
+			return InterfaceGenerator.GetImplementorOf(type, () => connection, singleThreaded: true);
+		}
+
+		/// <summary>
 		/// Creates and returns a new multi-threaded connection implementing the given interface.
 		/// The object can support making multiple calls at the same time.
 		/// </summary>
@@ -1222,16 +1234,23 @@ namespace Insight.Database
 		/// <returns>A closed connection that implements the given interface.</returns>
 		public static T AsParallel<T>(this IDbConnection connection) where T : class
 		{
-			if (connection == null) throw new ArgumentNullException("connection");
+			return (T)connection.AsParallel(typeof(T));
+		}
 
-			// can't invoke DbConnectionWrapper AsParallel. AsParallel creates a new instance for each call.
-			// This would be confusing to developers.
-			if (typeof(T).IsSubclassOf(typeof(DbConnectionWrapper)))
-				throw new InvalidOperationException("Types derived from DbConnectionWrapper cannot be invoked AsParallel.");
+		/// <summary>
+		/// Creates and returns a new multi-threaded connection implementing the given interface.
+		/// The object can support making multiple calls at the same time.
+		/// </summary>
+		/// <param name="connection">The connection to use as a template for opening connections. The connection will not be used.</param>
+		/// <param name="type">The type of interface to implement.</param>
+		/// <returns>A closed connection that implements the given interface.</returns>
+		public static object AsParallel(this IDbConnection connection, Type type)
+		{
+			if (connection == null) throw new ArgumentNullException("connection");
 
 			var provider = InsightDbProvider.For(connection);
 			Func<IDbConnection> constructor = () => provider.CloneDbConnection(connection);
-			return constructor.AsParallel<T>();
+			return constructor.AsParallel(type);
 		}
 
 		/// <summary>
@@ -1243,7 +1262,24 @@ namespace Insight.Database
 		/// <returns>A closed connection that implements the given interface.</returns>
 		public static T AsParallel<T>(this Func<IDbConnection> provider) where T : class
 		{
-			return (T)InterfaceGenerator.GetImplementorOf(typeof(T), provider, singleThreaded: false);
+			return (T)provider.AsParallel(typeof(T));
+		}
+
+		/// <summary>
+		/// Creates and returns a new multi-threaded connection implementing the given interface.
+		/// The object can support making multiple calls at the same time.
+		/// </summary>
+		/// <param name="provider">A method that provides a new instance of the DbConnection.</param>
+		/// <param name="type">The type of interface to implement.</param>
+		/// <returns>A closed connection that implements the given interface.</returns>
+		public static object AsParallel(this Func<IDbConnection> provider, Type type)
+		{
+			// can't invoke DbConnectionWrapper AsParallel. AsParallel creates a new instance for each call.
+			// This would be confusing to developers.
+			if (type.IsSubclassOf(typeof(DbConnectionWrapper)))
+				throw new InvalidOperationException("Types derived from DbConnectionWrapper cannot be invoked AsParallel.");
+
+			return InterfaceGenerator.GetImplementorOf(type, provider, singleThreaded: false);
 		}
 		#endregion
 
