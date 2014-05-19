@@ -83,6 +83,29 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Read-Only List Test
+		class HasReadOnlyList
+		{
+			public int ID;
+
+			public IList<Beer> List { get { return _list; } }
+			private readonly List<Beer> _list = new List<Beer>();
+		}
+
+		[Test, ExpectedException(typeof(InvalidOperationException))]
+		public void ReadOnlyListShouldThrowException()
+		{
+			var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2", null,
+				Query.Returns(Some<HasReadOnlyList>.Records)
+						.ThenChildren(Some<Beer>.Records))
+						.First();
+
+			Assert.AreEqual(1, result.ID);
+			Assert.AreEqual(1, result.List.Count);
+			Assert.AreEqual(2, result.List[0].ID);
+		}
+		#endregion
+
 		#region Inline Column Overrides
 		[Test]
 		public void CanOverrideColumnsInline()

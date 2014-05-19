@@ -115,7 +115,13 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Gets a value indicating whether the member can be set.
 		/// </summary>
-		public bool CanSetMember { get { return FieldInfo != null || SetMethodInfo != null; } }
+		public bool CanSetMember
+		{
+			get
+			{
+				return (FieldInfo != null && !FieldInfo.Attributes.HasFlag(FieldAttributes.InitOnly)) || SetMethodInfo != null;
+			}
+		}
 
 		/// <summary>
 		/// Gets a value indicating whether the member can be gotten.
