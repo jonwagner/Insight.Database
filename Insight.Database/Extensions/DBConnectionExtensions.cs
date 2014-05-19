@@ -1274,6 +1274,9 @@ namespace Insight.Database
 		/// <returns>A closed connection that implements the given interface.</returns>
 		public static object AsParallel(this Func<IDbConnection> provider, Type type)
 		{
+			if (type == null) throw new ArgumentNullException("type");
+			if (provider == null) throw new ArgumentNullException("provider");
+
 			// can't invoke DbConnectionWrapper AsParallel. AsParallel creates a new instance for each call.
 			// This would be confusing to developers.
 			if (type.IsSubclassOf(typeof(DbConnectionWrapper)))
