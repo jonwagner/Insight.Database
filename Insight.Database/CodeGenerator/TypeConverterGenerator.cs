@@ -112,10 +112,11 @@ namespace Insight.Database.CodeGenerator
 
 				// after: stack => [target][xDocument]
 			}
-			else if (sourceType == typeof(string) && 
-				targetType != typeof(string) && 
-				targetType != typeof(object) && 
-				(!TypeHelper.IsAtomicType(targetType)))
+			else if (sourceType == typeof(string) &&
+				targetType != typeof(string) &&
+				targetType != typeof(object) &&
+				(!TypeHelper.IsAtomicType(targetType)) &&
+				CanDeserialize(mapping.Serializer, targetType))
 			{
 				// we are getting a string from the database, but the target is not a string, and it's a reference type
 				// assume the column is a serialized data type and that we want to deserialize it
@@ -151,6 +152,10 @@ namespace Insight.Database.CodeGenerator
 				// Enum.Parse returns an object, which we need to unbox to the enum value
 				il.Emit(OpCodes.Unbox_Any, underlyingTargetType);
 			}
+			else if (EmitConstructorConversion(il, sourceType, targetType))
+			{
+				// target type can be constructed from source type
+			}
 			else
 			{
 				// this isn't a system value type, so unbox to the type the reader is giving us (this is a system type, hopefully)
@@ -159,37 +164,23 @@ namespace Insight.Database.CodeGenerator
 
 				if (sourceType != targetType)
 				{
-					// look for a constructor that takes the type as a parameter
-					Type[] sourceTypes = new Type[] { sourceType };
-					ConstructorInfo ci = targetType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, sourceTypes, null);
-					if (ci != null)
+					// attempt to convert the value to the target type
+					if (!EmitConversionOrCoersion(il, sourceType, targetType))
 					{
-						// if the constructor only takes nullable types, warn the programmer
-						if (Nullable.GetUnderlyingType(ci.GetParameters()[0].ParameterType) != null)
-							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Class {0} must provide a constructor taking a parameter of type {1}. Nullable parameters are not supported.", targetType, sourceType));
-
-						il.Emit(OpCodes.Newobj, ci);
-					}
-					else
-					{
-						// attempt to convert the value to the target type
-						if (!EmitConversionOrCoersion(il, sourceType, targetType))
+						if (sourceType != targetType)
 						{
-							if (sourceType != targetType)
-							{
-								throw new InvalidOperationException(String.Format(
-									CultureInfo.InvariantCulture,
-									"Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
-									method.Name,
-									sourceType.AssemblyQualifiedName,
-									targetType.AssemblyQualifiedName));
-							}
+							throw new InvalidOperationException(String.Format(
+								CultureInfo.InvariantCulture,
+								"Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
+								method.Name,
+								sourceType.AssemblyQualifiedName,
+								targetType.AssemblyQualifiedName));
 						}
-
-						// if the target is nullable, then construct the nullable from the data
-						if (Nullable.GetUnderlyingType(targetType) != null)
-							il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
 					}
+
+					// if the target is nullable, then construct the nullable from the data
+					if (Nullable.GetUnderlyingType(targetType) != null)
+						il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
 				}
 			}
 
@@ -437,6 +428,45 @@ namespace Insight.Database.CodeGenerator
 			Type rawTargetType = underlyingTargetType.IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
 
 			return TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType);
+		}
+
+		/// <summary>
+		/// Attempts to emit a constructor conversion from the source to the target type.
+		/// </summary>
+		/// <param name="il">The ILGenerator to emit to.</param>
+		/// <param name="sourceType">The source type.</param>
+		/// <param name="targetType">The target type.</param>
+		/// <returns>True if a conversion could be emitted, false otherwise.</returns>
+		private static bool EmitConstructorConversion(ILGenerator il, Type sourceType, Type targetType)
+		{
+			if (sourceType == targetType)
+				return false;
+
+			ConstructorInfo ci = targetType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { sourceType }, null);
+			if (ci == null)
+				return false;
+
+			il.Emit(OpCodes.Unbox_Any, sourceType);
+			il.Emit(OpCodes.Newobj, ci);
+			return true;
+		}
+
+		/// <summary>
+		/// Determines if the type of deserializer can deserialize to the target type.
+		/// </summary>
+		/// <param name="serializerType">The deserializer.</param>
+		/// <param name="targetType">The target type.</param>
+		/// <returns>True if the type can be deserialized.</returns>
+		private static bool CanDeserialize(Type serializerType, Type targetType)
+		{
+			if (serializerType == null)
+				return false;
+
+			var canDeserialize = serializerType.GetMethod("CanDeserialize");
+			if (canDeserialize == null)
+				return true;
+
+			return (bool)canDeserialize.Invoke(null, new object[] { targetType });
 		}
 
 		/// <summary>

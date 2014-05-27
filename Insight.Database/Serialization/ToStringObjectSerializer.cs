@@ -25,5 +25,16 @@ namespace Insight.Database
 
 			return value.ToString();
 		}
+
+		/// <summary>
+		/// Determines whether the serializer can deserialize the given type of object.
+		/// </summary>
+		/// <param name="type">The type of object.</param>
+		/// <returns>True if the deserializer can deserialize it, false otherwise.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "type")]
+		public static bool CanDeserialize(Type type)
+		{
+			return false;
+		}
 	}
 }

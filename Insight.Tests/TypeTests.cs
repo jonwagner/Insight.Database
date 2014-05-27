@@ -491,6 +491,57 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Type Tests for Conversion by Constructor
+		public class ID<T>
+		{
+			public T Value;
+
+			public ID(T value)
+			{
+				Value = value;
+			}
+
+			public override string ToString()
+			{
+				return Value.ToString();
+			}
+		}
+
+		public class ObjectWithID<T>
+		{
+			public ID<T> ID;
+		}
+
+		[Test]
+		public void Moo<T>(T value, string sqlType)
+		{
+			var data = Connection().QuerySql<ObjectWithID<T>>(String.Format("SELECT ID=CONVERT({0}, @p)", sqlType), new { p = value });
+			Assert.AreEqual(1, data.Count);
+			Assert.IsNotNull(data[0].ID);
+			Assert.AreEqual(value, data[0].ID.Value);
+		}
+
+		[Test]
+		public void TestThatClassesCanBeDeserializedByConstructor()
+		{
+			Moo<string>("s", "varchar(500)");
+			Moo<byte>(5, "tinyint");
+			Moo<short>(5, "smallint");
+			Moo<int>(5, "int");
+			Moo<long>(5, "bigint");
+			Moo<float>(5, "real");
+			Moo<double>(5, "real");
+			Moo<decimal>(5, "decimal(18, 2)");
+			Moo<bool>(true, "bit");
+			Moo<Guid>(Guid.NewGuid(), "uniqueidentifier");
+			Moo<DateTime>(DateTime.Now.Date, "datetime");
+			Moo<DateTimeOffset>(DateTimeOffset.Now, "datetimeoffset");
+			Moo<TimeSpan>(TimeSpan.Parse("00:00:00"), "time");
+
+			// note: char is not compatible with string
+		}
+		#endregion
+
 		#region Class By Conversion Operator
 		class FooByConversionID
 		{
