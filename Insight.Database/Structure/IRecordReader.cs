@@ -20,7 +20,11 @@ namespace Insight.Database.Structure
 	/// An object that can read a record of a given type.
 	/// </summary>
 	/// <typeparam name="T">The type of record that can be read.</typeparam>
+#if NET35
 	public interface IRecordReader<T> : IRecordReader
+#else
+	public interface IRecordReader<out T> : IRecordReader
+#endif
 	{
 		/// <summary>
 		/// Gets a function that can read a record from the given data reader.

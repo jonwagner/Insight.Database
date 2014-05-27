@@ -75,7 +75,9 @@
     <Reference Include="System.Xml.Linq" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CachedDbDataReader.cs" />
     <Compile Include="CodeGenerator\StaticFieldStorage.cs" />
+    <Compile Include="DbDataReaderWrapper.cs" />
     <Compile Include="Extensions\AsyncExtensions.cs" />
     <Compile Include="Extensions\AsyncExtensions.generated.cs">
       <AutoGen>True</AutoGen>
@@ -119,11 +121,13 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>ListReader.tt</DependentUpon>
     </Compile>
+    <Compile Include="Structure\MultiReader.cs" />
     <Compile Include="Structure\OneToOne.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>OneToOne.tt</DependentUpon>
     </Compile>
+    <Compile Include="Structure\PostProcessRecordReader.cs" />
     <Compile Include="Structure\Query.cs" />
     <Compile Include="InsightBulkCopy.cs" />
     <Compile Include="Serialization\JsonObjectSerializer.cs" />

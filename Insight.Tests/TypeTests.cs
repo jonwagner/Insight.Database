@@ -512,8 +512,7 @@ namespace Insight.Tests
 			public ID<T> ID;
 		}
 
-		[Test]
-		public void Moo<T>(T value, string sqlType)
+		public void TestConstructorConversion<T>(T value, string sqlType)
 		{
 			var data = Connection().QuerySql<ObjectWithID<T>>(String.Format("SELECT ID=CONVERT({0}, @p)", sqlType), new { p = value });
 			Assert.AreEqual(1, data.Count);
@@ -524,19 +523,19 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatClassesCanBeDeserializedByConstructor()
 		{
-			Moo<string>("s", "varchar(500)");
-			Moo<byte>(5, "tinyint");
-			Moo<short>(5, "smallint");
-			Moo<int>(5, "int");
-			Moo<long>(5, "bigint");
-			Moo<float>(5, "real");
-			Moo<double>(5, "real");
-			Moo<decimal>(5, "decimal(18, 2)");
-			Moo<bool>(true, "bit");
-			Moo<Guid>(Guid.NewGuid(), "uniqueidentifier");
-			Moo<DateTime>(DateTime.Now.Date, "datetime");
-			Moo<DateTimeOffset>(DateTimeOffset.Now, "datetimeoffset");
-			Moo<TimeSpan>(TimeSpan.Parse("00:00:00"), "time");
+			TestConstructorConversion<string>("s", "varchar(500)");
+			TestConstructorConversion<byte>(5, "tinyint");
+			TestConstructorConversion<short>(5, "smallint");
+			TestConstructorConversion<int>(5, "int");
+			TestConstructorConversion<long>(5, "bigint");
+			TestConstructorConversion<float>(5, "real");
+			TestConstructorConversion<double>(5, "real");
+			TestConstructorConversion<decimal>(5, "decimal(18, 2)");
+			TestConstructorConversion<bool>(true, "bit");
+			TestConstructorConversion<Guid>(Guid.NewGuid(), "uniqueidentifier");
+			TestConstructorConversion<DateTime>(DateTime.Now.Date, "datetime");
+			TestConstructorConversion<DateTimeOffset>(DateTimeOffset.Now, "datetimeoffset");
+			TestConstructorConversion<TimeSpan>(TimeSpan.Parse("00:00:00"), "time");
 
 			// note: char is not compatible with string
 		}

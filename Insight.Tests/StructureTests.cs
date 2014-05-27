@@ -9,6 +9,7 @@ using Insight.Database;
 using Microsoft.SqlServer.Types;
 using NUnit.Framework;
 using Insight.Tests.Cases;
+using Insight.Database.Structure;
 
 #pragma warning disable 0649
 
@@ -120,6 +121,67 @@ namespace Insight.Tests
 
 			Assert.AreEqual(1, result.ID);
 			Assert.AreEqual(2, result.Beer.ID);
+		}
+		#endregion
+
+		#region Multi-Class Reader Tests
+		class MyClass
+		{
+		}
+
+		class MyClassA : MyClass
+		{
+			public int A;
+		}
+
+		class MyClassB : MyClass
+		{
+			public int B;
+		}
+
+#if !NET35
+		[Test]
+		public void MultiReaderCanDeserializeDifferentClasses()
+		{
+			var mr = new MultiReader<MyClass>(
+				reader =>
+				{
+					switch ((string)reader["Type"])
+					{
+						default:
+						case "a":
+							return OneToOne<MyClassA>.Records;
+						case "b":
+							return OneToOne<MyClassB>.Records;
+					}
+				});
+
+			var results = Connection().QuerySql("SELECT [Type]='a', A=1, B=NULL UNION SELECT [Type]='b', A=NULL, B=2", Parameters.Empty, Query.Returns(mr));
+
+			Assert.AreEqual(2, results.Count);
+			Assert.IsTrue(results[0] is MyClassA);
+			Assert.AreEqual(1, ((MyClassA)results[0]).A);
+			Assert.IsTrue(results[1] is MyClassB);
+			Assert.AreEqual(2, ((MyClassB)results[1]).B);
+		}
+#endif
+
+		[Test]
+		public void PostProcessCanReadFieldsInAnyOrder()
+		{
+			var pr = new PostProcessRecordReader<MyClassA>(
+				(reader, a) =>
+				{
+					if (reader["Type"].ToString() == "a")
+						a.A = 9;
+					return a;
+				});
+
+			var results = Connection().QuerySql("SELECT [Type]='a', A=1, B=NULL", Parameters.Empty, Query.Returns(pr));
+
+			Assert.AreEqual(1, results.Count);
+			Assert.IsTrue(results[0] is MyClassA);
+			Assert.AreEqual(9, ((MyClassA)results[0]).A);
 		}
 		#endregion
 	}
