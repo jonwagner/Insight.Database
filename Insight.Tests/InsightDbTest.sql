@@ -145,6 +145,8 @@ CREATE PROCEDURE TestOutputParameters @p int = 1 OUTPUT AS SET @p = 9
 GO
 CREATE PROC ReturnAValue AS RETURN 11
 GO
+CREATE PROCEDURE TestXmlOutputParameters @data [xml] = NULL OUTPUT AS SET @data = @data
+GO
 
 ----------------------------------------------------------
 -- Mapping test procs

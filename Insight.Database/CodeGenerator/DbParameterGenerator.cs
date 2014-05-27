@@ -114,6 +114,7 @@ namespace Insight.Database.CodeGenerator
 			{ DbType.Time, typeof(TimeSpan) },
 			{ DbType.Binary, typeof(byte[]) },
 			{ DbType.Object, typeof(object) },
+            { DbType.Xml, typeof(string) },
 		};
 
 		/// <summary>

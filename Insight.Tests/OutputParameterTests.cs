@@ -207,6 +207,24 @@ namespace Insight.Tests
 		}
 		#endregion
 
+		#region Xml Output Parameters
+		public class OutputXmlParameters
+		{
+			public OutputData Data;
+		}
+
+		[Test]
+		public void TestXmlOutputParameters()
+		{
+			var input = new OutputXmlParameters() { Data = new OutputData() { p = 5 } };
+			var output = new OutputXmlParameters();
+
+			Connection().Execute("TestXmlOutputParameters", input, outputParameters: output);
+
+			Assert.AreEqual(5, output.Data.p);
+		}
+		#endregion
+
 		#region Return Value Tests
 		class ReturnValue
 		{
