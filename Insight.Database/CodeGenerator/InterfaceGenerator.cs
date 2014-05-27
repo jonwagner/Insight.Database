@@ -577,10 +577,7 @@ namespace Insight.Database.CodeGenerator
 
 				// if the object is not atomic, then attempt to merge the results into the first object
 				// methods that start with insert/upsert map to insert
-				if (type != null &&
-					!TypeHelper.IsAtomicType(type) &&
-					(method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
-					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase)))
+				if (type != null && !TypeHelper.IsAtomicType(type) && IsMethodAnUpsert(method))
 				{
 					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
@@ -628,10 +625,7 @@ namespace Insight.Database.CodeGenerator
 
 				// if the object is not atomic, then attempt to merge the results into the first object
 				// methods that start with insert/upsert map to insert
-				if (type != null &&
-					!TypeHelper.IsAtomicType(type) &&
-					(method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
-					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase)))
+				if (type != null && !TypeHelper.IsAtomicType(type) && IsMethodAnUpsert(method))
 				{
 					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
@@ -659,6 +653,18 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			return null;
+		}
+
+		/// <summary>
+		/// Determines whether a method is an insert/upsert and should have its outputs reflected back onto the inputs.
+		/// </summary>
+		/// <param name="method">The method to test.</param>
+		/// <returns>True if the method is an insert or upsert.</returns>
+		private static bool IsMethodAnUpsert(MethodInfo method)
+		{
+			return (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase) ||
+					method.GetCustomAttributes(typeof(MergeOutputAttribute), true).Length > 0);
 		}
 
 		/// <summary>

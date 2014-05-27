@@ -103,6 +103,13 @@ namespace Insight.Tests
 		[Sql("SELECT 'derived'")]
 		string Derived();
 	}
+
+	interface IMergeOutputs
+	{
+		[MergeOutputAttribute]
+		[Sql("SELECT X=4, Z=6")]
+		void DoAMerge(TestData data);
+	}
 	#endregion
 
 	[TestFixture]
@@ -751,6 +758,17 @@ namespace Insight.Tests
 			Assert.AreEqual("derived", i.Derived());
 		}
 		#endregion
+
+		[Test]
+		public void TestMergeOutputAttribute()
+		{
+			var data = new TestData();
+			var i = Connection().As<IMergeOutputs>();
+			i.DoAMerge(data);
+
+			Assert.AreEqual(4, data.X);
+			Assert.AreEqual(6, data.Z);
+		}
 
 		public interface IHaveTVPWithSQL
 		{

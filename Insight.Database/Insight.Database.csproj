@@ -106,6 +106,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DbReaderExtensions.tt</DependentUpon>
     </Compile>
+    <Compile Include="MergeOutputAttribute.cs" />
     <Compile Include="Structure\ColumnOverride.cs" />
     <Compile Include="Structure\DerivedResultsReader.cs" />
     <Compile Include="Structure\IChildRecordReader.cs" />
