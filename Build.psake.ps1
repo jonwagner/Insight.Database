@@ -12,7 +12,7 @@ properties {
     $version = git describe --abbrev=0 --tags
     $changeset = (git log -1 $version --pretty=format:%H)
 	$assemblyfileversion = $version.Split('-', 2)[0]
-	$assemblyversion = "4.1.4"
+	$assemblyversion = $version
 
     $outputDir = "$baseDir\Build\Output"
     $net35Path = "$baseDir\Insight.Database\bin\NET35"
@@ -218,12 +218,22 @@ Task Test45 -depends Build45, Test45Only {
 
 Task PackageOnly {
     Wipe-Folder $outputDir
- 
-    # package nuget
+
+	# package nuget
 	Get-ChildItem $baseDir\Insight* |% { Get-ChildItem -Path $_ } |? Extension -eq .nuspec |% {
 		Exec {
 			$nuspec = $_.FullName
-			Invoke-Expression "$nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis"
+
+			try {
+				(Get-Content $nuspec) |
+					% { $_ -replace "<dependency id=`"Insight.Database.Core`" version=`"(\d+\.?)*`">","<dependency id=`"Insight.Database.Core`" version=`"$version`">" } |
+					Set-Content $nuspec
+
+				Invoke-Expression "$nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis"
+			}
+			finally {
+		        git checkout $nuspec
+			}
 		}
 	}
 }
