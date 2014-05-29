@@ -148,5 +148,56 @@ namespace Insight.Tests
 			Assert.AreEqual(TimeSpan.Parse("00:01:01"), item.TimeSpan);
 		}
 		#endregion
+
+		#region Private Property Tests
+		public class ParentWithPrivate
+		{
+			public string Name { get; private set; }
+			public virtual string VirtualName { get; private set; }
+
+			public ParentWithPrivate()
+			{
+			}
+
+			public ParentWithPrivate(string virtualName)
+			{
+				VirtualName = virtualName;
+			}
+		}
+
+		public class ChildWithPrivate : ParentWithPrivate
+		{
+			public ChildWithPrivate()
+			{
+			}
+
+			public ChildWithPrivate(string virtualName) : base(virtualName)
+			{
+			}
+	
+			public override string VirtualName
+			{
+				get
+				{
+					return "virtual" + base.VirtualName;
+				}
+			}
+		}
+
+		[Test]
+		public void PrivateParentPropertiesCanBeSet()
+		{
+			var results = Connection().QuerySql<ChildWithPrivate>("SELECT Name='name'").First();
+			Assert.AreEqual("name", results.Name);
+		}
+
+		[Test]
+		public void VirtualOverridesAreCalled()
+		{
+			var child = new ChildWithPrivate("name");
+			var results = Connection().ExecuteScalarSql<string>("SELECT @VirtualName", child);
+			Assert.AreEqual("virtualname", results);
+		}
+		#endregion
 	}
 }
