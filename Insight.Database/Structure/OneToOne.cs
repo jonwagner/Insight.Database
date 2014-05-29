@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Linq;
 using System.Reflection;
@@ -34,17 +35,6 @@ namespace Insight.Database
 		/// The hash code for this mapping.
 		/// </summary>
 		private int _hashCode;
-
-		/// <summary>
-		/// An optional column mapping override;
-		/// Type is the type it applies to, then column name, then field name.
-		/// </summary>
-		private List<ColumnOverride> _columnOverride;
-
-		/// <summary>
-		/// An optional mapping of the name of columns that is used to split the recordset.
-		/// </summary>
-		private IDictionary<Type, string> _splitColumns;
 		#endregion
 
 		#region Constructors
@@ -100,7 +90,18 @@ namespace Insight.Database
 		/// <summary>
 		/// Gets an optional callback that can be used to assemble the records.
 		/// </summary>
-		internal Delegate Callback { get; private set; }
+		protected internal Delegate Callback { get; private set; }
+
+		/// <summary>
+		/// Gets an optional column mapping override;
+		/// Type is the type it applies to, then column name, then field name.
+		/// </summary>
+		protected internal IList<ColumnOverride> ColumnOverrides { get; private set; }
+
+		/// <summary>
+		/// Gets an optional mapping of the name of columns that is used to split the recordset.
+		/// </summary>
+		protected internal IDictionary<Type, string> SplitColumns { get; private set; }
 		#endregion
 
 		#region Methods
@@ -120,18 +121,18 @@ namespace Insight.Database
 				return false;
 
 			// validate that the columns are the same object
-			if (_splitColumns != o._splitColumns)
+			if (SplitColumns != o.SplitColumns)
 			{
 				// different objects, so we have to check the contents.
 				// this is a performance hit, so you should pass in the same id mapping each time!
-				var otherSplitColumns = o._splitColumns;
+				var otherSplitColumns = o.SplitColumns;
 
 				// check the count first as a short-circuit
-				if (_splitColumns.Count != otherSplitColumns.Count)
+				if (SplitColumns.Count != otherSplitColumns.Count)
 					return false;
 
 				// check the id mappings individually
-				foreach (var pair in _splitColumns)
+				foreach (var pair in SplitColumns)
 				{
 					string otherID;
 					if (!otherSplitColumns.TryGetValue(pair.Key, out otherID))
@@ -154,15 +155,15 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		IDictionary<Type, string> IRecordStructure.GetSplitColumns() { return _splitColumns; }
+		IDictionary<Type, string> IRecordStructure.GetSplitColumns() { return SplitColumns; }
 
 		/// <inheritdoc/>
 		void IRecordStructure.MapColumn(ColumnMappingEventArgs e)
 		{
-			if (_columnOverride == null)
+			if (ColumnOverrides == null)
 				return;
 
-			var match = _columnOverride.SingleOrDefault(
+			var match = ColumnOverrides.SingleOrDefault(
 				t =>
 					(t.TargetType == null || t.TargetType == e.TargetType) && 
 					String.Compare(t.ColumnName, e.TargetFieldName, StringComparison.OrdinalIgnoreCase) == 0);
@@ -193,7 +194,30 @@ namespace Insight.Database
 		/// <returns>The record definition.</returns>
 		public virtual IRecordReader<Guardian<T, TId>> GetGuardianReader<TId>()
 		{
-			return OneToOne<Guardian<T, TId>, T>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T, TId>, T>.Records;
+
+			Action<Guardian<T, TId>, T> callback = null;
+			if (Callback != null)
+			{
+				Action<T> innerCallback = (Action<T>)Callback;
+				callback = (guardian, inner) =>
+					{
+						guardian.Object = inner;
+						innerCallback(guardian.Object);
+					};
+			}
+
+			return new OneToOne<Guardian<T, TId>, T>(callback, ColumnOverrides, SplitColumns); 
+		}
+
+		/// <summary>
+		/// Determines if this reader only uses the default options.
+		/// </summary>
+		/// <returns>True if no additional options were used.</returns>
+		protected bool IsDefaultReader()
+		{
+			return (Callback == null && ColumnOverrides == null && SplitColumns == null);
 		}
 
 		/// <summary>
@@ -209,8 +233,8 @@ namespace Insight.Database
 		{
 			Callback = callback;
 			if (columnOverride != null)
-				_columnOverride = columnOverride.ToList();
-			_splitColumns = splitColumns;
+				ColumnOverrides = columnOverride.ToList();
+			SplitColumns = splitColumns;
 
 			unchecked
 			{

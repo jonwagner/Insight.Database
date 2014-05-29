@@ -60,7 +60,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -75,7 +75,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2> innerCallback = (Action<T1, T2>)Callback;
+				callback = (guardian, t1, t2) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -146,7 +160,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -161,7 +175,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3> innerCallback = (Action<T1, T2, T3>)Callback;
+				callback = (guardian, t1, t2, t3) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -235,7 +263,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -250,7 +278,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4> innerCallback = (Action<T1, T2, T3, T4>)Callback;
+				callback = (guardian, t1, t2, t3, t4) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -327,7 +369,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -342,7 +384,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5> innerCallback = (Action<T1, T2, T3, T4, T5>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -422,7 +478,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -437,7 +493,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6> innerCallback = (Action<T1, T2, T3, T4, T5, T6>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -520,7 +590,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -535,7 +605,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -621,7 +705,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -636,7 +720,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -725,7 +823,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -740,7 +838,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8, t9) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8, t9);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -832,7 +944,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -847,7 +959,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -942,7 +1068,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -957,7 +1083,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1055,7 +1195,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -1070,7 +1210,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1171,7 +1325,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -1186,7 +1340,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1290,7 +1458,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -1305,7 +1473,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1412,7 +1594,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -1427,7 +1609,21 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
-			return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Records;
+
+			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback = null;
+			if (Callback != null)
+			{
+				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>)Callback;
+				callback = (guardian, t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15) =>
+					{
+						guardian.Object = t1;
+						innerCallback(t1, t2, t3, t4, t5, t6, t7, t8, t9, t10, t11, t12, t13, t14, t15);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1537,7 +1733,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}

@@ -184,5 +184,31 @@ namespace Insight.Tests
 			Assert.AreEqual(9, ((MyClassA)results[0]).A);
 		}
 		#endregion
+
+		#region Issue 109 Tests
+		public class ParentFor109
+		{
+			public int ID;
+			public List<ChildFor109> Children;
+		}
+
+		public class ChildFor109
+		{
+			public int Foo;
+		}
+
+		[Test]
+		public void ColumnMappingShouldWorkForChildRecordsets()
+		{
+			var childReader = new OneToOne<ChildFor109>(new ColumnOverride("Bar", "Foo"));
+
+			var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, Bar=3", Parameters.Empty,
+							Query.Returns(Some<ParentFor109>.Records)
+								.ThenChildren(childReader)).First();
+
+			Assert.AreEqual(1, results.Children.Count);
+			Assert.AreEqual(3, results.Children[0].Foo);
+		}
+		#endregion
 	}
 }

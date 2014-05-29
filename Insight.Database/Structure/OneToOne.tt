@@ -16,6 +16,7 @@ namespace Insight.Database
 <# for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 {
 	var typeList = GetGenericList(typeCount, "T{0}");
+	var parameterList = GetGenericList(typeCount, "t{0}");
 #>
 	/// <summary>
 	/// Represents a one-to-one object mapping that is returned in a single recordset.
@@ -73,7 +74,7 @@ namespace Insight.Database
 		/// Keys are column names, values are property names.
 		/// </param>
 		/// <param name="splitColumns">An optional map of the names of ID columns that can be used to split the recordset.</param>
-		public OneToOne(Action<<#= typeList #>> callback = null, IEnumerable<ColumnOverride> columnOverride = null, Dictionary<Type, string> splitColumns = null)
+		public OneToOne(Action<<#= typeList #>> callback = null, IEnumerable<ColumnOverride> columnOverride = null, IDictionary<Type, string> splitColumns = null)
 		{
 			Initialize(callback, columnOverride, splitColumns);
 		}
@@ -89,7 +90,21 @@ namespace Insight.Database
 		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
 		{
 <# if (typeCount < GenericTypeMax) { #>
-			return OneToOne<Guardian<T1, TID>, <#= typeList #>>.Records;
+			if (IsDefaultReader())
+				return OneToOne<Guardian<T1, TID>, <#= typeList #>>.Records;
+
+			Action<Guardian<T1, TID>, <#= typeList #>> callback = null;
+			if (Callback != null)
+			{
+				Action<<#= typeList #>> innerCallback = (Action<<#= typeList #>>)Callback;
+				callback = (guardian, <#= parameterList #>) =>
+					{
+						guardian.Object = t1;
+						innerCallback(<#= parameterList #>);
+					};
+			}
+
+			return new OneToOne<Guardian<T1, TID>, <#= typeList #>>(callback, ColumnOverrides, SplitColumns); 
 <# } else { #>
 			throw new NotImplementedException();
 <# } #>
