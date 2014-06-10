@@ -974,4 +974,19 @@ namespace Insight.Tests
 		}
 	}
 	#endregion
+
+	public interface IBar
+	{
+		[Sql("PRINT 1")]
+		int Foo();
+	}
+
+	public class Nah : BaseTest {
+		[Test]
+		public void Blah()
+		{
+			var i = Connection().As<IBar>();
+			i.Foo();
+		}
+	}
 }

@@ -49,5 +49,11 @@ namespace Insight.Tests
 			Assert.AreEqual(input.In, result);
 			input.Verify(output);
 		}
+
+		[Test, ExpectedException(typeof(InvalidOperationException))]
+		public void NonNullableReturnShouldThrowWhenNoRowsAreReturned()
+		{
+			Connection().ExecuteScalarSql<int>("PRINT 1");
+		}
 	}
 }

@@ -389,9 +389,12 @@ namespace Insight.Database
 				{
 					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
 					{
-						var result = (T)cmd.ExecuteScalar();
+						object result = cmd.ExecuteScalar();
+						if (result == null && Nullable.GetUnderlyingType(typeof(T)) == null)
+							throw new InvalidOperationException("Recordset returned no rows, but ExecuteScalar is trying to return a non-nullable type.");
+
 						cmd.OutputParameters(parameters, outputParameters);
-						return result;
+						return (T)result;
 					}
 				},
 				closeConnection);
