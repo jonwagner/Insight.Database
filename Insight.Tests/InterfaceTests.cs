@@ -9,6 +9,7 @@ using System.Data.Common;
 using System.Data;
 using System.Threading;
 using Insight.Tests.Cases;
+using Insight.Database.Reliable;
 
 // since the interface and types are private, we have to let insight have access to them
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Insight.Database")]
@@ -836,13 +837,26 @@ namespace Insight.Tests
 	public class MultiThreadedInterfaceTests : BaseTest
 	{
 		[Test]
-		public void Foo()
+		public void CanCallInterfaceMultiThreaded()
 		{
 			var foo = Connection().AsParallel<IMultiThreaded>();
 
 			var tasks = new List<Task>();
 			for (int i = 0; i < 100; i++)
 				tasks.Add (foo.FooAsync(i));
+
+			Task.WaitAll(tasks.ToArray());
+		}
+
+		[Test]
+		public void CanCallWrappedConnectionMultiThreaded()
+		{
+			var reliable = new ReliableConnection((DbConnection)Connection());
+			var foo = reliable.AsParallel<IMultiThreaded>();
+
+			var tasks = new List<Task>();
+			for (int i = 0; i < 100; i++)
+				tasks.Add(foo.FooAsync(i));
 
 			Task.WaitAll(tasks.ToArray());
 		}

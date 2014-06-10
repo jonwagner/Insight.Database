@@ -40,9 +40,13 @@ namespace Insight.Database.Providers
 		{
 			if (connection == null) throw new ArgumentNullException("connection");
 
-			var newConnection = (IDbConnection)System.Activator.CreateInstance(connection.GetType());
-			newConnection.ConnectionString = connection.ConnectionString;
-			return newConnection;
+			// clone the inner connection
+			var innerConnection = GetInnerConnection(connection);
+			var innerProvider = InsightDbProvider.For(innerConnection);
+			var clonedInnerConnection = innerProvider.CloneDbConnection(innerConnection);
+
+			// create a new wrapper
+			return (IDbConnection)System.Activator.CreateInstance(connection.GetType(), clonedInnerConnection);
 		}
 
 		/// <summary>
