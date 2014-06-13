@@ -323,7 +323,7 @@ CREATE TYPE [StringMapTable] AS TABLE
 	[Value] [varchar](1024)
 )
 GO
-GRANT EXEC ON TYPE::dbo.StringMapTable TO public
+GRANT EXEC ON TYPE::StringMapTable TO public
 GO
 CREATE PROC [TestMap]
 	@Map [StringMapTable] READONLY

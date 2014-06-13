@@ -975,17 +975,18 @@ namespace Insight.Tests
 	}
 	#endregion
 
-	public interface IBar
+	public interface IDontReturnAScalar
 	{
 		[Sql("PRINT 1")]
 		int Foo();
 	}
 
-	public class Nah : BaseTest {
-		[Test]
-		public void Blah()
+	public class Nah : BaseTest
+	{
+		[Test, ExpectedException(typeof(InvalidOperationException))]
+		public void NonNullableReturnShouldThrowWhenNoRowsAreReturned()
 		{
-			var i = Connection().As<IBar>();
+			var i = Connection().As<IDontReturnAScalar>();
 			i.Foo();
 		}
 	}
