@@ -253,5 +253,25 @@ namespace Insight.Tests.OracleManaged
 			}
 		}
 		#endregion
+
+        [Test]
+        public void TestBindByName()
+        {
+            // if the sql uses the same name twice, we need to set bindbyname to true
+            var sql = @"select 
+                       :p1 p1,
+                        :p1 p1,
+                        :p2 p2
+                        from dual";
+
+            var args = new
+            {
+                p1 = "one",
+                p2 = "two"
+            };
+
+            var result = _connection.QuerySql<dynamic>(sql, args);
+            result = _connection.QuerySql<dynamic>(sql, args);
+        }
 	}
 }

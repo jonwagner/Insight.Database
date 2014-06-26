@@ -52,6 +52,15 @@ namespace Insight.Database.Providers.Oracle
 			return new OracleConnection();
 		}
 
+		/// <inheritdoc/>
+		public override IDbCommand CreateCommand(IDbConnection connection)
+		{
+			var command = (OracleCommand)connection.CreateCommand();
+			command.BindByName = true;
+
+			return command;
+		}
+
 		/// <summary>
 		/// Derives the parameter list from a stored procedure command.
 		/// </summary>

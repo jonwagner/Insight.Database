@@ -262,7 +262,7 @@ namespace Insight.Database
 			if (connection == null) throw new ArgumentNullException("connection");
 
 			// create a db command
-			IDbCommand cmd = connection.CreateCommand();
+			IDbCommand cmd = InsightDbProvider.For(connection).CreateCommand(connection);
 			cmd.CommandType = commandType;
 			cmd.CommandText = sql;
 

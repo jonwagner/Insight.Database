@@ -82,6 +82,16 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
+		/// Creates a new DbCommand supported by this provider.
+		/// </summary>
+		/// <param name="connection">The connection to use to create the command.</param>
+		/// <returns>A DbCommand for this connection.</returns>
+		public virtual IDbCommand CreateCommand(IDbConnection connection)
+		{
+			return connection.CreateCommand();
+		}
+
+		/// <summary>
 		/// Clones a new DbConnection supported by this provider.
 		/// </summary>
 		/// <param name="connection">The connection to clone.</param>
