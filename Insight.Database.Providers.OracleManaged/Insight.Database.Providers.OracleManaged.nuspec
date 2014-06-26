@@ -21,8 +21,11 @@ Automatically installs Oracle ODP.NET Managed Driver. Depends on Insight.Databas
 	</dependencies>
   </metadata>
   <files>
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.dll" target="lib" />
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.xml" target="lib" />
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.pdb" target="lib" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.OracleManaged.dll" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.OracleManaged.xml" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.OracleManaged.pdb" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.dll" target="lib\net45" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.xml" target="lib\net45" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.OracleManaged.pdb" target="lib\net45" />
   </files>
 </package>

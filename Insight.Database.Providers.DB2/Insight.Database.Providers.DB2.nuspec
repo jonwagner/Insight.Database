@@ -20,8 +20,11 @@ Requires DB2's .NET provider.
 	  </dependencies>
   </metadata>
   <files>
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.dll" target="lib" />
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.xml" target="lib" />
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.pdb" target="lib" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.DB2.dll" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.DB2.xml" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.DB2.pdb" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.dll" target="lib\net45" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.xml" target="lib\net45" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.DB2.pdb" target="lib\net45" />
   </files>
 </package>

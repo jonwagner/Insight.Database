@@ -62,47 +62,54 @@ function Wipe-Folder {
     New-Item -Path $Path -ItemType Directory | Out-Null
 }
 
+function Do-Build35 {
+	param (
+		[string] $Project,
+		[string] $ProjectFile
+	)
+
+	if ($ProjectFile -eq "") { $ProjectFile = $Project }
+
+	Exec {
+		Invoke-Expression "$msbuild $baseDir\$Project\$ProjectFile.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
+	}
+
+    # copy the binaries to the net35 folder
+    Copy-Item $baseDir\$Project\bin\Release\*.* $net35Path
+}
+
 Task Build35 {
     ReplaceVersions
 
     try {
-        # build the NET35 binaries
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
-		}
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database.Configuration\Insight.Database.Configuration.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
-		}
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
-		}
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database.Compatibility3x\Insight.Database.Compatibility3x.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
-		}
-		Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.PostgreSQL\Insight.Database.Providers.PostgreSQL.NET35.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
-        }
-		Exec {
-		    Invoke-Expression "$msbuild $baseDir\Insight.Tests\Insight.Tests.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
-        }
-		Exec {
-		    Invoke-Expression "$msbuild $baseDir\Insight.Tests.Compatibility3x\Insight.Tests.Compatibility3x.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
-        }
-
-        # copy the binaries to the net35 folder
         Wipe-Folder $net35Path
-        Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net35Path
-        Copy-Item $baseDir\Insight.Database.Configuration\bin\Release\*.* $net35Path
-        Copy-Item $baseDir\Insight.Database.Providers.Default\bin\Release\*.* $net35Path
-        Copy-Item $baseDir\Insight.Database.Compatibility3x\bin\Release\*.* $net35Path
-        Copy-Item $baseDir\Insight.Database.Json\bin\Release\*.* $net35Path
-        Copy-Item $baseDir\Insight.Database.Providers.PostgreSQL\bin\Release\*.* $net35Path
-        Copy-Item $baseDir\Insight.Tests\bin\Release\*.* $net35Path
-        Copy-Item $baseDir\Insight.Tests.Compatibility3x\bin\Release\*.* $net35Path
+
+        # build the NET35 binaries
+		Do-Build35 "Insight.Database"
+		Do-Build35 "Insight.Database.Configuration"
+		Do-Build35 "Insight.Database.Compatibility3x"
+		Do-Build35 "Insight.Database.Providers.Default"
+		Do-Build35 "Insight.Database.Providers.PostgreSQL" "Insight.Database.Providers.PostgreSQL.NET35"
+		Do-Build35 "Insight.Tests"
+		Do-Build35 "Insight.Tests.Compatibility3x"
     }
     finally {
         RestoreVersions
     }
+}
+
+
+function Do-Build40 {
+	param (
+		[string] $Project
+	)
+
+	Exec {
+        Invoke-Expression "$msbuild $baseDir\$Project\$Project.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
+	}
+
+    # copy the binaries to the net40 folder
+    Copy-Item $baseDir\$Project\bin\Release\*.* $net40Path
 }
 
 Task Build40 {
@@ -110,42 +117,17 @@ Task Build40 {
 
     try {
         # build the NET40 binaries
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database.Configuration\Insight.Database.Configuration.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database.Compatibility3x\Insight.Database.Compatibility3x.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-		Exec {
-		    Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.Glimpse\Insight.Database.Providers.Glimpse.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-		Exec {
-		    Invoke-Expression "$msbuild $baseDir\Insight.Database.Providers.PostgreSQL\Insight.Database.Providers.PostgreSQL.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-		Exec {
-		    Invoke-Expression "$msbuild $baseDir\Insight.Tests\Insight.Tests.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-		Exec {
-		    Invoke-Expression "$msbuild $baseDir\Insight.Tests.Compatibility3x\Insight.Tests.Compatibility3x.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
-        }
-
-        # copy the binaries to the net40 folder
-        Wipe-Folder $net40Path
-        Copy-Item $baseDir\Insight.Database\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Database.Configuration\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Database.Providers.Default\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Database.Compatibility3x\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Database.Json\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Database.Providers.Glimpse\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Database.Providers.PostgreSQL\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Tests\bin\Release\*.* $net40Path
-        Copy-Item $baseDir\Insight.Tests.Compatibility3x\bin\Release\*.* $net40Path
+		Do-Build40 "Insight.Database"
+		Do-Build40 "Insight.Database.Configuration"
+		Do-Build40 "Insight.Database.Compatibility3x"
+		Do-Build40 "Insight.Database.Providers.Default"
+		Do-Build40 "Insight.Database.Providers.DB2"
+		Do-Build40 "Insight.Database.Providers.Glimpse"
+		Do-Build40 "Insight.Database.Providers.Oracle"
+		Do-Build40 "Insight.Database.Providers.OracleManaged"
+		Do-Build40 "Insight.Database.Providers.PostgreSQL"
+		Do-Build40 "Insight.Tests"
+		Do-Build40 "Insight.Tests.Compatibility3x"
     }
     finally {
         RestoreVersions

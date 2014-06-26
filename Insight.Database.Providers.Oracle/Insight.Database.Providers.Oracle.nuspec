@@ -20,8 +20,11 @@ Requires Oracle ODP.NET. Depends on Insight.Database.
 	  </dependencies>
   </metadata>
   <files>
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.dll" target="lib" />
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.xml" target="lib" />
-    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.pdb" target="lib" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.Oracle.dll" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.Oracle.xml" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET40\Insight.Database.Providers.Oracle.pdb" target="lib\net40" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.dll" target="lib\net45" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.xml" target="lib\net45" />
+    <file src="..\Insight.Database\bin\NET45\Insight.Database.Providers.Oracle.pdb" target="lib\net45" />
   </files>
 </package>
