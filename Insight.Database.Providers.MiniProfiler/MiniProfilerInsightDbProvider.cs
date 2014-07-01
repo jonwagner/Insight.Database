@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -31,6 +32,20 @@ namespace Insight.Database.Providers.MiniProfiler
 		public static void RegisterProvider()
 		{
 			InsightDbProvider.RegisterProvider(new MiniProfilerInsightDbProvider());
+		}
+
+		/// <inheritdoc/>
+		public override IDbConnection CloneDbConnection(IDbConnection connection)
+		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
+			// clone the inner connection
+			var innerConnection = GetInnerConnection(connection);
+			var innerProvider = InsightDbProvider.For(innerConnection);
+			var clonedInnerConnection = (DbConnection)innerProvider.CloneDbConnection(innerConnection);
+
+			var profiledConnection = (ProfiledDbConnection)connection;
+			return new ProfiledDbConnection(clonedInnerConnection, profiledConnection.Profiler);
 		}
 
 		/// <summary>

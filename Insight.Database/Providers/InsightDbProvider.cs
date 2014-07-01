@@ -59,6 +59,25 @@ namespace Insight.Database.Providers
 		{
 			RegisterProvider(_providerMap.Value, provider);
 		}
+
+		/// <summary>
+		/// Gets the provider that supports the given object.
+		/// </summary>
+		/// <param name="o">The object to inspect.</param>
+		/// <returns>The provider for the object.</returns>
+		public static InsightDbProvider For(object o)
+		{
+			InsightDbProvider provider;
+
+			// walk the base classes to see if we know anything about what class it is derived from
+			for (Type type = o.GetType(); type != null; type = type.BaseType)
+			{
+				if (_providerMap.Value.TryGetValue(type, out provider) && provider != null)
+					return provider;
+			}
+
+			return _defaultProvider;
+		}
 		#endregion
 
 		#region Overrideables
@@ -298,25 +317,6 @@ namespace Insight.Database.Providers
 			return false;
 		}
 		#endregion
-
-		/// <summary>
-		/// Gets the provider that supports the given object.
-		/// </summary>
-		/// <param name="o">The object to inspect.</param>
-		/// <returns>The provider for the object.</returns>
-		internal static InsightDbProvider For(object o)
-		{
-			InsightDbProvider provider;
-
-			// walk the base classes to see if we know anything about what class it is derived from
-			for (Type type = o.GetType(); type != null; type = type.BaseType)
-			{
-				if (_providerMap.Value.TryGetValue(type, out provider) && provider != null)
-					return provider;
-			}
-
-			return _defaultProvider;
-		}
 
 		/// <summary>
 		/// Copies a single parameter by index and adds it to the command.

@@ -20,15 +20,14 @@ namespace Insight.Database
 	{
 		#region Private Members
 		/// <summary>
-		/// Gets the inner connection to use to execute the database commands.
+		/// Gets or sets the inner connection to use to execute the database commands.
 		/// </summary>
-		public DbConnection InnerConnection { get; private set; }
+		public DbConnection InnerConnection { get; protected internal set; }
 		#endregion
 
 		#region Constructors
 		/// <summary>
 		/// Initializes a new instance of the DbConnectionWrapper class.
-		/// A default retry strategy is used.
 		/// </summary>
 		/// <param name="innerConnection">The inner connection to wrap.</param>
 		public DbConnectionWrapper(IDbConnection innerConnection)
@@ -42,6 +41,13 @@ namespace Insight.Database
 				throw new ArgumentException("innerConnection must be derived from DbConnection", "innerConnection");
 
 			InnerConnection = dbConnection;
+		}
+
+		/// <summary>
+		/// Initializes a new instance of the DbConnectionWrapper class.
+		/// </summary>
+		protected internal DbConnectionWrapper()
+		{
 		}
 		#endregion
 

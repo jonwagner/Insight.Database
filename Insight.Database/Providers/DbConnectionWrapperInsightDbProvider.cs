@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -38,6 +39,26 @@ namespace Insight.Database.Providers
 		{
 			var inner = GetInnerConnection(connection);
 			return InsightDbProvider.For(inner).GetSupportedBulkCopyOptions(connection);
+		}
+
+		/// <summary>
+		/// Clones a new DbConnection supported by this provider.
+		/// </summary>
+		/// <param name="connection">The connection to clone.</param>
+		/// <returns>A new DbConnection.</returns>
+		public override IDbConnection CloneDbConnection(IDbConnection connection)
+		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
+			// clone the inner connection
+			var innerConnection = GetInnerConnection(connection);
+			var innerProvider = InsightDbProvider.For(innerConnection);
+			var clonedInnerConnection = innerProvider.CloneDbConnection(innerConnection);
+
+			var clone = (DbConnectionWrapper)new DbConnectionWrapper();
+			clone.InnerConnection = (DbConnection)clonedInnerConnection;
+
+			return clone;
 		}
 
 		/// <summary>
