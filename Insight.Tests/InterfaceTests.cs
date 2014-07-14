@@ -981,7 +981,7 @@ namespace Insight.Tests
 		int Foo();
 	}
 
-	public class Nah : BaseTest
+	public class NullableReturnTests : BaseTest
 	{
 		[Test, ExpectedException(typeof(InvalidOperationException))]
 		public void NonNullableReturnShouldThrowWhenNoRowsAreReturned()

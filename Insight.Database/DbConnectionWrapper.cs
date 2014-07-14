@@ -188,7 +188,7 @@ namespace Insight.Database
 
 					if (InnerConnection != null)
 					{
-						InnerConnection.Dispose();
+						InnerConnection.Close();
 						InnerConnection = null;
 					}
 				}
