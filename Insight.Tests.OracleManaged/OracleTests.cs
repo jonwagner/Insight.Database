@@ -199,6 +199,16 @@ namespace Insight.Tests.OracleManaged
 			}
 		}
 
+		private void TestAutoDetectCursorsInSql()
+		{
+			var results = _connection.QueryResultsSql<decimal, decimal>(@"BEGIN
+					OPEN :r1 FOR Select 1 as p from dual;
+					OPEN :r2 FOR Select 2 as p from dual;
+				END;");
+			Assert.AreEqual(1, results.Set1.First());
+			Assert.AreEqual(2, results.Set2.First());
+		}
+
 		[Test, Ignore]
 		public void TestReliableConnection()
 		{

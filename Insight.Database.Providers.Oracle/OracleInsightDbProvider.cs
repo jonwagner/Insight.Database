@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Oracle.DataAccess.Client;
 
@@ -17,6 +18,11 @@ namespace Insight.Database.Providers.Oracle
 	/// </summary>
 	public class OracleInsightDbProvider : InsightDbProvider
 	{
+		/// <summary>
+		/// Regex used to auto-detect cursors in queries.
+		/// </summary>
+		private static Regex _cursorSql = new Regex(@"OPEN\s+[@:](?<cursor>\w+)\s+FOR", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+
 		/// <summary>
 		/// The list of types supported by this provider.
 		/// </summary>
@@ -68,6 +74,24 @@ namespace Insight.Database.Providers.Oracle
 		public override void DeriveParametersFromStoredProcedure(IDbCommand command)
 		{
 			OracleCommandBuilder.DeriveParameters(command as OracleCommand);
+		}
+
+		/// <inheritdoc/>
+		public override void DeriveParametersFromSqlText(IDbCommand command)
+		{
+			base.DeriveParametersFromSqlText(command);
+
+			// detect cursors in the command so we can automatically add the parameters as refcursors
+			var cursors = _cursorSql.Matches(command.CommandText).OfType<Match>().Select(m => m.Groups[1].Value);
+
+			if (cursors.Any())
+			{
+				foreach (var c in command.Parameters.OfType<OracleParameter>().Where(p => cursors.Contains(p.ParameterName)))
+				{
+					c.Direction = ParameterDirection.Output;
+					c.OracleDbType = OracleDbType.RefCursor;
+				}
+			}
 		}
 
 		/// <summary>
