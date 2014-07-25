@@ -663,6 +663,7 @@ namespace Insight.Database.CodeGenerator
 		private static bool IsMethodAnUpsert(MethodInfo method)
 		{
 			return (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
+					method.Name.StartsWith("Update", StringComparison.OrdinalIgnoreCase) ||
 					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase) ||
 					method.GetCustomAttributes(typeof(MergeOutputAttribute), true).Length > 0);
 		}
