@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Microsoft.SqlServer.Types;
 using NUnit.Framework;
+using System.Collections.ObjectModel;
 
 #pragma warning disable 0649
 
@@ -65,6 +66,164 @@ namespace Insight.Tests
 			Assert.AreNotEqual(sql, ParentTestData.Sql);
 			var results = Connection().QuerySql<ParentTestData, TestData>(sql);
 			ParentTestData.Verify(results);
+		}
+		#endregion
+
+		#region Multiple Level Mapping Tests
+		public class FlattenedParameters
+		{
+			public int Y1;
+			public int Y2;
+		}
+
+		public class FlattenedParameters2
+		{
+			public int Z1;
+			public int Z2;
+		}
+
+		public interface IFlattenParameters
+		{
+			[Sql("SELECT x=@x, y1=@y1, y2=@y2")]
+			FastExpando Foo(int x, FlattenedParameters y);
+
+			[Sql("SELECT x=@x, y1=@y1, y2=@y2, z1=@z1, z2=@z2")]
+			FastExpando Foo(int x, FlattenedParameters y, FlattenedParameters2 z);
+		}
+
+		[Test]
+		public void IntefaceMethodsFlattenParameters()
+		{
+			FastExpando result = Connection().As<IFlattenParameters>().Foo(1, new FlattenedParameters() { Y1 = 2, Y2 = 3 });
+
+			Assert.AreEqual(1, result["x"]);
+			Assert.AreEqual(2, result["y1"]);
+			Assert.AreEqual(3, result["y2"]);
+		}
+
+		[Test]
+		public void IntefaceMethodsFlattenParameters2()
+		{
+			FastExpando result = Connection().As<IFlattenParameters>().Foo(1, new FlattenedParameters() { Y1 = 2, Y2 = 3 }, new FlattenedParameters2() { Z1 = 4, Z2 = 5 });
+
+			Assert.AreEqual(1, result["x"]);
+			Assert.AreEqual(2, result["y1"]);
+			Assert.AreEqual(3, result["y2"]);
+			Assert.AreEqual(4, result["z1"]);
+			Assert.AreEqual(5, result["z2"]);
+		}
+
+		[Test]
+		public void InputParametersCanMapChildFields()
+		{
+			// we should be able to read in child fields
+			FastExpando result = (FastExpando)Connection().QuerySql("SELECT x=@x, y1=@y1, y2=@y2", new { X = 1, Y = new { Y1 = 2, Y2 = 3 } }).First();
+
+			Assert.AreEqual(1, result["x"]);
+			Assert.AreEqual(2, result["y1"]);
+			Assert.AreEqual(3, result["y2"]);
+		}
+
+		[Test]
+		public void InputParametersCanMapChildFields2()
+		{
+			// we should be able to read in child fields
+			FastExpando result = (FastExpando)Connection().QuerySql("SELECT x=@x, y1=@y1, y2=@y2, z1=@z1, z2=@z2", new { X = 1, Y = new { Y1 = 2, Y2 = 3 }, Z = new { Z1 = 4, Z2 = 5 } }).First();
+
+			Assert.AreEqual(1, result["x"]);
+			Assert.AreEqual(2, result["y1"]);
+			Assert.AreEqual(3, result["y2"]);
+			Assert.AreEqual(4, result["z1"]);
+			Assert.AreEqual(5, result["z2"]);
+		}
+
+		[Test, ExpectedException(typeof(SqlException),  ExpectedMessage="The parameterized query '(@parent int,@foo int)SELECT parent=@parent, child=@foo' expects the parameter '@foo', which was not supplied.")]
+		public void InputParametersAreUndefinedWhenChildrenAreNull()
+		{
+			var parent = new ParameterParent() { parent = 3 };
+
+			// we should be able to read in child fields
+			Connection().QuerySql("SELECT parent=@parent, child=@foo", parent).First();
+		}
+
+		class ParameterParent
+		{
+			public int parent;
+			public OutputParameters Child;
+		}
+
+		[Test]
+		public void OutputParametersCanMapChildFields()
+		{
+			var output = new ParameterParent()
+			{
+				Child = new OutputParameters()
+			};
+
+			// we should be able to read in child fields
+			Connection().Execute("OutputParameterParentMappingTest", outputParameters: output);
+
+			Assert.AreEqual(1, output.parent);
+			Assert.AreEqual(2, output.Child.foo);
+		}
+
+		public class ParentOfMissingChild<T>
+		{
+			public MissingChild<T> Child;
+		}
+
+		public class MissingChild<T>
+		{
+			public T Member;
+		}
+
+		private void TestMissingChildCanBeNulled<T>()
+		{
+			var p = new ParentOfMissingChild<T>();
+
+			try
+			{
+				Connection().ExecuteSql("SELECT @Member", p);
+			}
+			catch (SqlException)
+			{
+				// should get a missing parameter exception
+			}
+
+			// this should map a DbNull, since the child isn't missing
+			p.Child = new MissingChild<T>();
+			Assert.AreEqual(default(T), Connection().ExecuteScalarSql<T>("SELECT @Member", p));
+		}
+
+		[Test]
+		public void MissingChildrenAreNulledSuccessfully()
+		{
+			TestMissingChildCanBeNulled<int>();			// value
+			TestMissingChildCanBeNulled<int?>();		// value?
+			TestMissingChildCanBeNulled<Guid>();		// struct
+			TestMissingChildCanBeNulled<Guid?>();		// struct?
+			TestMissingChildCanBeNulled<TestData>();	// object
+		}
+
+		public class ParentWithConflictedField
+		{
+			public int ID;
+			public ChildWithConflictedField Child;
+		}
+
+		public class ChildWithConflictedField
+		{
+			public int ID;
+			public int OtherFieldToTriggerDepthSearch;
+		}
+
+		[Test]
+		public void ParentFieldOverridesChildField()
+		{
+			var p = new ParentWithConflictedField() { ID = 1 };
+			p.Child = new ChildWithConflictedField() { ID = 2 };
+
+			Assert.AreEqual(1, Connection().ExecuteScalarSql<int>("SELECT @ID, @OtherFieldToTriggerDepthSearch", p));
 		}
 		#endregion
 

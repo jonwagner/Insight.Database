@@ -59,7 +59,7 @@ namespace Insight.Database.CodeGenerator
 			if (!IsAtomicType)
 			{
 				// create a mapping, and only keep mappings that match our modified schema
-				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, true)
+				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, true, true)
 					.Where(m => m != null).ToArray();
 
 				int columnCount = SchemaTable.Rows.Count;
@@ -92,7 +92,7 @@ namespace Insight.Database.CodeGenerator
 						il.Emit(OpCodes.Isinst, type);					// cast object -> type
 
 					// get the value from the object
-					propInfo.EmitGetValue(il);
+					mapping.EmitGetValue(il);
 
 					// if the type is nullable, handle nulls
 					Type sourceType = propInfo.MemberType;

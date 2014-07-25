@@ -277,6 +277,7 @@ namespace Insight.Database
 		/// <param name="startColumn">The index of the first column to map.</param>
 		/// <param name="columnCount">The number of columns to map.</param>
 		/// <param name="uniqueMatches">True to only return the first match per field, false to return all matches per field.</param>
+		/// <param name="recursive">True to allow searching of sub-objects for parameters.</param>
 		/// <returns>An array of setters.</returns>
 		internal ColumnMappingEventArgs[] CreateMapping(
 			Type type,
@@ -286,69 +287,48 @@ namespace Insight.Database
 			IRecordStructure structure,
 			int startColumn,
 			int columnCount,
-			bool uniqueMatches)
+			bool uniqueMatches,
+			bool recursive = false)
 		{
 			ColumnMappingEventArgs[] mapping = new ColumnMappingEventArgs[columnCount];
-
-			// convert the list of names into a list of set reflections
-			// clone the methods list, since we are only going to use each setter once (i.e. if you return two ID columns, we will only use the first one)
-			// Also, we want to do a case-insensitive lookup of the property, so convert the dictionary to an uppercase dictionary
-			var setMethods = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(type), StringComparer.OrdinalIgnoreCase);
 
 			List<IDataParameter> readOnlyParameters = null;
 			if (parameters != null)
 				readOnlyParameters = new List<IDataParameter>(parameters.OfType<IDataParameter>().ToList());
 
-			// find all of the mappings
-			for (int i = 0; i < columnCount; i++)
+			var typesAlreadyChecked = new HashSet<Type>();
+
+			var typesToParse = new Queue<Tuple<List<ClassPropInfo>, Type>>();
+			typesToParse.Enqueue(Tuple.Create(new List<ClassPropInfo>(), type));
+
+			while (typesToParse.Count > 0 && mapping.Any(m => m == null))
 			{
-				// generate an event
-				var e = new ColumnMappingEventArgs()
-				{
-					TargetType = type,
-					Reader = reader,
-					FieldIndex = i + startColumn,
-					Parameters = readOnlyParameters,
-				};
+				var t = typesToParse.Dequeue();
+				var prefix = t.Item1;
+				type = t.Item2;
 
-				if (command != null)
-				{
-					e.CommandText = command.CommandText;
-					e.CommandType = command.CommandType;
-				}
+				CreateMapping(mapping, prefix, type, reader, command, readOnlyParameters, structure, startColumn, columnCount, uniqueMatches);
 
-				if (reader != null)
-					e.ColumnName = reader.GetSchemaTable().Rows[e.FieldIndex]["ColumnName"].ToString();
-
-				lock (_lock)
-				{
-					_mappings(null, e);
-				}
-
-				// if no mapping was returned, then skip the column
-				if (e.Canceled || String.IsNullOrEmpty(e.TargetFieldName.Trim()))
+				if (!recursive)
 					continue;
 
-				// if a column mapping override was specified, then attempt an override
-				if (structure != null)
-					structure.MapColumn(e);
-
-				// get the target property based on the result
-				string targetFieldName = e.TargetFieldName;
-
-				// first see if there is a wildcard column, if not, then look up the field name
-				ClassPropInfo setter;
-				if (setMethods.TryGetValue("*", out setter) ||
-					setMethods.TryGetValue(targetFieldName, out setter))
+				foreach (var member in ClassPropInfo.GetMappingForType(type).Values)
 				{
-					mapping[i] = e;
-					e.ClassPropInfo = setter;
+					if (!member.CanGetMember)
+						continue;
 
-					InitializeMappingSerializer(e, reader, command, parameters, i);
+					if (TypeHelper.IsAtomicType(member.MemberType))
+						continue;
 
-					// remove the name from the list so we can only use it once
-					if (uniqueMatches)
-						setMethods.Remove(setter.ColumnName);
+					if (typesAlreadyChecked.Contains(member.MemberType))
+						continue;
+
+					typesAlreadyChecked.Add(member.MemberType);
+
+					// make a path to the parent
+					var newPrefix = new List<ClassPropInfo>();
+					newPrefix.Add(member);
+					typesToParse.Enqueue(Tuple.Create(newPrefix, member.MemberType));
 				}
 			}
 
@@ -417,6 +397,96 @@ namespace Insight.Database
 				throw new InvalidOperationException("DefaultMappingHandler requires either a Reader or Parameters list.");
 		}
 		#endregion
+
+		/// <summary>
+		/// Creates the list of property setters for a reader.
+		/// </summary>
+		/// <param name="mapping">The mapping to fill in.</param>
+		/// <param name="prefix">The prefix to get to the current level of objects.</param>
+		/// <param name="type">The type of object to map to.</param>
+		/// <param name="reader">The reader to read.</param>
+		/// <param name="command">The command that is currently being mapped.</param>
+		/// <param name="parameters">The list of parameters used in the mapping operation.</param>
+		/// <param name="structure">The structure of the record being read.</param>
+		/// <param name="startColumn">The index of the first column to map.</param>
+		/// <param name="columnCount">The number of columns to map.</param>
+		/// <param name="uniqueMatches">True to only return the first match per field, false to return all matches per field.</param>
+		private void CreateMapping(
+			ColumnMappingEventArgs[] mapping,
+			List<ClassPropInfo> prefix,
+			Type type,
+			IDataReader reader,
+			IDbCommand command,
+			IList<IDataParameter> parameters,
+			IRecordStructure structure,
+			int startColumn,
+			int columnCount,
+			bool uniqueMatches)
+		{
+			// convert the list of names into a list of set reflections
+			// clone the methods list, since we are only going to use each setter once (i.e. if you return two ID columns, we will only use the first one)
+			// Also, we want to do a case-insensitive lookup of the property, so convert the dictionary to an uppercase dictionary
+			var setMethods = new Dictionary<string, ClassPropInfo>(ClassPropInfo.GetMappingForType(type), StringComparer.OrdinalIgnoreCase);
+
+			// find all of the mappings
+			for (int i = 0; i < columnCount; i++)
+			{
+				// don't overwrite existing mappings
+				if (mapping[i] != null)
+					continue;
+
+				// generate an event
+				var e = new ColumnMappingEventArgs()
+				{
+					TargetType = type,
+					Reader = reader,
+					FieldIndex = i + startColumn,
+					Parameters = parameters,
+				};
+
+				if (command != null)
+				{
+					e.CommandText = command.CommandText;
+					e.CommandType = command.CommandType;
+				}
+
+				if (reader != null)
+					e.ColumnName = reader.GetSchemaTable().Rows[e.FieldIndex]["ColumnName"].ToString();
+
+				lock (_lock)
+				{
+					_mappings(null, e);
+				}
+
+				// if no mapping was returned, then skip the column
+				if (e.Canceled || String.IsNullOrEmpty(e.TargetFieldName.Trim()))
+					continue;
+
+				// if a column mapping override was specified, then attempt an override
+				if (structure != null)
+					structure.MapColumn(e);
+
+				// get the target property based on the result
+				string targetFieldName = e.TargetFieldName;
+
+				// first see if there is a wildcard column, if not, then look up the field name
+				ClassPropInfo setter;
+				if (setMethods.TryGetValue("*", out setter) ||
+					setMethods.TryGetValue(targetFieldName, out setter))
+				{
+					mapping[i] = e;
+
+					e.Prefix = prefix;
+					e.ClassPropInfo = setter;
+
+					InitializeMappingSerializer(e, reader, command, parameters, i);
+
+					// remove the name from the list so we can only use it once
+					if (uniqueMatches)
+						setMethods.Remove(setter.ColumnName);
+				}
+			}
+		}
 	}
 
 	/// <summary>

@@ -151,6 +151,11 @@ GO
 ----------------------------------------------------------
 -- Mapping test procs
 ----------------------------------------------------------
+CREATE PROCEDURE OutputParameterParentMappingTest @parent int = NULL OUTPUT, @foo int = NULL OUTPUT
+AS
+	SELECT @parent = 1
+	SELECT @foo = 2
+GO
 CREATE PROCEDURE OutputParameterMappingTest @out_foo int = NULL OUTPUT AS SELECT @out_foo = 5
 GO
 CREATE PROC MappingAsJson1 @SubClass [varchar](max) AS SELECT SubClass=@SubClass
@@ -341,4 +346,20 @@ GO
 CREATE FUNCTION [ReflectTableFunction2](@p [BeerTable] READONLY, @q int)
 RETURNS TABLE AS
 	RETURN SELECT ID FROM @p
+GO
+
+CREATE PROC FlattenedSubclass
+	@Id               uniqueidentifier,
+	@UserName         nvarchar,
+	@FirstName        nvarchar,
+	@LastName         nvarchar,
+	@Email            nvarchar,
+	@TimeZoneId       nvarchar,
+	@CultureName      nvarchar,
+	@AllowPromotions  bit,
+	@AllowNewsletters bit,
+	@Created          datetimeoffset,
+	@Updated		  datetimeoffset
+AS
+	SELECT 1
 GO

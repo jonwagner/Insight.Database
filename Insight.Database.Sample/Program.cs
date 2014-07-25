@@ -11,6 +11,7 @@ using Insight.Database;
 using Insight.Database.Sample;
 using Ninject;
 using System.Runtime.CompilerServices;
+using System.Collections;
 
 #pragma warning disable 0649
 

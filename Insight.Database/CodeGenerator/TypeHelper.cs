@@ -116,17 +116,25 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="mIL">The ILGenerator to emit to.</param>
 		/// <param name="type">The type of object to emit.</param>
-		public static void EmitDefaultValue(ILGenerator mIL, Type type)
+		/// <param name="boxNulls">True to box null values on output.</param>
+		public static void EmitDefaultValue(ILGenerator mIL, Type type, bool boxNulls = false)
 		{
 			// if there is no type, then we don't need a value
 			if (type == null || type == typeof(void))
 				return;
 
+			// boxed nulls can always just use ldnull
+			if (boxNulls)
+			{
+				mIL.Emit(OpCodes.Ldnull);
+				return;
+			}
+
 			// for generics and values, init a local object with a blank object
 			if (type.IsGenericParameter || type.IsValueType)
 			{
 				var returnValue = mIL.DeclareLocal(type);
-				mIL.Emit(OpCodes.Ldloca_S, returnValue);
+				mIL.Emit(OpCodes.Ldloca, returnValue);
 				mIL.Emit(OpCodes.Initobj, type);
 				mIL.Emit(OpCodes.Ldloc, returnValue);
 			}

@@ -197,7 +197,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// get the mapping of the properties for the type
-			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true);
+			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true, true);
 
 			// start creating a dynamic method
 			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
@@ -242,6 +242,7 @@ namespace Insight.Database.CodeGenerator
 
 				// look up the best type to use for the parameter
 				DbType sqlType = LookupDbType(mapping, dbParameter.DbType);
+				Label readyToSetLabel = il.DefineLabel();
 
 				// give the provider an opportunity to fix up the template parameter (e.g. set UDT type names)
 				provider.FixupParameter(command, dbParameter, sqlType, prop.MemberType);
@@ -259,7 +260,7 @@ namespace Insight.Database.CodeGenerator
 				// Get the value from the object onto the stack
 				///////////////////////////////////////////////////////////////
 				il.Emit(OpCodes.Ldarg_1);
-				prop.EmitGetValue(il);
+				mapping.EmitGetValue(il, true, readyToSetLabel);
 
 				///////////////////////////////////////////////////////////////
 				// Special case support for enumerables. If the type is -1 (our workaround, then call the list parameter method)
@@ -288,7 +289,6 @@ namespace Insight.Database.CodeGenerator
 				}
 
 				// if it's class type, boxed value type (in an object), or nullable, then we have to check for null
-				Label readyToSetLabel = il.DefineLabel();
 				if (!prop.MemberType.IsValueType || Nullable.GetUnderlyingType(prop.MemberType) != null)
 				{
 					Label notNull = il.DefineLabel();
@@ -525,7 +525,7 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Stloc, localParameters);
 
 			// go through all of the mappings
-			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true);
+			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true, true);
 			for (int i = 0; i < mappings.Length; i++)
 			{
 				// if there is no parameter for this property, then skip it
@@ -545,6 +545,7 @@ namespace Insight.Database.CodeGenerator
 
 				// push the object on the stack. we will need it to set the value below
 				il.Emit(OpCodes.Ldarg_1);
+				mapping.EmitGetPrefix(il);
 
 				// get the parameter out of the collection
 				il.Emit(OpCodes.Ldloc, localParameters);
