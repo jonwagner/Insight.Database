@@ -225,9 +225,12 @@ namespace Insight.Tests
 
 				// single update
 				i.UpdateTestData(data);
-				Assert.AreEqual(1, data.X, "ID should NOT be reset");
+				Assert.AreEqual(0, data.X, "ID should be reset");
 
 				// single upsert
+				data = new TestData() { Z = 4 };
+				i.InsertTestData(data);
+				Assert.AreEqual(2, data.X, "ID should be returned");
 				i.UpsertTestData(data);
 				Assert.AreEqual(0, data.X, "ID should be reset");
 
@@ -238,8 +241,8 @@ namespace Insight.Tests
 					new TestData() { Z = 6 }
 				};
 				i.InsertMultipleTestData(list);
-				Assert.AreEqual(2, list[0].X, "ID should be returned");
-				Assert.AreEqual(3, list[1].X, "ID should be returned");
+				Assert.AreEqual(3, list[0].X, "ID should be returned");
+				Assert.AreEqual(4, list[1].X, "ID should be returned");
 
 				// multiple update
 				i.UpsertMultipleTestData(list);
@@ -249,7 +252,7 @@ namespace Insight.Tests
 				// single insert
 				data = new TestData() { Z = 4 };
 				i.InsertTestDataAsync(data).Wait();
-				Assert.AreEqual(4, data.X, "ID should be returned");
+				Assert.AreEqual(5, data.X, "ID should be returned");
 
 				// single update
 				i.UpsertTestDataAsync(data).Wait();
@@ -262,8 +265,8 @@ namespace Insight.Tests
 					new TestData() { Z = 6 }
 				};
 				i.InsertMultipleTestDataAsync(list).Wait();
-				Assert.AreEqual(5, list[0].X, "ID should be returned");
-				Assert.AreEqual(6, list[1].X, "ID should be returned");
+				Assert.AreEqual(6, list[0].X, "ID should be returned");
+				Assert.AreEqual(7, list[1].X, "ID should be returned");
 
 				// multiple update
 				i.UpsertMultipleTestDataAsync(list).Wait();
