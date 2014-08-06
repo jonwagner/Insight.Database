@@ -131,6 +131,7 @@ namespace Insight.Database.CodeGenerator
 			var localIndex = il.DeclareLocal(typeof(int));
 			var localResult = il.DeclareLocal(type);
 			var localValue = il.DeclareLocal(typeof(object));
+			var localIsNotAllDbNull = il.DeclareLocal(typeof(bool));
 
 			// initialize index = 0
 			il.Emit(OpCodes.Ldc_I4_0);
@@ -198,6 +199,21 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Dup);
 				il.Emit(OpCodes.Stloc, localValue);
 
+				/////////////////////////////////////////////////////////////////////
+				// if this a subobject, then check to see if the value is null
+				/////////////////////////////////////////////////////////////////////
+				if (startColumn > 0)
+				{
+					var afterNullCheck = il.DefineLabel();
+					il.Emit(OpCodes.Dup);
+					il.Emit(OpCodes.Ldsfld, typeof(DBNull).GetField("Value"));
+					il.Emit(OpCodes.Ceq);
+					il.Emit(OpCodes.Brtrue, afterNullCheck);
+					il.Emit(OpCodes.Ldc_I4_1);
+					il.Emit(OpCodes.Stloc, localIsNotAllDbNull);
+					il.MarkLabel(afterNullCheck);
+				}
+
 				// determine the type of the object in the recordset
 				Type sourceType = reader.GetFieldType(index + startColumn);
 
@@ -205,25 +221,23 @@ namespace Insight.Database.CodeGenerator
 				Label finishLabel = TypeConverterGenerator.EmitConvertAndSetValue(il, sourceType, mapping[index]);
 
 				/////////////////////////////////////////////////////////////////////
-				// if this is the first column of a sub-object and the value is null, AND all of the columns are db null then return a null object
-				/////////////////////////////////////////////////////////////////////
-				if (startColumn > 0 && index == 0)
-				{
-					il.Emit(OpCodes.Ldarg_0);							// push arg.0 (reader), stack => [target][reader]
-					il.Emit(OpCodes.Ldc_I4, startColumn);
-					il.Emit(OpCodes.Ldc_I4, columnCount);
-					il.Emit(OpCodes.Call, TypeConverterGenerator.IsAllDbNullMethod);
-					il.Emit(OpCodes.Brfalse, finishLabel);
-
-					il.Emit(OpCodes.Ldnull);							// push null
-					il.Emit(OpCodes.Stloc, localResult);				// store null => loc.1 (target)
-					il.Emit(OpCodes.Br, returnLabel);					// exit the loop
-				}
-
-				/////////////////////////////////////////////////////////////////////
 				// stack should be [target] and ready for the next column
 				/////////////////////////////////////////////////////////////////////
 				il.MarkLabel(finishLabel);
+			}
+
+			/////////////////////////////////////////////////////////////////////
+			// if this was a subobject and all of the values are null, then load the default for the object
+			/////////////////////////////////////////////////////////////////////
+			if (startColumn > 0)
+			{
+				var afterNullExit = il.DefineLabel();
+				il.Emit(OpCodes.Ldloc, localIsNotAllDbNull);
+				il.Emit(OpCodes.Brtrue, afterNullExit);
+				TypeHelper.EmitDefaultValue(il, type);				// load the default for the type
+				il.Emit(OpCodes.Stloc, localResult);				// store null => loc.1 (target)
+				il.Emit(OpCodes.Br, returnLabel);					// exit the loop
+				il.MarkLabel(afterNullExit);
 			}
 
 			il.MarkLabel(returnLabel);

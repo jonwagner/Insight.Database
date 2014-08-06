@@ -245,5 +245,33 @@ namespace Insight.Tests
 				Query.Returns(Some<Test>.Records).ThenChildren(Some<Test2>.Records));
 		}
 	}
+
+	[TestFixture]
+	public class Issue129 : BaseTest
+	{
+		public class TestParent { public int ParentA; public int ParentB; public TestChild Child; public int ParentC; }
+		public class TestChild { public int ChildA; public int ChildB; }
+
+		[Test]
+		public void Test129()
+		{
+			// child is not null, so child should not be null
+			var results = Connection().QuerySql<TestParent, TestChild>("SELECT ParentA=1, ParentB=2, ChildA=3, ChildB=4, ParentC=5");
+			var result = results.First();
+			Assert.AreEqual(1, result.ParentA);
+			Assert.AreEqual(2, result.ParentB);
+			Assert.AreEqual(3, result.Child.ChildA);
+			Assert.AreEqual(4, result.Child.ChildB);
+			Assert.AreEqual(0, result.ParentC);
+
+			// all of child is null, so the child should be null
+			results = Connection().QuerySql<TestParent, TestChild>("SELECT ParentA=1, ParentB=2, ChildA=NULL, ChildB=NULL, ParentC=5");
+			result = results.First();
+			Assert.AreEqual(1, result.ParentA);
+			Assert.AreEqual(2, result.ParentB);
+			Assert.AreEqual(null, result.Child);
+			Assert.AreEqual(0, result.ParentC);
+		}
+	}
 	#endregion
 }

@@ -318,7 +318,7 @@ namespace Insight.Database
 				}
 
 				if (reader != null)
-					e.ColumnName = reader.GetSchemaTable().Rows[i]["ColumnName"].ToString();
+					e.ColumnName = reader.GetSchemaTable().Rows[e.FieldIndex]["ColumnName"].ToString();
 
 				lock (_lock)
 				{
