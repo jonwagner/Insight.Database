@@ -268,7 +268,7 @@ namespace Insight.Database.CodeGenerator
 			if (FieldInfo != null)
 				il.Emit(OpCodes.Ldfld, FieldInfo);
 			else
-				il.Emit(OpCodes.Call, GetMethodInfo);
+				il.Emit(OpCodes.Callvirt, GetMethodInfo);
 
 			if (typeof(TValue) == typeof(object) && MemberType.IsValueType)
 				il.Emit(OpCodes.Box, MemberType);				
@@ -298,7 +298,7 @@ namespace Insight.Database.CodeGenerator
 			if (FieldInfo != null)
 				il.Emit(OpCodes.Stfld, FieldInfo);
 			else
-				il.Emit(OpCodes.Call, SetMethodInfo);
+				il.Emit(OpCodes.Callvirt, SetMethodInfo);
 
 			il.Emit(OpCodes.Ret);
 

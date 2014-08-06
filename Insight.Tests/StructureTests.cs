@@ -211,4 +211,39 @@ namespace Insight.Tests
 		}
 		#endregion
 	}
+
+	#region Issue 130 Tests
+	[TestFixture]
+	public class Issue130 : BaseTest
+	{
+		public class Test
+		{
+			[RecordId]
+			public int Id { get; set; }
+			public string Name { get; set; }
+			public Nullable<System.DateTimeOffset> Created { get; set; }
+			[ChildRecords]
+			public virtual ICollection<Test2> Test2 { get; set; }
+		}
+
+		public class Test2
+		{
+			public int Id { get; set; }
+			public int TestId { get; set; }
+			public string Name { get; set; }
+			public Nullable<System.DateTimeOffset> Created { get; set; }
+		}
+
+		/// <summary>
+		/// Virtual ID getter or list accessor was failing.
+		/// </summary>
+		[Test]
+		public void Test130()
+		{
+			var results = Connection().QuerySql("SELECT id=1, name='parent'; SELECT Id=1, testid=2, name='sub'",
+				Parameters.Empty,
+				Query.Returns(Some<Test>.Records).ThenChildren(Some<Test2>.Records));
+		}
+	}
+	#endregion
 }
