@@ -93,6 +93,22 @@ namespace Insight.Tests
 			Assert.AreEqual(1, i.Id);
 			Assert.AreEqual(2, i.Id2);
 		}
+
+		[Test, ExpectedException(typeof(OptimisticConcurrencyException))]
+		public void TestIssue131()
+		{
+			var i = new InsertRecord();
+			var c = new OptimisticConnection((DbConnection)Connection());
+			var result = c.InsertSql<InsertRecord>("THROW 51000, 'At least one record has changed or does not exist. (CONCURRENCY CHECK)', 1;", i);
+		}
+
+		[Test]
+		public void TestIssue131a()
+		{
+			var i = new InsertRecord();
+			var c = new OptimisticConnection((DbConnection)Connection());
+			var result = c.InsertSql<InsertRecord>("PRINT ''", i);
+		}
 		#endregion
 
 		#region Async Tests

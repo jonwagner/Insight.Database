@@ -147,8 +147,7 @@ namespace Insight.Database
 			var merger = DbReaderDeserializer.GetMerger<T>(reader);
 
 			// read the identities from the recordset and merge it into the object
-			reader.Read();
-			if (merger != null)
+			if (reader.Read() && merger != null)
 				merger(reader, item);
 
 			// we are done with this result set, so move onto the next or clean up the reader
@@ -177,10 +176,15 @@ namespace Insight.Database
 				var merger = DbReaderDeserializer.GetMerger<T>(reader);
 
 				// read the identities of each item from the recordset and merge them into the objects
-				foreach (T item in items)
+				if (merger != null)
 				{
-					reader.Read();
-					merger(reader, item);
+					foreach (T item in items)
+					{
+						if (!reader.Read())
+							break;
+
+						merger(reader, item);
+					}
 				}
 
 				// we are done with this result set, so move onto the next or clean up the reader

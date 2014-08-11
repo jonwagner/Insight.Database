@@ -16,5 +16,16 @@ namespace Insight.Database
 	[AttributeUsage(AttributeTargets.Method)]
 	public sealed class MergeOutputAttribute : Attribute
 	{
+		public MergeOutputAttribute()
+		{
+			MergeOutputs = true;
+		}
+
+		public MergeOutputAttribute(bool merge = true)
+		{
+			MergeOutputs = merge;
+		}
+
+		public bool MergeOutputs { get; private set; }
 	}
 }

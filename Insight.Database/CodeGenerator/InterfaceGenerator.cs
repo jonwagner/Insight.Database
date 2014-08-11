@@ -662,10 +662,14 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if the method is an insert or upsert.</returns>
 		private static bool IsMethodAnUpsert(MethodInfo method)
 		{
+			// if the method is marked with a mergeoutputattribute, check that before the default logic
+			var mergeAttributes = (MergeOutputAttribute[])method.GetCustomAttributes(typeof(MergeOutputAttribute), true);
+			if (mergeAttributes.Any(m => m.MergeOutputs))
+				return true;
+
 			return (method.Name.StartsWith("Insert", StringComparison.OrdinalIgnoreCase) ||
 					method.Name.StartsWith("Update", StringComparison.OrdinalIgnoreCase) ||
-					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase) ||
-					method.GetCustomAttributes(typeof(MergeOutputAttribute), true).Length > 0);
+					method.Name.StartsWith("Upsert", StringComparison.OrdinalIgnoreCase));
 		}
 
 		/// <summary>
