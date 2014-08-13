@@ -16,16 +16,27 @@ namespace Insight.Database
 	[AttributeUsage(AttributeTargets.Method)]
 	public sealed class MergeOutputAttribute : Attribute
 	{
+		/// <summary>
+		/// Initializes a new instance of the MergeOutputAttribute class.
+		/// </summary>
 		public MergeOutputAttribute()
 		{
 			MergeOutputs = true;
 		}
 
+		/// <summary>
+		/// Initializes a new instance of the MergeOutputAttribute class.
+		/// </summary>
+		/// <param name="merge">True to merge the outputs, false to skip merging.</param>
+		/// <remarks>Use MergeOutput(false) to disable merging for methods named InsertXXX, UpdateXXX, or UpsertXXX.</remarks>
 		public MergeOutputAttribute(bool merge = true)
 		{
 			MergeOutputs = merge;
 		}
 
+		/// <summary>
+		/// Gets a value indicating whether the outputs will be merged.
+		/// </summary>
 		public bool MergeOutputs { get; private set; }
 	}
 }
