@@ -197,6 +197,11 @@ namespace Insight.Database.Providers.OracleManaged
 			{
 				case -6403:					// network address connect timeout
 				case 51:					// timeout waiting for a resource
+				case 1033:					// ORACLE initialization or shutdown in progress
+				case 1034:					// ORACLE not available
+				case 1089:					// immediate shutdown in progress - no operations are permitted
+				case 3113:					// Closed connection
+				case 3135:					// connection lost contact
 				case 12150:					// TNS:unable to send data
 				case 12153:					// TNS:not connected
 				case 12154:					// TNS:could not resolve the connect identifier specified
@@ -207,8 +212,12 @@ namespace Insight.Database.Providers.OracleManaged
 				case 12203:					// TNS:could not connect to destination
 				case 12224:					// TNS:no listener
 				case 12225:					// TNS:destination host unreachable
+				case 12537:					// TNS: connection closed
 				case 12541:					// TNS:no listener
 				case 12543:					// TNS:destination host unreachable
+				case 12545:					// Connection Failed (Generally a network failure - Cannot Reach Host)
+				case 12552:					// TNS: Unable to send break
+				case 12571:					// TNS: packet writer failure
 					return true;
 			}
 
