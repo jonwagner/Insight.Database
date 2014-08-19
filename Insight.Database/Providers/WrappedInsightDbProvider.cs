@@ -62,6 +62,27 @@ namespace Insight.Database.Providers
 			InsightDbProvider.For(command).DeriveParametersFromSqlText(command);
 		}
 
+		/// <inheritdoc/>
+		public override void FixupCommand(IDbCommand command)
+		{
+			command = GetInnerCommand(command);
+			InsightDbProvider.For(command).FixupCommand(command);
+		}
+
+		/// <inheritdoc/>
+		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type)
+		{
+			command = GetInnerCommand(command);
+			InsightDbProvider.For(command).FixupParameter(command, parameter, dbType, type);
+		}
+
+		/// <inheritdoc/>
+		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
+		{
+			connection = GetInnerConnection(connection);
+			return InsightDbProvider.For(connection).GetSupportedBulkCopyOptions(connection);
+		}
+
 		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
 		/// </summary>

@@ -59,12 +59,10 @@ namespace Insight.Database.Providers.Oracle
 		}
 
 		/// <inheritdoc/>
-		public override IDbCommand CreateCommand(IDbConnection connection)
+		public override void FixupCommand(IDbCommand command)
 		{
-			var command = (OracleCommand)connection.CreateCommand();
-			command.BindByName = true;
-
-			return command;
+			var cmd = (OracleCommand)command;
+			cmd.BindByName = true;
 		}
 
 		/// <summary>

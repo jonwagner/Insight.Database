@@ -11,6 +11,7 @@ using NUnit.Framework;
 using Oracle.DataAccess.Client;
 using Oracle.DataAccess.Types;
 using System.Data;
+using System.Data.Common;
 
 namespace Insight.Tests.Oracle
 {
@@ -326,5 +327,27 @@ namespace Insight.Tests.Oracle
             var result = _connection.QuerySql<dynamic>(sql, args);
             result = _connection.QuerySql<dynamic>(sql, args);
         }
+
+		[Test]
+		public void TestBindByNameWithWrappedConnection()
+		{
+			var wrapped = new ReliableConnection((DbConnection)_connection);
+
+			// if the sql uses the same name twice, we need to set bindbyname to true
+			var sql = @"select 
+                       :p1 p1,
+                        :p1 p1,
+                        :p2 p2
+                        from dual";
+
+			var args = new
+			{
+				p1 = "one",
+				p2 = "two"
+			};
+
+			var result = wrapped.QuerySql<dynamic>(sql, args);
+			result = wrapped.QuerySql<dynamic>(sql, args);
+		}
 	}
 }

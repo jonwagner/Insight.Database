@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
 using Insight.Database.Reliable;
 using Insight.Database.Structure;
 
@@ -30,6 +31,8 @@ namespace Insight.Database
 				parameters = Parameters.Empty;
 
 			DbParameterGenerator.GetInputParameterGenerator(cmd, parameters.GetType())(cmd, parameters);
+
+			InsightDbProvider.For(cmd).FixupCommand(cmd);
 		}
 		#endregion
 
