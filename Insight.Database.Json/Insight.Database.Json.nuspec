@@ -22,7 +22,5 @@
     <file src="..\Insight.Database\bin\NET45\Insight.Database.Json.xml" target="lib\NET45" />
     <file src="..\Insight.Database\bin\NET40\Insight.Database.Json.dll" target="lib\NET40" />
     <file src="..\Insight.Database\bin\NET40\Insight.Database.Json.xml" target="lib\NET40" />
-    <file src="..\Insight.Database\bin\NET35\Insight.Database.Json.dll" target="lib\NET35" />
-    <file src="..\Insight.Database\bin\NET35\Insight.Database.Json.xml" target="lib\NET35" />
   </files>
 </package>

@@ -460,7 +460,7 @@ namespace Insight.Database.CodeGenerator
 
 			var canDeserialize = serializerType.GetMethod("CanDeserialize");
 
-			// if there is no CanDeserialize method, then attempt to deserialize anything other than string and object
+			// if there is no CanDeserialize method, then attempt to deserialize any non-atomic type other than object
 			if (canDeserialize == null)
 				return !TypeHelper.IsAtomicType(targetType) &&	targetType != typeof(object);
 
