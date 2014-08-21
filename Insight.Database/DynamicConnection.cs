@@ -358,6 +358,8 @@ namespace Insight.Database
 			// copy the parameter list
 			foreach (IDataParameter parameter in parameterList)
 				cmd.Parameters.Add(provider.CloneParameter(cmd, parameter));
+
+			provider.FixupCommand(cmd);
 		}
 		#endregion
 
