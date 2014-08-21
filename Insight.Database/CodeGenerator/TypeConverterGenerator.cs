@@ -112,11 +112,7 @@ namespace Insight.Database.CodeGenerator
 
 				// after: stack => [target][xDocument]
 			}
-			else if (sourceType == typeof(string) &&
-				targetType != typeof(string) &&
-				targetType != typeof(object) &&
-				(!TypeHelper.IsAtomicType(targetType)) &&
-				CanDeserialize(mapping.Serializer, targetType))
+			else if (sourceType == typeof(string) && CanDeserialize(mapping.Serializer, targetType))
 			{
 				// we are getting a string from the database, but the target is not a string, and it's a reference type
 				// assume the column is a serialized data type and that we want to deserialize it
@@ -463,8 +459,10 @@ namespace Insight.Database.CodeGenerator
 				return false;
 
 			var canDeserialize = serializerType.GetMethod("CanDeserialize");
+
+			// if there is no CanDeserialize method, then attempt to deserialize anything other than string and object
 			if (canDeserialize == null)
-				return true;
+				return !TypeHelper.IsAtomicType(targetType) &&	targetType != typeof(object);
 
 			return (bool)canDeserialize.Invoke(null, new object[] { targetType });
 		}
