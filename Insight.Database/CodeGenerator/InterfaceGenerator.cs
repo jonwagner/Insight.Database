@@ -120,10 +120,21 @@ namespace Insight.Database.CodeGenerator
 			createIL.Emit(OpCodes.Ret);
 
 			// create the type
-			Type t = tb.CreateType();
+			try
+			{
+				Type t = tb.CreateType();
 
-			// return the create method
-			return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), t.GetMethod("Create"));
+				// return the create method
+				return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), t.GetMethod("Create"));
+			}
+			catch (TypeLoadException e)
+			{
+				// inaccessible interface
+				if (e.HResult == -2146233054)
+					throw new InvalidOperationException(String.Format("{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add [assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"Insight.Database\")] to your assembly. If the interface is nested, then it must be public to the world, or public to the assembly while using the InternalsVisibleTo attribute.", type.FullName));
+
+				throw;
+			}
 		}
 
 		/// <summary>

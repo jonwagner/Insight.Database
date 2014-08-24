@@ -774,6 +774,7 @@ namespace Insight.Tests
 			Assert.AreEqual(6, data.Z);
 		}
 
+		#region TVP Test
 		public interface IHaveTVPWithSQL
 		{
 			[Sql("SELECT * FROM dbo.ReflectTableFunction(@p)")]
@@ -798,6 +799,19 @@ namespace Insight.Tests
 			result = i.ReflectBeer2(beer, 2);
 			Assert.AreEqual(1, result.Count());
 		}
+		#endregion
+
+		#region Friendly Error Message Test
+		interface IAmAPrivateInterface
+		{
+		}
+
+		[Test, ExpectedException(typeof(InvalidOperationException))]
+		public void PrivateInterfaceThrowsFriendlierError()
+		{
+			Connection().As<IAmAPrivateInterface>();
+		}
+		#endregion
 	}
 
 	#region Interface Update Tests
