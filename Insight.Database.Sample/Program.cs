@@ -23,9 +23,31 @@ namespace Insight.Database.Sample
 		private static string connectionString = ConfigurationManager.ConnectionStrings["MyDatabase"].ConnectionString;
 		private static ConnectionStringSettings Database = ConfigurationManager.ConnectionStrings["MyDatabase"];
 
+		public class Game
+		{
+			public int GameId { get; set; }
+			public string Name { get; set; }
+			public List<User> Users { get; set; }
+		}
+
+		public class User
+		{
+			public int UserId { get; set; }
+			public string Username { get; set; }
+		}
+
+		public interface IGameLibrary
+		{
+			[Recordset(1, typeof(User), Id = "GameId", IsChild = true)]
+			List<Game> GetGamesAndUsers();
+		}
+
 		static void Main(string[] args)
 		{
 			SqlInsightDbProvider.RegisterProvider();
+
+			Database.Connection().As<IGameLibrary>().GetGamesAndUsers();
+			return;
 
             #region Performance Tests
             if (args.Length > 0 && args[0] == "perf")

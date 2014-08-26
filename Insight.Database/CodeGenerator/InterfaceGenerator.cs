@@ -458,18 +458,17 @@ namespace Insight.Database.CodeGenerator
 							// IList<T> or List<T>, etc...
 							var oneToOneBaseType = typeof(OneToOne<>).MakeGenericType(types[0]);
 
-							Type readerType;
+							currentType = typeof(ListReader<>).MakeGenericType(types[0]);
+							Type readerType = currentType;
 
-							if (returnType.GetGenericTypeDefinition() == typeof(IList<>))
-								readerType = typeof(ListReader<>).MakeGenericType(types[0]);
-							else
+							// if we're not returning an IList, then we need to insert the reader adapter class
+							if (returnType.GetGenericTypeDefinition() != typeof(IList<>))
 								readerType = typeof(ListReaderAdapter<,>).MakeGenericType(returnType, types[0]);
 
 							mIL.Emit(OpCodes.Newobj, readerType.GetConstructor(new Type[] { oneToOneBaseType }));
-							currentType = readerType;
 						}
 					}
-					else if (r != null && r.IsChild && r.Id == null && TypeIsSingleReader(currentType))
+					else if (r != null && r.IsChild)
 					{
 						// the parent is single and we haven't overridden the id field
 						var parentType = currentType.GetGenericArguments()[0];
@@ -477,53 +476,50 @@ namespace Insight.Database.CodeGenerator
 
 						var list = ChildMapperHelper.GetListSetter(parentType, childType, r.Into);
 						var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
+						MethodInfo method;
 
-						// previous and recordReader are on the stack, add the id and list methods
-						new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
+						if (r.Id == null && TypeIsSingleReader(currentType))
+						{
+							// previous and recordReader are on the stack, add the list method
+							new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
 
-						var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
-							.Single(
-								mi => mi.Name == "ThenChildren" &&
-									mi.GetGenericArguments().Length == 2 &&
-									currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name)
-							.MakeGenericMethod(
-								new Type[]
-								{
-									parentType,		// TParent
-									childType		// TChild
-								});
-						mIL.Emit(OpCodes.Call, method);
-						currentType = method.ReturnType;
-					}
-					else if (r != null && r.IsChild)
-					{
-						var parentType = currentType.GetGenericArguments()[0];
-						var childType = types[0];
+							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
+								.Single(
+									mi => mi.Name == "ThenChildren" &&
+										mi.GetGenericArguments().Length == 2 &&
+										currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name)
+								.MakeGenericMethod(
+									new Type[]
+									{
+										parentType,		// TParent
+										childType		// TChild
+									});
+						}
+						else
+						{
+							var id = ChildMapperHelper.GetIDAccessor(parentType, r.Id);
+							var idType = id.MemberType;
+							var idMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(parentType, idType).Invoke(id, Parameters.EmptyArray);
 
-						var id = ChildMapperHelper.GetIDAccessor(parentType, r.Id);
-						var idType = id.MemberType;
-						var idMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(parentType, idType).Invoke(id, Parameters.EmptyArray);
+							// previous and recordReader are on the stack, add the id and list methods
+							new StaticFieldStorage(moduleBuilder, idMethod).EmitLoad(mIL);
+							new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
 
-						var list = ChildMapperHelper.GetListSetter(parentType, childType, r.Into);
-						var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
+							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
+								.Single(
+									mi => mi.Name == "ThenChildren" &&
+										mi.GetGenericArguments().Length == 3 &&
+										currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
+										mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0))
+								.MakeGenericMethod(
+									new Type[]
+									{
+										parentType,		// TParent
+										childType,		// TChild
+										idType			// TId
+									});
+						}
 
-						// previous and recordReader are on the stack, add the id and list methods
-						new StaticFieldStorage(moduleBuilder, idMethod).EmitLoad(mIL);
-						new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
-
-						var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
-							.Single(
-								mi => mi.Name == "ThenChildren" &&
-									mi.GetGenericArguments().Length == 3 &&
-									currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
-									mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0))
-							.MakeGenericMethod(
-								new Type[]
-								{
-									parentType,		// TParent
-									childType,		// TChild
-									idType			// TId
-								});
 						mIL.Emit(OpCodes.Call, method);
 						currentType = method.ReturnType;
 					}
