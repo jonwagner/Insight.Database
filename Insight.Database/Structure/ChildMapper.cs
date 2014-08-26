@@ -42,13 +42,19 @@ namespace Insight.Database.Structure
 		internal static ClassPropInfo GetIDAccessor(Type type, string name = null)
 		{
 			var members = ClassPropInfo.GetMembersForType(type).Where(mi => mi.CanGetMember);
+			ClassPropInfo member;
 
 			// if a name was specified, use that
 			if (name != null)
-				return members.Single(m => m.Name == name);
+			{
+				member = members.SingleOrDefault(m => String.Compare(m.Name, name, StringComparison.OrdinalIgnoreCase) == 0);
+				if (member == null)
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Get Member {0} not found on type {1}", name, type.FullName));
+				return member;
+			}
 
 			// check for a member with an id attribute
-			var member = members.SingleOrDefault(m => m.MemberInfo.GetCustomAttributes(true).OfType<RecordIdAttribute>().Any());
+			member = members.SingleOrDefault(m => m.MemberInfo.GetCustomAttributes(true).OfType<RecordIdAttribute>().Any());
 			if (member != null)
 				return member;
 
@@ -74,12 +80,19 @@ namespace Insight.Database.Structure
 		{
 			var members = ClassPropInfo.GetMembersForType(parentType).Where(mi => mi.CanSetMember);
 
+			ClassPropInfo member;
+
 			// if a name was specified, use that
 			if (name != null)
-				return members.Single(m => m.Name == name);
+			{
+				member = members.SingleOrDefault(m => String.Compare(m.Name, name, StringComparison.OrdinalIgnoreCase) == 0);
+				if (member == null)
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Set Member {0} not found on type {1}", name, parentType.FullName));
+				return member;
+			}
 
 			// find the right match with a childrecords attribute
-			var member = members.SingleOrDefault(m => IsGenericListType(m.MemberType, childType) && m.MemberInfo.GetCustomAttributes(true).OfType<ChildRecordsAttribute>().Any());
+			member = members.SingleOrDefault(m => IsGenericListType(m.MemberType, childType) && m.MemberInfo.GetCustomAttributes(true).OfType<ChildRecordsAttribute>().Any());
 			if (member != null)
 				return member;
 
