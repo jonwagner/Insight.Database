@@ -342,35 +342,3 @@ CREATE FUNCTION [ReflectTableFunction2](@p [BeerTable] READONLY, @q int)
 RETURNS TABLE AS
 	RETURN SELECT ID FROM @p
 GO
-
-CREATE TABLE Game
-(
-  GameId INT,
-  Name VARCHAR(50)
-)
-GO
-
-CREATE TABLE UserGameJoin
-(
-  GameId INT,
-  UserId INT
-)
-GO
-
-CREATE TABLE [User]
-(
-  UserId INT,
-  Username VARCHAR(50)
-)
-GO
-
-CREATE PROC GetGamesAndUsers
-AS
-SELECT *
-FROM Game
-
-SELECT g.GameId, u.*
-FROM Game g
-INNER JOIN UserGameJoin j ON j.GameId = g.GameId
-INNER JOIN [User] u ON u.UserId = j.UserId
-GO
