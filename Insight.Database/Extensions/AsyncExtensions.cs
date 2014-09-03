@@ -137,7 +137,7 @@ namespace Insight.Database
 				{
 #if NODBASYNC
 					// not supported in .NET 4.0
-					return Task<T>.Factory.StartNew(() => ConvertScalar(cmd, parameters, outputParameters, cmd.ExecuteScalar()), ct);
+					return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), ct);
 #else
 					// DbCommand now supports async execute
 					DbCommand dbCommand = cmd as DbCommand;

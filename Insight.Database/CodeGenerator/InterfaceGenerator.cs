@@ -131,7 +131,7 @@ namespace Insight.Database.CodeGenerator
 			{
 				// inaccessible interface
 #if NODBASYNC
-				if (e.Message.Contains("inaccessible"))
+				if (e.Message.Contains("inaccessible") || e.Message.Contains("Access is denied"))
 #else
 				if (e.HResult == -2146233054)
 #endif
