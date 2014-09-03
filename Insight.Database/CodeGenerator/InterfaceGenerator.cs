@@ -39,11 +39,11 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _insertMethod = typeof(DBConnectionExtensions).GetMethod("Insert");
 		private static readonly MethodInfo _insertListMethod = typeof(DBConnectionExtensions).GetMethod("InsertList");
 
-		private static readonly MethodInfo _executeAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "ExecuteAsync");
-		private static readonly MethodInfo _executeScalarAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "ExecuteScalarAsync");
-		private static readonly MethodInfo _queryAsyncMethod = typeof(AsyncExtensions).GetMethods().Single(mi => mi.Name == "QueryAsync" && mi.GetParameters().Any(p => p.Name == "returns") && mi.GetParameters().Any(p => p.Name == "connection"));
-		private static readonly MethodInfo _insertAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertAsync");
-		private static readonly MethodInfo _insertListAsyncMethod = typeof(AsyncExtensions).GetMethod("InsertListAsync");
+		private static readonly MethodInfo _executeAsyncMethod = typeof(DBConnectionExtensions).GetMethods().Single(mi => mi.Name == "ExecuteAsync");
+		private static readonly MethodInfo _executeScalarAsyncMethod = typeof(DBConnectionExtensions).GetMethods().Single(mi => mi.Name == "ExecuteScalarAsync");
+		private static readonly MethodInfo _queryAsyncMethod = typeof(DBConnectionExtensions).GetMethods().Single(mi => mi.Name == "QueryAsync" && mi.GetParameters().Any(p => p.Name == "returns") && mi.GetParameters().Any(p => p.Name == "connection"));
+		private static readonly MethodInfo _insertAsyncMethod = typeof(DBConnectionExtensions).GetMethod("InsertAsync");
+		private static readonly MethodInfo _insertListAsyncMethod = typeof(DBConnectionExtensions).GetMethod("InsertListAsync");
 
 		private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _constructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
 		private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _singleThreadedConstructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
@@ -130,7 +130,11 @@ namespace Insight.Database.CodeGenerator
 			catch (TypeLoadException e)
 			{
 				// inaccessible interface
+#if NODBASYNC
+				if (e.Message.Contains("inaccessible"))
+#else
 				if (e.HResult == -2146233054)
+#endif
 					throw new InvalidOperationException(String.Format("{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add [assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"Insight.Database\")] to your assembly. If the interface is nested, then it must be public to the world, or public to the assembly while using the InternalsVisibleTo attribute.", type.FullName));
 
 				throw;
@@ -252,7 +256,7 @@ namespace Insight.Database.CodeGenerator
 
 			// calculate the query parameters
 			var schema = sqlAttribute.Schema ?? typeSqlAttribute.Schema;
-			var procName = (executeMethod.DeclaringType == typeof(AsyncExtensions)) ? Regex.Replace(interfaceMethod.Name, "Async$", String.Empty, RegexOptions.IgnoreCase) : interfaceMethod.Name;
+			var procName = (executeMethod.DeclaringType == typeof(DBConnectionExtensions)) ? Regex.Replace(interfaceMethod.Name, "Async$", String.Empty, RegexOptions.IgnoreCase) : interfaceMethod.Name;
 			var sql = sqlAttribute.Sql ?? typeSqlAttribute.Sql ?? procName;
 			var commandType = sqlAttribute.CommandType ?? typeSqlAttribute.CommandType ?? (sql.Contains(' ') ? CommandType.Text : CommandType.StoredProcedure);
 			if (commandType == CommandType.StoredProcedure && !schema.IsNullOrWhiteSpace() && !sql.Contains('.'))

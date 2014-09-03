@@ -241,42 +241,37 @@ namespace Insight.Database
 		/// <param name="configure">A callback method to configure the bulk copy object.</param>
 		/// <param name="options">Options for initializing the bulk copy object.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
-		/// <remarks>Number of rows copied if supported, -1 otherwise.</remarks>
 		public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
-			if (reader == null) throw new ArgumentNullException("reader");
+			var bcp = PrepareBulkCopy(connection, tableName, reader, configure, options, transaction);
 
-			SqlBulkCopyOptions sqlOptions = SqlBulkCopyOptions.Default;
-			if (options.HasFlag(InsightBulkCopyOptions.KeepIdentity))
-				sqlOptions |= SqlBulkCopyOptions.KeepIdentity;
-			if (options.HasFlag(InsightBulkCopyOptions.FireTriggers))
-				sqlOptions |= SqlBulkCopyOptions.FireTriggers;
-			if (options.HasFlag(InsightBulkCopyOptions.CheckConstraints))
-				sqlOptions |= SqlBulkCopyOptions.CheckConstraints;
-			if (options.HasFlag(InsightBulkCopyOptions.TableLock))
-				sqlOptions |= SqlBulkCopyOptions.TableLock;
-			if (options.HasFlag(InsightBulkCopyOptions.KeepNulls))
-				sqlOptions |= SqlBulkCopyOptions.KeepNulls;
-			if (options.HasFlag(InsightBulkCopyOptions.UseInternalTransaction))
-				sqlOptions |= SqlBulkCopyOptions.UseInternalTransaction;
-
-			using (SqlBulkCopy bulk = new SqlBulkCopy((SqlConnection)connection, sqlOptions, (SqlTransaction)transaction))
-			using (var insightBulk = new SqlInsightBulkCopy(bulk))
+			using (bcp)
 			{
-				bulk.DestinationTableName = tableName;
-#if !NODBASYNC
-				bulk.EnableStreaming = true;
-#endif
-
-				// map the columns by name, in case we skipped a readonly column
-				foreach (DataRow row in reader.GetSchemaTable().Rows)
-					bulk.ColumnMappings.Add((string)row["ColumnName"], (string)row["ColumnName"]);
-
-				if (configure != null)
-					configure(insightBulk);
-				bulk.WriteToServer(reader);
+				bcp.BulkCopy.WriteToServer(reader);
 			}
 		}
+
+#if !NODBASYNC
+		/// <summary>
+		/// Asynchronously bulk copies a set of objects to the server.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="reader">The reader to read objects from.</param>
+		/// <param name="configure">A callback method to configure the bulk copy object.</param>
+		/// <param name="options">Options for initializing the bulk copy object.</param>
+		/// <param name="transaction">An optional transaction to participate in.</param>
+		/// <param name="ct">The cancellation token that can be used to cancel the operation.</param>
+		/// <remarks>Number of rows copied if supported, -1 otherwise.</remarks>
+		/// <returns>A task representing the completion of the operation.</returns>
+		public override async Task BulkCopyAsync(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction, System.Threading.CancellationToken ct)
+		{
+			using (var bcp = PrepareBulkCopy(connection, tableName, reader, configure, options, transaction))
+			{
+				await bcp.BulkCopy.WriteToServerAsync(reader).ConfigureAwait(false);
+			}
+		}
+#endif
 
 		/// <summary>
 		/// Determines if a database exception is a transient exception and if the operation could be retried.
@@ -415,33 +410,90 @@ namespace Insight.Database
 		{
 			return type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
 		}
+		
+		/// <summary>
+		/// Prepares the bulk copy operation.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="reader">The reader to read objects from.</param>
+		/// <param name="configure">A callback method to configure the bulk copy object.</param>
+		/// <param name="options">Options for initializing the bulk copy object.</param>
+		/// <param name="transaction">An optional transaction to participate in.</param>
+		/// <returns>The configured bulk copy object.</returns>
+		private SqlInsightBulkCopy PrepareBulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
+		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
+			SqlBulkCopyOptions sqlOptions = SqlBulkCopyOptions.Default;
+			if (options.HasFlag(InsightBulkCopyOptions.KeepIdentity))
+				sqlOptions |= SqlBulkCopyOptions.KeepIdentity;
+			if (options.HasFlag(InsightBulkCopyOptions.FireTriggers))
+				sqlOptions |= SqlBulkCopyOptions.FireTriggers;
+			if (options.HasFlag(InsightBulkCopyOptions.CheckConstraints))
+				sqlOptions |= SqlBulkCopyOptions.CheckConstraints;
+			if (options.HasFlag(InsightBulkCopyOptions.TableLock))
+				sqlOptions |= SqlBulkCopyOptions.TableLock;
+			if (options.HasFlag(InsightBulkCopyOptions.KeepNulls))
+				sqlOptions |= SqlBulkCopyOptions.KeepNulls;
+			if (options.HasFlag(InsightBulkCopyOptions.UseInternalTransaction))
+				sqlOptions |= SqlBulkCopyOptions.UseInternalTransaction;
+
+			SqlBulkCopy bulk = null;
+			SqlInsightBulkCopy insightBulk = null;
+
+			try
+			{
+				bulk = new SqlBulkCopy((SqlConnection)connection, sqlOptions, (SqlTransaction)transaction);
+				insightBulk = new SqlInsightBulkCopy(bulk);
+
+				bulk.DestinationTableName = tableName;
+#if !NODBASYNC
+				bulk.EnableStreaming = true;
+#endif
+
+				// map the columns by name, in case we skipped a readonly column
+				foreach (DataRow row in reader.GetSchemaTable().Rows)
+					bulk.ColumnMappings.Add((string)row["ColumnName"], (string)row["ColumnName"]);
+
+				if (configure != null)
+					configure(insightBulk);
+
+				return insightBulk;
+			}
+			catch
+			{
+				if (insightBulk != null)
+					insightBulk.Dispose();
+
+				throw;
+			}
+		}
 
 		#region Bulk Copy Support
 		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 		class SqlInsightBulkCopy : InsightBulkCopy, IDisposable
 		{
-			private SqlBulkCopy _bulkCopy;
-
 			public SqlInsightBulkCopy(SqlBulkCopy bulkCopy)
 			{
 				if (bulkCopy == null) throw new ArgumentNullException("bulkCopy");
 
-				_bulkCopy = bulkCopy;
-				_bulkCopy.SqlRowsCopied += OnRowsCopied;
+				BulkCopy = bulkCopy;
+				BulkCopy.SqlRowsCopied += OnRowsCopied;
 			}
 
 			public override event InsightRowsCopiedEventHandler RowsCopied;
 
 			public override int BatchSize
 			{
-				get { return _bulkCopy.BatchSize; }
-				set { _bulkCopy.BatchSize = value; }
+				get { return BulkCopy.BatchSize; }
+				set { BulkCopy.BatchSize = value; }
 			}
 
 			public override int BulkCopyTimeout
 			{
-				get { return _bulkCopy.BulkCopyTimeout; }
-				set { _bulkCopy.BulkCopyTimeout = value; }
+				get { return BulkCopy.BulkCopyTimeout; }
+				set { BulkCopy.BulkCopyTimeout = value; }
 			}
 
 			public override InsightBulkCopyMappingCollection ColumnMappings
@@ -451,24 +503,27 @@ namespace Insight.Database
 
 			public override int NotifyAfter
 			{
-				get { return _bulkCopy.NotifyAfter; }
-				set { _bulkCopy.NotifyAfter = value; }
+				get { return BulkCopy.NotifyAfter; }
+				set { BulkCopy.NotifyAfter = value; }
 			}
 
 			public override string DestinationTableName
 			{
-				get { return _bulkCopy.DestinationTableName; }
-				set { _bulkCopy.DestinationTableName = value; }
+				get { return BulkCopy.DestinationTableName; }
+				set { BulkCopy.DestinationTableName = value; }
 			}
 
 			public override object InnerBulkCopy
 			{
-				get { return _bulkCopy; }
+				get { return BulkCopy; }
 			}
+
+			internal SqlBulkCopy BulkCopy { get; private set; }
 
 			public void Dispose()
 			{
-				_bulkCopy.SqlRowsCopied -= OnRowsCopied;
+				BulkCopy.SqlRowsCopied -= OnRowsCopied;
+				((IDisposable)BulkCopy).Dispose();
 			}
 
 			private void OnRowsCopied(object sender, SqlRowsCopiedEventArgs e)

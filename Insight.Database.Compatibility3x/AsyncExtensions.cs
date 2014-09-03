@@ -10,7 +10,7 @@ using Insight.Database.Structure;
 
 namespace Insight.Database
 {
-	public static partial class AsyncExtensions
+	public static partial class DBConnectionExtensions
 	{
 		#region Translation Methods
 #if NODBASYNC

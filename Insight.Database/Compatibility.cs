@@ -297,6 +297,21 @@ namespace Insight.Database
 			foreach (var t in tasks)
 				t.Wait();
 		}
+
+		public Task ContinueWith(Action<Task> action)
+		{
+			return new Task(() => action(this));
+		}
+
+		public Task<TResult> ContinueWith<TResult>(Func<Task, TResult> action, CancellationToken ct)
+		{
+			return new Task<TResult>(() => action(this));
+		}
+
+		public Task<TResult> ContinueWith<TResult>(Func<Task, TResult> action, TaskContinuationOptions options)
+		{
+			return new Task<TResult>(() => action(this));
+		}
 	}
 
 	public class Task<T> : Task

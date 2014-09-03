@@ -55,6 +55,26 @@ namespace Insight.Tests
 			}
 		}
 
+		[Test]
+		public void TestBulkLoadAsync()
+		{
+			var connection = Connection();
+
+			for (int i = 0; i < 3; i++)
+			{
+				// build test data
+				InsightTestData[] array = new InsightTestData[i];
+				for (int j = 0; j < i; j++)
+					array[j] = new InsightTestData() { Int = j, Geometry = new SqlGeometry() };
+
+				// bulk load the data
+				Cleanup();
+				connection.BulkCopyAsync("BulkCopyData", array).Wait();
+
+				VerifyRecordsInserted(connection, i);
+			}
+		}
+
         [Test]
         public void TestBulkLoadCount()
         {

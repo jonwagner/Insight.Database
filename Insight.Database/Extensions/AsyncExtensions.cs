@@ -3,11 +3,13 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
 using Insight.Database.Reliable;
 using Insight.Database.Structure;
 
@@ -17,7 +19,7 @@ namespace Insight.Database
 	/// Extension methods to support asynchronous database operations.
 	/// </summary>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
-	public static partial class AsyncExtensions
+	public static partial class DBConnectionExtensions
 	{
 		#region Execute Members
 		/// <summary>
@@ -44,7 +46,7 @@ namespace Insight.Database
 			CancellationToken? cancellationToken = null,
 			object outputParameters = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
@@ -125,7 +127,7 @@ namespace Insight.Database
 			CancellationToken? cancellationToken = null,
 			object outputParameters = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
@@ -205,7 +207,7 @@ namespace Insight.Database
 			CancellationToken? cancellationToken = null,
 			object outputParameters = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
@@ -338,7 +340,7 @@ namespace Insight.Database
 			if (command == null) throw new ArgumentNullException("command");
 			if (returns == null) throw new ArgumentNullException("returns");
 
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return command.Connection.ExecuteAsyncAndAutoClose(
 				null,
@@ -451,7 +453,7 @@ namespace Insight.Database
 			CancellationToken? cancellationToken = null,
 			object outputParameters = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
@@ -517,7 +519,7 @@ namespace Insight.Database
 			CancellationToken? cancellationToken = null,
 			object outputParameters = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
@@ -568,7 +570,7 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static Task<IList<FastExpando>> ToListAsync(this IDataReader reader, CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return Task<IList<FastExpando>>.Factory.StartNew(() => reader.ToList(), ct);
 		}
@@ -583,7 +585,7 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static Task<IList<T>> ToListAsync<T>(this IDataReader reader, IRecordReader<T> recordReader = null, CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return Task<IList<T>>.Factory.StartNew(() => reader.ToList(recordReader), ct);
 		}
@@ -609,7 +611,7 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static Task<IList<T>> ToListAsync<T>(this IDataReader reader, IRecordReader<T> recordReader, CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return reader.ToListAsync(recordReader, ct, firstRecordOnly: false);
 		}
@@ -627,7 +629,7 @@ namespace Insight.Database
 		{
 			if (task == null) throw new ArgumentNullException("task");
 
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 			ct.ThrowIfCancellationRequested();
 
 			return task.ContinueWith(reader => reader.ToListAsync(recordReader), ct).Unwrap();
@@ -667,7 +669,7 @@ namespace Insight.Database
 			CancellationToken? cancellationToken = null,
 			object outputParameters = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters ?? inserted,
@@ -742,7 +744,7 @@ namespace Insight.Database
 			CancellationToken? cancellationToken = null,
 			object outputParameters = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters ?? inserted,
@@ -929,7 +931,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static Task<T> MergeAsync<T>(this IDataReader reader, T item, CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return Task<T>.Factory.StartNew(() => reader.Merge(item), ct);
 		}
@@ -949,7 +951,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static Task<IEnumerable<T>> MergeAsync<T>(this IDataReader reader, IEnumerable<T> items, CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 
 			return Task<IEnumerable<T>>.Factory.StartNew(() => reader.Merge(items), ct);
 		}
@@ -989,7 +991,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static async Task<IEnumerable<T>> MergeAsync<T>(this IDataReader reader, IEnumerable<T> items, CancellationToken? cancellationToken = null)
 		{
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
+			var ct = cancellationToken ?? CancellationToken.None;
 			ct.ThrowIfCancellationRequested();
 
 			bool moreResults = false;
@@ -1056,6 +1058,90 @@ namespace Insight.Database
 
 			// the command doesn't support async so stick it in a dumb task
 			return Task<IDataReader>.Factory.StartNew(() => command.ExecuteReader(commandBehavior), cancellationToken);
+		}
+		#endregion
+
+		#region BulkCopy Methods
+		/// <summary>
+		/// Bulk copy a list of objects to the server. This method supports auto-open.
+		/// </summary>
+		/// <typeparam name="T">The type of the objects.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="list">The list of objects.</param>
+		/// <param name="configure">A callback for initialization of the BulkCopy object. The object is provider-dependent.</param>
+		/// <param name="closeConnection">True to close the connection when complete.</param>
+		/// <param name="options">The options to use for the bulk copy.</param>
+		/// <param name="transaction">An optional external transaction.</param>
+		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+		/// <returns>Number of rows copied.</returns>
+		public static Task<int> BulkCopyAsync<T>(
+			this IDbConnection connection,
+			string tableName,
+			IEnumerable<T> list,
+			Action<InsightBulkCopy> configure = null,
+			bool closeConnection = false,
+			InsightBulkCopyOptions options = InsightBulkCopyOptions.Default,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			var reader = GetObjectReader(connection, tableName, transaction, list);
+
+			return connection.BulkCopyAsync(
+				tableName,
+				reader,
+				configure,
+				false,
+				options,
+				transaction,
+				cancellationToken ?? CancellationToken.None);
+		}
+
+		/// <summary>
+		/// Bulk copy a list of objects to the server. This method supports auto-open.
+		/// </summary>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="source">The list of data to read.</param>
+		/// <param name="configure">A callback for initialization of the BulkCopy object. The object is provider-dependent.</param>
+		/// <param name="closeConnection">True to close the connection when complete.</param>
+		/// <param name="options">The options to use for the bulk copy.</param>
+		/// <param name="transaction">An optional external transaction.</param>
+		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
+		/// <returns>Number of rows copied.</returns>
+		public static Task<int> BulkCopyAsync(
+			this IDbConnection connection,
+			string tableName,
+			IDataReader source,
+			Action<InsightBulkCopy> configure = null,
+			bool closeConnection = false,
+			InsightBulkCopyOptions options = InsightBulkCopyOptions.Default,
+			IDbTransaction transaction = null,
+			CancellationToken? cancellationToken = null)
+		{
+			if (source == null) throw new ArgumentNullException("source");
+
+			// see if there are any invalid bulk copy options set
+			var provider = InsightDbProvider.For(connection);
+			var invalidOptions = (options & ~(provider.GetSupportedBulkCopyOptions(connection)));
+			if (invalidOptions != 0)
+				throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "BulkCopyOption {0} is not supported for this provider", invalidOptions));
+
+			return connection.ExecuteAsyncAndAutoClose(
+					closeConnection,
+					(c, ct) =>
+					{
+						return provider.BulkCopyAsync(connection, tableName, source, configure, options, transaction, ct)
+							.ContinueWith(
+								t =>
+								{
+									source.Dispose();
+									t.Wait();
+									return source.RecordsAffected;
+								},
+								TaskContinuationOptions.ExecuteSynchronously);
+					},
+					cancellationToken ?? CancellationToken.None);
 		}
 		#endregion
 
@@ -1242,6 +1328,39 @@ namespace Insight.Database
 						if (reader != null)
 							reader.Dispose();
 
+						// close before accessing the result so we can guarantee that the connection doesn't leak
+						if (closeConnection)
+							connection.Close();
+
+						return t.Result;
+					},
+					TaskContinuationOptions.ExecuteSynchronously);
+		}
+
+		private static Task<T> ExecuteAsyncAndAutoClose<T>(
+			this IDbConnection connection,
+			bool closeConnection,
+			Func<IDbConnection, CancellationToken, Task<T>> action,
+			CancellationToken cancellationToken)
+		{
+			return AutoOpenAsync(connection, cancellationToken)
+				.ContinueWith(
+					t =>
+					{
+						// this needs to run even if the open has been cancelled so we don't leak a connection
+						closeConnection |= t.Result;
+
+						// if the operation has been cancelled, throw after we know that the connection has been opened
+						// but before taking the action
+						cancellationToken.ThrowIfCancellationRequested();
+
+						return action(connection, cancellationToken);
+					},
+					TaskContinuationOptions.ExecuteSynchronously)
+				.Unwrap()
+				.ContinueWith(
+					t =>
+					{
 						// close before accessing the result so we can guarantee that the connection doesn't leak
 						if (closeConnection)
 							connection.Close();

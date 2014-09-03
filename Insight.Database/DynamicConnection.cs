@@ -335,7 +335,7 @@ namespace Insight.Database
 				queryReader.ReturnType,
 				t => (Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken?, object, object>)Delegate.CreateDelegate(
 					typeof(Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken?, object, object>),
-					typeof(AsyncExtensions).GetMethod("QueryCoreAsyncUntyped", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t)));
+					typeof(DBConnectionExtensions).GetMethod("QueryCoreAsyncUntyped", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t)));
 			return method(command, queryReader, CommandBehavior.Default, cancellationToken, null);
 		}
 		#endregion

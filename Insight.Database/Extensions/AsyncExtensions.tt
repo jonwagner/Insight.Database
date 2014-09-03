@@ -24,7 +24,7 @@ namespace Insight.Database
 	/// Extension methods to support asynchronous database operations.
 	/// </summary>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
-	public static partial class AsyncExtensions
+	public static partial class DBConnectionExtensions
     {
         #region Query Methods
 <#

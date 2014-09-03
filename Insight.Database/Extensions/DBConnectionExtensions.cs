@@ -1311,44 +1311,16 @@ namespace Insight.Database
 			InsightBulkCopyOptions options = InsightBulkCopyOptions.Default,
 			IDbTransaction transaction = null)
 		{
-			var provider = InsightDbProvider.For(connection);
-
-			try
+			// create a reader for the list
+			using (var reader = GetObjectReader(connection, tableName, transaction, list))
 			{
-				connection.DetectAutoOpen(ref closeConnection);
-
-				// see if we already have a mapping for the given table name and type
-				// we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
-				var key = Tuple.Create<string, Type>(tableName, typeof(T));
-				ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
-					key,
-					t =>
-					{
-						// select a 0 row result set so we can determine the schema of the table
-						using (var sqlReader = connection.GetReaderSql(
-							provider.GetTableSchemaSql(connection, tableName),
-							commandBehavior: CommandBehavior.SchemaOnly,
-							transaction: transaction))
-							return ObjectReader.GetObjectReader(connection.CreateCommand(), sqlReader, typeof(T));
-					});
-
-				// create a reader for the list
-				var reader = new ObjectListDbDataReader(fieldReaderData, list);
-				using (reader)
-				{
-					return connection.BulkCopy(
-						tableName,
-						reader,
-						configure,
-						false,
-						options,
-						transaction);
-				}
-			}
-			finally
-			{
-				if (closeConnection)
-					connection.Close();
+				return connection.BulkCopy(
+					tableName,
+					reader,
+					configure,
+					false,
+					options,
+					transaction);
 			}
 		}
 
@@ -1374,29 +1346,24 @@ namespace Insight.Database
 		{
 			if (source == null) throw new ArgumentNullException("source");
 
-			var provider = InsightDbProvider.For(connection);
-
 			// see if there are any invalid bulk copy options set
+			var provider = InsightDbProvider.For(connection);
 			var invalidOptions = (options & ~(provider.GetSupportedBulkCopyOptions(connection)));
 			if (invalidOptions != 0)
 				throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "BulkCopyOption {0} is not supported for this provider", invalidOptions));
 
-			try
-			{
-				connection.DetectAutoOpen(ref closeConnection);
-
-				using (source)
+			return connection.ExecuteAndAutoClose(
+				c =>
 				{
-					provider.BulkCopy(connection, tableName, source, configure, options, transaction);
-				}
+					using (source)
+					{
+						provider.BulkCopy(connection, tableName, source, configure, options, transaction);
+					}
 
-				return source.RecordsAffected;
-			}
-			finally
-			{
-				if (closeConnection)
-					connection.Close();
-			}
+					// need to dispose the source in order to get the records affected
+					return source.RecordsAffected;
+				},
+				closeConnection);
 		}
 		#endregion
 
@@ -1498,6 +1465,63 @@ namespace Insight.Database
 				if (closeConnection && connection.State != ConnectionState.Closed)
 					connection.Close();
 			}
+		}
+
+		/// <summary>
+		/// Executes the operation, opening the connection if necessary.
+		/// </summary>
+		/// <typeparam name="T">The return type of the operation.</typeparam>
+		/// <param name="connection">The connection.</param>
+		/// <param name="action">The action to perform.</param>
+		/// <param name="closeConnection">True to force closing the connection.</param>
+		/// <returns>The result of the operation.</returns>
+		internal static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, bool closeConnection = false)
+		{
+			try
+			{
+				connection.DetectAutoOpen(ref closeConnection);
+
+				return action(connection);
+			}
+			finally
+			{
+				if (closeConnection)
+					connection.Close();
+			}
+		}
+
+		/// <summary>
+		/// Gets a reader that can read the list of objects into the given table. Used for bulk copy.
+		/// </summary>
+		/// <typeparam name="T">The type of object in the list.</typeparam>
+		/// <param name="connection">The connection to use.</param>
+		/// <param name="tableName">The name of the table.</param>
+		/// <param name="transaction">The currently open transaction.</param>
+		/// <param name="list">The list of objects.</param>
+		/// <returns>A reader that can be streamed into the table.</returns>
+		private static IDataReader GetObjectReader<T>(IDbConnection connection, string tableName, IDbTransaction transaction, IEnumerable<T> list)
+		{
+			return connection.ExecuteAndAutoClose(
+				c =>
+				{
+					// see if we already have a mapping for the given table name and type
+					// we can't use the schema mapping cache because we don't have the schema yet, just the name of the table
+					var key = Tuple.Create<string, Type>(tableName, typeof(T));
+					ObjectReader fieldReaderData = _tableReaders.GetOrAdd(
+						key,
+						t =>
+						{
+							// select a 0 row result set so we can determine the schema of the table
+							using (var sqlReader = connection.GetReaderSql(
+								InsightDbProvider.For(connection).GetTableSchemaSql(connection, tableName),
+								commandBehavior: CommandBehavior.SchemaOnly,
+								transaction: transaction))
+								return ObjectReader.GetObjectReader(connection.CreateCommand(), sqlReader, typeof(T));
+						});
+
+					// create a reader for the list
+					return new ObjectListDbDataReader(fieldReaderData, list);
+				});
 		}
 		#endregion
 	}
