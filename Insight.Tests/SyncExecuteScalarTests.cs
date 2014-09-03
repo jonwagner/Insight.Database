@@ -55,5 +55,13 @@ namespace Insight.Tests
 		{
 			Connection().ExecuteScalarSql<int>("PRINT 1");
 		}
+
+		[Test]
+		public void TestNullableReturn()
+		{
+			var result = Connection().ExecuteScalarSql<int?>("SELECT CAST(NULL as INT)");
+
+			Assert.AreEqual(null, result);
+		}
 	}
 }

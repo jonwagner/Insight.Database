@@ -49,5 +49,13 @@ namespace Insight.Tests
 			Assert.AreEqual(input.In, result);
 			input.Verify(output);
 		}
+
+		[Test]
+		public void TestNullableReturn()
+		{
+			var result = Connection().ExecuteScalarSqlAsync<int?>("SELECT CAST(NULL as INT)").Result;
+
+			Assert.AreEqual(null, result);
+		}
 	}
 }

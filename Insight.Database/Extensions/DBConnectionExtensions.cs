@@ -389,12 +389,7 @@ namespace Insight.Database
 				{
 					using (var cmd = connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction))
 					{
-						object result = cmd.ExecuteScalar();
-						if (result == null && Nullable.GetUnderlyingType(typeof(T)) == null)
-							throw new InvalidOperationException("Recordset returned no rows, but ExecuteScalar is trying to return a non-nullable type.");
-
-						cmd.OutputParameters(parameters, outputParameters);
-						return (T)result;
+						return ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar());
 					}
 				},
 				closeConnection);
@@ -1522,6 +1517,28 @@ namespace Insight.Database
 					// create a reader for the list
 					return new ObjectListDbDataReader(fieldReaderData, list);
 				});
+		}
+
+		/// <summary>
+		/// Gets the results of an ExecuteScalar, including output parameters.
+		/// </summary>
+		/// <typeparam name="T">The type of the return value.</typeparam>
+		/// <param name="cmd">The command that was executed.</param>
+		/// <param name="parameters">The parameters to the command.</param>
+		/// <param name="outputParameters">The output parameter object.</param>
+		/// <param name="result">The result of the command.</param>
+		/// <returns>The result of the command, converted to the given type.</returns>
+		private static T ConvertScalar<T>(IDbCommand cmd, object parameters, object outputParameters, object result)
+		{
+			if (result == null && Nullable.GetUnderlyingType(typeof(T)) == null)
+				throw new InvalidOperationException("Recordset returned no rows, but ExecuteScalar is trying to return a non-nullable type.");
+
+			cmd.OutputParameters(parameters, outputParameters);
+
+			if (result == DBNull.Value)
+				return default(T);
+
+			return (T)result;
 		}
 		#endregion
 	}
