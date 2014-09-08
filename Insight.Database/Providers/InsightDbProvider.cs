@@ -336,17 +336,27 @@ namespace Insight.Database.Providers
 		#endregion
 
 		/// <summary>
-		/// Copies a single parameter by index and adds it to the command.
+		/// Copies the list of parameters into the given command.
 		/// </summary>
 		/// <param name="command">The command to copy into.</param>
 		/// <param name="parameters">The parameter template to copy from.</param>
-		/// <param name="index">The index of the parameter to copy.</param>
-		/// <returns>The new parameter.</returns>
-		internal IDataParameter CopyParameter(IDbCommand command, IList<IDataParameter> parameters, int index)
+		/// <returns>The list of parameters.</returns>
+		internal IDataParameter[] CopyParameters(IDbCommand command, IList<IDataParameter> parameters)
 		{
-			var p = CloneParameter(command, parameters[index]);
-			command.Parameters.Add(p);
-			return p;
+			var array = new IDataParameter[parameters.Count];
+
+			for (int i = 0; i < array.Length; i++)
+			{
+				var template = parameters[i];
+				if (template == null)
+					continue;
+
+				var p = CloneParameter(command, template);
+				command.Parameters.Add(p);
+				array[i] = p;
+			}
+
+			return array;
 		}
 
 		#region Registration

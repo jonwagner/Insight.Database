@@ -204,7 +204,13 @@ namespace Insight.Database.CodeGenerator
 			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "CreateInputParameters-{0}", Guid.NewGuid()), null, new[] { typeof(IDbCommand), typeof(object) }, typeOwner, true);
 			var il = dm.GetILGenerator();
 
-			var stringLength = il.DeclareLocal(typeof(Int32));
+			// copy the parameters into the command object
+			var parametersLocal = il.DeclareLocal(typeof(IDataParameter[]));
+			new StaticFieldStorage(provider).EmitLoad(il);
+			il.Emit(OpCodes.Ldarg_0);
+			new StaticFieldStorage(parameters).EmitLoad(il);
+			il.Emit(OpCodes.Call, typeof(InsightDbProvider).GetMethod("CopyParameters", BindingFlags.NonPublic | BindingFlags.Instance));
+			il.Emit(OpCodes.Stloc, parametersLocal);
 
 			// go through all of the mappings
 			for (int i = 0; i < mappings.Length; i++)
@@ -221,22 +227,15 @@ namespace Insight.Database.CodeGenerator
 
 					// unspecified input parameters get skipped
 					if (dbParameter.Direction == ParameterDirection.Input)
-						continue;
-				}
+						parameters[i] = null;
 
-				// copy the parameters into the command object, returning the parameters list
-				new StaticFieldStorage(provider).EmitLoad(il);
-				il.Emit(OpCodes.Ldarg_0);
-				new StaticFieldStorage(parameters).EmitLoad(il);
-				il.Emit(OpCodes.Ldc_I4, i);
-				il.Emit(OpCodes.Call, typeof(InsightDbProvider).GetMethod("CopyParameter", BindingFlags.NonPublic | BindingFlags.Instance));
-
-				// if we made it this far and prop is null, then we have an output parameter that we should just leave alone
-				if (mapping == null)
-				{
-					il.Emit(OpCodes.Pop);
 					continue;
 				}
+
+				// get the parameter
+				il.Emit(OpCodes.Ldloc, parametersLocal);
+				il.Emit(OpCodes.Ldc_I4, i);
+				il.Emit(OpCodes.Ldelem, typeof(IDataParameter));
 
 				var prop = mapping.ClassPropInfo;
 
@@ -249,11 +248,6 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
 				///////////////////////////////////////////////////////////////
-				// duplicate the parameter so we can call setvalue later
-				var parameter = il.DeclareLocal(typeof(IDbDataParameter));
-				il.Emit(OpCodes.Dup);
-				il.Emit(OpCodes.Dup);
-				il.Emit(OpCodes.Stloc, parameter);
 
 				///////////////////////////////////////////////////////////////
 				// Get the value from the object onto the stack
@@ -269,9 +263,6 @@ namespace Insight.Database.CodeGenerator
 					// we have the parameter and the value as object, add the command
 					il.Emit(OpCodes.Ldarg_0);
 					il.Emit(OpCodes.Call, typeof(ListParameterHelper).GetMethod("AddListParameter", BindingFlags.Static | BindingFlags.NonPublic));
-
-					// pop the extra parameter before continuing
-					il.Emit(OpCodes.Pop);
 					continue;
 				}
 
@@ -301,21 +292,12 @@ namespace Insight.Database.CodeGenerator
 					il.Emit(OpCodes.Pop);
 					il.Emit(OpCodes.Ldsfld, _dbNullValue);
 
-					///////////////////////////////////////////////////////////////
-					// if this is a string, set the local length variable to 0
-					///////////////////////////////////////////////////////////////
-					if (TypeHelper.IsDbTypeAString(sqlType))
-					{
-						IlHelper.EmitLdInt32(il, 0);
-						il.Emit(OpCodes.Stloc, stringLength);
-					}
-
 					// value is set to null. ready to set the property.
 					il.Emit(OpCodes.Br_S, readyToSetLabel);
 
 					// we know the value is not null
 					il.MarkLabel(notNull);
-				}
+ 				}
 
 				///////////////////////////////////////////////////////////////
 				// if this is a linq binary, convert it to a byte array
@@ -333,40 +315,6 @@ namespace Insight.Database.CodeGenerator
 				{
 					// we are sending up an XDocument. Use ToString.
 					il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
-				}
-				else if (prop.MemberType == typeof(string))
-				{
-					// if this is a string, set the length property
-					Label isLong = il.DefineLabel();
-					Label lenDone = il.DefineLabel();
-
-					// get the string length
-					il.Emit(OpCodes.Dup);									// dup string
-					il.Emit(OpCodes.Callvirt, _stringGetLength);			// call get length
-
-					// compare to 4000
-					IlHelper.EmitLdInt32(il, 4000);							// [string] [length] [4000]
-					il.Emit(OpCodes.Cgt);									// [string] [0 or 1]
-					il.Emit(OpCodes.Brtrue_S, isLong);
-
-					// it is not longer than 4000, so store the value
-					IlHelper.EmitLdInt32(il, 4000);							// [string] [4000]
-					il.Emit(OpCodes.Br_S, lenDone);
-
-					// it is longer than 4000, so store -1
-					il.MarkLabel(isLong);
-					IlHelper.EmitLdInt32(il, -1);							// [string] [-1]
-
-					il.MarkLabel(lenDone);
-
-					// store the length of the string in local so we can stick it in the parameter
-					il.Emit(OpCodes.Stloc, stringLength);					// [string]
-
-					// set the type of the parameter to string
-					// this seems to only be necessary for string->guid conversions under sql server
-					il.Emit(OpCodes.Ldloc, parameter);
-					il.Emit(OpCodes.Ldc_I4, (int)DbType.String);
-					il.Emit(OpCodes.Callvirt, typeof(IDataParameter).GetProperty("DbType").GetSetMethod());
 				}
 				else if (prop.MemberType.GetInterfaces().Contains(typeof(IConvertible)) || prop.MemberType == typeof(object))
 				{
@@ -413,33 +361,43 @@ namespace Insight.Database.CodeGenerator
 				// push parameter is at top of method
 				// value is above
 				il.MarkLabel(readyToSetLabel);
-				il.Emit(OpCodes.Callvirt, _iDataParameterSetValue);
-
-				///////////////////////////////////////////////////////////////
-				// p.Size = string.length
-				///////////////////////////////////////////////////////////////
-				if (TypeHelper.IsDbTypeAString(sqlType) && dbParameter is IDbDataParameter)
-				{
-					var endOfSize = il.DefineLabel();
-
-					// don't set if 0
-					il.Emit(OpCodes.Ldloc, stringLength);
-					il.Emit(OpCodes.Brfalse_S, endOfSize);
-
-					// parameter.setsize = string.length
-					il.Emit(OpCodes.Dup);
-					il.Emit(OpCodes.Ldloc, stringLength);
-					il.Emit(OpCodes.Callvirt, _iDbDataParameterSetSize);
-
-					il.MarkLabel(endOfSize);
-				}
-
-				il.Emit(OpCodes.Pop);					// pop (parameter)
+				if (prop.MemberType == typeof(string))
+					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterStringValue", BindingFlags.NonPublic | BindingFlags.Static));
+				else
+					il.Emit(OpCodes.Callvirt, _iDataParameterSetValue);
 			}
 
 			il.Emit(OpCodes.Ret);
 
 			return (Action<IDbCommand, object>)dm.CreateDelegate(typeof(Action<IDbCommand, object>));
+		}
+
+		/// <summary>
+		/// Set a string value on a parameter.
+		/// </summary>
+		/// <param name="parameter">The parameter.</param>
+		/// <param name="value">The string value.</param>
+		private static void SetParameterStringValue(IDbDataParameter parameter, object value)
+		{
+			parameter.Value = value;
+
+			// need to set the type to string - required for string->guid conversions under sql server
+			var s = value as string;
+			if (s != null)
+			{
+				if (parameter.DbType != DbType.Xml)
+					parameter.DbType = DbType.String;
+
+				var dbParameter = parameter as IDbDataParameter;
+				if (dbParameter != null)
+				{
+					var length = s.Length;
+					if (length > 4000)
+						dbParameter.Size = -1;
+					else
+						dbParameter.Size = s.Length;
+				}
+			}
 		}
 
 		/// <summary>
@@ -501,7 +459,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="command">The command to analyze for the results.</param>
 		/// <param name="type">The type to put the values into.</param>
 		/// <returns>The converter method.</returns>
-		static Action<IDbCommand, object> CreateClassOutputParameterConverter(IDbCommand command, Type type)
+		private static Action<IDbCommand, object> CreateClassOutputParameterConverter(IDbCommand command, Type type)
 		{
 			// get the parameters
 			List<IDataParameter> parameters = command.Parameters.Cast<IDataParameter>().ToList();
