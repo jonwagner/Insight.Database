@@ -151,6 +151,11 @@ GO
 ----------------------------------------------------------
 -- Mapping test procs
 ----------------------------------------------------------
+CREATE PROCEDURE OutputParameterParentMappingTest @parent int = NULL OUTPUT, @foo int = NULL OUTPUT
+AS
+	SELECT @parent = 1
+	SELECT @foo = 2
+GO
 CREATE PROCEDURE OutputParameterMappingTest @out_foo int = NULL OUTPUT AS SELECT @out_foo = 5
 GO
 CREATE PROC MappingAsJson1 @SubClass [varchar](max) AS SELECT SubClass=@SubClass

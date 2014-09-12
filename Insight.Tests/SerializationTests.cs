@@ -17,16 +17,20 @@ namespace Insight.Tests
 			public string Trimmed;
 		}
 
-		public class StringTrimDeserializer
+		public class StringTrimDeserializer : DbObjectSerializer
 		{
-			public static bool CanDeserialize(Type type)
+			public override bool CanDeserialize(Type type)
 			{
-				return type == typeof(string);
+				return type == typeof(String);
 			}
-	
-			public static object Deserialize(string encoded, Type type)
+			public override object SerializeObject(Type type, object o)
 			{
-				return encoded.TrimEnd();
+				return (string)o;
+			}
+
+			public override object DeserializeObject(Type type, object o)
+			{
+				return ((string)o).TrimEnd();
 			}
 		}
 

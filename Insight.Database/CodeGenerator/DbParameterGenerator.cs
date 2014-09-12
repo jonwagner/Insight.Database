@@ -14,6 +14,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Xml;
 using System.Xml.Linq;
+using Insight.Database.Mapping;
 using Insight.Database.Providers;
 
 namespace Insight.Database.CodeGenerator
@@ -197,7 +198,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// get the mapping of the properties for the type
-			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true);
+			var mappings = ColumnMapping.MapParameters(type, command, parameters);
 
 			// start creating a dynamic method
 			Type typeOwner = type.HasElementType ? type.GetElementType() : type;
@@ -206,18 +207,18 @@ namespace Insight.Database.CodeGenerator
 
 			// copy the parameters into the command object
 			var parametersLocal = il.DeclareLocal(typeof(IDataParameter[]));
-			new StaticFieldStorage(provider).EmitLoad(il);
+			StaticFieldStorage.EmitLoad(il, provider);
 			il.Emit(OpCodes.Ldarg_0);
-			new StaticFieldStorage(parameters).EmitLoad(il);
+			StaticFieldStorage.EmitLoad(il, parameters);
 			il.Emit(OpCodes.Call, typeof(InsightDbProvider).GetMethod("CopyParameters", BindingFlags.NonPublic | BindingFlags.Instance));
 			il.Emit(OpCodes.Stloc, parametersLocal);
 
 			// go through all of the mappings
-			for (int i = 0; i < mappings.Length; i++)
+			for (int i = 0; i < mappings.Count; i++)
 			{
 				var mapping = mappings[i];
 				var dbParameter = parameters[i];
-
+				
 				// if there is no mapping for the parameter
 				if (mapping == null)
 				{
@@ -232,18 +233,19 @@ namespace Insight.Database.CodeGenerator
 					continue;
 				}
 
+				var memberType = mapping.Member.MemberType;
+				var serializer = mapping.Serializer;
+
 				// get the parameter
 				il.Emit(OpCodes.Ldloc, parametersLocal);
 				il.Emit(OpCodes.Ldc_I4, i);
 				il.Emit(OpCodes.Ldelem, typeof(IDataParameter));
 
-				var prop = mapping.ClassPropInfo;
-
 				// look up the best type to use for the parameter
-				DbType sqlType = LookupDbType(mapping, dbParameter.DbType);
+				DbType sqlType = LookupDbType(memberType, serializer, dbParameter.DbType);
 
 				// give the provider an opportunity to fix up the template parameter (e.g. set UDT type names)
-				provider.FixupParameter(command, dbParameter, sqlType, prop.MemberType);
+				provider.FixupParameter(command, dbParameter, sqlType, memberType);
 
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
@@ -253,7 +255,6 @@ namespace Insight.Database.CodeGenerator
 				// Get the value from the object onto the stack
 				///////////////////////////////////////////////////////////////
 				il.Emit(OpCodes.Ldarg_1);
-				prop.EmitGetValue(il);
 
 				///////////////////////////////////////////////////////////////
 				// Special case support for enumerables. If the type is -1 (our workaround, then call the list parameter method)
@@ -261,14 +262,14 @@ namespace Insight.Database.CodeGenerator
 				if (sqlType == DbTypeEnumerable)
 				{
 					// we have the parameter and the value as object, add the command
+					ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il);
 					il.Emit(OpCodes.Ldarg_0);
 					il.Emit(OpCodes.Call, typeof(ListParameterHelper).GetMethod("AddListParameter", BindingFlags.Static | BindingFlags.NonPublic));
 					continue;
 				}
 
-				// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
-				if (prop.MemberType.IsValueType)
-					il.Emit(OpCodes.Box, prop.MemberType);
+				Label readyToSetLabel = il.DefineLabel();
+				ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
 
 				// special conversions for timespan to datetime
 				if ((sqlType == DbType.Time && dbParameter.DbType != DbType.Time) ||
@@ -279,21 +280,20 @@ namespace Insight.Database.CodeGenerator
 				}
 
 				// if it's class type, boxed value type (in an object), or nullable, then we have to check for null
-				Label readyToSetLabel = il.DefineLabel();
-				if (!prop.MemberType.IsValueType || Nullable.GetUnderlyingType(prop.MemberType) != null)
+				if (!memberType.IsValueType || Nullable.GetUnderlyingType(memberType) != null)
 				{
 					Label notNull = il.DefineLabel();
 
 					// check to see if it's not null
 					il.Emit(OpCodes.Dup);
-					il.Emit(OpCodes.Brtrue_S, notNull);
+					il.Emit(OpCodes.Brtrue, notNull);
 
 					// it's null. replace the value with DbNull
 					il.Emit(OpCodes.Pop);
 					il.Emit(OpCodes.Ldsfld, _dbNullValue);
 
 					// value is set to null. ready to set the property.
-					il.Emit(OpCodes.Br_S, readyToSetLabel);
+					il.Emit(OpCodes.Br, readyToSetLabel);
 
 					// we know the value is not null
 					il.MarkLabel(notNull);
@@ -302,57 +302,30 @@ namespace Insight.Database.CodeGenerator
 				///////////////////////////////////////////////////////////////
 				// if this is a linq binary, convert it to a byte array
 				///////////////////////////////////////////////////////////////
-				if (prop.MemberType == TypeHelper.LinqBinaryType)
+				if (memberType == TypeHelper.LinqBinaryType)
 				{
 					il.Emit(OpCodes.Callvirt, TypeHelper.LinqBinaryToArray);
 				}
-				else if (prop.MemberType == typeof(XmlDocument))
+				else if (memberType == typeof(XmlDocument))
 				{
 					// we are sending up an XmlDocument. ToString just returns the classname, so use the outerxml.
-					il.Emit(OpCodes.Callvirt, prop.MemberType.GetProperty("OuterXml").GetGetMethod());
+					il.Emit(OpCodes.Callvirt, memberType.GetProperty("OuterXml").GetGetMethod());
 				}
-				else if (prop.MemberType == typeof(XDocument))
+				else if (memberType == typeof(XDocument))
 				{
 					// we are sending up an XDocument. Use ToString.
-					il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
+					il.Emit(OpCodes.Callvirt, memberType.GetMethod("ToString", new Type[] { }));
 				}
-				else if (prop.MemberType.GetInterfaces().Contains(typeof(IConvertible)) || prop.MemberType == typeof(object))
+				else if (memberType.GetInterfaces().Contains(typeof(IConvertible)) || memberType == typeof(object))
 				{
 					// if the type supports IConvertible, then let SQL convert it
 					// if the type is object, we can't do anything, so let SQL attempt to convert it
 				}
-				else if (!TypeHelper.IsAtomicType(prop.MemberType))
+				else if (!TypeHelper.IsAtomicType(memberType))
 				{
-					if (mapping.Serializer != null)
-					{
-						var serializerMethod = mapping.Serializer.GetMethod("Serialize", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(object), typeof(Type) }, null);
-						if (serializerMethod == null)
-							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Serializer type {0} needs the method 'public static string Serialize(object, Type)'", mapping.Serializer.Name));
-
-						il.EmitLoadType(prop.MemberType);
-						il.Emit(OpCodes.Call, serializerMethod);
-					}
-					else if (dbParameter.DbType != DbType.Object)
-					{
-						// it's not a system type and it's not IConvertible, so let's add it as a string and let the data engine convert it.
-						il.Emit(OpCodes.Callvirt, prop.MemberType.GetMethod("ToString", new Type[] { }));
-					}
-
-					// if we touched the value, it's possible that serializing returns a null
-					if (dbParameter.DbType != DbType.Object)
-					{
-						Label internalValueIsNotNull = il.DefineLabel();
-
-						// check to see if it's not null
-						il.Emit(OpCodes.Dup);
-						il.Emit(OpCodes.Brtrue_S, internalValueIsNotNull);
-
-						// it's null. replace the value with DbNull
-						il.Emit(OpCodes.Pop);
-						il.Emit(OpCodes.Ldsfld, _dbNullValue);
-
-						il.MarkLabel(internalValueIsNotNull);
-					}
+					il.EmitLoadType(memberType);
+					StaticFieldStorage.EmitLoad(il, serializer);
+					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SerializeParameterValue", BindingFlags.NonPublic | BindingFlags.Static));
 				}
 
 				///////////////////////////////////////////////////////////////
@@ -361,7 +334,7 @@ namespace Insight.Database.CodeGenerator
 				// push parameter is at top of method
 				// value is above
 				il.MarkLabel(readyToSetLabel);
-				if (prop.MemberType == typeof(string))
+				if (memberType == typeof(string))
 					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterStringValue", BindingFlags.NonPublic | BindingFlags.Static));
 				else
 					il.Emit(OpCodes.Callvirt, _iDataParameterSetValue);
@@ -370,6 +343,18 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Ret);
 
 			return (Action<IDbCommand, object>)dm.CreateDelegate(typeof(Action<IDbCommand, object>));
+		}
+
+		/// <summary>
+		/// Serialize a value into a parameter. This is a stub method that reorders the stack.
+		/// </summary>
+		/// <param name="value">The value to serialize.</param>
+		/// <param name="type">The type of the member.</param>
+		/// <param name="serializer">The serializer to use.</param>
+		/// <returns>The serialized value.</returns>
+		private static object SerializeParameterValue(object value, Type type, IDbObjectSerializer serializer)
+		{
+			return serializer.SerializeObject(type, value) ?? DBNull.Value;
 		}
 
 		/// <summary>
@@ -483,16 +468,18 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Stloc, localParameters);
 
 			// go through all of the mappings
-			var mappings = ColumnMapping.Parameters.CreateMapping(type, null, command, parameters, null, 0, parameters.Count, true);
-			for (int i = 0; i < mappings.Length; i++)
+			var mappings = ColumnMapping.MapParameters(type, command, parameters);
+			for (int i = 0; i < mappings.Count; i++)
 			{
+				var finishLabel = il.DefineLabel();
+
 				// if there is no parameter for this property, then skip it
 				var mapping = mappings[i];
 				if (mapping == null)
 					continue;
 
 				// if the property is readonly, then skip it
-				var prop = mapping.ClassPropInfo;
+				var prop = mapping.Member;
 				if (!prop.CanSetMember)
 					continue;
 
@@ -504,6 +491,18 @@ namespace Insight.Database.CodeGenerator
 				// push the object on the stack. we will need it to set the value below
 				il.Emit(OpCodes.Ldarg_1);
 
+				// if this is a deep mapping, then get the parent object, and do a null test if its not a value type
+				if (mapping.IsDeep)
+				{
+					ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
+
+					if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.IsValueType)
+					{
+						il.Emit(OpCodes.Dup);
+						il.Emit(OpCodes.Brfalse, finishLabel);
+					}
+				}
+
 				// get the parameter out of the collection
 				il.Emit(OpCodes.Ldloc, localParameters);
 				il.Emit(OpCodes.Ldstr, parameter.ParameterName);                 // push (parametername)
@@ -513,7 +512,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Callvirt, _iDataParameterGetValue);
 
 				// emit the code to convert the value and set it on the object
-				Label finishLabel = TypeConverterGenerator.EmitConvertAndSetValue(il, _dbTypeToTypeMap[parameter.DbType], mapping);
+				TypeConverterGenerator.EmitConvertAndSetValue(il, _dbTypeToTypeMap[parameter.DbType], mapping);
 				il.MarkLabel(finishLabel);
 			}
 
@@ -527,12 +526,12 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Look up a DbType from a .Net type.
 		/// </summary>
-		/// <param name="mapping">The column mapping to analyze.</param>
+		/// <param name="type">The type of object to look up.</param>
+		/// <param name="serializer">The serializer that has been detected for the field.</param>
 		/// <param name="parameterType">The expected sql parameter type. Used as the default.</param>
 		/// <returns>The equivalend DbType.</returns>
-		private static DbType LookupDbType(ColumnMappingEventArgs mapping, DbType parameterType)
+		private static DbType LookupDbType(Type type, IDbObjectSerializer serializer, DbType parameterType)
 		{
-			var type = mapping.ClassPropInfo.MemberType;
 			DbType sqlType;
 
 			// if the type is nullable, get the underlying type
@@ -558,8 +557,8 @@ namespace Insight.Database.CodeGenerator
 			if (typeof(IEnumerable).IsAssignableFrom(type))
 			{
 				// if the list should be serialized, then return a string
-				if (mapping.SerializationMode != SerializationMode.Default)
-					return DbType.String;
+				if (serializer != null && serializer.CanSerialize(type))
+					return serializer.GetSerializedDbType(type);
 
 				// use -1 to denote its a list, hacky but will work on any DB
 				return DbTypeEnumerable;

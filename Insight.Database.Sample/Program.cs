@@ -18,7 +18,7 @@ using System.Runtime.CompilerServices;
 
 namespace Insight.Database.Sample
 {
-	class Program
+	public class Program
 	{
 		private static string connectionString = ConfigurationManager.ConnectionStrings["MyDatabase"].ConnectionString;
 		private static ConnectionStringSettings Database = ConfigurationManager.ConnectionStrings["MyDatabase"];

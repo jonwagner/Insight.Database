@@ -1,40 +1,50 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database.CodeGenerator;
+using Insight.Database.Providers;
 
 namespace Insight.Database
 {
 	/// <summary>
-	/// Serializes an object to a string by using the ToString method.
+	/// Serializes objects to strings. Does not deserialize.
 	/// </summary>
-	public static class ToStringObjectSerializer
+	class ToStringObjectSerializer : DbObjectSerializer
 	{
 		/// <summary>
-		/// Serializes an object to a string.
+		/// The singleton Serializer.
 		/// </summary>
-		/// <param name="value">The object to serialize.</param>
-		/// <param name="type">The type of the object.</param>
-		/// <returns>The serialized representation of the object.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "type", Justification = "The caller expects these parameters.")]
-		public static string Serialize(object value, Type type)
-		{
-			if (value == null)
-				return null;
+		public static readonly ToStringObjectSerializer Serializer = new ToStringObjectSerializer();
 
-			return value.ToString();
+		/// <inheritdoc/>
+		public override bool CanSerialize(Type type)
+		{
+			if (typeof(IEnumerable).IsAssignableFrom(type))
+				return false;
+
+			return true;
 		}
 
-		/// <summary>
-		/// Determines whether the serializer can deserialize the given type of object.
-		/// </summary>
-		/// <param name="type">The type of object.</param>
-		/// <returns>True if the deserializer can deserialize it, false otherwise.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA1801:ReviewUnusedParameters", MessageId = "type")]
-		public static bool CanDeserialize(Type type)
+		/// <inheritdoc/>
+		public override bool CanDeserialize(Type type)
 		{
 			return false;
+		}
+
+		/// <inheritdoc/>
+		public override object SerializeObject(Type type, object o)
+		{
+			return o.ToString();
+		}
+
+		/// <inheritdoc/>
+		public override object DeserializeObject(Type type, object o)
+		{
+			return o;
 		}
 	}
 }

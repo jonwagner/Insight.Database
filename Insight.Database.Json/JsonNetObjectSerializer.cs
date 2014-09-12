@@ -10,7 +10,7 @@ namespace Insight.Database.Json
 	/// <summary>
 	/// Handles serializing objects to JSON by using the JSON.NET serializer.
 	/// </summary>
-	public static class JsonNetObjectSerializer
+	public class JsonNetObjectSerializer : DbObjectSerializer
 	{
 		/// <summary>
 		/// Initializes the JSON.NET serializer.
@@ -18,16 +18,16 @@ namespace Insight.Database.Json
 		public static void Initialize()
 		{
 			// override the type used to serialize
-			Insight.Database.JsonObjectSerializer.SerializerType = typeof(JsonNetObjectSerializer);
+			Insight.Database.JsonObjectSerializer.OverrideSerializer = new JsonNetObjectSerializer();
 		}
 
 		/// <summary>
 		/// Serializes an object to a string.
 		/// </summary>
-		/// <param name="value">The object to serialize.</param>
 		/// <param name="type">The type of the object.</param>
+		/// <param name="value">The object to serialize.</param>
 		/// <returns>The serialized representation of the object.</returns>
-		public static string Serialize(object value, Type type)
+		public override object SerializeObject(Type type, object value)
 		{
 			if (value == null)
 				return null;
@@ -38,12 +38,12 @@ namespace Insight.Database.Json
 		/// <summary>
 		/// Deserializes an object from a string.
 		/// </summary>
-		/// <param name="encoded">The encoded value of the object.</param>
 		/// <param name="type">The type of object to deserialize.</param>
+		/// <param name="encoded">The encoded value of the object.</param>
 		/// <returns>The deserialized object.</returns>
-		public static object Deserialize(string encoded, Type type)
+		public override object DeserializeObject(Type type, object encoded)
 		{
-			return JsonConvert.DeserializeObject(encoded, type);
+			return JsonConvert.DeserializeObject((string)encoded, type);
 		}
 	}
 }

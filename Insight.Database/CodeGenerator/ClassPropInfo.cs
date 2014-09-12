@@ -9,6 +9,7 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Xml;
 using System.Xml.Linq;
+using Insight.Database.Mapping;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -18,6 +19,11 @@ namespace Insight.Database.CodeGenerator
 	class ClassPropInfo
 	{
 		#region Private Members
+		/// <summary>
+		/// The string used to separate members in a parent.child.child path.
+		/// </summary>
+		private const string MemberSeparator = ".";
+
 		/// <summary>
 		/// The default binding flags to use when looking up properties.
 		/// </summary>
@@ -303,6 +309,175 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Ret);
 
 			return (Action<TObject, TValue>)dm.CreateDelegate(typeof(Action<TObject, TValue>));
+		}
+		#endregion
+
+		#region Child Binding Members
+		/// <summary>
+		/// Searches the type and child types for a field that matches the given column name.
+		/// </summary>
+		/// <param name="type">The type to search.</param>
+		/// <param name="columnName">The column to search for.</param>
+		/// <param name="mappingCollection">The mapping collection containing the configuration for this context.</param>
+		/// <returns>The name of the field or null if there is no match.</returns>
+		internal static string SearchForMatchingField(Type type, string columnName, MappingCollection mappingCollection)
+		{
+			var queue = new Queue<Tuple<Type, string>>();
+			queue.Enqueue(Tuple.Create(type, String.Empty));
+
+			var searched = new HashSet<Type>();
+
+			while (queue.Any())
+			{
+				var tuple = queue.Dequeue();
+				var t = tuple.Item1;
+				var prefix = tuple.Item2;
+				searched.Add(t);
+
+				var prop = GetMemberByColumnName(t, columnName);
+				if (prop != null)
+					return prefix + prop.Name;
+
+				if (mappingCollection.CanBindChild(t))
+				{
+					foreach (var p in ClassPropInfo.GetMembersForType(t).Where(m => !TypeHelper.IsAtomicType(m.MemberType)))
+					{
+						if (!searched.Contains(p.MemberType))
+							queue.Enqueue(Tuple.Create(p.MemberType, prefix + p.Name + MemberSeparator));
+					}
+				}
+			}
+
+			return null;
+		}
+
+		/// <summary>
+		/// Gets the member from a type, searching for column name.
+		/// </summary>
+		/// <param name="type">The type to search.</param>
+		/// <param name="columnName">The column name of the member.</param>
+		/// <returns>The member or null if not found.</returns>
+		internal static ClassPropInfo GetMemberByColumnName(Type type, string columnName)
+		{
+			var members = GetMembersForType(type);
+
+			return members.SingleOrDefault(m => String.Compare(m.ColumnName, columnName, StringComparison.OrdinalIgnoreCase) == 0);
+		}
+
+		/// <summary>
+		/// Gets the member from a type, searching by field name.
+		/// </summary>
+		/// <param name="type">The type to search.</param>
+		/// <param name="memberName">The name of the member.</param>
+		/// <returns>The member or null if not found.</returns>
+		internal static ClassPropInfo GetMemberByName(Type type, string memberName)
+		{
+			var members = GetMembersForType(type);
+
+			return members.SingleOrDefault(m => String.Compare(m.Name, memberName, StringComparison.OrdinalIgnoreCase) == 0);
+		}
+
+		/// <summary>
+		/// Gets the member from a type, allowing dot accessors to select children.
+		/// </summary>
+		/// <param name="type">The type to search.</param>
+		/// <param name="memberName">The name of the member in the form a.b.c.d.</param>
+		/// <returns>The member or null if not found.</returns>
+		internal static ClassPropInfo FindMember(Type type, string memberName)
+		{
+			ClassPropInfo pi = null;
+
+			foreach (var member in SplitMemberName(memberName))
+			{
+				pi = GetMemberByName(type, member);
+				if (pi == null)
+					return null;
+
+				type = pi.MemberType;
+			}
+
+			return pi;
+		}
+
+		/// <summary>
+		/// Emits the code to get a value from a type, allowing dot accessors to select children.
+		/// </summary>
+		/// <param name="type">The base type.</param>
+		/// <param name="memberName">The name of the member in the form a.b.c.d.</param>
+		/// <param name="il">The ILGenerator to use,</param>
+		/// <param name="readyToSetLabel">The label to jump to if any of the non-terminal accesses result (a.b.c) in null.</param>
+		internal static void EmitGetValue(Type type, string memberName, ILGenerator il, Label? readyToSetLabel = null)
+		{
+			ClassPropInfo pi = null;
+			var memberNames = SplitMemberName(memberName).ToArray();
+
+			Label nullLabel = il.DefineLabel();
+
+			// emit the code to get the value
+			for (int i = 0; i < memberNames.Length; i++)
+			{
+				var member = memberNames[i];
+
+				// if the value on the stack can be null, do a null check here
+				if (pi != null && !pi.MemberType.IsValueType)
+				{
+					il.Emit(OpCodes.Dup);
+					il.Emit(OpCodes.Brfalse, nullLabel);
+				}
+
+				pi = FindMember(type, member);
+				if (pi == null || !pi.CanGetMember)
+					throw new InvalidOperationException(String.Format("Get method {0} not found on {1}", member, type));
+
+				pi.EmitGetValue(il);
+
+				type = pi.MemberType;
+			}
+
+			// emit the code to handle nulls
+			var memberType = pi.MemberType;
+			if (memberNames.Length > 1)
+			{
+				var doneLabel = il.DefineLabel();
+				il.Emit(OpCodes.Br, doneLabel);
+
+				// if any of the prefix values are null, then we emit the default of the final type
+				il.MarkLabel(nullLabel);
+				il.Emit(OpCodes.Pop);
+				il.Emit(OpCodes.Ldnull);
+				if (readyToSetLabel != null)
+					il.Emit(OpCodes.Br, readyToSetLabel.Value);
+
+				il.MarkLabel(doneLabel);
+			}
+
+			// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
+			if (memberType.IsValueType)
+				il.Emit(OpCodes.Box, memberType);
+		}
+
+		/// <summary>
+		/// Splits the member name on dots.
+		/// </summary>
+		/// <param name="memberName">The member name to split.</param>
+		/// <returns>The parts of the member name.</returns>
+		internal static IEnumerable<string> SplitMemberName(string memberName)
+		{
+			return memberName.Split(MemberSeparator[0]);
+		}
+
+		/// <summary>
+		/// Splits a member name on dots and returns the prefix to the member.
+		/// </summary>
+		/// <param name="memberName">The name of the member.</param>
+		/// <returns>The prefix.</returns>
+		internal static string GetMemberPrefix(string memberName)
+		{
+			var split = ClassPropInfo.SplitMemberName(memberName);
+			if (split.Count() < 2)
+				return null;
+
+			return String.Join(ClassPropInfo.MemberSeparator, split.Take(split.Count() - 1).ToArray());
 		}
 		#endregion
 	}

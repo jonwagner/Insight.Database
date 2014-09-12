@@ -94,8 +94,8 @@
     <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
     <Compile Include="CodeGenerator\SchemaMappingType.cs" />
     <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
+    <Compile Include="Mapping\BindChildrenAttribute.cs" />
     <Compile Include="Mapping\ColumnMapping.cs" />
-    <Compile Include="Mapping\ColumnMappingEventArgs.cs" />
     <Compile Include="Compatibility.cs" />
     <Compile Include="Extensions\DBConnectionExtensions.generated.cs">
       <AutoGen>True</AutoGen>
@@ -108,7 +108,21 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>DbReaderExtensions.tt</DependentUpon>
     </Compile>
+    <Compile Include="Mapping\BindChildrenFor.cs" />
+    <Compile Include="Mapping\FieldMapping.cs" />
+    <Compile Include="Mapping\DualMappingCollection.cs" />
+    <Compile Include="Mapping\IColumnMapper.cs" />
+    <Compile Include="Mapping\IDualMapper.cs" />
+    <Compile Include="Mapping\IMapper.cs" />
+    <Compile Include="Mapping\IMappingTransform.cs" />
+    <Compile Include="Mapping\IParameterMapper.cs" />
+    <Compile Include="Mapping\MappingCollection.cs" />
     <Compile Include="MergeOutputAttribute.cs" />
+    <Compile Include="Serialization\DbSerializationRule.cs" />
+    <Compile Include="Serialization\IDbSerializationRule.cs" />
+    <Compile Include="Serialization\ToStringObjectSerializer.cs" />
+    <Compile Include="Serialization\DbObjectSerializer.cs" />
+    <Compile Include="Serialization\IDbObjectSerializer.cs" />
     <Compile Include="Structure\ColumnOverride.cs" />
     <Compile Include="Structure\DerivedResultsReader.cs" />
     <Compile Include="Structure\IChildRecordReader.cs" />
@@ -159,7 +173,6 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Results.tt</DependentUpon>
     </Compile>
-    <Compile Include="Serialization\SerializationMappingHandler.cs" />
     <Compile Include="Serialization\SerializationMode.cs" />
     <Compile Include="SqlAttribute.cs" />
     <Compile Include="Extensions\DbConnectionStringBuilderExtensions.cs" />
@@ -167,8 +180,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Helpers.cs" />
-    <Compile Include="Mapping\IColumnMappingHandler.cs" />
-    <Compile Include="Mapping\RegexReplaceMappingHandler.cs" />
+    <Compile Include="Mapping\RegexReplaceTransform.cs" />
     <Compile Include="Structure\Results.cs" />
     <Compile Include="Reliable\RetryStrategy.cs" />
     <Compile Include="Reliable\IRetryStrategy.cs" />
@@ -196,7 +208,6 @@
     <Compile Include="Structure\Children.cs" />
     <Compile Include="Structure\Guardian.cs" />
     <Compile Include="Structure\ChildMapper.cs" />
-    <Compile Include="Serialization\ToStringObjectSerializer.cs" />
     <Compile Include="Serialization\XmlObjectSerializer.cs" />
     <Compile Include="Structure\ResultsReader.generated.cs">
       <AutoGen>True</AutoGen>

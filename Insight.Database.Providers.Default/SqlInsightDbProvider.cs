@@ -221,11 +221,10 @@ namespace Insight.Database
 		/// <summary>
 		/// Determines if the given column in the schema table is an XML column.
 		/// </summary>
-		/// <param name="command">The command associated with the reader.</param>
 		/// <param name="schemaTable">The schema table to analyze.</param>
 		/// <param name="index">The index of the column.</param>
 		/// <returns>True if the column is an XML column.</returns>
-		public override bool IsXmlColumn(IDbCommand command, DataTable schemaTable, int index)
+		public override bool IsXmlColumn(DataTable schemaTable, int index)
 		{
 			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
 

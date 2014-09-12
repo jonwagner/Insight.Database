@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.IO;
 using System.Linq;
 #if !NET35
@@ -11,29 +12,26 @@ using System.Threading.Tasks;
 namespace Insight.Database
 {
 	/// <summary>
-	/// Handles serializing objects to and from JSON by using DataContractSerializer.
+	/// Serializes objects to JSON using the DataContractJsonSerializer or an overridden serializer (usually Newtonsoft.JSON).
 	/// </summary>
-	public static class JsonObjectSerializer
+	public class JsonObjectSerializer : DbObjectSerializer
 	{
 		/// <summary>
-		/// The serializer to use for JSON objects. This is overridden by Insight.Database.Json.
+		/// The singleton Serializer.
 		/// </summary>
-		private static Type _serializerType = typeof(JsonObjectSerializer);
+		public static readonly JsonObjectSerializer Serializer = new JsonObjectSerializer();
 
 		/// <summary>
-		/// Gets or sets the serializer to use for JSON objects. By default, this is JsonObjectSerializer.
-		/// This property is not intended to be used by application code.
+		/// Gets or sets a JSON Serializer to replace the DataContractJsonSerializer.
 		/// </summary>
-		public static Type SerializerType { get { return _serializerType; } set { _serializerType = value; } }
+		public static DbObjectSerializer OverrideSerializer { get; set; }
 
-		/// <summary>
-		/// Serializes an object to a string.
-		/// </summary>
-		/// <param name="value">The object to serialize.</param>
-		/// <param name="type">The type of the object.</param>
-		/// <returns>The serialized representation of the object.</returns>
-		public static string Serialize(object value, Type type)
+		/// <inheritdoc/>
+		public override object SerializeObject(Type type, object value)
 		{
+			if (OverrideSerializer != null)
+				return OverrideSerializer.SerializeObject(type, value);
+
 			if (value == null)
 				return null;
 
@@ -50,20 +48,18 @@ namespace Insight.Database
 #endif
 		}
 
-		/// <summary>
-		/// Deserializes an object from a string.
-		/// </summary>
-		/// <param name="encoded">The encoded value of the object.</param>
-		/// <param name="type">The type of object to deserialize.</param>
-		/// <returns>The deserialized object.</returns>
-		public static object Deserialize(string encoded, Type type)
+		/// <inheritdoc/>
+		public override object DeserializeObject(Type type, object encoded)
 		{
+			if (OverrideSerializer != null)
+				return OverrideSerializer.DeserializeObject(type, encoded);
+
 #if NET35
 			throw new InvalidOperationException(".NET 3.5 does not have a built-in JSON serializer. Please add Insight.Database.Json to your project and call Initialize.");
 #else
 			DataContractJsonSerializer serializer = new DataContractJsonSerializer(type);
 
-			using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(encoded)))
+			using (var stream = new MemoryStream(Encoding.UTF8.GetBytes((string)encoded)))
 			{
 				return serializer.ReadObject(stream);
 			}

@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database;
+using Insight.Database.Mapping;
 using Insight.Database.Structure;
 
 namespace Insight.Database.CodeGenerator
@@ -304,7 +305,7 @@ namespace Insight.Database.CodeGenerator
 						else
 						{
 							// create a class for the parameters and stick them in there
-							Type parameterWrapperType = CreateParameterClass(mb, parameters);
+							Type parameterWrapperType = CreateParameterClass(mb, interfaceMethod, parameters);
 							for (int pi = 0; pi < parameters.Length; pi++)
 								mIL.Emit(OpCodes.Ldarg, pi + 1);
 							mIL.Emit(OpCodes.Newobj, parameterWrapperType.GetConstructors()[0]);
@@ -485,7 +486,7 @@ namespace Insight.Database.CodeGenerator
 						if (r.Id == null && TypeIsSingleReader(currentType))
 						{
 							// previous and recordReader are on the stack, add the list method
-							new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
+							StaticFieldStorage.EmitLoad(mIL, listMethod, moduleBuilder);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
 								.Single(
@@ -506,8 +507,8 @@ namespace Insight.Database.CodeGenerator
 							var idMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(parentType, idType).Invoke(id, Parameters.EmptyArray);
 
 							// previous and recordReader are on the stack, add the id and list methods
-							new StaticFieldStorage(moduleBuilder, idMethod).EmitLoad(mIL);
-							new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
+							StaticFieldStorage.EmitLoad(mIL, idMethod, moduleBuilder);
+							StaticFieldStorage.EmitLoad(mIL, listMethod, moduleBuilder);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
 								.Single(
@@ -688,9 +689,10 @@ namespace Insight.Database.CodeGenerator
 		/// This allows us to pass in the exact same objects as in our dynamic methods.
 		/// </summary>
 		/// <param name="mb">The ModuleBuilder to append to.</param>
+		/// <param name="method">The method being emitted.</param>
 		/// <param name="parameters">The list of parameters to capture.</param>
 		/// <returns>An anonymous wrapper class for the parameters.</returns>
-		private static Type CreateParameterClass(ModuleBuilder mb, IEnumerable<ParameterInfo> parameters)
+		private static Type CreateParameterClass(ModuleBuilder mb, MethodInfo method, IEnumerable<ParameterInfo> parameters)
 		{
 			// if there are no parameters, then there is no need to create a type
 			if (!parameters.Any())
@@ -698,6 +700,10 @@ namespace Insight.Database.CodeGenerator
 
 			// create a new class
 			TypeBuilder tb = mb.DefineType(Guid.NewGuid().ToString(), TypeAttributes.Class);
+
+			// enable deep binding on the parameter class
+			var bindAttribute = (BindChildrenAttribute)method.GetCustomAttributes(typeof(BindChildrenAttribute), true).FirstOrDefault() ?? new BindChildrenAttribute();
+			tb.SetCustomAttribute(new CustomAttributeBuilder(typeof(BindChildrenAttribute).GetConstructor(new Type[] { typeof(BindChildrenFor) }), new object[] { bindAttribute.For }));
 
 			// create a constructor for the class that takes all of the parameters
 			ConstructorBuilder ctor = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, parameters.Select(p => p.ParameterType).ToArray());

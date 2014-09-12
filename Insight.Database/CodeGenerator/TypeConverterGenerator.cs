@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
 using System.Xml.Linq;
+using Insight.Database.Mapping;
 using Insight.Database.Providers;
 
 namespace Insight.Database.CodeGenerator
@@ -51,21 +52,20 @@ namespace Insight.Database.CodeGenerator
 		///		Value to set
 		/// The value is first converted to the type required by the method parameter, then sets the property.
 		/// </remarks>
-		/// <returns>A label that needs to be marked at the end of a succesful set.</returns>
-		public static Label EmitConvertAndSetValue(ILGenerator il, Type sourceType, ColumnMappingEventArgs mapping)
+		public static void EmitConvertAndSetValue(ILGenerator il, Type sourceType, FieldMapping mapping)
 		{
-			var method = mapping.ClassPropInfo;
+			var member = mapping.Member;
 
 			// targetType - the target type we need to convert to
 			// underlyingTargetType - if the target type is nullable, we need to look at the underlying target type
 			// rawTargetType - if the underlying target type is enum, we need to look at the underlying target type for that
 			// sourceType - this is the type of the data in the data set
-			Type targetType = method.MemberType;
+			Type targetType = member.MemberType;
 			Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 
 			// some labels that we need
+			var finishLabel = il.DefineLabel();
 			Label isDbNullLabel = il.DefineLabel();
-			Label finishLabel = il.DefineLabel();
 
 			// if the value is DbNull, then we continue to the next item
 			il.Emit(OpCodes.Dup);								// dup value, stack => [target][value][value]
@@ -112,22 +112,13 @@ namespace Insight.Database.CodeGenerator
 
 				// after: stack => [target][xDocument]
 			}
-			else if (sourceType == typeof(string) && CanDeserialize(mapping.Serializer, targetType))
+			else if (sourceType == typeof(string) && mapping.Serializer.CanDeserialize(targetType))
 			{
 				// we are getting a string from the database, but the target is not a string, and it's a reference type
 				// assume the column is a serialized data type and that we want to deserialize it
-
-				// before: stack => [target][object-value]
-				il.Emit(OpCodes.Castclass, typeof(string));
 				il.EmitLoadType(targetType);
-
-				// after: stack => [target][object-value][memberType]
-
-				// determine the serializer to use to convert the string to an object
-				var serializerMethod = mapping.Serializer.GetMethod("Deserialize", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(string), typeof(Type) }, null);
-				if (serializerMethod == null)
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Serializer type {0} needs the method 'public static object Deserialize(string, Type)'", mapping.Serializer.Name));
-				il.Emit(OpCodes.Call, serializerMethod);
+				StaticFieldStorage.EmitLoad(il, mapping.Serializer);
+				il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("DeserializeObject", BindingFlags.NonPublic | BindingFlags.Static));
 				il.Emit(OpCodes.Unbox_Any, targetType);
 			}
 			else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
@@ -168,7 +159,7 @@ namespace Insight.Database.CodeGenerator
 							throw new InvalidOperationException(String.Format(
 								CultureInfo.InvariantCulture,
 								"Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
-								method.Name,
+								member.Name,
 								sourceType.AssemblyQualifiedName,
 								targetType.AssemblyQualifiedName));
 						}
@@ -182,7 +173,7 @@ namespace Insight.Database.CodeGenerator
 
 			/////////////////////////////////////////////////////////////////////
 			// now the stack has [target][value-unboxed]. we can set the value now
-			method.EmitSetValue(il);
+			member.EmitSetValue(il);
 
 			// stack is now EMPTY
 			/////////////////////////////////////////////////////////////////////
@@ -201,10 +192,10 @@ namespace Insight.Database.CodeGenerator
 			// if the type is an object, set the value to null
 			// this is necessary for overwriting output parameters,
 			// as well as overwriting any properties that may be set in the constructor of the object
-			if (!method.MemberType.IsValueType)
+			if (!member.MemberType.IsValueType)
 			{
 				il.Emit(OpCodes.Ldnull);							// push null
-				method.EmitSetValue(il);
+				member.EmitSetValue(il);
 			}
 			else
 			{
@@ -212,7 +203,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Pop);								// pop target, stack => [empty]
 			}
 
-			return finishLabel;
+			il.MarkLabel(finishLabel);
 		}
 		#endregion
 
@@ -448,23 +439,15 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		/// <summary>
-		/// Determines if the type of deserializer can deserialize to the target type.
+		/// Deserializes an object. This is a stub method that just reorders the parameters.
 		/// </summary>
-		/// <param name="serializerType">The deserializer.</param>
-		/// <param name="targetType">The target type.</param>
-		/// <returns>True if the type can be deserialized.</returns>
-		private static bool CanDeserialize(Type serializerType, Type targetType)
+		/// <param name="encoded">The encoded value.</param>
+		/// <param name="type">The type to deserialize.</param>
+		/// <param name="serializer">The serializer to use.</param>
+		/// <returns>The deserialized object.</returns>
+		private static object DeserializeObject(object encoded, Type type, IDbObjectSerializer serializer)
 		{
-			if (serializerType == null)
-				return false;
-
-			var canDeserialize = serializerType.GetMethod("CanDeserialize");
-
-			// if there is no CanDeserialize method, then attempt to deserialize any non-atomic type other than object
-			if (canDeserialize == null)
-				return !TypeHelper.IsAtomicType(targetType) &&	targetType != typeof(object);
-
-			return (bool)canDeserialize.Invoke(null, new object[] { targetType });
+			return serializer.DeserializeObject(type, encoded);
 		}
 
 		/// <summary>

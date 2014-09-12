@@ -145,19 +145,6 @@ namespace Insight.Database.Providers
 		}
 
 		/// <summary>
-		/// Determines if the given column in the schema table is an XML column.
-		/// </summary>
-		/// <param name="command">The command associated with the reader.</param>
-		/// <param name="schemaTable">The schema table to analyze.</param>
-		/// <param name="index">The index of the column.</param>
-		/// <returns>True if the column is an XML column.</returns>
-		public override bool IsXmlColumn(IDbCommand command, DataTable schemaTable, int index)
-		{
-			command = GetInnerCommand(command);
-			return InsightDbProvider.For(command).IsXmlColumn(command, schemaTable, index);
-		}
-
-		/// <summary>
 		/// Bulk copies a set of objects to the server.
 		/// </summary>
 		/// <param name="connection">The connection to use.</param>

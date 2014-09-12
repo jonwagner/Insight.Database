@@ -260,7 +260,7 @@ namespace Insight.Tests.OracleManaged
 			}
 			finally
 			{
-				ColumnMapping.All.ResetHandlers();
+				ColumnMapping.All.ResetTransforms();
 			}
 		}
 		#endregion

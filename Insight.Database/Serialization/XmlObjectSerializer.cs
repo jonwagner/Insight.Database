@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Globalization;
 using System.IO;
 using System.Linq;
@@ -11,17 +12,17 @@ using System.Xml;
 namespace Insight.Database
 {
 	/// <summary>
-	/// Handles serialization of objects by using the DataContractSerializer.
+	/// Serializes objects to XML using the DataContractSerializer.
 	/// </summary>
-	public static class XmlObjectSerializer
+	class XmlObjectSerializer : DbObjectSerializer
 	{
 		/// <summary>
-		/// Serializes an object to a string.
+		/// The singleton Serializer.
 		/// </summary>
-		/// <param name="value">The object to serialize.</param>
-		/// <param name="type">The type of the object.</param>
-		/// <returns>The serialized representation of the object.</returns>
-		public static string Serialize(object value, Type type)
+		public static readonly XmlObjectSerializer Serializer = new XmlObjectSerializer();
+
+		/// <inheritdoc/>
+		public override object SerializeObject(Type type, object value)
 		{
 			if (value == null)
 				return null;
@@ -55,17 +56,12 @@ namespace Insight.Database
 			}
 		}
 
-		/// <summary>
-		/// Deserializes an object from a string.
-		/// </summary>
-		/// <param name="encoded">The encoded value of the object.</param>
-		/// <param name="type">The type of object to deserialize.</param>
-		/// <returns>The deserialized object.</returns>
-		public static object Deserialize(string encoded, Type type)
+		/// <inheritdoc/>
+		public override object DeserializeObject(Type type, object encoded)
 		{
 			DataContractSerializer serializer = new DataContractSerializer(type);
 
-			StringReader reader = new StringReader(encoded);
+			StringReader reader = new StringReader((string)encoded);
 			try
 			{
 				using (XmlTextReader xr = new XmlTextReader(reader))

@@ -18,49 +18,64 @@ namespace Insight.Database.CodeGenerator
 	class StaticFieldStorage
 	{
 		/// <summary>
-		/// The field used to store the value.
+		/// The shared module that stores all of the static variables.
 		/// </summary>
-		private FieldInfo _field;
+		private static ModuleBuilder _dynamicModule;
 
 		/// <summary>
-		/// Initializes a new instance of the StaticFieldStorage class.
+		/// The cache of the static fields.
 		/// </summary>
-		/// <param name="value">The value to store statically.</param>
-		public StaticFieldStorage(object value) : this(null, value)
-		{
-		}
+		private static Dictionary<Tuple<ModuleBuilder, object>, FieldInfo> _fields = new Dictionary<Tuple<ModuleBuilder, object>, FieldInfo>();
 
 		/// <summary>
-		/// Initializes a new instance of the StaticFieldStorage class.
+		/// Initializes static members of the StaticFieldStorage class.
 		/// </summary>
-		/// <param name="moduleBuilder">The ModuleBuilder for the type that needs to access the value.</param>
-		/// <param name="value">The value to store statically.</param>
-		public StaticFieldStorage(ModuleBuilder moduleBuilder, object value)
+		static StaticFieldStorage()
 		{
-			if (moduleBuilder == null)
-			{
-				// create a new assembly
-				AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-				AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-				moduleBuilder = ab.DefineDynamicModule(an.Name);
-			}
-
-			// create a type based on DbConnectionWrapper and call the default constructor
-			TypeBuilder tb = moduleBuilder.DefineType(Guid.NewGuid().ToString());
-			tb.DefineField("_storage", value.GetType(), FieldAttributes.Static | FieldAttributes.Public);
-			Type t = tb.CreateType();
-
-			_field = t.GetField("_storage", BindingFlags.Static | BindingFlags.Public);
-			_field.SetValue(null, value);
+			// create a shared assembly for all of the static fields to live in
+			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
+			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+			_dynamicModule = ab.DefineDynamicModule(an.Name);
 		}
 
 		/// <summary>
 		/// Emits the value stored in static storage.
 		/// </summary>
 		/// <param name="il">The ILGenerator to emit to.</param>
-		public void EmitLoad(ILGenerator il)
+		/// <param name="value">The value to emit.</param>
+		/// <param name="moduleBuilder">The module to write to or null to use the default module.</param>
+		public static void EmitLoad(ILGenerator il, object value, ModuleBuilder moduleBuilder = null)
 		{
-			il.Emit(OpCodes.Ldsfld, _field);
+			FieldInfo field;
+
+			var key = Tuple.Create(moduleBuilder ?? _dynamicModule, value);
+
+			if (!_fields.TryGetValue(key, out field))
+			{
+				field = CreateField(key.Item1, value);
+				_fields[key] = field;
+			}
+
+			il.Emit(OpCodes.Ldsfld, field);
+		}
+
+		/// <summary>
+		/// Creates a static field that contains the given value.
+		/// </summary>
+		/// <param name="moduleBuilder">The modulebuilder to write to.</param>
+		/// <param name="value">The value to store.</param>
+		/// <returns>A static field containing the value.</returns>
+		private static FieldInfo CreateField(ModuleBuilder moduleBuilder, object value)
+		{
+			// create a type based on DbConnectionWrapper and call the default constructor
+			TypeBuilder tb = moduleBuilder.DefineType(Guid.NewGuid().ToString());
+			tb.DefineField("_storage", value.GetType(), FieldAttributes.Static | FieldAttributes.Public);
+			Type t = tb.CreateType();
+
+			var field = t.GetField("_storage", BindingFlags.Static | BindingFlags.Public);
+			field.SetValue(null, value);
+
+			return field;
 		}
 	}
 }

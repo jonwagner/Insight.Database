@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Insight.Database.Mapping;
 
 namespace Insight.Database
 {
@@ -13,7 +14,7 @@ namespace Insight.Database
 	/// </summary>
 	/// <typeparam name="T">The type of object to apply to.</typeparam>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
-	public class RegexReplaceMappingHandler<T> : IColumnMappingHandler
+	public class RegexReplaceTransform<T> : IMappingTransform
 	{
 		/// <summary>
 		/// The Regex to use for the mapping.
@@ -26,7 +27,7 @@ namespace Insight.Database
 		private string _replacement;
 
 		/// <summary>
-		/// Initializes a new instance of the RegexReplaceMappingHandler class.
+		/// Initializes a new instance of the RegexReplaceTransform class.
 		/// </summary>
 		/// <remarks>
 		/// This method uses the Regex.Replace method to alter the target field name.
@@ -34,27 +35,21 @@ namespace Insight.Database
 		/// </remarks>
 		/// <param name="regex">The regex to use to parse names.</param>
 		/// <param name="replacement">The replacement string to use with the regex.</param>
-		public RegexReplaceMappingHandler(string regex, string replacement)
+		public RegexReplaceTransform(string regex, string replacement)
 		{
 			_regex = new Regex(regex, RegexOptions.IgnoreCase | RegexOptions.Singleline);
 			_replacement = replacement;
 		}
 
-		/// <summary>
-		/// Handles a column mapping event.
-		/// </summary>
-		/// <param name="sender">The ColumnMapping object that has generated the event.</param>
-		/// <param name="e">The ColumnMappingEventArgs to process.</param>
-		public void HandleColumnMapping(object sender, ColumnMappingEventArgs e)
+		/// <inheritdoc/>
+		public string TransformDatabaseName(Type type, string name)
 		{
-			if (e == null) throw new ArgumentNullException("e");
-
 			// if we aren't mapping the current type, just continue
-			if (e.TargetType != typeof(T) && !e.TargetType.IsSubclassOf(typeof(T)))
-				return;
+			if (type != typeof(T) && !type.IsSubclassOf(typeof(T)))
+				return null;
 
 			// perform a replacement on the target field name
-			e.TargetFieldName = _regex.Replace(e.TargetFieldName, _replacement);
+			return _regex.Replace(name, _replacement);
 		}
 	}
 
@@ -63,7 +58,7 @@ namespace Insight.Database
 	/// This applies to all type of objects.
 	/// </summary>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
-	public class RegexReplaceMappingHandler : RegexReplaceMappingHandler<object>
+	public class RegexReplaceMappingHandler : RegexReplaceTransform<object>
 	{
 		/// <summary>
 		/// Initializes a new instance of the RegexReplaceMappingHandler class.

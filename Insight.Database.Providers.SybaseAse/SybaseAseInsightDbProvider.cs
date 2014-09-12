@@ -27,7 +27,7 @@ namespace Insight.Database.Providers.SybaseAse
 		/// </summary>
 		private static Type[] _supportedTypes = new Type[]
 		{
-			typeof(AseConnectionStringBuilder), typeof(AseConnection), typeof(AseCommand), typeof(AseDataReader), typeof(AseException)
+			typeof(AseConnectionStringBuilder), typeof(AseConnection), typeof(AseCommand), typeof(AseDataReader), typeof(AseException), typeof(AseParameter)
 		};
 
 		/// <summary>

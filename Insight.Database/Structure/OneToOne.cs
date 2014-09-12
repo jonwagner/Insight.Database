@@ -7,6 +7,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Mapping;
 using Insight.Database.Structure;
 
 namespace Insight.Database
@@ -158,17 +159,24 @@ namespace Insight.Database
 		IDictionary<Type, string> IRecordStructure.GetSplitColumns() { return SplitColumns; }
 
 		/// <inheritdoc/>
-		void IRecordStructure.MapColumn(ColumnMappingEventArgs e)
+		string IColumnMapper.MapColumn(Type type, IDataReader reader, int column)
 		{
-			if (ColumnOverrides == null)
-				return;
+			string columnName = reader.GetName(column);
 
+			if (ColumnOverrides == null)
+				return null;
+
+			// look for a match in our list
 			var match = ColumnOverrides.SingleOrDefault(
 				t =>
-					(t.TargetType == null || t.TargetType == e.TargetType) && 
-					String.Compare(t.ColumnName, e.TargetFieldName, StringComparison.OrdinalIgnoreCase) == 0);
-			if (match != null)
-				e.TargetFieldName = match.FieldName;
+					(t.TargetType == null || t.TargetType == type) && 
+					String.Compare(t.ColumnName, columnName, StringComparison.OrdinalIgnoreCase) == 0);
+
+			// if we've entered an override and the type has a matching member, then use that
+			if (match != null && ClassPropInfo.GetMemberByName(type, match.FieldName) != null)
+				return match.FieldName;
+
+			return null;
 		}
 
 		/// <summary>

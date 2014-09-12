@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database.Mapping;
 using Insight.Database.Providers;
 using Insight.Database.Structure;
 
@@ -59,8 +60,7 @@ namespace Insight.Database.CodeGenerator
 			if (!IsAtomicType)
 			{
 				// create a mapping, and only keep mappings that match our modified schema
-				var mappings = ColumnMapping.Tables.CreateMapping(type, reader, null, null, null, 0, reader.FieldCount, true)
-					.Where(m => m != null).ToArray();
+				var mappings = ColumnMapping.MapColumns(type, reader);
 
 				int columnCount = SchemaTable.Rows.Count;
 				_accessors = new Func<object, object>[columnCount];
@@ -69,10 +69,12 @@ namespace Insight.Database.CodeGenerator
 				for (int i = 0; i < columnCount; i++)
 				{
 					var columnName = SchemaTable.Rows[i]["ColumnName"].ToString();
-					var mapping = mappings.FirstOrDefault(m => String.Compare(m.ColumnName, columnName, StringComparison.OrdinalIgnoreCase) == 0);
+
+					var mapping = mappings[i];
 					if (mapping == null)
 						continue;
-					ClassPropInfo propInfo = mapping.ClassPropInfo;
+
+					ClassPropInfo propInfo = mapping.Member;
 
 					// create a new anonymous method that takes an object and returns the value
 					var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
@@ -92,7 +94,10 @@ namespace Insight.Database.CodeGenerator
 						il.Emit(OpCodes.Isinst, type);					// cast object -> type
 
 					// get the value from the object
-					propInfo.EmitGetValue(il);
+					var readyToSetLabel = il.DefineLabel();
+					ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
+					if (mapping.Member.MemberType.IsValueType)
+						il.Emit(OpCodes.Unbox_Any, mapping.Member.MemberType);
 
 					// if the type is nullable, handle nulls
 					Type sourceType = propInfo.MemberType;
@@ -125,13 +130,9 @@ namespace Insight.Database.CodeGenerator
 
 					if (sourceType != targetType && !sourceType.IsValueType && sourceType != typeof(string))
 					{
-						// if the provider type is Xml, then serialize the value
-						var serializerMethod = mapping.Serializer.GetMethod("Serialize", BindingFlags.Public | BindingFlags.Static, null, new Type[] { typeof(object), typeof(Type) }, null);
-						if (serializerMethod == null)
-							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Serializer type {0} needs the method 'public static string Serialize(object, Type)'", mapping.Serializer.Name));
-
 						il.EmitLoadType(sourceType);
-						il.Emit(OpCodes.Call, serializerMethod);
+						StaticFieldStorage.EmitLoad(il, mapping.Serializer);
+						il.Emit(OpCodes.Call, typeof(ObjectReader).GetMethod("SerializeObject", BindingFlags.NonPublic | BindingFlags.Static));
 					}
 					else
 					{
@@ -143,6 +144,7 @@ namespace Insight.Database.CodeGenerator
 							il.Emit(OpCodes.Box, sourceType);
 					}
 
+					il.MarkLabel(readyToSetLabel);
 					il.Emit(OpCodes.Ret);
 
 					_memberTypes[i] = propInfo.MemberType;
@@ -232,6 +234,18 @@ namespace Insight.Database.CodeGenerator
 				return null;
 
 			return _accessors[ordinal];
+		}
+
+		/// <summary>
+		/// Serializes an object. This is a stub method that reorders parameters.
+		/// </summary>
+		/// <param name="value">The value to serialize.</param>
+		/// <param name="type">The type to serialize.</param>
+		/// <param name="serializer">The serializer to use.</param>
+		/// <returns>The serialized object.</returns>
+		private static object SerializeObject(object value, Type type, IDbObjectSerializer serializer)
+		{
+			return serializer.SerializeObject(type, value);
 		}
 
 		/// <summary>
