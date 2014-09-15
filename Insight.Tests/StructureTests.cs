@@ -273,5 +273,38 @@ namespace Insight.Tests
 			Assert.AreEqual(0, result.ParentC);
 		}
 	}
+
+	[TestFixture]
+	public class Issue141 : BaseTest
+	{
+		public class TestParent
+		{
+			public int ID;
+			public List<TestChild> Children;
+		}
+
+		public class TestChild
+		{
+			public int ChildA;
+			public int ChildB;
+			public TestChild(int a, int b)
+			{
+				ChildA = a;
+				ChildB = b;
+			}
+		}
+
+		[Test]
+		public void Test141()
+		{
+			var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ChildA=2, ChildB=3", null,
+				Query.Returns(Some<TestParent>.Records)
+					.ThenChildren(CustomRecordReader<TestChild>.Read(r => new TestChild((int)r["ChildA"], (int)r["ChildB"]))));
+
+			var result = results.First();
+			Assert.AreEqual(1, result.ID);
+			Assert.AreEqual(1, result.Children.Count);
+		}
+	}
 	#endregion
 }
