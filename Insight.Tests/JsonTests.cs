@@ -105,6 +105,48 @@ namespace Insight.Tests
 			var result = Connection().QuerySql<JsonClass, JsonSubClass>("SELECT SubClass=CONVERT (varchar(MAX),NULL)").First();
 			Assert.IsNull(result.SubClass);
 		}
+
+		#region Test Case for Issue 140
+		public class EntityDefinition
+		{
+			public string Id;
+			public string Name;
+			public string Title;
+			public bool IsEnabled;
+		}
+
+		public class EntityDefinitionDataModel
+		{
+			[Column(SerializationMode = SerializationMode.Json)]
+			public EntityDefinition Definition { get; set; }
+			public Boolean IsEnabled { get; set; }
+
+			public EntityDefinitionDataModel()
+			{
+			}
+		}
+
+		[Test]
+		public void LargeSerialization()
+		{
+			using (var connection = Connection().OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE PROC LargeSerialization(@Definition nvarchar(MAX)) AS SELECT Definition=@Definition");
+
+				var entity = new EntityDefinitionDataModel()
+				{
+					Definition = new EntityDefinition()
+					{
+						Name = new String('a', 16384)
+					}
+				};
+
+				var result = connection.Single<EntityDefinitionDataModel>("LargeSerialization", entity);
+
+				Assert.AreEqual(entity.Definition.Name, result.Definition.Name);
+			}
+		}
+		#endregion
 	}
 }
 #endif
