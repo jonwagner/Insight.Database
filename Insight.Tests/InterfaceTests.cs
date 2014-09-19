@@ -1007,4 +1007,24 @@ namespace Insight.Tests
 			i.Foo();
 		}
 	}
+
+	[TestFixture]
+	public class TestBitReturn : BaseTest
+	{
+		public interface Bit
+		{
+			[Sql("SELECT CONVERT(bit, 1)")]
+			Task<bool> GetBit();
+		}
+
+		[Test]
+		public void BitAsync()
+		{
+			var i = Connection().As<Bit>();
+
+			var b = i.GetBit().Result;
+
+			Assert.AreEqual(true, b);
+		}
+	}
 }
