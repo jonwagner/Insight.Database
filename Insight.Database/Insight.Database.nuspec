@@ -8,6 +8,7 @@
     <description>
 A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.
 This package includes the core library and the providers for SQL Server, ODBC and OLEDB.
+Choose one of the Insight.Database.Providers.XYZ packages for other supported databases. (There are lots!)
 	</description>
     <language>en-US</language>
     <projectUrl>http://github.com/jonwagner/Insight.Database</projectUrl>
