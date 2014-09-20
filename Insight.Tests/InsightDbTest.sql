@@ -257,8 +257,9 @@ GO
 CREATE TABLE InsertTestDataTable (X [int] identity (5, 1), Z [int])
 GO
 CREATE PROC ResetTestDataTable AS
-	DELETE FROM InsertTestDataTable
-	DBCC CHECKIDENT ('InsertTestDataTable', RESEED, 0)
+	INSERT INTO InsertTestDataTable (Z) VALUES (0)
+	TRUNCATE TABLE InsertTestDataTable
+	DBCC CHECKIDENT ('InsertTestDataTable', RESEED, 1)
 GO
 CREATE PROC InsertTestData @Z [int] AS 
 	INSERT INTO InsertTestDataTable (Z) OUTPUT inserted.X VALUES (@Z)
