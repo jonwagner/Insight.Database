@@ -307,4 +307,31 @@ namespace Insight.Tests
 		}
 	}
 	#endregion
+
+	#region Issue 142 Tests
+	[TestFixture]
+	public class Issue142 : BaseTest
+	{
+		public class Parent
+		{
+			public int ID;
+			public List<string> Children;
+		}
+
+		[Test]
+		public void AtomicChildRecords()
+		{
+			var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, Name='Child1' UNION SELECT ParentID=1, Name='Child2'", null,
+				Query.Returns(Some<Parent>.Records)
+					.ThenChildren(Some<string>.Records));
+
+			var result = results.First();
+			Assert.AreEqual(1, result.ID);
+			Assert.AreEqual(2, result.Children.Count);
+			Assert.AreEqual("Child1", result.Children[0]);
+			Assert.IsTrue(result.Children.Contains("Child1"));
+			Assert.IsTrue(result.Children.Contains("Child2"));
+		}
+	}
+	#endregion
 }

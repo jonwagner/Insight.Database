@@ -195,7 +195,12 @@ namespace Insight.Database
 		public virtual IRecordReader<Guardian<T, TId>> GetGuardianReader<TId>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T, TId>, T>.Records;
+			{
+				if (TypeHelper.IsAtomicType(typeof(T)))
+					return ValueGuardianReader<T, TId>.Records;
+				else
+					return OneToOne<Guardian<T, TId>, T>.Records;
+			}
 
 			Action<Guardian<T, TId>, T> callback = null;
 			if (Callback != null)
