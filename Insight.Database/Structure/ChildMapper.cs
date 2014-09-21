@@ -312,6 +312,15 @@ namespace Insight.Database.Structure
 		public void MapChildren(IEnumerable<TParent> roots, IEnumerable<TChild> children)
 		{
 			var single = roots.Single();
+
+			if (single == null)
+			{
+				if (children.Any())
+					throw new InvalidOperationException("Child records were returned, but there was no parent record.");
+
+				return;
+			}
+
 			_listSetter(single, children.ToList());
 		}
 

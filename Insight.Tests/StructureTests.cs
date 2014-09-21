@@ -334,4 +334,37 @@ namespace Insight.Tests
 		}
 	}
 	#endregion
+
+	#region Issue 146 Tests
+	[TestFixture]
+	public class Issue146 : BaseTest
+	{
+		public class LiquorStore
+		{
+			public int ID;
+			public List<Liquor> Beer;
+		}
+
+		public class Liquor
+		{
+			public int ID;
+		}
+
+		public interface IHaveStructure3
+		{
+			[Sql("SELECT TOP(0) ID=1; SELECT TOP(0) ParentID=1, ID=2;")]
+			[Recordset(1, typeof(Liquor), IsChild = true)]
+			LiquorStore GetNoLiquorStore();
+		}
+
+		[Test]
+		public void ReturnsNullForEmptyParentChildSets()
+		{
+			var i = Connection().As<IHaveStructure3>();
+			var result = i.GetNoLiquorStore();
+
+			Assert.IsNull(result);
+		}
+	}
+	#endregion
 }
