@@ -47,6 +47,22 @@ namespace Insight.Database.CodeGenerator
 
 		private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _constructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
 		private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _singleThreadedConstructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
+
+		private static readonly ModuleBuilder _moduleBuilder;
+		#endregion
+
+		#region Initialization
+		/// <summary>
+		/// Initializes static members of the InterfaceGenerator class.
+		/// </summary>
+		static InterfaceGenerator()
+		{
+			// make a new assembly for the generated types
+			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
+			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+
+			_moduleBuilder = ab.DefineDynamicModule(an.Name);
+		}
 		#endregion
 
 		#region Class Implementors
@@ -79,24 +95,19 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A construction function that takes a connection provider and returns the implementation.</returns>
 		private static Func<Func<IDbConnection>, object> CreateImplementorOf(Type type, bool singleThreaded)
 		{
-			// create a new assembly
-			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-			ModuleBuilder mb = ab.DefineDynamicModule(an.Name);
-
 			// create the type
 			string typeName = type.FullName + Guid.NewGuid().ToString();
 			TypeBuilder tb;
 			if (type.IsInterface)
 			{
 				if (singleThreaded)
-					tb = mb.DefineType(typeName, TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { type });
+					tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { type });
 				else
-					tb = mb.DefineType(typeName, TypeAttributes.Class, typeof(object), new Type[] { type });
+					tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, typeof(object), new Type[] { type });
 			}
 			else
 			{
-				tb = mb.DefineType(typeName, TypeAttributes.Class, type, null);
+				tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, type, null);
 			}
 
 			// create a field for the connection provider
@@ -110,7 +121,7 @@ namespace Insight.Database.CodeGenerator
 
 			// for each method on the interface, try to implement it with a call to the database
 			foreach (MethodInfo interfaceMethod in DiscoverMethods(type).Where(method => method != getConnection))
-				EmitMethodImpl(mb, tb, interfaceMethod, connectionField);
+				EmitMethodImpl(tb, interfaceMethod, connectionField);
 
 			// create a static create method that we can invoke directly as a delegate
 			MethodBuilder m = tb.DefineMethod("Create", MethodAttributes.Static | MethodAttributes.Public, type, _ifuncDbConnectionParameterTypes);
@@ -236,12 +247,11 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Emits an implementation of a given method.
 		/// </summary>
-		/// <param name="mb">The ModuleBuilder to emit to.</param>
 		/// <param name="tb">The TypeBuilder to emit to.</param>
 		/// <param name="interfaceMethod">The interface method to implement.</param>
 		/// <param name="connectionField">The fields storing the connection to the database.</param>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-		private static void EmitMethodImpl(ModuleBuilder mb, TypeBuilder tb, MethodInfo interfaceMethod, FieldBuilder connectionField)
+		private static void EmitMethodImpl(TypeBuilder tb, MethodInfo interfaceMethod, FieldBuilder connectionField)
 		{
 			// look at the parameters on the interface
 			var parameters = interfaceMethod.GetParameters();
@@ -304,7 +314,7 @@ namespace Insight.Database.CodeGenerator
 						else
 						{
 							// create a class for the parameters and stick them in there
-							Type parameterWrapperType = CreateParameterClass(mb, parameters);
+							Type parameterWrapperType = CreateParameterClass(parameters);
 							for (int pi = 0; pi < parameters.Length; pi++)
 								mIL.Emit(OpCodes.Ldarg, pi + 1);
 							mIL.Emit(OpCodes.Newobj, parameterWrapperType.GetConstructors()[0]);
@@ -332,7 +342,7 @@ namespace Insight.Database.CodeGenerator
 
 					case "returns":
 						if (!EmitSpecialParameter(mIL, "returns", parameters, executeParameters))
-							GenerateReturnsStructure(interfaceMethod, mb, mIL);
+							GenerateReturnsStructure(interfaceMethod, mIL);
 						break;
 
 					case "commandType":
@@ -402,7 +412,7 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-		private static void GenerateReturnsStructure(MethodInfo interfaceMethod, ModuleBuilder moduleBuilder, ILGenerator mIL)
+		private static void GenerateReturnsStructure(MethodInfo interfaceMethod, ILGenerator mIL)
 		{
 			// if we are returning a task, unwrap the task result
 			var returnType = interfaceMethod.ReturnType;
@@ -485,7 +495,7 @@ namespace Insight.Database.CodeGenerator
 						if (r.Id == null && TypeIsSingleReader(currentType))
 						{
 							// previous and recordReader are on the stack, add the list method
-							new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
+							new StaticFieldStorage(_moduleBuilder, listMethod).EmitLoad(mIL);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
 								.Single(
@@ -506,8 +516,8 @@ namespace Insight.Database.CodeGenerator
 							var idMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(parentType, idType).Invoke(id, Parameters.EmptyArray);
 
 							// previous and recordReader are on the stack, add the id and list methods
-							new StaticFieldStorage(moduleBuilder, idMethod).EmitLoad(mIL);
-							new StaticFieldStorage(moduleBuilder, listMethod).EmitLoad(mIL);
+							new StaticFieldStorage(_moduleBuilder, idMethod).EmitLoad(mIL);
+							new StaticFieldStorage(_moduleBuilder, listMethod).EmitLoad(mIL);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
 								.Single(
@@ -687,17 +697,16 @@ namespace Insight.Database.CodeGenerator
 		/// Creates an anonymous class to hold the parameters to the execute call.
 		/// This allows us to pass in the exact same objects as in our dynamic methods.
 		/// </summary>
-		/// <param name="mb">The ModuleBuilder to append to.</param>
 		/// <param name="parameters">The list of parameters to capture.</param>
 		/// <returns>An anonymous wrapper class for the parameters.</returns>
-		private static Type CreateParameterClass(ModuleBuilder mb, IEnumerable<ParameterInfo> parameters)
+		private static Type CreateParameterClass(IEnumerable<ParameterInfo> parameters)
 		{
 			// if there are no parameters, then there is no need to create a type
 			if (!parameters.Any())
 				return null;
 
 			// create a new class
-			TypeBuilder tb = mb.DefineType(Guid.NewGuid().ToString(), TypeAttributes.Class);
+			TypeBuilder tb = _moduleBuilder.DefineType(Guid.NewGuid().ToString(), TypeAttributes.Class);
 
 			// create a constructor for the class that takes all of the parameters
 			ConstructorBuilder ctor = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, parameters.Select(p => p.ParameterType).ToArray());
