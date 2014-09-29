@@ -73,12 +73,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2>.Records;
+				return OneToOne<TGuardian, T1, T2>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2> callback = null;
+			Action<TGuardian, T1, T2> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2> innerCallback = (Action<T1, T2>)Callback;
@@ -89,7 +89,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -173,12 +173,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3>.Records;
+				return OneToOne<TGuardian, T1, T2, T3>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3> callback = null;
+			Action<TGuardian, T1, T2, T3> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3> innerCallback = (Action<T1, T2, T3>)Callback;
@@ -189,7 +189,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -276,12 +276,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4> callback = null;
+			Action<TGuardian, T1, T2, T3, T4> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4> innerCallback = (Action<T1, T2, T3, T4>)Callback;
@@ -292,7 +292,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -382,12 +382,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5> innerCallback = (Action<T1, T2, T3, T4, T5>)Callback;
@@ -398,7 +398,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -491,12 +491,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6> innerCallback = (Action<T1, T2, T3, T4, T5, T6>)Callback;
@@ -507,7 +507,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -603,12 +603,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7>)Callback;
@@ -619,7 +619,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -718,12 +718,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8>)Callback;
@@ -734,7 +734,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -836,12 +836,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9>)Callback;
@@ -852,7 +852,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -957,12 +957,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>)Callback;
@@ -973,7 +973,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1081,12 +1081,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>)Callback;
@@ -1097,7 +1097,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1208,12 +1208,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>)Callback;
@@ -1224,7 +1224,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1338,12 +1338,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>)Callback;
@@ -1354,7 +1354,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1471,12 +1471,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>)Callback;
@@ -1487,7 +1487,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1607,12 +1607,12 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Records;
+				return OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>.Records;
 
-			Action<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback = null;
+			Action<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> callback = null;
 			if (Callback != null)
 			{
 				Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> innerCallback = (Action<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>)Callback;
@@ -1623,7 +1623,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>(callback, ColumnOverrides, SplitColumns); 
 		}
 
 		/// <inheritdoc/>
@@ -1746,7 +1746,7 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			throw new NotImplementedException();
 		}

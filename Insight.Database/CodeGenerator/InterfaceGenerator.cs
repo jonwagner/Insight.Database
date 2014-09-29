@@ -485,7 +485,7 @@ namespace Insight.Database.CodeGenerator
 
 						if (r.Id == null && TypeIsSingleReader(currentType))
 						{
-							// previous and recordReader are on the stack, add the list method
+							// previous and recordReader are on the stack, add the id and list method
 							StaticFieldStorage.EmitLoad(mIL, listMethod, moduleBuilder);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -497,17 +497,35 @@ namespace Insight.Database.CodeGenerator
 									new Type[]
 									{
 										parentType,		// TParent
-										childType		// TChild
+										childType,		// TChild
 									});
 						}
 						else
 						{
-							var id = ChildMapperHelper.GetIDAccessor(parentType, r.Id);
-							var idType = id.MemberType;
-							var idMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(parentType, idType).Invoke(id, Parameters.EmptyArray);
+							var recordReaderType = typeof(RecordReader<>).MakeGenericType(childType);
+
+							var parentid = ChildMapperHelper.GetIDAccessor(parentType, r.Id);
+							var parentIdType = parentid.MemberType;
+							var parentIdMethod = parentid.GetType().GetMethod("CreateGetMethod").MakeGenericMethod(parentType, parentIdType).Invoke(parentid, Parameters.EmptyArray);
+
+							// if groupby is specified, then convert the RecordReader to an IChildRecordReader by groupby
+							if (r.GroupBy != null)
+							{
+								var childid = ChildMapperHelper.FindParentIDAccessor(childType, r.GroupBy);
+								if (childid == null)
+									throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find GroupBy {0} on {1}", r.GroupBy, childType.FullName));
+
+								var getMethod = childid.GetType().GetMethod("CreateGetMethod").MakeGenericMethod(childType, parentIdType).Invoke(childid, Parameters.EmptyArray);
+								StaticFieldStorage.EmitLoad(mIL, getMethod, moduleBuilder);
+
+								var groupByMethod = recordReaderType.GetMethod("GroupBy").MakeGenericMethod(parentIdType);
+								mIL.Emit(OpCodes.Call, groupByMethod);
+
+								recordReaderType = groupByMethod.ReturnType;
+							}
 
 							// previous and recordReader are on the stack, add the id and list methods
-							StaticFieldStorage.EmitLoad(mIL, idMethod, moduleBuilder);
+							StaticFieldStorage.EmitLoad(mIL, parentIdMethod, moduleBuilder);
 							StaticFieldStorage.EmitLoad(mIL, listMethod, moduleBuilder);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
@@ -515,13 +533,14 @@ namespace Insight.Database.CodeGenerator
 									mi => mi.Name == "ThenChildren" &&
 										mi.GetGenericArguments().Length == 3 &&
 										currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
+										mi.GetParameters()[1].ParameterType.Name == recordReaderType.Name &&
 										mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0))
 								.MakeGenericMethod(
 									new Type[]
 									{
 										parentType,		// TParent
 										childType,		// TChild
-										idType			// TId
+										parentIdType			// TId
 									});
 						}
 

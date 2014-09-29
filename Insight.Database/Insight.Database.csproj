@@ -77,6 +77,11 @@
   <ItemGroup>
     <Compile Include="CachedDbDataReader.cs" />
     <Compile Include="CodeGenerator\StaticFieldStorage.cs" />
+    <Compile Include="Compatibility.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Compatibility.tt</DependentUpon>
+    </Compile>
     <Compile Include="DbDataReaderWrapper.cs" />
     <Compile Include="Extensions\AsyncExtensions.cs" />
     <Compile Include="Extensions\AsyncExtensions.generated.cs">
@@ -123,10 +128,21 @@
     <Compile Include="Serialization\ToStringObjectSerializer.cs" />
     <Compile Include="Serialization\DbObjectSerializer.cs" />
     <Compile Include="Serialization\IDbObjectSerializer.cs" />
+    <Compile Include="Structure\ChildMapperHelper.cs" />
+    <Compile Include="Structure\ChildRecordReader.cs" />
     <Compile Include="Structure\ColumnOverride.cs" />
+    <Compile Include="Structure\CustomRecordReader.cs" />
     <Compile Include="Structure\DerivedResultsReader.cs" />
+    <Compile Include="Structure\Guardian.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Guardian.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\IChildMapper.cs" />
     <Compile Include="Structure\IChildRecordReader.cs" />
+    <Compile Include="Structure\IDAccessor.cs" />
     <Compile Include="Structure\IQueryReader.cs" />
+    <Compile Include="Structure\IRecordIdAttribute.cs" />
     <Compile Include="Structure\IRecordReader.cs" />
     <Compile Include="Structure\IRecordStructure.cs" />
     <Compile Include="Structure\ListReader.cs" />
@@ -167,7 +183,14 @@
     </Compile>
     <Compile Include="Structure\QueryReader.cs" />
     <Compile Include="Structure\ChildRecordsAttribute.cs" />
+    <Compile Include="Structure\ParentRecordIdAttribute.cs" />
     <Compile Include="Structure\RecordIdAttribute.cs" />
+    <Compile Include="Structure\RecordReader.cs" />
+    <Compile Include="Structure\RecordReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RecordReader.tt</DependentUpon>
+    </Compile>
     <Compile Include="Structure\Results.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -215,17 +238,22 @@
       <DependentUpon>ResultsReader.tt</DependentUpon>
     </Compile>
     <Compile Include="Structure\RecordsetAttribute.cs" />
+    <Compile Include="Structure\SingleChildMapper.cs" />
+    <Compile Include="Structure\SingleChildren.cs" />
     <Compile Include="Structure\SingleReader.cs" />
     <Compile Include="Structure\SingleReader.generated.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
       <DependentUpon>SingleReader.tt</DependentUpon>
     </Compile>
-    <Compile Include="Structure\ValueGuardianReader.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="..\Insight.Database.snk">
       <Link>Insight.Database.snk</Link>
+    </None>
+    <None Include="Compatibility.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Compatibility.generated.cs</LastGenOutput>
     </None>
     <None Include="Extensions\AsyncExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -246,6 +274,10 @@
     <None Include="Insight.Database.nuspec">
       <SubType>Designer</SubType>
     </None>
+    <None Include="Structure\Guardian.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Guardian.generated.cs</LastGenOutput>
+    </None>
     <None Include="Structure\ListReader.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>ListReader.generated.cs</LastGenOutput>
@@ -258,6 +290,10 @@
     <None Include="Structure\Query.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Query.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\RecordReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>RecordReader.generated.cs</LastGenOutput>
     </None>
     <None Include="Structure\Results.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

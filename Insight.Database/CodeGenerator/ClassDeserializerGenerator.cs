@@ -520,7 +520,11 @@ namespace Insight.Database.CodeGenerator
 				int endColumn = DetectEndColumn(reader, structure, column, subTypes, i);
 
 				// generate a deserializer for the class
-				deserializers[i] = CreateClassDeserializerDynamicMethod(subTypes[i], reader, structure, column, endColumn - column, true, (i == 0), (i == 0) && allowBindChild);
+				var subType = subTypes[i];
+				if (TypeHelper.IsAtomicType(subType))
+					deserializers[i] = CreateValueDeserializer(subType, column);
+				else
+					deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, structure, column, endColumn - column, true, (i == 0), (i == 0) && allowBindChild);
 
 				column = endColumn;
 			}
@@ -546,6 +550,10 @@ namespace Insight.Database.CodeGenerator
 		{
 			Type currentType = types[typeIndex];
 			Type nextType = (typeIndex + 1 < types.Length) ? types[typeIndex + 1] : typeof(object);
+
+			// if the current type is atomic, it's only one column wide
+			if (TypeHelper.IsAtomicType(currentType))
+				return columnIndex + 1;
 
 			// if the caller specified columns to split on then use that
 			var splitColumns = structure.GetSplitColumns();
@@ -586,6 +594,10 @@ namespace Insight.Database.CodeGenerator
 				// there isn't a setting for the column, so see if any other type can claim the column
 				for (int t = typeIndex + 1; t < types.Length; t++)
 				{
+					// if the next type is an atomic type, then read it
+					if (TypeHelper.IsAtomicType(types[t]))
+						return columnIndex + i;
+
 					// one of the next types can claim the column, so quit now
 					var nextSetters = MapColumns(types[t], reader, columnIndex + i, 1, structure);
 					if (nextSetters[0] != null)
@@ -594,6 +606,48 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			return columnIndex + i;
+		}
+
+		/// <summary>
+		/// Create a deserializer that just reads a value.
+		/// </summary>
+		/// <param name="type">The type to read.</param>
+		/// <param name="column">The index of column to read.</param>
+		/// <returns>A method that reads the value.</returns>
+		private static DynamicMethod CreateValueDeserializer(Type type, int column)
+		{
+			var dm = new DynamicMethod(
+				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+				type,
+				new[] { typeof(IDataReader) },
+				true);
+
+			// get the il generator and put some local variables on the stack
+			var il = dm.GetILGenerator();
+
+			// need to call IDataReader.GetItem to get the value of the field
+			il.Emit(OpCodes.Ldarg_0);							// push arg.0 (reader), stack => [target][reader]
+			IlHelper.EmitLdInt32(il, column);					// push index, stack => [target][reader][index]
+			il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);		// call getItem, stack => [target][value-as-object]
+
+			il.Emit(OpCodes.Call, typeof(ClassDeserializerGenerator).GetMethod("DBValueToT", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(type));
+			il.Emit(OpCodes.Ret);
+
+			return dm;
+		}
+
+		/// <summary>
+		/// Helper method to convert a database value to a given type.
+		/// </summary>
+		/// <typeparam name="T">The target type.</typeparam>
+		/// <param name="value">The database value.</param>
+		/// <returns>The converted value.</returns>
+		private static T DBValueToT<T>(object value)
+		{
+			if (value == DBNull.Value)
+				return default(T);
+			else
+				return (T)value;
 		}
 		#endregion
 	}

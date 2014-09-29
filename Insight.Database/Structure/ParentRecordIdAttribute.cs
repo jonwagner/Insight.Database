@@ -11,20 +11,20 @@ namespace Insight.Database
 	/// Marks a field or property as the one Insight should consider as the ID field.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property)]
-	public sealed class RecordIdAttribute : Attribute, IRecordIdAttribute
+	public sealed class ParentRecordIdAttribute : Attribute, IRecordIdAttribute
 	{
 		/// <summary>
-		/// Initializes a new instance of the RecordIdAttribute class.
+		/// Initializes a new instance of the ParentRecordIdAttribute class.
 		/// </summary>
-		public RecordIdAttribute()
+		public ParentRecordIdAttribute()
 		{
 		}
 
 		/// <summary>
-		/// Initializes a new instance of the RecordIdAttribute class.
+		/// Initializes a new instance of the ParentRecordIdAttribute class.
 		/// </summary>
 		/// <param name="order">An index representing the order the Ids should be evaluated.</param>
-		public RecordIdAttribute(int order)
+		public ParentRecordIdAttribute(int order)
 		{
 			Order = order;
 		}

@@ -87,13 +87,13 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override IRecordReader<Guardian<T1, TID>> GetGuardianReader<TID>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 <# if (typeCount < GenericTypeMax) { #>
 			if (IsDefaultReader())
-				return OneToOne<Guardian<T1, TID>, <#= typeList #>>.Records;
+				return OneToOne<TGuardian, <#= typeList #>>.Records;
 
-			Action<Guardian<T1, TID>, <#= typeList #>> callback = null;
+			Action<TGuardian, <#= typeList #>> callback = null;
 			if (Callback != null)
 			{
 				Action<<#= typeList #>> innerCallback = (Action<<#= typeList #>>)Callback;
@@ -104,7 +104,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T1, TID>, <#= typeList #>>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, <#= typeList #>>(callback, ColumnOverrides, SplitColumns); 
 <# } else { #>
 			throw new NotImplementedException();
 <# } #>

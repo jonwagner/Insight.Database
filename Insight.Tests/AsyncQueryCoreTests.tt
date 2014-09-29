@@ -195,10 +195,10 @@ for (var typeCount = 3; typeCount <= GenericTypeMax; typeCount++)
 				Beer.GetSelectAllChildren(<#= typeCount #>),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
 <# for (int i = 4; i <= typeCount; i++) { #>
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.<#= String.Join(".", Enumerable.Range(1, i-3).Select(x => "SelectMany(b2 => b2.List)").ToArray()) #>, b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.<#= String.Join(".", Enumerable.Range(1, i-3).Select(x => "SelectMany(b2 => b2.List)").ToArray()) #>)
 <# } #>
 					).Result;
 			InfiniteBeerList.VerifyAll(result);

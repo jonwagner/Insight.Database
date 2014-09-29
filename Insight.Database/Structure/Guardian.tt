@@ -1,0 +1,55 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+<#@ include file="..\GenericTypes.tt" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
+using Insight.Database.Structure;
+
+namespace Insight.Database.Structure
+{
+<#
+for (var typeCount = 2; typeCount <= 7; typeCount++)
+{
+	var parentFieldList = GetGenericList(typeCount, "ParentId{0}");
+	var baseTypeList = GetGenericList(typeCount - 1, GenericTypeFormat);
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+#>
+	/// <summary>
+	/// Helps a child object find its parent.
+	/// It knows the parent's ID by getting it from the recordset.
+	/// </summary>
+	/// <typeparam name="TChild">The type of the child.</typeparam>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+	/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
+<# } #>
+	public class Guardian<TChild, <#= typeList #>> : Guardian<TChild, <#= baseTypeList #>>
+	{
+		/// <summary>
+		/// Gets or sets the ID of the parent. This is assumed to be the first column in the recordset.
+		/// </summary>
+		[Column("*<#= typeCount #>")]
+		public T<#= typeCount #> ParentId<#= typeCount #> { get; set; }
+
+		/// <inheritdoc/>
+		public override void ReadCurrent(IDataReader reader)
+		{
+			base.ReadCurrent(reader);
+			ParentId<#= typeCount #> = (T<#= typeCount #>)reader[<#= typeCount - 1 #>];
+		}
+
+		/// <inheritdoc/>
+		public override object GetID()
+		{
+			return Tuple.Create(<#= parentFieldList #>);
+		}
+	}
+
+<# } #>
+}

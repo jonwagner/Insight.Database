@@ -26,6 +26,7 @@
     <WarningLevel>4</WarningLevel>
     <Prefer32Bit>false</Prefer32Bit>
     <PlatformTarget>AnyCPU</PlatformTarget>
+    <UseVSHostingProcess>true</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -80,6 +81,7 @@
     </Compile>
     <Compile Include="BulkCopyTests.cs" />
     <Compile Include="ColumnAttributeTests.cs" />
+    <Compile Include="GroupByTests.cs" />
     <Compile Include="SerializationTests.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StructureTests.cs" />

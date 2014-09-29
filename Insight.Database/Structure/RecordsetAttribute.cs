@@ -63,7 +63,7 @@ namespace Insight.Database
 		public bool IsChild { get; set; }
 
 		/// <summary>
-		/// Gets or sets the name of the ID field in the parent-child relationship.
+		/// Gets or sets the name of the parent ID field in the parent-child relationship.
 		/// </summary>
 		public string Id { get; set; }
 
@@ -71,6 +71,11 @@ namespace Insight.Database
 		/// Gets or sets the name of the List field to insert the child list into for the parent-child relationship.
 		/// </summary>
 		public string Into { get; set; }
+
+		/// <summary>
+		/// Gets or sets the name of the child ID field in the parent-child relationship.
+		/// </summary>
+		public string GroupBy { get; set; }
 		#endregion
 	}
 }

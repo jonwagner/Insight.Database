@@ -151,11 +151,11 @@ namespace Insight.Database
 				fieldName = Tables.Mappers.Select(m => m.MapColumn(type, reader, column)).FirstOrDefault();
 
 			// allow the first column to match the * wildcard on Guardian records
-			if (fieldName == null && column == 0)
+			if (fieldName == null)
 			{
-				var wildcard = ClassPropInfo.GetMemberByColumnName(type, "*");
-				if (wildcard != null)
-					fieldName = wildcard.Name;
+				var wildcards = ClassPropInfo.GetMembersForType(type).Where(m => m.ColumnName.StartsWith("*")).OrderBy(m => m.ColumnName).ToList();
+				if (column < wildcards.Count)
+					fieldName = wildcards[column].Name;
 			}
 
 			// by default, let all of the transforms transform the name, then search for it

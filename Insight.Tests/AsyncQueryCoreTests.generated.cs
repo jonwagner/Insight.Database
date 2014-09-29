@@ -2343,8 +2343,8 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(3),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2355,9 +2355,9 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(4),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2368,10 +2368,10 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(5),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2382,11 +2382,11 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(6),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2397,12 +2397,12 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(7),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2413,13 +2413,13 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(8),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2430,14 +2430,14 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(9),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2448,15 +2448,15 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(10),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2467,16 +2467,16 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(11),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2487,17 +2487,17 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(12),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2508,18 +2508,18 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(13),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2530,19 +2530,19 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(14),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2553,20 +2553,20 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(15),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}
@@ -2577,21 +2577,21 @@ namespace Insight.Tests
 				Beer.GetSelectAllChildren(16),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List, b => b.ID, (b, list) => b.List = list)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List), b => b.ID, (b, list) => b.List = list.ToList())
+					.ThenChildren(Some<InfiniteBeerList>.Records)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List)
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
+					.ThenChildren(Some<InfiniteBeerList>.Records, parents: b => b.List.SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List).SelectMany(b2 => b2.List))
 					).Result;
 			InfiniteBeerList.VerifyAll(result);
 		}

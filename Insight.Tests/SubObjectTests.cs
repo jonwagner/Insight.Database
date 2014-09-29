@@ -330,7 +330,7 @@ namespace Insight.Tests
 			// when ParentID is a string column, the mapping was failing on a string to object conversion
 			var result = Connection().QuerySql("EXEC " + Beer.SelectAllProc + "; SELECT ParentID='1', ID=1", null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, l) => b.List = l.ToList()));
+					.ThenChildren(Some<InfiniteBeerList>.Records));
 
 			// there should be two parents, and both of them should have the same child
 			Assert.AreEqual(3, result.Count);
@@ -343,7 +343,7 @@ namespace Insight.Tests
 			// the ParentID column is always the first column
 			Connection().QuerySql("EXEC " + Beer.SelectAllProc + "; SELECT xyzzy='1', ID=1", null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, l) => b.List = l.ToList()));
+					.ThenChildren(Some<InfiniteBeerList>.Records));
 		}
 
 		[Test]
@@ -352,7 +352,7 @@ namespace Insight.Tests
 			// the ParentID column is always the first column
 			var result = Connection().QuerySql("SELECT ID=1 UNION ALL SELECT ID=1; SELECT ParentID=1, ID=1", null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(Some<InfiniteBeerList>.Records, b => b.ID, (b, l) => b.List = l.ToList()));
+					.ThenChildren(Some<InfiniteBeerList>.Records));
 
 			// there should be two parents, and both of them should have the same child
 			Assert.AreEqual(2, result.Count);

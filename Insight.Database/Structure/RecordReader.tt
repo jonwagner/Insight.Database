@@ -1,0 +1,46 @@
+﻿<#@ template debug="false" hostspecific="false" language="C#" #>
+<#@ assembly name="System.Core" #>
+<#@ import namespace="System.Linq" #>
+<#@ import namespace="System.Text" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ output extension="generated.cs" #>
+<#@ include file="..\GenericTypes.tt" #>
+using System;
+using System.Collections.Generic;
+using System.Data;
+using System.Threading;
+using System.Threading.Tasks;
+using Insight.Database.Structure;
+
+namespace Insight.Database.Structure
+{
+	/// <summary>
+	/// A base implementation of IRecordReader.
+	/// </summary>
+	/// <typeparam name="T">The type of object that can be read.</typeparam>
+	public abstract partial class RecordReader<T> : IRecordReader<T>
+	{
+<#
+for (var typeCount = 2; typeCount <= 7; typeCount++)
+{
+	var parentFieldList = GetGenericList(typeCount, "g.ParentId{0}");
+	var typeList = GetGenericList(typeCount, GenericTypeFormat);
+#>
+		/// <summary>
+		/// Returns a child record reader that reads this type of record and groups by the first column in the recordset.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <typeparam name="T<#= typeIndex #>">The type of the <#= ConvertToOrdinal(typeIndex) #> ID.</typeparam>
+<# } #>
+		/// <returns>A child record reader.</returns>
+		public IChildRecordReader<T, Tuple<<#= typeList #>>> GroupByColumns<<#= typeList #>>()
+		{
+			return new ChildRecordReader<Guardian<T, <#= typeList #>>, Tuple<<#= typeList #>>, T>(
+				GetGuardianReader<Guardian<T, <#= typeList #>>>(),
+				g => Tuple.Create(<#= parentFieldList #>),
+				g => g.Object);
+		}
+
+<# } #>
+	}
+}

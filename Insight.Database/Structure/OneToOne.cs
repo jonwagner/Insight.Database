@@ -17,7 +17,7 @@ namespace Insight.Database
 	/// </summary>
 	/// <typeparam name="T">The type of root object that is being returned.</typeparam>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
-	public class OneToOne<T> : RecordReader<T>, IRecordStructure, IChildRecordReader<T>
+	public class OneToOne<T> : RecordReader<T>, IRecordStructure
 	{
 		#region Properties
 		/// <summary>
@@ -198,19 +198,14 @@ namespace Insight.Database
 		/// <summary>
 		/// Returns the definition for a guardian record containing a ParentID and a child object.
 		/// </summary>
-		/// <typeparam name="TId">The type of the ID field.</typeparam>
+		/// <typeparam name="TGuardian">The type of the ID field.</typeparam>
 		/// <returns>The record definition.</returns>
-		public virtual IRecordReader<Guardian<T, TId>> GetGuardianReader<TId>()
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
 		{
 			if (IsDefaultReader())
-			{
-				if (TypeHelper.IsAtomicType(typeof(T)))
-					return ValueGuardianReader<T, TId>.Records;
-				else
-					return OneToOne<Guardian<T, TId>, T>.Records;
-			}
+				return base.GetGuardianReader<TGuardian>();
 
-			Action<Guardian<T, TId>, T> callback = null;
+			Action<TGuardian, T> callback = null;
 			if (Callback != null)
 			{
 				Action<T> innerCallback = (Action<T>)Callback;
@@ -221,7 +216,7 @@ namespace Insight.Database
 					};
 			}
 
-			return new OneToOne<Guardian<T, TId>, T>(callback, ColumnOverrides, SplitColumns); 
+			return new OneToOne<TGuardian, T>(callback, ColumnOverrides, SplitColumns);
 		}
 
 		/// <summary>

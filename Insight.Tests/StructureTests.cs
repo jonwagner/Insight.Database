@@ -305,7 +305,7 @@ namespace Insight.Tests
 			Assert.AreEqual(1, result.ID);
 			Assert.AreEqual(1, result.Children.Count);
 		}
-	}
+ 	}
 	#endregion
 
 	#region Issue 142 Tests

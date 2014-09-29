@@ -106,8 +106,7 @@ namespace Insight.Tests
 				Beer.GetSelectNestedChildren(1, 2),
 				null,
 				Query.Returns(Some<InfiniteBeerList>.Records)
-					.ThenChildren(OneToOne<InfiniteBeerList, InfiniteBeer>.Records, b => b.ID, (b, list) => b.List = list)
-					);
+					.ThenChildren(OneToOne<InfiniteBeerList, InfiniteBeer>.Records));
 
 			Assert.AreEqual(3, result.Count());
 			Assert.AreEqual(1, result[0].List.Count());
