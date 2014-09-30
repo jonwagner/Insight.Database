@@ -813,7 +813,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
-		#region DynamicAssemblyTest
+		#region DynamicAssembly Test
         [Test]
         public void InterfacesShouldBeInSameAssembly()
         {
@@ -824,7 +824,7 @@ namespace Insight.Tests
             var i1 = Connection().As<ITest1>();
             var i2 = Connection().As<ITestInsertUpdate>();
 
-			Assert.AreEqual(i1.GetType().Assembly, i1.GetType().Assembly);
+			Assert.AreEqual(i1.GetType().Assembly, i2.GetType().Assembly);
         }
 		#endregion
 	}
