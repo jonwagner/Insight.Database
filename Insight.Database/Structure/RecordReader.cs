@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
@@ -103,7 +104,12 @@ namespace Insight.Database.Structure
 				guardianTypes.Insert(0, typeof(T));
 				var guardianType = GetGuardianType(guardianTypes.Count).MakeGenericType(guardianTypes.ToArray());
 
+#if NET35
+				var getReader = this.GetType().GetMethod("GetAdaptedReader", BindingFlags.Instance | BindingFlags.NonPublic).MakeGenericMethod(guardianType, typeof(Guardian<T>));
+#else
 				var getReader = this.GetType().GetMethod("GetGuardianReader").MakeGenericMethod(guardianType);
+#endif
+
 				var reader = (IRecordReader<Guardian<T>>)getReader.Invoke(this, Parameters.EmptyArray);
 
 				return new ChildRecordReader<Guardian<T>, TId, T>(reader, g => (TId)g.GetID(), g => g.Object);
@@ -131,5 +137,39 @@ namespace Insight.Database.Structure
 					throw new ArgumentException("count");
 			}
 		}
+
+#if NET35
+		// NET35 doesn't have generic type variance, so we have to put in a converter
+		internal IRecordReader<TBase> GetAdaptedReader<TDerived, TBase>() where TDerived : Guardian<T>, new()
+		{
+			return new RecordReaderAdapter<TDerived, TBase>(GetGuardianReader<TDerived>());
+		}
+
+		class RecordReaderAdapter<TDerived, TBase> : IRecordReader<TBase>
+		{
+			private IRecordReader<TDerived> _recordReader;
+
+			public RecordReaderAdapter(IRecordReader<TDerived> recordReader)
+			{
+				_recordReader = recordReader;
+			}
+
+			public Func<IDataReader, TBase> GetRecordReader(IDataReader reader)
+			{
+				var baseReader = _recordReader.GetRecordReader(reader);
+
+				return r => (TBase)(object)baseReader(r);
+			}
+
+			public bool Equals(IRecordReader other)
+			{
+				var o = other as RecordReaderAdapter<TDerived, TBase>;
+				if (o == null)
+					return false;
+
+				return o._recordReader == _recordReader;
+			}
+		}
+#endif
 	}
 }
