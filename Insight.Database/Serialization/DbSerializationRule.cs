@@ -74,7 +74,7 @@ namespace Insight.Database
 		/// <param name="mode">The SerializationMode to use.</param>
 		public static void Serialize<T>(SerializationMode mode)
 		{
-			AddConfig(new DbSerializationRule() { FieldType = typeof(T), Mode = mode });
+			AddRule(new DbSerializationRule() { FieldType = typeof(T), Mode = mode });
 		}
 
 		/// <summary>
@@ -84,7 +84,18 @@ namespace Insight.Database
 		/// <param name="serializer">The serializer to use.</param>
 		public static void Serialize<T>(IDbObjectSerializer serializer)
 		{
-			AddConfig(new DbSerializationRule() { FieldType = typeof(T), Mode = SerializationMode.Custom, Serializer = serializer });
+			AddRule(new DbSerializationRule() { FieldType = typeof(T), Mode = SerializationMode.Custom, Serializer = serializer });
+		}
+
+		/// <summary>
+		/// Tells Insight the SerializationMode to use when serializing the given member of type T.
+		/// </summary>
+		/// <typeparam name="T">The type containing the object to be serialized.</typeparam>
+		/// <param name="fieldType">The type of the field.</param>
+		/// <param name="mode">The SerializationMode to use.</param>
+		public static void Serialize<T>(Type fieldType, SerializationMode mode)
+		{
+			AddRule(new DbSerializationRule() { RecordType = typeof(T), FieldType = fieldType, Mode = mode });
 		}
 
 		/// <summary>
@@ -95,7 +106,7 @@ namespace Insight.Database
 		/// <param name="mode">The SerializationMode to use.</param>
 		public static void Serialize<T>(string fieldName, SerializationMode mode)
 		{
-			AddConfig(new DbSerializationRule() { RecordType = typeof(T), FieldName = fieldName, Mode = mode });
+			AddRule(new DbSerializationRule() { RecordType = typeof(T), FieldName = fieldName, Mode = mode });
 		}
 
 		/// <summary>
@@ -106,27 +117,37 @@ namespace Insight.Database
 		/// <param name="serializer">The serializer to use.</param>
 		public static void Serialize<T>(string fieldName, IDbObjectSerializer serializer)
 		{
-			AddConfig(new DbSerializationRule() { RecordType = typeof(T), Mode = SerializationMode.Custom, Serializer = serializer });
+			AddRule(new DbSerializationRule() { RecordType = typeof(T), Mode = SerializationMode.Custom, Serializer = serializer });
 		}
 		#endregion
 
 		#region Methods
-		/// <inheritdoc/>
-		IDbObjectSerializer IDbSerializationRule.GetSerializer(ClassPropInfo prop)
+		/// <summary>
+		/// Adds a serialization rule to the configuration.
+		/// </summary>
+		/// <param name="rule">The serialization rule.</param>
+		public static void AddRule(IDbSerializationRule rule)
 		{
-			if (FieldName != null && String.Compare(FieldName, prop.Name, StringComparison.OrdinalIgnoreCase) != 0)
+			_handlers.Add(rule);
+		}
+
+		/// <inheritdoc/>
+		IDbObjectSerializer IDbSerializationRule.GetSerializer(Type recordType, Type memberType, string memberName)
+		{
+			if (FieldName != null && String.Compare(FieldName, memberName, StringComparison.OrdinalIgnoreCase) != 0)
 				return null;
 
-			if (RecordType != null && prop.Type != RecordType)
+			if (RecordType != null && recordType != RecordType)
 				return null;
 
-			if (FieldType != null && prop.MemberType != FieldType)
+			if (FieldType != null && memberType != FieldType)
 				return null;
 
+			var prop = ClassPropInfo.GetMemberByName(recordType, memberName);
 			var mode = Mode ?? prop.SerializationMode;
 
 			// if we allow atomic types to get a different serializer, then there are certain situations where we can't figure out the right thing to do
-			if (mode != SerializationMode.Default && TypeHelper.IsAtomicType(prop.MemberType) && prop.MemberType != typeof(string))
+			if (mode != SerializationMode.Default && TypeHelper.IsAtomicType(memberType) && memberType != typeof(string))
 				throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Atomic types cannot have a column serializer: {0}.{1}", prop.Type.Name, prop.Name));
 
 			switch (mode)
@@ -199,16 +220,7 @@ namespace Insight.Database
 		/// <returns>The serializer.</returns>
 		internal static IDbObjectSerializer EvaluateRules(ClassPropInfo prop)
 		{
-			return _handlers.Select(h => h.GetSerializer(prop)).Where(s => s != null).FirstOrDefault() ?? _defaultConfig.GetSerializer(prop);
-		}
-
-		/// <summary>
-		/// Adds a serialization rule to the configuration.
-		/// </summary>
-		/// <param name="rule">The serialization rule.</param>
-		private static void AddConfig(IDbSerializationRule rule)
-		{
-			_handlers.Add(rule);
+			return _handlers.Select(h => h.GetSerializer(prop.Type, prop.MemberType, prop.Name)).Where(s => s != null).FirstOrDefault() ?? _defaultConfig.GetSerializer(prop.Type, prop.MemberType, prop.Name);
 		}
 		#endregion
 	}

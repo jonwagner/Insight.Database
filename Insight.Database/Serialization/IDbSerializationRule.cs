@@ -10,13 +10,13 @@ namespace Insight.Database
 	/// <summary>
 	/// Defines a serialization rule.
 	/// </summary>
-	interface IDbSerializationRule
+	public interface IDbSerializationRule
 	{
 		/// <summary>
 		/// Given a property, select the proper serializer.
 		/// </summary>
 		/// <param name="prop">The property.</param>
 		/// <returns>The serializer for the object.</returns>
-		IDbObjectSerializer GetSerializer(ClassPropInfo prop);
+		IDbObjectSerializer GetSerializer(Type recordType, Type memberType, string memberName);
 	}
 }

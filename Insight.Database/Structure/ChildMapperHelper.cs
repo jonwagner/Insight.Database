@@ -117,7 +117,7 @@ namespace Insight.Database.Structure
 			if (name != null)
 			{
 				var names = name.Split(',');
-				var matches = names.Select(n => ClassPropInfo.GetMemberByName(type, n)).ToList();
+				var matches = names.Select(n => ClassPropInfo.GetMemberByName(type, n.Trim())).ToList();
 
 				for (int i = 0; i < names.Length; i++)
 					if (matches[i] == null || !matches[i].CanGetMember)
