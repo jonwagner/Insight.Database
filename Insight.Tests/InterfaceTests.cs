@@ -812,6 +812,21 @@ namespace Insight.Tests
 			Connection().As<IAmAPrivateInterface>();
 		}
 		#endregion
+
+		#region DynamicAssembly Test
+        [Test]
+        public void InterfacesShouldBeInSameAssembly()
+        {
+			// we reuse the assemblyname for our dynamic interfaces
+			// some proxy systems (e.g. castle.dynamicproxy), have a problem if two dynamic assemblies share the same name
+			// so here we make sure that the two interfaces come from the same assembly
+
+            var i1 = Connection().As<ITest1>();
+            var i2 = Connection().As<ITestInsertUpdate>();
+
+			Assert.AreEqual(i1.GetType().Assembly, i2.GetType().Assembly);
+        }
+		#endregion
 	}
 
 	#region Interface Update Tests
