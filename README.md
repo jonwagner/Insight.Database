@@ -26,6 +26,10 @@ Let's get Insight.Database:
 
 	PM> Install-Package Insight.Database
 
+Tell it what database you're using:
+
+	SqlInsightDbProvider.RegisterProvider(); // or Oracle, DB2, Postgres, MySql...
+
 Now, wire up those stored procedures to an interface with a single `connection.As<T>`:
 
 	public interface IBeerRepository
@@ -130,6 +134,7 @@ Go ahead. You know you need to buy something anyway...
 
 ## Major Insight Releases ##
 
+* v5.0 - Composite keys, Deep parameter binding. 
 * v4.0 - Read one-to-one, one-to-many, and many-to-many relationships automatically, with ways to extend it.
 * v3.0 - Support for most common database and tools. See [the list of supported providers](https://github.com/jonwagner/Insight.Database/wiki/Insight-and-Data-Providers).
 * v2.1 - Automatically [implement an interface](https://github.com/jonwagner/Insight.Database/wiki/Auto-Interface-Implementation) with database calls.
