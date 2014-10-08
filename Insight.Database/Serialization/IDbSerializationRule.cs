@@ -15,7 +15,9 @@ namespace Insight.Database
 		/// <summary>
 		/// Given a property, select the proper serializer.
 		/// </summary>
-		/// <param name="prop">The property.</param>
+		/// <param name="recordType">The type of the record being serialized.</param>
+		/// <param name="memberType">The type of the member being serialized.</param>
+		/// <param name="memberName">The name of the member being serialized.</param>
 		/// <returns>The serializer for the object.</returns>
 		IDbObjectSerializer GetSerializer(Type recordType, Type memberType, string memberName);
 	}
