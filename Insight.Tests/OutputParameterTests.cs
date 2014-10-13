@@ -291,5 +291,25 @@ namespace Insight.Tests
 			Assert.AreEqual(9, outputData.p);
 		}
 		#endregion
+
+        public class OutputWithString
+        {
+            public string In;
+            public string Out;
+        }
+
+        [Test]
+        public void OutputStringsHaveCorrectLength()
+        {
+            using (var c = Connection().OpenWithTransaction())
+            {
+                c.ExecuteSql("CREATE PROC OutputString(@In varchar(50), @Out varchar(50) OUTPUT) AS SELECT @Out=@In; SELECT @Out");
+
+                var o = new OutputWithString() { In = "abcdefg", Out = "" };
+                var oOut = c.ExecuteScalar<string>("OutputString", o);
+                Assert.AreEqual(o.In, oOut);
+                Assert.AreEqual(o.In, o.Out);
+            }
+        }
 	}
 }

@@ -374,13 +374,22 @@ namespace Insight.Database.CodeGenerator
 					parameter.DbType = DbType.String;
 
 				var dbParameter = parameter as IDbDataParameter;
-				if (dbParameter != null)
+                if (dbParameter != null)
 				{
-					var length = s.Length;
-					if (length > 4000)
-						dbParameter.Size = -1;
-					else
-						dbParameter.Size = s.Length;
+                    if (dbParameter.Direction.HasFlag(ParameterDirection.Output))
+                    {
+                        // for output parameters, we always want to retrieve as much data as possible
+                        dbParameter.Size = -1;
+                    }
+                    else
+                    {
+                        // for input parameters, some providers may behave better by specifying the length
+                        var length = s.Length;
+                        if (length > 4000)
+                            dbParameter.Size = -1;
+                        else
+                            dbParameter.Size = s.Length;
+                    }
 				}
 			}
 		}
