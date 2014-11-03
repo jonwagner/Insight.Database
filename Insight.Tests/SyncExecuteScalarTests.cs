@@ -63,5 +63,13 @@ namespace Insight.Tests
 
 			Assert.AreEqual(null, result);
 		}
+
+        [Test]
+        public void TestNullableStringReturnWhenNoRowsAreReturned()
+        {
+            var result = Connection().ExecuteScalarSql<string>("PRINT 1");
+
+            Assert.AreEqual(null, result);
+        }
 	}
 }
