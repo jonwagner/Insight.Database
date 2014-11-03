@@ -1207,6 +1207,8 @@ namespace Insight.Database
 		/// <returns>An implementation of the interface that executes database calls.</returns>
 		public static T As<T>(this IDbConnection connection) where T : class
 		{
+            if (connection == null) throw new ArgumentNullException("connection");
+
 			// if the connection already supports T, then return it, otherwise we need a wrapper
 			return (connection as T) ?? (T)InterfaceGenerator.GetImplementorOf(typeof(T), () => connection, singleThreaded: true);
 		}
@@ -1219,7 +1221,9 @@ namespace Insight.Database
 		/// <returns>An implementation of the interface that executes database calls.</returns>
 		public static object As(this IDbConnection connection, Type type)
 		{
-			// if the connection already supports T, then return it, otherwise we need a wrapper
+            if (connection == null) throw new ArgumentNullException("connection");
+            
+            // if the connection already supports T, then return it, otherwise we need a wrapper
 			return InterfaceGenerator.GetImplementorOf(type, () => connection, singleThreaded: true);
 		}
 
@@ -1232,7 +1236,9 @@ namespace Insight.Database
 		/// <returns>A closed connection that implements the given interface.</returns>
 		public static T AsParallel<T>(this IDbConnection connection) where T : class
 		{
-			return (T)connection.AsParallel(typeof(T));
+            if (connection == null) throw new ArgumentNullException("connection");
+            
+            return (T)connection.AsParallel(typeof(T));
 		}
 
 		/// <summary>
@@ -1244,7 +1250,7 @@ namespace Insight.Database
 		/// <returns>A closed connection that implements the given interface.</returns>
 		public static object AsParallel(this IDbConnection connection, Type type)
 		{
-			if (connection == null) throw new ArgumentNullException("connection");
+            if (connection == null) throw new ArgumentNullException("connection");
 
 			var provider = InsightDbProvider.For(connection);
 			Func<IDbConnection> constructor = () => provider.CloneDbConnection(connection);
@@ -1260,7 +1266,9 @@ namespace Insight.Database
 		/// <returns>A closed connection that implements the given interface.</returns>
 		public static T AsParallel<T>(this Func<IDbConnection> provider) where T : class
 		{
-			return (T)provider.AsParallel(typeof(T));
+            if (provider == null) throw new ArgumentNullException("provider");
+
+            return (T)provider.AsParallel(typeof(T));
 		}
 
 		/// <summary>
