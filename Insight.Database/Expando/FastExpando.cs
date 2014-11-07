@@ -316,6 +316,35 @@ namespace Insight.Database
 
 			return other;
 		}
+
+        /// <summary>
+        /// Drops the specified field from the expando if it is null.
+        /// </summary>
+        /// <param name="fields">The name of the fields to drop.</param>
+        /// <returns>A new expando.</returns>
+        public FastExpando WithoutNulls(params string[] fields)
+        {
+            return WithoutNulls((IEnumerable<string>)fields);
+        }
+
+        /// <summary>
+        /// Drops the specified field from the expando if it is null.
+        /// </summary>
+        /// <param name="field">The name of the field(s) to drop or null to drop all fields.</param>
+        /// <returns>A new expando.</returns>
+        public FastExpando WithoutNulls(IEnumerable<string> fields = null)
+        {
+            FastExpando other = new FastExpando();
+            foreach (var pair in data)
+            {
+                if (pair.Value == null && fields == null || fields.Any(f => String.Compare(pair.Key, f, StringComparison.OrdinalIgnoreCase) == 0))
+                    continue;
+
+                other.data.Add(pair.Key, pair.Value);
+            }
+
+            return other;
+        }
 		#endregion
 
 		#region Private Methods
