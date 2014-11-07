@@ -201,13 +201,25 @@ namespace Insight.Database.CodeGenerator
 						&& t != typeof(XDocument))
 					{
 						// get fields and properties. Prioritize explicitly mapped members first, then properties over fields.
-						foreach (var p in t.GetProperties(DefaultBindingFlags).Select(m => new ClassPropInfo(m))
-							.Union(t.GetFields(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
-							.OrderBy(m => !m.ColumnNameIsOverridden)
-							.ThenBy(m => (m.FieldInfo == null) ? 0 : 1))
-							if (!members.Any(m => String.Compare(m.ColumnName, p.ColumnName, StringComparison.OrdinalIgnoreCase) == 0))
-								members.Add(p);
-					}
+                        foreach (var p in t.GetProperties(DefaultBindingFlags).Select(m => new ClassPropInfo(m))
+                            .Union(t.GetFields(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
+                            .OrderBy(m => !m.ColumnNameIsOverridden)
+                            .ThenBy(m => (m.FieldInfo == null) ? 0 : 1))
+                        {
+                            var match = members.FirstOrDefault(m => String.Compare(m.ColumnName, p.ColumnName, StringComparison.OrdinalIgnoreCase) == 0) ??
+                                members.FirstOrDefault(m => String.Compare(m.Name, p.Name, StringComparison.OrdinalIgnoreCase) == 0);
+                            if (match == null)
+                            {
+                                members.Add(p);
+                            }
+                            else if (p.ColumnName != p.Name)
+                            {
+                                // if we override the column name at this level, then apply it to the mapping
+                                // i'm not happy that we're modifying columnmame, but we know that the object was created just for this loop.
+                                match.ColumnName = p.ColumnName;
+                            }
+                        }
+                    }
 
 					return new ReadOnlyCollection<ClassPropInfo>(members);
 				});

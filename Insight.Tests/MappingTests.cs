@@ -389,6 +389,30 @@ namespace Insight.Tests
 			Assert.AreEqual(parent.Child.Z, result.Child.Z);
 		}
 		#endregion
+
+        #region Test for Issue #156
+        public class BaseForRenaming
+        {
+            public virtual string RenamedInDerived { get; set; }
+            [Column("BaseRenamed")]
+            public virtual string RenamedInBase { get; set; }
+        }
+
+        public class DerivedForRenaming : BaseForRenaming
+        {
+            [Column("DerivedRenamed")]
+            public override string RenamedInDerived { get; set; }
+            public override string RenamedInBase { get; set; }
+        }
+
+        [Test]
+        public void CanUseColumnAttributeOnDerivedClass()
+        {
+            var result = Connection().QuerySql<DerivedForRenaming>("SELECT DerivedRenamed='derived', BaseRenamed='base'", null).First();
+            Assert.AreEqual("derived", result.RenamedInDerived);
+            Assert.AreEqual("base", result.RenamedInBase);
+        }
+        #endregion
 	}
 	
 	/// <summary>
