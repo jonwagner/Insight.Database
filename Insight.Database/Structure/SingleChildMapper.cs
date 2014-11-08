@@ -39,7 +39,7 @@ namespace Insight.Database.Structure
 		/// <param name="children">The list of children.</param>
 		public void MapChildren(IEnumerable<TParent> roots, IEnumerable<TChild> children)
 		{
-			var single = roots.Single();
+			var single = roots.SingleOrDefault();
 
 			if (single == null)
 			{
