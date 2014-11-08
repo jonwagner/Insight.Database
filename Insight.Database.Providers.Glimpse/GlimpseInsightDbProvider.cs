@@ -71,5 +71,13 @@ namespace Insight.Database.Providers.Glimpse
 			GlimpseDbCommand profiledCommand = (GlimpseDbCommand)command;
 			return profiledCommand.InnerCommand;
 		}
+
+        /// <inheritdoc/>
+        public override void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
+        {
+            connection = GetInnerConnection(connection);
+            transaction = ((GlimpseDbTransaction)transaction).InnerTransaction;
+            InsightDbProvider.For(connection).BulkCopy(connection, tableName, reader, configure, options, transaction);
+        }
 	}
 }

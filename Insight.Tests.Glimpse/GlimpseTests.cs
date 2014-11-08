@@ -8,6 +8,7 @@ using Glimpse.Ado.AlternateType;
 using Insight.Database;
 using Insight.Database.Providers.Glimpse;
 using NUnit.Framework;
+using System.Data;
 
 namespace Insight.Tests
 {
@@ -45,5 +46,36 @@ namespace Insight.Tests
 				Assert.AreEqual((int)1, result);
 			}
 		}
+
+        #region Tests for Issue #158
+        public interface ICanBulkCopy : IDbConnection, IDbTransaction
+        {
+            [Sql("SELECT X=1")]
+            int MyProc();
+        }
+
+        public class InsightTestData
+        {
+            public int Int;
+            public int? IntNull { get; set; }
+        }
+
+        [Test]
+        public void TestBulkCopyWithInterface()
+        {
+            const int ItemCount = 10;
+
+            // build test data
+            InsightTestData[] array = new InsightTestData[ItemCount];
+            for (int j = 0; j < ItemCount; j++)
+                array[j] = new InsightTestData() { Int = j };
+
+            var profiled = new GlimpseDbConnection((DbConnection)Connection());
+
+            using (var i = profiled.OpenWithTransactionAs<ICanBulkCopy>())
+            {
+                i.BulkCopy("BulkCopyData", array);
+            }
+        }
 	}
 }

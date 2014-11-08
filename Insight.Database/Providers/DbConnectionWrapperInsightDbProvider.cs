@@ -37,8 +37,8 @@ namespace Insight.Database.Providers
 		/// <inheritdoc/>
 		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
 		{
-			var inner = GetInnerConnection(connection);
-			return InsightDbProvider.For(inner).GetSupportedBulkCopyOptions(connection);
+			connection = GetInnerConnection(connection);
+			return InsightDbProvider.For(connection).GetSupportedBulkCopyOptions(connection);
 		}
 
 		/// <summary>

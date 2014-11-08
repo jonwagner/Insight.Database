@@ -234,5 +234,27 @@ namespace Insight.Tests
 				Assert.AreEqual(3, items[0].TermId);
 			}
 		}
+
+        public interface ICanBulkCopy : IDbConnection, IDbTransaction
+        {
+            [Sql("SELECT X=1")]
+            int MyProc();
+        }
+
+        [Test]
+        public void TestBulkCopyWithInterface()
+        {
+			const int ItemCount = 10;
+
+			// build test data
+			InsightTestData[] array = new InsightTestData[ItemCount];
+			for (int j = 0; j < ItemCount; j++)
+				array[j] = new InsightTestData() { Int = j };
+
+            using (var i = Connection().OpenWithTransactionAs<ICanBulkCopy>())
+            {
+                i.BulkCopy("BulkCopyData", array);
+            }
+        }
 	}
 }
