@@ -16,14 +16,14 @@ namespace Insight.Database.Structure
 	public interface IChildRecordReader<T, TId>
 	{
 		/// <summary>
-		/// Reads chidren from the reader.
+		/// Reads children from the reader.
 		/// </summary>
 		/// <param name="reader">The reader.</param>
 		/// <returns>The children grouped by id.</returns>
 		IEnumerable<IGrouping<TId, T>> Read(IDataReader reader);
 
 		/// <summary>
-		/// Asynchronously reads chidren from the reader.
+		/// Asynchronously reads children from the reader.
 		/// </summary>
 		/// <param name="reader">The reader.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>

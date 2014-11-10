@@ -45,7 +45,7 @@ namespace Insight.Database.Structure
 		/// <returns>A child record reader.</returns>
 		public IChildRecordReader<T, TId> GroupBy<TId>(Func<T, TId> groupBy)
 		{
-			return new ChildRecordReader<T, TId, T>(this, groupBy, r => r);
+			return new ChildRecordReader<T, TId, T>(this, records => records.GroupBy(groupBy, r => r));
 		}
 		
 		/// <summary>
@@ -55,7 +55,7 @@ namespace Insight.Database.Structure
 		/// <returns>A child record reader.</returns>
 		public IChildRecordReader<T, TId> GroupByColumn<TId>()
 		{
-			return new ChildRecordReader<Guardian<T, TId>, TId, T>(GetGuardianReader<Guardian<T, TId>>(), g => g.ParentId1, g => g.Object);
+			return new ChildRecordReader<Guardian<T, TId>, TId, T>(GetGuardianReader<Guardian<T, TId>>(), records => records.GroupBy(g => g.ParentId1, g => g.Object));
 		}
 
 		/// <summary>
@@ -84,7 +84,7 @@ namespace Insight.Database.Structure
 			if (idAccessor != null)
 			{
 				var getid = idAccessor.CreateGetMethod<T, TId>();
-				return new ChildRecordReader<T, TId, T>(this, getid, r => r);				
+				return new ChildRecordReader<T, TId, T>(this, records => records.GroupBy(getid, r => r));
 			}
 			else
 			{
@@ -112,7 +112,7 @@ namespace Insight.Database.Structure
 
 				var reader = (IRecordReader<Guardian<T>>)getReader.Invoke(this, Parameters.EmptyArray);
 
-				return new ChildRecordReader<Guardian<T>, TId, T>(reader, g => (TId)g.GetID(), g => g.Object);
+				return new ChildRecordReader<Guardian<T>, TId, T>(reader, records => records.GroupBy(g => (TId)g.GetID(), g => g.Object));
 			}
 		}
 

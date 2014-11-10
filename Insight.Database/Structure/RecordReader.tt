@@ -8,6 +8,7 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database.Structure;
@@ -37,8 +38,7 @@ for (var typeCount = 2; typeCount <= 7; typeCount++)
 		{
 			return new ChildRecordReader<Guardian<T, <#= typeList #>>, Tuple<<#= typeList #>>, T>(
 				GetGuardianReader<Guardian<T, <#= typeList #>>>(),
-				g => Tuple.Create(<#= parentFieldList #>),
-				g => g.Object);
+				records => records.GroupBy(g => Tuple.Create(<#= parentFieldList #>), g => g.Object));
 		}
 
 <# } #>

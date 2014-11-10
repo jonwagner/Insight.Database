@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database.Structure;
@@ -10,6 +11,7 @@ namespace Insight.Database.Structure
 	/// <summary>
 	/// A base implementation of IRecordReader.
 	/// </summary>
+	/// <typeparam name="T">The type of object that can be read.</typeparam>
 	public abstract partial class RecordReader<T> : IRecordReader<T>
 	{
 		/// <summary>
@@ -22,8 +24,7 @@ namespace Insight.Database.Structure
 		{
 			return new ChildRecordReader<Guardian<T, T1, T2>, Tuple<T1, T2>, T>(
 				GetGuardianReader<Guardian<T, T1, T2>>(),
-				g => Tuple.Create(g.ParentId1, g.ParentId2),
-				g => g.Object);
+				records => records.GroupBy(g => Tuple.Create(g.ParentId1, g.ParentId2), g => g.Object));
 		}
 
 		/// <summary>
@@ -37,8 +38,7 @@ namespace Insight.Database.Structure
 		{
 			return new ChildRecordReader<Guardian<T, T1, T2, T3>, Tuple<T1, T2, T3>, T>(
 				GetGuardianReader<Guardian<T, T1, T2, T3>>(),
-				g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3),
-				g => g.Object);
+				records => records.GroupBy(g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3), g => g.Object));
 		}
 
 		/// <summary>
@@ -53,8 +53,7 @@ namespace Insight.Database.Structure
 		{
 			return new ChildRecordReader<Guardian<T, T1, T2, T3, T4>, Tuple<T1, T2, T3, T4>, T>(
 				GetGuardianReader<Guardian<T, T1, T2, T3, T4>>(),
-				g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4),
-				g => g.Object);
+				records => records.GroupBy(g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4), g => g.Object));
 		}
 
 		/// <summary>
@@ -70,8 +69,7 @@ namespace Insight.Database.Structure
 		{
 			return new ChildRecordReader<Guardian<T, T1, T2, T3, T4, T5>, Tuple<T1, T2, T3, T4, T5>, T>(
 				GetGuardianReader<Guardian<T, T1, T2, T3, T4, T5>>(),
-				g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4, g.ParentId5),
-				g => g.Object);
+				records => records.GroupBy(g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4, g.ParentId5), g => g.Object));
 		}
 
 		/// <summary>
@@ -88,8 +86,7 @@ namespace Insight.Database.Structure
 		{
 			return new ChildRecordReader<Guardian<T, T1, T2, T3, T4, T5, T6>, Tuple<T1, T2, T3, T4, T5, T6>, T>(
 				GetGuardianReader<Guardian<T, T1, T2, T3, T4, T5, T6>>(),
-				g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4, g.ParentId5, g.ParentId6),
-				g => g.Object);
+				records => records.GroupBy(g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4, g.ParentId5, g.ParentId6), g => g.Object));
 		}
 
 		/// <summary>
@@ -107,8 +104,7 @@ namespace Insight.Database.Structure
 		{
 			return new ChildRecordReader<Guardian<T, T1, T2, T3, T4, T5, T6, T7>, Tuple<T1, T2, T3, T4, T5, T6, T7>, T>(
 				GetGuardianReader<Guardian<T, T1, T2, T3, T4, T5, T6, T7>>(),
-				g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4, g.ParentId5, g.ParentId6, g.ParentId7),
-				g => g.Object);
+				records => records.GroupBy(g => Tuple.Create(g.ParentId1, g.ParentId2, g.ParentId3, g.ParentId4, g.ParentId5, g.ParentId6, g.ParentId7), g => g.Object));
 		}
 
 	}

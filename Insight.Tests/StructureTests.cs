@@ -367,4 +367,47 @@ namespace Insight.Tests
 		}
 	}
 	#endregion
+
+    #region Issue 160 Tests
+    [TestFixture]
+    public class Issue160 : BaseTest
+    {
+        public class TestParent
+        {
+            public int ID;
+            public List<TestChild> Children;
+        }
+
+        public class TestChild
+        {
+            public int ChildA;
+            public int ChildB;
+            public TestChild() { }
+            public TestChild(int a, int b)
+            {
+                ChildA = a;
+                ChildB = b;
+            }
+        }
+
+        [Test]
+        public void CustomRecordReaderCanDropNulls()
+        {
+            var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ChildA=2, ChildB=3", null,
+                        Query.Returns(Some<TestParent>.Records)
+                            .ThenChildren(CustomRecordReader<TestChild>.Read(r =>
+                            {
+                                var childValue = (int)r["ChildA"];
+                                if (childValue != 2)
+                                    return new TestChild(childValue, (int)r["ChildB"]);
+                                return null;
+                            }),
+                            into: (p, children) => p.Children = children.Where(c => c != null).ToList()));
+
+            var result = results.First();
+            Assert.AreEqual(1, result.ID);
+            Assert.AreEqual(0, result.Children.Count);  // FAIL! I would expect that the child wouldn't be added, but a null is added
+        }
+    }
+    #endregion
 }
