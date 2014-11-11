@@ -109,13 +109,7 @@ namespace Insight.Database.CodeGenerator
 
 			// need to know the constructor for the object (except for structs)
 			bool isStruct = type.IsValueType;
-			ConstructorInfo constructor = null;
-			if (!isStruct)
-			{
-				constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
-				if (constructor == null)
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}", type.FullName));
-			}
+			ConstructorInfo constructor = createNewObject ? SelectConstructor(type) : null;
 
 			// the method can either be:
 			// createNewObject => Func<IDataReader, T>
@@ -134,40 +128,129 @@ namespace Insight.Database.CodeGenerator
 			var localValue = il.DeclareLocal(typeof(object));
 			var localIsNotAllDbNull = il.DeclareLocal(typeof(bool));
 
-			// initialize index = 0
+			// initialization
 			il.Emit(OpCodes.Ldc_I4_0);
 			il.Emit(OpCodes.Stloc, localIndex);
 
-			// emit a call to the constructor of the object
+            /////////////////////////////////////////////////////////////////////
+            // read all of the values into local variables
+            /////////////////////////////////////////////////////////////////////
 			il.BeginExceptionBlock();
+            var localValues = new LocalBuilder[mappings.Count];
+            for (int index = 0; index < columnCount; index++)
+            {
+                var mapping = mappings[index];
+                if (mapping == null)
+                    continue;
 
-			// if we are supposed to create a new object, then new that up, otherwise use the object passed in as an argument
-			// this block sets loc.1 with the return value
-			if (isStruct)
-			{
-				if (createNewObject)
-				{
-					il.Emit(OpCodes.Ldloca_S, localResult);	// load the pointer to the result on the stack
-					il.Emit(OpCodes.Initobj, type);			// initialize the object on the stack
-				}
-				else
-				{
-					il.Emit(OpCodes.Ldarg_1);				// store arg.1 => loc.1
-					il.Emit(OpCodes.Stloc, localResult);
-				}
-			}
-			else
-			{
-				if (createNewObject)
-					il.Emit(OpCodes.Newobj, constructor);	// push new T, stack => [target]
-				else
-					il.Emit(OpCodes.Ldarg_1);				// push arg.1 (T), stack => [target]
+                var member = mapping.Member;
 
-				il.Emit(OpCodes.Stloc, localResult);		// pop loc.1 (result), stack => [empty]
-			}
+                localValues[index] = il.DeclareLocal(member.MemberType);
 
-			var returnLabel = il.DefineLabel();
+                // need to call IDataReader.GetItem to get the value of the field
+                il.Emit(OpCodes.Ldarg_0);
+                IlHelper.EmitLdInt32(il, index + startColumn);
 
+                // before we call it, put the current index into the index local variable
+                il.Emit(OpCodes.Dup);
+                il.Emit(OpCodes.Stloc, localIndex);
+                
+                // now call it
+                il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);
+
+                // if handling a subobject, we check to see if the value is null
+                if (startColumn > 0)
+                {
+                    var afterNullCheck = il.DefineLabel();
+                    il.Emit(OpCodes.Dup);
+                    il.Emit(OpCodes.Ldsfld, typeof(DBNull).GetField("Value"));
+                    il.Emit(OpCodes.Ceq);
+                    il.Emit(OpCodes.Brtrue, afterNullCheck);
+                    il.Emit(OpCodes.Ldc_I4_1);
+                    il.Emit(OpCodes.Stloc, localIsNotAllDbNull);
+                    il.MarkLabel(afterNullCheck);
+                }
+
+                // store the value as a local variable in case type conversion fails
+                il.Emit(OpCodes.Dup);
+                il.Emit(OpCodes.Stloc, localValue);
+
+				// convert the value and store it locally
+				Type sourceType = reader.GetFieldType(index + startColumn);
+                TypeConverterGenerator.EmitConvertValue(il, member.Name, sourceType, member.MemberType, mapping.Serializer);
+                il.Emit(OpCodes.Stloc, localValues[index]);
+            }
+
+            /////////////////////////////////////////////////////////////////////
+            // catch translation exceptions and rethrow
+            /////////////////////////////////////////////////////////////////////
+            il.BeginCatchBlock(typeof(Exception));						// stack => [Exception]
+            il.Emit(OpCodes.Ldloc, localIndex);							// push loc.0, stack => [Exception][index]
+            il.Emit(OpCodes.Ldarg_0);									// push arg.0, stack => [Exception][index][reader]
+            il.Emit(OpCodes.Ldloc, localValue);							// push loc.3, stack => [Exception][index][reader][value]
+            il.Emit(OpCodes.Call, TypeConverterGenerator.CreateDataExceptionMethod);
+            il.Emit(OpCodes.Throw);									// stack => DataException
+            il.EndExceptionBlock();
+
+            /////////////////////////////////////////////////////////////////////
+            // if this was a subobject and all of the values are null, then return the default for the object
+            /////////////////////////////////////////////////////////////////////
+            if (startColumn > 0)
+            {
+                var afterNullExit = il.DefineLabel();
+                il.Emit(OpCodes.Ldloc, localIsNotAllDbNull);
+                il.Emit(OpCodes.Brtrue, afterNullExit);
+                TypeHelper.EmitDefaultValue(il, type);
+                il.Emit(OpCodes.Ret);
+                il.MarkLabel(afterNullExit);
+            }
+
+            /////////////////////////////////////////////////////////////////////
+            // call the constructor
+            /////////////////////////////////////////////////////////////////////
+            if (createNewObject)
+            {
+                if (isStruct)
+                {
+					il.Emit(OpCodes.Ldloca_S, localResult);
+                    il.Emit(OpCodes.Initobj, type);
+                    if (constructor != null)
+                        il.Emit(OpCodes.Ldloca_S, localResult);
+                }
+
+                // if there is a constructor, then populate the values
+                if (constructor != null)
+                {
+                    foreach (var p in constructor.GetParameters())
+                    {
+                        var mapping = mappings.SingleOrDefault(m => m.Member.Name.IsIEqualTo(p.Name));
+                        if (mapping != null)
+                            il.Emit(OpCodes.Ldloc, localValues[mappings.IndexOf(mapping)]);
+                        else
+                            TypeHelper.EmitDefaultValue(il, p.ParameterType);
+                    }
+                }
+
+                if (isStruct)
+                {
+                    if (constructor != null)
+                        il.Emit(OpCodes.Call, constructor);
+                }
+                else
+                {
+                    il.Emit(OpCodes.Newobj, constructor);
+                    il.Emit(OpCodes.Stloc, localResult);
+                }
+            }
+            else
+            {
+				il.Emit(OpCodes.Ldarg_1);
+				il.Emit(OpCodes.Stloc, localResult);
+            }
+
+            /////////////////////////////////////////////////////////////////////
+            // for anything not passed to the constructor, copy the local values to the properties
+            /////////////////////////////////////////////////////////////////////
 			for (int index = 0; index < columnCount; index++)
 			{
 				var mapping = mappings[index];
@@ -178,19 +261,18 @@ namespace Insight.Database.CodeGenerator
 				if (!member.CanSetMember)
 					continue;
 
-				// store the value as a local variable in case type conversion fails
-				il.Emit(OpCodes.Ldnull);
-				il.Emit(OpCodes.Stloc, localValue);
+                // don't set values that have already been set
+                if (constructor != null && constructor.GetParameters().Any(p => p.Name.IsIEqualTo(mapping.Member.Name)))
+                    continue;
 
 				// load the address of the object we are working on
 				if (isStruct)
-					il.Emit(OpCodes.Ldloca_S, localResult);			// push pointer to object
+					il.Emit(OpCodes.Ldloca_S, localResult);
 				else
-					il.Emit(OpCodes.Ldloc, localResult);			// push loc.1 (target), stack => [target]
-
-				var nextLabel = il.DefineLabel();
+					il.Emit(OpCodes.Ldloc, localResult);
 
 				// for deep mappings, go to the parent of the field that we are trying to set
+				var nextLabel = il.DefineLabel();
 				if (mapping.IsDeep)
 				{
 					ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
@@ -208,71 +290,15 @@ namespace Insight.Database.CodeGenerator
 					}
 				}
 
-				// need to call IDataReader.GetItem to get the value of the field
-				il.Emit(OpCodes.Ldarg_0);							// push arg.0 (reader), stack => [target][reader]
-				IlHelper.EmitLdInt32(il, index + startColumn);		// push index, stack => [target][reader][index]
-				// before we call it, put the current index into the index local variable
-				il.Emit(OpCodes.Dup);								// dup index, stack => [target][reader][index][index]
-				il.Emit(OpCodes.Stloc, localIndex);					// pop loc.0 (index), stack => [target][reader][index]
-				// now call it
-				il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);		// call getItem, stack => [target][value-as-object]
-				// store the value as a local variable in case type conversion fails
-				il.Emit(OpCodes.Dup);
-				il.Emit(OpCodes.Stloc, localValue);
-
-				/////////////////////////////////////////////////////////////////////
-				// if this a subobject, then check to see if the value is null
-				/////////////////////////////////////////////////////////////////////
-				if (startColumn > 0)
-				{
-					var afterNullCheck = il.DefineLabel();
-					il.Emit(OpCodes.Dup);
-					il.Emit(OpCodes.Ldsfld, typeof(DBNull).GetField("Value"));
-					il.Emit(OpCodes.Ceq);
-					il.Emit(OpCodes.Brtrue, afterNullCheck);
-					il.Emit(OpCodes.Ldc_I4_1);
-					il.Emit(OpCodes.Stloc, localIsNotAllDbNull);
-					il.MarkLabel(afterNullCheck);
-				}
-
-				// determine the type of the object in the recordset
-				Type sourceType = reader.GetFieldType(index + startColumn);
-
-				// emit the code to convert the value and set the value on the field
-				TypeConverterGenerator.EmitConvertAndSetValue(il, sourceType, mappings[index]);
+                // load the value from the local and set it on the object
+                il.Emit(OpCodes.Ldloc, localValues[index]);
+                member.EmitSetValue(il);
 				il.MarkLabel(nextLabel);
 
 				/////////////////////////////////////////////////////////////////////
 				// stack should be [target] and ready for the next column
 				/////////////////////////////////////////////////////////////////////
 			}
-
-			/////////////////////////////////////////////////////////////////////
-			// if this was a subobject and all of the values are null, then load the default for the object
-			/////////////////////////////////////////////////////////////////////
-			if (startColumn > 0)
-			{
-				var afterNullExit = il.DefineLabel();
-				il.Emit(OpCodes.Ldloc, localIsNotAllDbNull);
-				il.Emit(OpCodes.Brtrue, afterNullExit);
-				TypeHelper.EmitDefaultValue(il, type);				// load the default for the type
-				il.Emit(OpCodes.Stloc, localResult);				// store null => loc.1 (target)
-				il.Emit(OpCodes.Br, returnLabel);					// exit the loop
-				il.MarkLabel(afterNullExit);
-			}
-
-			il.MarkLabel(returnLabel);
-
-			/////////////////////////////////////////////////////////////////////
-			// catch exceptions and rethrow
-			/////////////////////////////////////////////////////////////////////
-			il.BeginCatchBlock(typeof(Exception));						// stack => [Exception]
-			il.Emit(OpCodes.Ldloc, localIndex);							// push loc.0, stack => [Exception][index]
-			il.Emit(OpCodes.Ldarg_0);									// push arg.0, stack => [Exception][index][reader]
-			il.Emit(OpCodes.Ldloc, localValue);							// push loc.3, stack => [Exception][index][reader][value]
-			il.Emit(OpCodes.Call, TypeConverterGenerator.CreateDataExceptionMethod);
-			il.Emit(OpCodes.Throw);									// stack => DataException
-			il.EndExceptionBlock();
 
 			/////////////////////////////////////////////////////////////////////
 			// load the return value from the local variable
@@ -283,6 +309,30 @@ namespace Insight.Database.CodeGenerator
 			// create the function
 			return dm;
 		}
+
+        /// <summary>
+        /// Selects the constructor to use for a given type.
+        /// </summary>
+        /// <param name="type">The type to analyze.</param>
+        /// <returns>The constructor to use when creating instances of the object.</returns>
+        private static ConstructorInfo SelectConstructor(Type type)
+        {
+            var allConstructors = type.GetConstructors();
+
+            // allow the developer to specify a constructor to use when loading records from the database
+            // or use a single constructor if there is only one
+            // or use the default constructor
+            var constructor = allConstructors.SingleOrDefault(c => c.GetCustomAttribute(typeof(SqlConstructorAttribute)) != null);
+            if (constructor == null && allConstructors.Length == 1)
+                constructor = allConstructors[0];
+            if (constructor == null)
+                constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+
+            if (constructor == null && !type.IsValueType)
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}, and there was more than one constructor, but no DbConstructorAttribute was specified.", type.FullName));
+
+            return constructor;
+        }
 
 		/// <summary>
 		/// Maps the columns.

@@ -54,158 +54,144 @@ namespace Insight.Database.CodeGenerator
 		/// </remarks>
 		public static void EmitConvertAndSetValue(ILGenerator il, Type sourceType, FieldMapping mapping)
 		{
-			var member = mapping.Member;
-
-			// targetType - the target type we need to convert to
-			// underlyingTargetType - if the target type is nullable, we need to look at the underlying target type
-			// rawTargetType - if the underlying target type is enum, we need to look at the underlying target type for that
-			// sourceType - this is the type of the data in the data set
-			Type targetType = member.MemberType;
-			Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-
-			// some labels that we need
-			var finishLabel = il.DefineLabel();
-			Label isDbNullLabel = il.DefineLabel();
-
-			// if the value is DbNull, then we continue to the next item
-			il.Emit(OpCodes.Dup);								// dup value, stack => [target][value][value]
-			il.Emit(OpCodes.Isinst, typeof(DBNull));			// isinst DBNull:value, stack => [target][value-as-object][DBNull or null]
-			il.Emit(OpCodes.Brtrue_S, isDbNullLabel);			// br.true isDBNull, stack => [target][value-as-object]
-
-			// handle the special target types first
-			if (targetType == typeof(char))
-			{
-				// char
-				il.EmitCall(OpCodes.Call, _readChar, null);
-			}
-			else if (targetType == typeof(char?))
-			{
-				// char?
-				il.EmitCall(OpCodes.Call, _readNullableChar, null);
-			}
-			else if (targetType == TypeHelper.LinqBinaryType)
-			{
-				// unbox sql byte arrays to Linq.Binary
-
-				// before: stack => [target][object-value]
-				// after: stack => [target][byte-array-value]
-				il.Emit(OpCodes.Unbox_Any, typeof(byte[])); // stack is now [target][byte-array]
-				// before: stack => [target][byte-array-value]
-				// after: stack => [target][Linq.Binary-value]
-				il.Emit(OpCodes.Newobj, TypeHelper.LinqBinaryCtor);
-			}
-			else if (targetType == typeof(XmlDocument))
-			{
-				// special handler for XmlDocuments
-
-				// before: stack => [target][object-value]
-				il.Emit(OpCodes.Call, _readXmlDocument);
-
-				// after: stack => [target][xmlDocument]
-			}
-			else if (targetType == typeof(XDocument))
-			{
-				// special handler for XDocuments
-
-				// before: stack => [target][object-value]
-				il.Emit(OpCodes.Call, _readXDocument);
-
-				// after: stack => [target][xDocument]
-			}
-			else if (sourceType == typeof(string) && mapping.Serializer.CanDeserialize(targetType))
-			{
-				// we are getting a string from the database, but the target is not a string, and it's a reference type
-				// assume the column is a serialized data type and that we want to deserialize it
-				il.EmitLoadType(targetType);
-				StaticFieldStorage.EmitLoad(il, mapping.Serializer);
-				il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("DeserializeObject", BindingFlags.NonPublic | BindingFlags.Static));
-				il.Emit(OpCodes.Unbox_Any, targetType);
-			}
-			else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
-			{
-				var localString = il.DeclareLocal(typeof(string));
-
-				// if we are converting a string to an enum, then parse it.
-				// see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
-				il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][string]
-				il.Emit(OpCodes.Stloc, localString);				// pop loc.2 (enum), stack => [target]
-
-				// call enum.parse (type, value, true)
-				il.EmitLoadType(underlyingTargetType);
-				il.Emit(OpCodes.Ldloc, localString);				// push enum, stack => [target][enum-type][string]
-				il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
-				il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
-
-				// Enum.Parse returns an object, which we need to unbox to the enum value
-				il.Emit(OpCodes.Unbox_Any, underlyingTargetType);
-			}
-			else if (EmitConstructorConversion(il, sourceType, targetType))
-			{
-				// target type can be constructed from source type
-			}
-			else
-			{
-				// this isn't a system value type, so unbox to the type the reader is giving us (this is a system type, hopefully)
-				// now we have an unboxed sourceType
-				il.Emit(OpCodes.Unbox_Any, sourceType);
-
-				if (sourceType != targetType)
-				{
-					// attempt to convert the value to the target type
-					if (!EmitConversionOrCoersion(il, sourceType, targetType))
-					{
-						if (sourceType != targetType)
-						{
-							throw new InvalidOperationException(String.Format(
-								CultureInfo.InvariantCulture,
-								"Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
-								member.Name,
-								sourceType.AssemblyQualifiedName,
-								targetType.AssemblyQualifiedName));
-						}
-					}
-
-					// if the target is nullable, then construct the nullable from the data
-					if (Nullable.GetUnderlyingType(targetType) != null)
-						il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
-				}
-			}
-
-			/////////////////////////////////////////////////////////////////////
-			// now the stack has [target][value-unboxed]. we can set the value now
-			member.EmitSetValue(il);
-
-			// stack is now EMPTY
-			/////////////////////////////////////////////////////////////////////
-
-			/////////////////////////////////////////////////////////////////////
-			// jump over our DBNull handler
-			il.Emit(OpCodes.Br_S, finishLabel);
-			/////////////////////////////////////////////////////////////////////
-
-			/////////////////////////////////////////////////////////////////////
-			// cleanup after IsDBNull.
-			/////////////////////////////////////////////////////////////////////
-			il.MarkLabel(isDbNullLabel);							// stack => [target][value]
-			il.Emit(OpCodes.Pop);									// pop value, stack => [target]
-
-			// if the type is an object, set the value to null
-			// this is necessary for overwriting output parameters,
-			// as well as overwriting any properties that may be set in the constructor of the object
-			if (!member.MemberType.IsValueType)
-			{
-				il.Emit(OpCodes.Ldnull);							// push null
-				member.EmitSetValue(il);
-			}
-			else
-			{
-				// we didn't call setvalue, so pop the target object off the stack
-				il.Emit(OpCodes.Pop);								// pop target, stack => [empty]
-			}
-
-			il.MarkLabel(finishLabel);
+            EmitConvertValue(il, mapping.Member.Name, sourceType, mapping.Member.MemberType, mapping.Serializer);
+			mapping.Member.EmitSetValue(il);
 		}
-		#endregion
+
+        /// <summary>
+        /// Emits the IL to convert a value to a target type.
+        /// </summary>
+        /// <param name="il">The IL generator to output to.</param>
+        /// <param name="memberName">The name of the member being converted.</param>
+        /// <param name="sourceType">The source type.</param>
+        /// <param name="targetType">The target type.</param>
+        /// <param name="serializer">The serializer to use to deserialize the value.</param>
+        public static void EmitConvertValue(ILGenerator il, string memberName, Type sourceType, Type targetType, IDbObjectSerializer serializer)
+        {
+            // targetType - the target type we need to convert to
+            // underlyingTargetType - if the target type is nullable, we need to look at the underlying target type
+            // rawTargetType - if the underlying target type is enum, we need to look at the underlying target type for that
+            // sourceType - this is the type of the data in the data set
+            Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
+
+            // some labels that we need
+            var finishLabel = il.DefineLabel();
+            Label isDbNullLabel = il.DefineLabel();
+
+            // if the value is DbNull, then we continue to the next item
+            il.Emit(OpCodes.Dup);								// dup value, stack => [target][value][value]
+            il.Emit(OpCodes.Isinst, typeof(DBNull));			// isinst DBNull:value, stack => [target][value-as-object][DBNull or null]
+            il.Emit(OpCodes.Brtrue_S, isDbNullLabel);			// br.true isDBNull, stack => [target][value-as-object]
+
+            // handle the special target types first
+            if (targetType == typeof(char))
+            {
+                // char
+                il.EmitCall(OpCodes.Call, _readChar, null);
+            }
+            else if (targetType == typeof(char?))
+            {
+                // char?
+                il.EmitCall(OpCodes.Call, _readNullableChar, null);
+            }
+            else if (targetType == TypeHelper.LinqBinaryType)
+            {
+                // unbox sql byte arrays to Linq.Binary
+
+                // before: stack => [target][object-value]
+                // after: stack => [target][byte-array-value]
+                il.Emit(OpCodes.Unbox_Any, typeof(byte[])); // stack is now [target][byte-array]
+                // before: stack => [target][byte-array-value]
+                // after: stack => [target][Linq.Binary-value]
+                il.Emit(OpCodes.Newobj, TypeHelper.LinqBinaryCtor);
+            }
+            else if (targetType == typeof(XmlDocument))
+            {
+                // special handler for XmlDocuments
+
+                // before: stack => [target][object-value]
+                il.Emit(OpCodes.Call, _readXmlDocument);
+
+                // after: stack => [target][xmlDocument]
+            }
+            else if (targetType == typeof(XDocument))
+            {
+                // special handler for XDocuments
+
+                // before: stack => [target][object-value]
+                il.Emit(OpCodes.Call, _readXDocument);
+
+                // after: stack => [target][xDocument]
+            }
+            else if (sourceType == typeof(string) && serializer != null && serializer.CanDeserialize(targetType))
+            {
+                // we are getting a string from the database, but the target is not a string, and it's a reference type
+                // assume the column is a serialized data type and that we want to deserialize it
+                il.EmitLoadType(targetType);
+                StaticFieldStorage.EmitLoad(il, serializer);
+                il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("DeserializeObject", BindingFlags.NonPublic | BindingFlags.Static));
+                il.Emit(OpCodes.Unbox_Any, targetType);
+            }
+            else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
+            {
+                var localString = il.DeclareLocal(typeof(string));
+
+                // if we are converting a string to an enum, then parse it.
+                // see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
+                il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][string]
+                il.Emit(OpCodes.Stloc, localString);				// pop loc.2 (enum), stack => [target]
+
+                // call enum.parse (type, value, true)
+                il.EmitLoadType(underlyingTargetType);
+                il.Emit(OpCodes.Ldloc, localString);				// push enum, stack => [target][enum-type][string]
+                il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
+                il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
+
+                // Enum.Parse returns an object, which we need to unbox to the enum value
+                il.Emit(OpCodes.Unbox_Any, underlyingTargetType);
+            }
+            else if (EmitConstructorConversion(il, sourceType, targetType))
+            {
+                // target type can be constructed from source type
+            }
+            else
+            {
+                // this isn't a system value type, so unbox to the type the reader is giving us (this is a system type, hopefully)
+                // now we have an unboxed sourceType
+                il.Emit(OpCodes.Unbox_Any, sourceType);
+
+                if (sourceType != targetType)
+                {
+                    // attempt to convert the value to the target type
+                    if (!EmitConversionOrCoersion(il, sourceType, targetType))
+                    {
+                        if (sourceType != targetType)
+                        {
+                            throw new InvalidOperationException(String.Format(
+                                CultureInfo.InvariantCulture,
+                                "Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
+                                memberName,
+                                sourceType.AssemblyQualifiedName,
+                                targetType.AssemblyQualifiedName));
+                        }
+                    }
+
+                    // if the target is nullable, then construct the nullable from the data
+                    if (Nullable.GetUnderlyingType(targetType) != null)
+                        il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
+                }
+            }
+
+            /////////////////////////////////////////////////////////////////////
+            // convert DBNull to default of the given type
+            il.Emit(OpCodes.Br_S, finishLabel);
+            il.MarkLabel(isDbNullLabel);
+            il.Emit(OpCodes.Pop);
+            TypeHelper.EmitDefaultValue(il, targetType);
+
+            il.MarkLabel(finishLabel);
+        }
+        #endregion
 
 		#region Helper Methods
 		/// <summary>

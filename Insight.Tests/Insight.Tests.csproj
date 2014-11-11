@@ -81,6 +81,7 @@
     </Compile>
     <Compile Include="BulkCopyTests.cs" />
     <Compile Include="ColumnAttributeTests.cs" />
+    <Compile Include="ConstructorTests.cs" />
     <Compile Include="GroupByTests.cs" />
     <Compile Include="SerializationTests.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />

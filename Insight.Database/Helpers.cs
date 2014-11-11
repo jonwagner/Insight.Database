@@ -53,5 +53,16 @@ namespace Insight.Database
 			return ((Convert.ToUInt64(e) & f) == f);
 		}
 #endif
+
+        /// <summary>
+        /// Determines whether two strings are case-insensitive equal.
+        /// </summary>
+        /// <param name="s1">The first string.</param>
+        /// <param name="s2">The second string.</param>
+        /// <returns>True if they are equal.</returns>
+        internal static bool IsIEqualTo(this string s1, string s2)
+        {
+            return String.Compare(s1, s2, StringComparison.OrdinalIgnoreCase) == 0;
+        }
 	}
 }

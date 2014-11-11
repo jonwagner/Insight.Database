@@ -82,6 +82,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Compatibility.tt</DependentUpon>
     </Compile>
+    <Compile Include="SqlConstructorAttribute.cs" />
     <Compile Include="DbDataReaderWrapper.cs" />
     <Compile Include="Extensions\AsyncExtensions.cs" />
     <Compile Include="Extensions\AsyncExtensions.generated.cs">
