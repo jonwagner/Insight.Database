@@ -34,6 +34,30 @@ namespace Insight.Tests
         }
         #endregion
 
+        #region Secondary Properties
+        public class ClassWithSecondaryProperties
+        {
+            // note that this has a readonly field
+            public readonly int A;
+
+            // this is set after construction
+            public int B;
+
+            public ClassWithSecondaryProperties(int a)
+            {
+                A = a;
+            }
+        }
+
+        [Test]
+        public void TestClassWithSecondaryProperties()
+        {
+            var a = Connection().QuerySql<ClassWithSecondaryProperties>("SELECT A=3, B=4").First();
+            Assert.AreEqual(3, a.A);
+            Assert.AreEqual(3, a.B);
+        }
+        #endregion
+
         #region Use Constructor Attribute
         public class ConstructorWithAttribute
         {
