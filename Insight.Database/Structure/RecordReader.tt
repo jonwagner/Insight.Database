@@ -18,7 +18,6 @@ namespace Insight.Database.Structure
 	/// <summary>
 	/// A base implementation of IRecordReader.
 	/// </summary>
-	/// <typeparam name="T">The type of object that can be read.</typeparam>
 	public abstract partial class RecordReader<T> : IRecordReader<T>
 	{
 <#

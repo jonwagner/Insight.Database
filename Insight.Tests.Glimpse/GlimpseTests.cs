@@ -77,5 +77,6 @@ namespace Insight.Tests
                 i.BulkCopy("BulkCopyData", array);
             }
         }
-	}
+        #endregion
+    }
 }
