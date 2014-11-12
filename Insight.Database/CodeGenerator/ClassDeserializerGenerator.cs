@@ -223,7 +223,7 @@ namespace Insight.Database.CodeGenerator
                 {
                     foreach (var p in constructor.GetParameters())
                     {
-                        var mapping = mappings.SingleOrDefault(m => m.Member.Name.IsIEqualTo(p.Name));
+                        var mapping = mappings.Where(m => m != null).SingleOrDefault(m => m.Member.Name.IsIEqualTo(p.Name));
                         if (mapping != null)
                             il.Emit(OpCodes.Ldloc, localValues[mappings.IndexOf(mapping)]);
                         else
@@ -317,7 +317,7 @@ namespace Insight.Database.CodeGenerator
         /// <returns>The constructor to use when creating instances of the object.</returns>
         private static ConstructorInfo SelectConstructor(Type type)
         {
-            var allConstructors = type.GetConstructors();
+            var allConstructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             // allow the developer to specify a constructor to use when loading records from the database
             // or use a single constructor if there is only one

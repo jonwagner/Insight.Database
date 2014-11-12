@@ -34,6 +34,26 @@ namespace Insight.Tests
         }
         #endregion
 
+        #region Private Constructor
+        public class ClassWithPrivateConstructor
+        {
+            // note that this has a readonly field
+            public readonly int A;
+
+            private ClassWithPrivateConstructor(int a)
+            {
+                A = a;
+            }
+        }
+
+        [Test]
+        public void TestClassWithPrivateConstructor()
+        {
+            var a = Connection().QuerySql<ClassWithPrivateConstructor>("SELECT A=3").First();
+            Assert.AreEqual(3, a.A);
+        }
+        #endregion
+
         #region Secondary Properties
         public class ClassWithSecondaryProperties
         {
@@ -54,7 +74,7 @@ namespace Insight.Tests
         {
             var a = Connection().QuerySql<ClassWithSecondaryProperties>("SELECT A=3, B=4").First();
             Assert.AreEqual(3, a.A);
-            Assert.AreEqual(3, a.B);
+            Assert.AreEqual(4, a.B);
         }
         #endregion
 
@@ -154,5 +174,27 @@ namespace Insight.Tests
             Assert.AreEqual("Trim", result.Trimmed);
         }
         #endregion
+
+        #region Constructor with Mismatched Parameters
+        public class ClassWithMismatchedParameters
+        {
+            // note that this has a readonly field
+            public readonly int A;
+            
+            // b is not a field, so it won't be matched, even if it's in the query
+            public ClassWithMismatchedParameters(int b)
+            {
+                A = b;
+            }
+        }
+
+        [Test]
+        public void TestClassWithMismatchedParameters()
+        {
+            var a = Connection().QuerySql<ClassWithMismatchedParameters>("SELECT A=3, B=7").First();
+            Assert.AreEqual(0, a.A);
+        }
+        #endregion
+
     }
 }
