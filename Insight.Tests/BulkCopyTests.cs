@@ -256,5 +256,38 @@ namespace Insight.Tests
                 i.BulkCopy("BulkCopyData", array);
             }
         }
-	}
+
+        #region Tests for Issue 162
+        public class BulkCopyDataWithComputedColumn
+        {
+            public int Int1;
+            public int Computed;
+            public int Int2;
+        }
+
+        [Test]
+        public void TestBulkCopyWithComputedColumn()
+        {
+            var array = new BulkCopyDataWithComputedColumn[1]
+            {
+                new BulkCopyDataWithComputedColumn()
+                {
+                    Int1 = 1,
+                    Computed = 0,
+                    Int2 = 3
+                }
+            };
+
+            using (var i = Connection().OpenWithTransaction())
+            {
+                i.BulkCopy("BulkCopyWithComputedData", array);
+
+                var inserted = i.QuerySql<BulkCopyDataWithComputedColumn>("SELECT * FROM BulkCopyWithComputedData").First();
+                Assert.AreEqual(array[0].Int1, inserted.Int1);
+                Assert.AreEqual(array[0].Int2, inserted.Int2);
+                Assert.AreEqual(array[0].Int1 + 1, inserted.Computed);
+            }
+        }
+        #endregion
+    }
 }

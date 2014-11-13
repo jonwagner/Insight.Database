@@ -70,7 +70,7 @@ namespace Insight.Database.CodeGenerator
 				{
 					var columnName = SchemaTable.Rows[i]["ColumnName"].ToString();
 
-					var mapping = mappings[i];
+                    var mapping = mappings.Where(m => m != null).SingleOrDefault(m => m.Member.ColumnName.IsIEqualTo(columnName));
 					if (mapping == null)
 						continue;
 

@@ -70,6 +70,13 @@ CREATE TABLE BulkCopyData (
 )
 GO
 
+CREATE TABLE BulkCopyWithComputedData (
+	[Int1] [int],
+	[Computed] AS [Int1] + 1,
+	[Int2] [int]
+)
+GO
+
 CREATE TABLE [MerchNameTermsTransactions] (
     [Id]     INT IDENTITY (1, 1) NOT NULL,
     [TermId] INT NOT NULL,
