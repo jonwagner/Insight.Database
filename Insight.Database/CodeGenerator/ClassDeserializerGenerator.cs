@@ -322,7 +322,7 @@ namespace Insight.Database.CodeGenerator
             // allow the developer to specify a constructor to use when loading records from the database
             // or use a single constructor if there is only one
             // or use the default constructor
-            var constructor = allConstructors.SingleOrDefault(c => c.GetCustomAttribute(typeof(SqlConstructorAttribute)) != null);
+            var constructor = allConstructors.SingleOrDefault(c => c.GetCustomAttributes(true).OfType<SqlConstructorAttribute>().Any());
             if (constructor == null && allConstructors.Length == 1)
                 constructor = allConstructors[0];
             if (constructor == null)
