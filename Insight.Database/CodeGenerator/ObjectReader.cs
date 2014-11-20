@@ -51,26 +51,24 @@ namespace Insight.Database.CodeGenerator
 		{
 			var provider = InsightDbProvider.For(command);
 
-			// copy the schema and fix it
-			SchemaTable = reader.GetSchemaTable().Copy();
+            // create a mapping, and only keep mappings that match our modified schema
+            var mappings = ColumnMapping.MapColumns(type, reader).ToList();
+
+            // copy the schema and fix it
+            SchemaTable = reader.GetSchemaTable().Copy();
 			FixupSchemaNumericScale();
-			FixupSchemaRemoveReadOnlyColumns();
+			FixupSchemaRemoveReadOnlyColumns(mappings);
 
 		    IsAtomicType = TypeHelper.IsAtomicType(type);
 			if (!IsAtomicType)
 			{
-				// create a mapping, and only keep mappings that match our modified schema
-				var mappings = ColumnMapping.MapColumns(type, reader);
-
 				int columnCount = SchemaTable.Rows.Count;
 				_accessors = new Func<object, object>[columnCount];
 				_memberTypes = new Type[columnCount];
 
 				for (int i = 0; i < columnCount; i++)
 				{
-					var columnName = SchemaTable.Rows[i]["ColumnName"].ToString();
-
-                    var mapping = mappings.Where(m => m != null).SingleOrDefault(m => m.Member.ColumnName.IsIEqualTo(columnName));
+                    var mapping = mappings[i];
 					if (mapping == null)
 						continue;
 
@@ -272,9 +270,10 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		/// <summary>
-		/// Fix the schema by removing any readonly columns and adjusting the column ordinal
+		/// Fix the schema by removing any readonly columns and adjusting the column ordinal.
 		/// </summary>
-		private void FixupSchemaRemoveReadOnlyColumns()
+        /// <param name="mappings">A list of field mappings to adjust with the schema.</param>
+		private void FixupSchemaRemoveReadOnlyColumns(List<FieldMapping> mappings)
 		{
 			const string ColumnOrdinal = "ColumnOrdinal";
 
@@ -297,6 +296,7 @@ namespace Insight.Database.CodeGenerator
 					if (isReadOnly && !isIdentity)
 					{
 						SchemaTable.Rows.Remove(row);
+                        mappings.RemoveAt(i);
 						i--;
 					}
 				}
