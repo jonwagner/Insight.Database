@@ -153,5 +153,21 @@ namespace Insight.Tests
 			dynamic result = list[0];
 			Assert.AreEqual(pd["g"], result["g"]);
 		}
-	}
+    }
+
+    #region Tests for Issue #167
+    [TestFixture]
+    public class Issue167 : BaseTest
+    {
+        [Test]
+        public void DynamicsCanContainEnumerables()
+        {
+            // put a list into a dynamic
+            var list = new List<string> { "one", "two", "three" };
+            var dyn = new { ID = 1 }.Expand(new { p = list });
+
+            Connection().Execute("VarCharProc", dyn);
+        }
+    }
+    #endregion 
 }

@@ -13,6 +13,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
+using System.Collections;
 
 namespace Insight.Database
 {
@@ -114,7 +115,7 @@ namespace Insight.Database
 			return p;
 		}
 
-		/// <inheritdoc/>
+        /// <inheritdoc/>
 		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type)
 		{
 			if (command == null) throw new ArgumentNullException("command");

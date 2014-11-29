@@ -418,8 +418,23 @@ namespace Insight.Database.CodeGenerator
 					// get the value from the object, converting null to db null
 					// note that if the dictionary does not have the value, we leave the value null and then the parameter gets defaulted
 					object value = null;
-					if (dyn.TryGetValue(p.ParameterName, out value) && value == null)
-						value = DBNull.Value;
+                    if (dyn.TryGetValue(p.ParameterName, out value))
+                    {
+                        if (value == null)
+                        {
+                            value = DBNull.Value;
+                        }
+                        else
+                        {
+                            DbType sqlType = LookupDbType(value.GetType(), null, p.DbType);
+                            if (sqlType == DbTypeEnumerable)
+                            {
+                                ListParameterHelper.AddListParameter(p, value, command);
+                                continue;
+                            }
+                        }
+                    }
+
 					p.Value = value;
 
 					// if it's a string, fill in the length
