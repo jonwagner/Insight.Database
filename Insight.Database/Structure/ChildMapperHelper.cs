@@ -140,6 +140,7 @@ namespace Insight.Database.Structure
 
 			// look for anything that looks like an ID
 			member = members.FirstOrDefault(m => String.Compare(m.Name, defaultFieldName, StringComparison.OrdinalIgnoreCase) == 0) ??
+				members.SingleOrDefault(m => m.Name.EndsWith("_" + defaultFieldName, StringComparison.OrdinalIgnoreCase)) ??
 				members.SingleOrDefault(m => m.Name.EndsWith(defaultFieldName, StringComparison.OrdinalIgnoreCase));
 
 			if (member != null)
