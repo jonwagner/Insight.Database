@@ -210,10 +210,62 @@ namespace Insight.Tests
 			Assert.AreEqual(3, results.Children[0].Foo);
 		}
 		#endregion
-	}
+    }
 
-	#region Issue 130 Tests
-	[TestFixture]
+    #region Single Child Tests
+    [TestFixture]
+    public class SingleChildTest : BaseTest
+    {
+        public class Parent
+        {
+            public int ID;
+            public Child Child;
+        }
+
+        public class Child
+        {
+            public int ID;
+            public string Name;
+        }
+
+        public interface IHaveSingleChild
+        {
+            [Sql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'")]
+            [Recordset(1, typeof(Child), Into="Child", IsChild = true)]
+            Parent GetParent();
+        }
+
+        [Test]
+        public void CanHaveSingleChild()
+        {
+            var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
+                Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records, into: (p, l) => p.Child = l.First())).First();
+
+            Assert.AreEqual("Alice", result.Child.Name);
+        }
+
+        [Test]
+        public void CanHaveSingleChildAutoDetect()
+        {
+            var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
+                Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records)).First();
+
+            Assert.AreEqual("Alice", result.Child.Name);
+        }
+
+        [Test]
+        public void InterfaceCanHaveSingleChild()
+        {
+            var result = Connection().As<IHaveSingleChild>().GetParent();
+
+            Assert.AreEqual("Alice", result.Child.Name);
+        }
+    }
+    #endregion
+
+
+    #region Issue 130 Tests
+    [TestFixture]
 	public class Issue130 : BaseTest
 	{
 		public class Test

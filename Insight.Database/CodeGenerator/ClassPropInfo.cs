@@ -313,6 +313,19 @@ namespace Insight.Database.CodeGenerator
 
 			il.Emit(OpCodes.Ldarg_0);
 			il.Emit(OpCodes.Ldarg_1);
+
+            // if the types don't match, see if we're trying to put a list of things into a thing
+            // in that case, we want a FirstOrDefault
+            if (typeof(TValue) != MemberType)
+            {
+                var enumType = typeof(IEnumerable<>).MakeGenericType(MemberType);
+                if (typeof(TValue).GetInterfaces().Contains(enumType))
+                {
+                    var firstOrDefault = typeof(System.Linq.Enumerable).GetMethods().Single(m => m.Name == "FirstOrDefault" && m.GetParameters().Length == 1).MakeGenericMethod(MemberType);
+                    il.Emit(OpCodes.Call, firstOrDefault);
+                }
+            }
+
 			if (FieldInfo != null)
 				il.Emit(OpCodes.Stfld, FieldInfo);
 			else

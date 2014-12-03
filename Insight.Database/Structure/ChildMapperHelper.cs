@@ -70,7 +70,14 @@ namespace Insight.Database.Structure
 			// look for anything that looks like the right list
 			member = members.SingleOrDefault(m => m.SetMethodInfo != null && IsGenericListType(m.MemberType, childType)) ??
 				members.SingleOrDefault(m => m.FieldInfo != null && IsGenericListType(m.MemberType, childType));
-			if (member == null)
+            if (member != null)
+                return member;
+
+            // look for a single record of the given type
+            member = members.SingleOrDefault(m => m.SetMethodInfo != null && m.MemberType == childType) ??
+                members.SingleOrDefault(m => m.FieldInfo != null && m.MemberType == childType);
+
+            if (member == null)
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a way to set a list of {0} into {1}. Please add a hint.", childType, parentType));
 
 			return member;
