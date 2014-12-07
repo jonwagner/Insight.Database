@@ -13,7 +13,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
-using System.Collections;
 
 namespace Insight.Database
 {

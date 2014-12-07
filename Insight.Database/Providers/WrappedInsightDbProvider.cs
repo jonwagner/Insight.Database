@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Insight.Database.Providers
@@ -159,5 +160,12 @@ namespace Insight.Database.Providers
 			connection = GetInnerConnection(connection);
 			InsightDbProvider.For(connection).BulkCopy(connection, tableName, reader, configure, options, transaction);
 		}
+
+        /// <inheritdoc/>
+        public override Task BulkCopyAsync(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction, CancellationToken cancellationToken)
+        {
+            connection = GetInnerConnection(connection);
+            return InsightDbProvider.For(connection).BulkCopyAsync(connection, tableName, reader, configure, options, transaction, cancellationToken);
+        }
 	}
 }
