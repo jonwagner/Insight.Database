@@ -827,7 +827,7 @@ namespace Insight.Tests
 			Assert.AreEqual(i1.GetType().Assembly, i2.GetType().Assembly);
         }
 		#endregion
-	}
+    }
 
 	#region Interface Update Tests
 	[TestFixture]
@@ -1042,4 +1042,33 @@ namespace Insight.Tests
 			Assert.AreEqual(true, b);
 		}
 	}
+
+    #region Interface Transaction Tests
+    [TestFixture]
+    public class InterfaceTransactionsTest : BaseTest
+    {
+        public interface I1
+        {
+            [Sql("CREATE TABLE #tmpFoo(id int); INSERT INTO #tmpFoo VALUES(1)")]
+            void Do();
+        }
+
+        public interface I2
+        {
+            [Sql("SELECT TOP 1 * FROM #tmpFoo")]
+            int Do();
+        }
+
+        [Test]
+        public void InterfacesCanShareTransactions()
+        {
+            using (var c = Connection().OpenWithTransaction())
+            {
+                c.As<I1>().Do();
+                int i = c.As<I2>().Do();
+                Assert.AreEqual(1, i);
+            }
+        }
+    }
+    #endregion  
 }
