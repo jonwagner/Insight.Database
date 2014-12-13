@@ -66,6 +66,14 @@ namespace Insight.Database.Providers.PostgreSQL
 			}
 		}
 
+		/// <summary>
+		/// Registers this provider. This is generally not needed, unless you want to force an assembly reference to this provider.
+		/// </summary>
+		public static void RegisterProvider()
+		{
+			InsightDbProvider.RegisterProvider(new PostgreSQLInsightDbProvider());
+		}
+
 		/// <inheritdoc/>
 		public override InsightBulkCopyOptions GetSupportedBulkCopyOptions(IDbConnection connection)
 		{
