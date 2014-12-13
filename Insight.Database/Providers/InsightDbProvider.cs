@@ -166,7 +166,7 @@ namespace Insight.Database.Providers
 			foreach (var p in _parameterRegex.Matches(command.CommandText)
 				.Cast<Match>()
 				.Select(m => m.Groups[1].Value)
-				.Distinct()
+				.Distinct(StringComparer.OrdinalIgnoreCase)
 				.Select(p =>
 				{
 					var dbParameter = (IDataParameter)command.CreateParameter();

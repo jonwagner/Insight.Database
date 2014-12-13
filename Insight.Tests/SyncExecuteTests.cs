@@ -61,5 +61,12 @@ namespace Insight.Tests
 		{
 			Connection().ForEach<FastExpando>("sp_who", Parameters.Empty, Console.WriteLine);
 		}
+
+        [Test]
+        public void TestIssue174()
+        {
+            // parameter names should be case insensitive
+            Connection().ExecuteSql("SELECT 1 where @start = @Start", new { Start = 1 });
+        }
 	}
 }
