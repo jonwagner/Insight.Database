@@ -63,6 +63,7 @@
     <Compile Include="OleDbInsightDbProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReliableConnectionExtensions.cs" />
+    <Compile Include="SqlExtensions.cs" />
     <Compile Include="SqlInsightDbProvider.cs" />
   </ItemGroup>
   <ItemGroup>

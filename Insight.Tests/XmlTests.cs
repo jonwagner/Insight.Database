@@ -36,6 +36,20 @@ namespace Insight.Tests
 
 		#region SingleColumn Deserialization Tests
 		[Test]
+		public void BigXmlIsDeserializedProperly()
+        {
+            using (var c = Connection().OpenWithTransaction())
+            {
+                c.ExecuteSql("CREATE TABLE BigXml(stuff varchar(MAX))");
+                c.ExecuteSql("INSERT INTO BigXml VALUES(@s)", new { s = new String('x', 10000) });
+
+                var inner = (SqlConnection)c.InnerConnection;
+
+                var result = inner.QueryXml("SELECT * FROM BigXml FOR XML AUTO", commandType: CommandType.Text, transaction: c);
+            }
+        }
+
+		[Test]
 		public void XmlSingleColumnCanDeserializeToXmlDocument()
 		{
 			var list = Connection().QuerySql<XmlDocument>("SELECT CONVERT(xml, '<data/>')", new { });
