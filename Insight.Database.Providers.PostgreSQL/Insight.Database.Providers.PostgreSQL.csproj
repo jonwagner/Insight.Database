@@ -57,12 +57,12 @@
   <PropertyGroup>
     <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
-	<PropertyGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
-		<FrameworkFolder>net40</FrameworkFolder>
-	</PropertyGroup>
-	<PropertyGroup Condition="'$(FrameworkFolder)' == ''">
-		<FrameworkFolder>net45</FrameworkFolder>
-	</PropertyGroup>	
+  <PropertyGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
+    <FrameworkFolder>net40</FrameworkFolder>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(FrameworkFolder)' == ''">
+    <FrameworkFolder>net45</FrameworkFolder>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Security, Version=4.0.0.0, Culture=neutral, PublicKeyToken=0738eb9f132ed756, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -79,6 +79,10 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="NpgsqlConnectionWithSchema.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="NpgsqlExtensions.cs" />
     <Compile Include="PostgreSQLInsightDbProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

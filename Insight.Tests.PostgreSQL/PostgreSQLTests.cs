@@ -334,5 +334,44 @@ namespace Insight.Tests.PostgreSQL
 				catch { }
 			}
 		}
+
+        [Test]
+        public void TestSchemaSwitching()
+        {
+            try
+            {
+                _connection.ExecuteSql("CREATE SCHEMA test1");
+                _connection.ExecuteSql("CREATE TABLE test1.InsightTestData (ID int)");
+                _connection.ExecuteSql("CREATE SCHEMA test2");
+                _connection.ExecuteSql("CREATE TABLE test2.InsightTestData (ID int)");
+
+                _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteSql("INSERT INTO InsightTestData VALUES (1)");
+                _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteSql("INSERT INTO InsightTestData VALUES (2)");
+                Assert.AreEqual(1, _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
+                Assert.AreEqual(2, _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
+            }
+            finally
+            {
+                Cleanup("DROP TABLE test2.InsightTestData");
+                Cleanup("DROP TABLE test1.InsightTestData");
+                Cleanup("DROP SCHEMA test2");
+                Cleanup("DROP SCHEMA test1");
+            }
+        }
+        
+        [Test, ExpectedException(typeof(ArgumentException))]
+        public void InvalidSchemaShouldThrow()
+        {
+            _connectionStringBuilder.ConnectionWithSchema("; DROP TABLE InsightTestData");
+        }
+
+        private void Cleanup(string sql)
+        {
+            try
+            {
+                _connection.ExecuteSql(sql);
+            }
+            catch { }
+        }
 	}
 }
