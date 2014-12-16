@@ -127,7 +127,11 @@ Insight.Database is available under any of the following licenses:
 
 ## Support Insight.Database ##
 
-Send no money. But perhaps shop through my Amazon Affiliate Link: [Amazon - Shop. Connect. Enjoy. All from Earth's Biggest Selection.](http://www.amazon.com/ref=assoc_tag_ph_1390604847723?_encoding=UTF8&camp=1789&creative=9325&linkCode=pf4&tag=jmileswagner-20)
+The best way is to buy my novel, and then leave a good review.
+
+[UNDO! The True Legend of Eugene the Misconceived](http://www.amazon.com/Undo-True-Legend-Eugene-Misconceived-ebook/dp/B00PQWJWSI)
+
+Or you can shop through my Amazon Affiliate Link: [Amazon - Shop. Connect. Enjoy. All from Earth's Biggest Selection.](http://www.amazon.com/ref=assoc_tag_ph_1390604847723?_encoding=UTF8&camp=1789&creative=9325&linkCode=pf4&tag=jmileswagner-20)
 
 Go ahead. You know you need to buy something anyway...
 
