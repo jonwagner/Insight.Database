@@ -30,7 +30,7 @@ namespace Insight.Database
 		/// <summary>
 		/// Cache for Table-Valued Parameter schemas.
 		/// </summary>
-		private static ConcurrentDictionary<Tuple<string, Type>, object> _tvpReaders = new ConcurrentDictionary<Tuple<string, Type>, object>();
+		private static ConcurrentDictionary<Tuple<string, string, Type>, object> _tvpReaders = new ConcurrentDictionary<Tuple<string, string, Type>, object>();
 
 		/// <summary>
 		/// The list of types supported by this provider.
@@ -180,7 +180,7 @@ namespace Insight.Database
 
 			// see if we already have a reader for the given type and table type name
 			// we can't use the schema cache because we don't have a schema yet
-			var key = Tuple.Create<string, Type>(tableTypeName, listType);
+			var key = Tuple.Create<string, string, Type>(command.Connection.ConnectionString, tableTypeName, listType);
 			ObjectReader objectReader = (ObjectReader)_tvpReaders.GetOrAdd(
 				key,
 				k => command.Connection.ExecuteAndAutoClose(

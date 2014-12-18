@@ -14,6 +14,11 @@ namespace Insight.Database.CodeGenerator
 	class QueryIdentity : IEquatable<QueryIdentity>
 	{
 		#region Private Members
+        /// <summary>
+        /// The connection string defines the database we are connecting to.
+        /// </summary>
+        private string _connectionString;
+
 		/// <summary>
 		/// The type of the command.
 		/// </summary>
@@ -42,6 +47,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="type">The type of the parameters for the command.</param>
 		public QueryIdentity(IDbCommand command, Type type)
 		{
+            _connectionString = command.Connection.ConnectionString;
 			_commandType = command.GetType();
 			_commandText = command.CommandText;
 			_type = type;
@@ -54,7 +60,9 @@ namespace Insight.Database.CodeGenerator
 				_hashCode += _commandText.GetHashCode();
 				_hashCode *= 23;
 				_hashCode += _commandType.GetHashCode();
-			}
+                _hashCode *= 23;
+                _hashCode += _connectionString.GetHashCode();
+            }
 		}
 
 		#region Equality Members
@@ -96,7 +104,10 @@ namespace Insight.Database.CodeGenerator
 			if (_commandText != other._commandText)
 				return false;
 
-			return true;
+            if (_connectionString != other._connectionString)
+                return false;
+
+            return true;
 		}
 		#endregion
 	}

@@ -178,7 +178,8 @@ namespace Insight.Database.CodeGenerator
 		public override bool IsDBNull(int ordinal)
 		{
 			return GetValue(ordinal) == null;
-		}
+		}
+
 		/// <summary>
 		/// Get the next result set.
 		/// </summary>
