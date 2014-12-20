@@ -210,62 +210,261 @@ namespace Insight.Tests
 			Assert.AreEqual(3, results.Children[0].Foo);
 		}
 		#endregion
-    }
+	}
 
-    #region Single Child Tests
-    [TestFixture]
-    public class SingleChildTest : BaseTest
-    {
-        public class Parent
-        {
-            public int ID;
-            public Child Child;
-        }
+	#region Single Child Tests
+	[TestFixture]
+	public class SingleChildTest : BaseTest
+	{
+		public class Parent
+		{
+			public int ID;
+			public Child Child;
+		}
 
-        public class Child
-        {
-            public int ID;
-            public string Name;
-        }
+		public class Child
+		{
+			public int ID;
+			public string Name;
+		}
 
-        public interface IHaveSingleChild
-        {
-            [Sql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'")]
-            [Recordset(1, typeof(Child), Into="Child", IsChild = true)]
-            Parent GetParent();
-        }
+		public interface IHaveSingleChild
+		{
+			[Sql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'")]
+			[Recordset(1, typeof(Child), Into = "Child", IsChild = true)]
+			Parent GetParent();
+		}
 
-        [Test]
-        public void CanHaveSingleChild()
-        {
-            var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
-                Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records, into: (p, l) => p.Child = l.First())).First();
+		[Test]
+		public void CanHaveSingleChild()
+		{
+			var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
+				Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records, into: (p, l) => p.Child = l.First())).First();
 
-            Assert.AreEqual("Alice", result.Child.Name);
-        }
+			Assert.AreEqual("Alice", result.Child.Name);
+		}
 
-        [Test]
-        public void CanHaveSingleChildAutoDetect()
-        {
-            var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
-                Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records)).First();
+		[Test]
+		public void CanHaveSingleChildAutoDetect()
+		{
+			var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
+				Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records)).First();
 
-            Assert.AreEqual("Alice", result.Child.Name);
-        }
+			Assert.AreEqual("Alice", result.Child.Name);
+		}
 
-        [Test]
-        public void InterfaceCanHaveSingleChild()
-        {
-            var result = Connection().As<IHaveSingleChild>().GetParent();
+		[Test]
+		public void InterfaceCanHaveSingleChild()
+		{
+			var result = Connection().As<IHaveSingleChild>().GetParent();
 
-            Assert.AreEqual("Alice", result.Child.Name);
-        }
-    }
-    #endregion
+			Assert.AreEqual("Alice", result.Child.Name);
+		}
+
+	}
+	#endregion
+
+	#region ChildMappingHelper Unit Tests
+
+#if DEBUG
+
+	[TestFixture]
+	public class ChildMappingHelperUnitTests
+	{
+
+		[Test]
+		public void GetIDAccessor_ID()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_InvoiceExample()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.Invoice));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("Invoice_id", result.ElementAt(0));
+		}
+
+		// TODO Failing Test, fix OR submit issue once this is checked in
+		//[Test]
+		//public void GetIDAccessor_InvoiceLineExample()
+		//{
+		//    var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.InvoiceLine));
+
+		//    Assert.AreEqual(1, result.Count());
+		//    Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+		//}
+
+		// TODO Failing Test, fix OR submit issue once this is checked in
+		// throws System.InvalidOperationException 'Sequence contains more than one matching element'
+		// Barfing on this 
+		//      public int Paid;				 
+		//      public int ClassWithSuffixedId;  //should match this first, but single or default is making it barf
+		//[Test]
+		//public void GetIDAccessor_ClassWithSuffixed_Problem()
+		//{
+		//    var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixed));
+
+		//    Assert.AreEqual(1, result.Count());
+		//    Assert.AreEqual("ClassWithSuffixedId", result.ElementAt(0));
+		//}
+
+		[Test]
+		public void GetIDAccessor_ClassWithSuffixed()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixed2));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ClassWithSuffixed2Id", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ClassWithSuffixedUnderscore()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ClassWithSuffixedUnderscore_ID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ByName()
+		{
+			////////////////////test single fields/////////////////////
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID");
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "AnotherID");
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("AnotherID", result.ElementAt(0));
+
+			//////////////////// test multiple fields /////////////////////
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID, AnotherID");
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+			Assert.AreEqual("AnotherID", result.ElementAt(1));
+
+			// take out the spaces
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID,AnotherID");
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+			Assert.AreEqual("AnotherID", result.ElementAt(1));
+
+			// reverse the order
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "AnotherID, ID");
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("AnotherID", result.ElementAt(0));
+			Assert.AreEqual("ID", result.ElementAt(1));
+
+		}
+
+		[Test]
+		public void GetIDAccessor_ByName_BadName()
+		{
+			Assert.Throws<InvalidOperationException>(() => ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123"));
+			Assert.Throws<InvalidOperationException>(() => ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ID, foo123"));
+			Assert.Throws<InvalidOperationException>(() => ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ID, "));
+		}
+
+		[Test]
+		public void FindParentIDAccessor_ChildWithGenericNames()
+		{
+			// This is the base case, a field named ParentID, this about all that will be matched
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildWithGenericNames));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ParentID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void FindParentIDAccessor_ChildWithSillyNames()
+		{
+			// This is the base case, a field named ParentID, this about all that will be matched
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildWithSillyNames));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("My_ParentID", result.ElementAt(0));
+		}
 
 
-    #region Issue 130 Tests
-    [TestFixture]
+		public class TestClasses
+		{
+
+			public class ClassWithPlainID
+			{
+				public int AnotherID;
+				public int ID;   //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				public string Name;
+			}
+
+			public class ClassWithSuffixed
+			{
+				public int ClassWithSuffixedId;  //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				public int Paid;
+				public string Name;
+			}
+
+			public class ClassWithSuffixed2
+			{
+				public int ClassWithSuffixed2Id;  //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				//public int Paid;
+				public string Name;
+			}
+
+			public class ClassWithSuffixedUnderscore
+			{
+				public int AnotherID;
+				public int ClassWithSuffixedUnderscoreID;
+				public int ClassWithSuffixedUnderscore_ID;      //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				public string Name;
+			}
+
+			public class ChildWithGenericNames
+			{
+				public int ID;
+				public int ParentID;
+				public string Name;
+			}
+
+			public class ChildWithSillyNames
+			{
+				public int ID;
+				public int My_ParentID;
+				public string Name;
+			}
+
+			public class Invoice
+			{
+				public int Invoice_id;  //ID
+				public string Name;
+			}
+
+			public class InvoiceLine
+			{
+				public int InvoiceLine_id;  //ID
+				public int Invoice_id;      //ParentId
+				public string Name;
+			}
+		}
+
+	}
+
+#endif
+
+	#endregion
+
+	#region Issue 130 Tests
+	[TestFixture]
 	public class Issue130 : BaseTest
 	{
 		public class Test
@@ -357,7 +556,7 @@ namespace Insight.Tests
 			Assert.AreEqual(1, result.ID);
 			Assert.AreEqual(1, result.Children.Count);
 		}
- 	}
+	}
 	#endregion
 
 	#region Issue 142 Tests
@@ -420,46 +619,46 @@ namespace Insight.Tests
 	}
 	#endregion
 
-    #region Issue 160 Tests
-    [TestFixture]
-    public class Issue160 : BaseTest
-    {
-        public class TestParent
-        {
-            public int ID;
-            public List<TestChild> Children;
-        }
+	#region Issue 160 Tests
+	[TestFixture]
+	public class Issue160 : BaseTest
+	{
+		public class TestParent
+		{
+			public int ID;
+			public List<TestChild> Children;
+		}
 
-        public class TestChild
-        {
-            public int ChildA;
-            public int ChildB;
-            public TestChild() { }
-            public TestChild(int a, int b)
-            {
-                ChildA = a;
-                ChildB = b;
-            }
-        }
+		public class TestChild
+		{
+			public int ChildA;
+			public int ChildB;
+			public TestChild() { }
+			public TestChild(int a, int b)
+			{
+				ChildA = a;
+				ChildB = b;
+			}
+		}
 
-        [Test]
-        public void CustomRecordReaderCanDropNulls()
-        {
-            var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ChildA=2, ChildB=3", null,
-                        Query.Returns(Some<TestParent>.Records)
-                            .ThenChildren(CustomRecordReader<TestChild>.Read(r =>
-                            {
-                                var childValue = (int)r["ChildA"];
-                                if (childValue != 2)
-                                    return new TestChild(childValue, (int)r["ChildB"]);
-                                return null;
-                            }),
-                            into: (p, children) => p.Children = children.Where(c => c != null).ToList()));
+		[Test]
+		public void CustomRecordReaderCanDropNulls()
+		{
+			var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ChildA=2, ChildB=3", null,
+						Query.Returns(Some<TestParent>.Records)
+							.ThenChildren(CustomRecordReader<TestChild>.Read(r =>
+							{
+								var childValue = (int)r["ChildA"];
+								if (childValue != 2)
+									return new TestChild(childValue, (int)r["ChildB"]);
+								return null;
+							}),
+							into: (p, children) => p.Children = children.Where(c => c != null).ToList()));
 
-            var result = results.First();
-            Assert.AreEqual(1, result.ID);
-            Assert.AreEqual(0, result.Children.Count);  // FAIL! I would expect that the child wouldn't be added, but a null is added
-        }
-    }
-    #endregion
+			var result = results.First();
+			Assert.AreEqual(1, result.ID);
+			Assert.AreEqual(0, result.Children.Count);  // FAIL! I would expect that the child wouldn't be added, but a null is added
+		}
+	}
+	#endregion
 }

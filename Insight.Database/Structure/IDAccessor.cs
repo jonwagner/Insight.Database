@@ -102,6 +102,14 @@ namespace Insight.Database.Structure
 		}
 
 		/// <summary>
+		/// Gets the list types contained in the ID.
+		/// </summary>
+		internal IEnumerable<String> GetIdFields()
+		{
+			return _propInfo.Select(p => p.Name);
+		}
+
+		/// <summary>
 		/// Gets the generic type of a tuple that can store the given number of parameters.
 		/// </summary>
 		/// <param name="count">The number of parameters.</param>

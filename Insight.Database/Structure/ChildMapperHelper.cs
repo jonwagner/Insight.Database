@@ -156,4 +156,38 @@ namespace Insight.Database.Structure
 			return null;
 		}
 	}
+
+#if DEBUG
+
+	public class ChildMapperHelperTests
+	{
+		public static IEnumerable<String> GetIDAccessor(Type type, string name = null)
+		{
+			var accessor = ChildMapperHelper.GetIDAccessor(type, name);
+
+			if (accessor == null)
+			{
+				return null;
+			}
+
+			return accessor.GetIdFields();
+		}
+
+		public static IEnumerable<String> FindParentIDAccessor(Type type, string name = null)
+		{
+			var accessor = ChildMapperHelper.FindParentIDAccessor(type, name);
+
+			if (accessor == null)
+			{
+				return null;
+			}
+
+			return accessor.GetIdFields();
+		}
+
+
+	}
+
+#endif
+
 }
