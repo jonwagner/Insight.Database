@@ -392,6 +392,43 @@ namespace Insight.Tests
 			Assert.AreEqual("My_ParentID", result.ElementAt(0));
 		}
 
+		[Test]
+		public void GetIDAccessor_ByAttribute()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.InvoiceLineWithAttributes));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetParentIDAccessor_ByAttribute()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.InvoiceLineWithAttributes));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("Invoice_id", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ByMultiAttribute()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.InvoiceLineWithMultiAttributes));
+
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+			Assert.AreEqual("Company_id", result.ElementAt(1));
+		}
+
+		[Test]
+		public void GetParentIDAccessor_ByMultiAttribute()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.InvoiceLineWithMultiAttributes));
+
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("Company_id", result.ElementAt(0));
+			Assert.AreEqual("Invoice_id", result.ElementAt(1));
+		}
 
 		public class TestClasses
 		{
@@ -453,6 +490,30 @@ namespace Insight.Tests
 			{
 				public int InvoiceLine_id;  //ID
 				public int Invoice_id;      //ParentId
+				public string Name;
+			}
+
+			public class InvoiceLineWithAttributes
+			{
+				[RecordId]
+				public int InvoiceLine_id;  //ID
+				[ParentRecordId]
+				public int Invoice_id;      //ParentId
+				public string Name;
+			}
+
+			public class InvoiceLineWithMultiAttributes
+			{
+				[RecordId]
+				public int InvoiceLine_id;  //ID
+
+				[RecordId]
+				[ParentRecordId]
+				public int Company_id;  //ID, ParentId
+
+				[ParentRecordId]
+				public int Invoice_id;      //ParentId
+
 				public string Name;
 			}
 		}
