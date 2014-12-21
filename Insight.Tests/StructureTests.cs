@@ -269,7 +269,7 @@ namespace Insight.Tests
 #if DEBUG
 
 	[TestFixture]
-	public class ChildMappingHelperUnitTests
+	public class StructureTest_ChildMappingHelperUnitTests
 	{
 
 		[Test]
@@ -367,15 +367,27 @@ namespace Insight.Tests
 		[Test]
 		public void GetIDAccessor_ByName_BadName()
 		{
-			Assert.Throws<InvalidOperationException>(() => ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123"));
-			Assert.Throws<InvalidOperationException>(() => ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ID, foo123"));
-			Assert.Throws<InvalidOperationException>(() => ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ID, "));
+			var ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123"));
+			Assert.That(ex.Message, Is.StringContaining("foo123"));
+
+			ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ClassWithSuffixedUnderscore_ID, foo123"));
+			Assert.That(ex.Message, Is.StringContaining("foo123"));
+
+			ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123, ClassWithSuffixedUnderscore_ID"));
+			Assert.That(ex.Message, Is.StringContaining("foo123"));
+
+			// we could clean up trailing commas, but this test verifies current behavior
+			ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ID, "));
 		}
 
 		[Test]
 		public void FindParentIDAccessor_ChildWithGenericNames()
 		{
-			// This is the base case, a field named ParentID, this about all that will be matched
+			// This is the base case, a field named ParentID
 			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildWithGenericNames));
 
 			Assert.AreEqual(1, result.Count());
@@ -383,13 +395,23 @@ namespace Insight.Tests
 		}
 
 		[Test]
-		public void FindParentIDAccessor_ChildWithSillyNames()
+		public void FindParentIDAccessor_ChildEndingWithUnderscoreParentID()
 		{
-			// This is the base case, a field named ParentID, this about all that will be matched
-			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildWithSillyNames));
+			// This is case in the rules, a field ending in _ParentID
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildEndingWithUnderscoreParentID));
 
 			Assert.AreEqual(1, result.Count());
 			Assert.AreEqual("My_ParentID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void FindParentIDAccessor_ChildEndingWithParentID()
+		{
+			// This is case in the rules, a field ending in ParentID
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildEndingWithParentID));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("MyParentID", result.ElementAt(0));
 		}
 
 		[Test]
@@ -429,6 +451,27 @@ namespace Insight.Tests
 			Assert.AreEqual("Company_id", result.ElementAt(0));
 			Assert.AreEqual("Invoice_id", result.ElementAt(1));
 		}
+
+		[Test]
+		public void GetIDAccessor_ClassWithNoDetectableID()
+		{
+			var ex=Assert.Throws<InvalidOperationException>(()
+							=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithInsufficientData)));
+
+			Assert.That(ex.Message, Is.StringStarting("Cannot find a way to get the ID from"));
+		}
+
+		[Test]
+		public void GetParentIDAccessor_ClassWithNoDetectableParentID()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof (TestClasses.ClassWithInsufficientData));
+
+			Assert.IsNull(result);
+			//Assert.Throws<InvalidOperationException>(()
+			//		=> ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ClassWithInsufficientData)));
+		}
+
+		/////////////////// Test Classes ////////////////////////
 
 		public class TestClasses
 		{
@@ -473,10 +516,17 @@ namespace Insight.Tests
 				public string Name;
 			}
 
-			public class ChildWithSillyNames
+			public class ChildEndingWithUnderscoreParentID
 			{
 				public int ID;
 				public int My_ParentID;
+				public string Name;
+			}
+
+			public class ChildEndingWithParentID
+			{
+				public int ID;
+				public int MyParentID;
 				public string Name;
 			}
 
@@ -514,6 +564,14 @@ namespace Insight.Tests
 				[ParentRecordId]
 				public int Invoice_id;      //ParentId
 
+				public string Name;
+			}
+
+			public class ClassWithInsufficientData
+			{
+				public int NotMe;
+				public int Nope;
+				public ChildWithGenericNames ChildWithGenericNames;
 				public string Name;
 			}
 		}

@@ -21,12 +21,12 @@ namespace Insight.Database.Structure
 		/// <returns>The ID field for the type.</returns>
 		internal static IDAccessor GetIDAccessor(Type type, string name = null)
 		{
-			var member = FindIDAccessor<RecordIdAttribute>(type, name, "ID");
+			var idFields = FindIdFields<RecordIdAttribute>(type, name, "ID");
 
-			if (member == null)
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a way to get the ID from {0}. Please add a hint.", type));
+			if (idFields != null)
+				return new IDAccessor(idFields);
 
-			return member;
+			throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a way to get the ID from {0}. Please add a hint.", type));
 		}
 
 		/// <summary>
@@ -37,8 +37,14 @@ namespace Insight.Database.Structure
 		/// <returns>The ID field for the type, or null if it's not found.</returns>
 		internal static IDAccessor FindParentIDAccessor(Type type, string name = null)
 		{
-			return FindIDAccessor<ParentRecordIdAttribute>(type, name, "ParentID");
+			var idFields = FindIdFields<ParentRecordIdAttribute>(type, name, "ParentID");
+
+			if (idFields != null)
+				return new IDAccessor(idFields);
+
+			return null;
 		}
+
 
 		/// <summary>
 		/// Gets the list setter for the class, looking for an IList that matches the type.
@@ -70,14 +76,14 @@ namespace Insight.Database.Structure
 			// look for anything that looks like the right list
 			member = members.SingleOrDefault(m => m.SetMethodInfo != null && IsGenericListType(m.MemberType, childType)) ??
 				members.SingleOrDefault(m => m.FieldInfo != null && IsGenericListType(m.MemberType, childType));
-            if (member != null)
-                return member;
+			if (member != null)
+				return member;
 
-            // look for a single record of the given type
-            member = members.SingleOrDefault(m => m.SetMethodInfo != null && m.MemberType == childType) ??
-                members.SingleOrDefault(m => m.FieldInfo != null && m.MemberType == childType);
+			// look for a single record of the given type
+			member = members.SingleOrDefault(m => m.SetMethodInfo != null && m.MemberType == childType) ??
+				members.SingleOrDefault(m => m.FieldInfo != null && m.MemberType == childType);
 
-            if (member == null)
+			if (member == null)
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a way to set a list of {0} into {1}. Please add a hint.", childType, parentType));
 
 			return member;
@@ -108,53 +114,111 @@ namespace Insight.Database.Structure
 		}
 
 		/// <summary>
-		/// Finds an IDAccessor to get IDs out of an object.
+		/// Finds the property(s) that make up the ID
 		/// </summary>
 		/// <typeparam name="TAttribute">The type of IRecordIDAttribute to use to look for the fields.</typeparam>
 		/// <param name="type">The type to search.</param>
 		/// <param name="name">Optional names of fields to use (comma-separated).</param>
-		/// <param name="defaultFieldName">The name of the default field to use.</param>
-		/// <returns>The IDAccessor or null.</returns>
-		private static IDAccessor FindIDAccessor<TAttribute>(Type type, string name, string defaultFieldName) where TAttribute : IRecordIdAttribute
+		/// <param name="defaultFieldName"></param>The name of the default field to use.</param>
+		/// <returns>The list of properties in the ID or null.  It will throw an exception if you search by name and its not found 
+		/// (Legacy behavior we'll move up one or two levels when we improve the parent id code) </returns>
+		private static IEnumerable<ClassPropInfo> FindIdFields<TAttribute>(Type type, string name, string defaultFieldName)
+			where TAttribute : IRecordIdAttribute
 		{
-			var members = ClassPropInfo.GetMembersForType(type).Where(mi => mi.CanGetMember);
-			ClassPropInfo member;
+			IEnumerable<ClassPropInfo> idFields;
+
+			var allFields = ClassPropInfo.GetMembersForType(type).Where(mi => mi.CanGetMember);
 
 			// if a name was specified, split on commas and use that
 			if (name != null)
 			{
-				var names = name.Split(',');
-				var matches = names.Select(n => ClassPropInfo.GetMemberByName(type, n.Trim())).ToList();
-
-				for (int i = 0; i < names.Length; i++)
-					if (matches[i] == null || !matches[i].CanGetMember)
-						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Get Member {0} not found on type {1}", names[i], type.FullName));
-
-				return new IDAccessor(matches);
+				idFields = FindIDPropertiesByName(type, name);  //TODO this throws an exception if the name is not found, throw from here?
 			}
+			else
+			{
+				idFields = FindIDPropertiesByAttribute<TAttribute>(allFields);
+
+				if ((idFields == null) || (idFields.Any() == false))
+					idFields = FindIDPropertiesByConvention(defaultFieldName, allFields);
+			}
+			return idFields;
+		}
+
+		/// <summary>
+		/// Finds the property(s) that make up the ID
+		/// </summary>
+		/// <param name="type">The type to search.</param>
+		/// <param name="name">Optional names of fields to use (comma-separated).</param>
+		/// <returns></returns>
+		private static List<ClassPropInfo> FindIDPropertiesByName(Type type, string name)
+		{
+			var names = name.Split(',');
+
+			return FindIDPropertiesByName(type, names);
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="names"></param>
+		/// <returns></returns>
+		/// 
+		/// <summary>
+		/// Finds the property(s) that make up the ID
+		/// </summary>
+		/// <param name="type">The type to search.</param>
+		/// <param name="name">Optional array of the names of the fields to use.</param>
+		/// <returns>A list of the matching properties, with NULLs when something can't be </returns>
+		private static List<ClassPropInfo> FindIDPropertiesByName(Type type, string[] names)
+		{
+			List<ClassPropInfo> matches = names.Select(n => ClassPropInfo.GetMemberByName(type, n.Trim())).ToList();
+
+			// it assumes fields will come back in the same order (even when one is missing)
+			for (int i = 0; i < names.Length; i++)
+				if (matches[i] == null || !matches[i].CanGetMember)
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
+						"Get Member '{0}' not found on type '{1}'", names[i], type.FullName));
+
+			return matches;
+		}
+
+		private static IEnumerable<ClassPropInfo> FindIDPropertiesByAttribute<TAttribute>(IEnumerable<ClassPropInfo> members
+																		) where TAttribute : IRecordIdAttribute
+		{
+			IList<ClassPropInfo> taggedMembers;
 
 			// check for a member with an id attribute
-			var taggedMembers = members.Where(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Any()).ToList();
-			if (taggedMembers.Count == 1)
+			taggedMembers = members.Where(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Any()).ToList();
+
+			if (taggedMembers.Count >= 1)
 			{
-				return new IDAccessor(taggedMembers.First());
+				var orderedIdFields = taggedMembers.OrderBy(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Single().Order);
+				return orderedIdFields;
 			}
-			else if (taggedMembers.Count > 1)
-			{
-				var ordered = taggedMembers.OrderBy(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Single().Order);
-				return new IDAccessor(ordered);
-			}
+			return null;
+		}
+
+		private static List<ClassPropInfo> FindIDPropertiesByConvention(string defaultFieldName, IEnumerable<ClassPropInfo> members)
+		{
+			ClassPropInfo idField;
+			List<ClassPropInfo> idFields = null;
 
 			// look for anything that looks like an ID
-			member = members.FirstOrDefault(m => String.Compare(m.Name, defaultFieldName, StringComparison.OrdinalIgnoreCase) == 0) ??
+			idField =
+				members.FirstOrDefault(m => String.Compare(m.Name, defaultFieldName, StringComparison.OrdinalIgnoreCase) == 0) ?? /* Ex*/
 				members.SingleOrDefault(m => m.Name.EndsWith("_" + defaultFieldName, StringComparison.OrdinalIgnoreCase)) ??
 				members.SingleOrDefault(m => m.Name.EndsWith(defaultFieldName, StringComparison.OrdinalIgnoreCase));
 
-			if (member != null)
-				return new IDAccessor(member);
+			if (idField != null)
+			{
+				idFields = new List<ClassPropInfo>(1);
+				idFields.Add(idField);
+			}
 
-			return null;
+			return idFields;
 		}
+
 	}
 
 #if DEBUG
@@ -178,13 +242,10 @@ namespace Insight.Database.Structure
 			var accessor = ChildMapperHelper.FindParentIDAccessor(type, name);
 
 			if (accessor == null)
-			{
 				return null;
-			}
 
 			return accessor.GetIdFields();
 		}
-
 
 	}
 
