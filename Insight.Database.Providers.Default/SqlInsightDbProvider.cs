@@ -80,6 +80,19 @@ namespace Insight.Database
 			return new SqlConnection();
 		}
 
+        /// <inheritdoc/>
+        public override IDbConnection CloneDbConnection(IDbConnection connection)
+        {
+            var sqlConnection = (SqlConnection)connection;
+
+            // check to make sure that the template connection hasn't already been used
+            SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(connection.ConnectionString);
+            if (!builder.IntegratedSecurity && String.IsNullOrWhiteSpace(builder.Password))
+                throw new InvalidOperationException("The database connection has already been opened and the password has been cleared. In order to use password-based credentials with parallel connections, set Persist Security Info=True on your connection string.");
+
+            return new SqlConnection(builder.ConnectionString);
+        }
+
 		/// <summary>
 		/// Derives the parameter list from a stored procedure command.
 		/// </summary>
