@@ -8,6 +8,7 @@ using System.Runtime.Serialization;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Insight.Database.CodeGenerator;
 
 namespace Insight.Database
 {
@@ -20,6 +21,18 @@ namespace Insight.Database
 		/// The singleton Serializer.
 		/// </summary>
 		public static readonly XmlObjectSerializer Serializer = new XmlObjectSerializer();
+
+        /// <inheritdoc/>
+        public override bool CanSerialize(Type type, DbType dbType)
+        {
+            return TypeHelper.IsDbTypeAString(dbType) || dbType == DbType.Xml;
+        }
+
+        /// <inheritdoc/>
+        public override DbType GetSerializedDbType(Type type, DbType dbType)
+        {
+            return DbType.Xml;
+        }
 
 		/// <inheritdoc/>
 		public override object SerializeObject(Type type, object value)

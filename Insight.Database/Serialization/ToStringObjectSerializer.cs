@@ -21,8 +21,19 @@ namespace Insight.Database
 		public static readonly ToStringObjectSerializer Serializer = new ToStringObjectSerializer();
 
 		/// <inheritdoc/>
-		public override bool CanSerialize(Type type)
+		public override bool CanSerialize(Type type, DbType dbType)
 		{
+            // no point in converting convertibles or enumerables
+            if (type.GetInterfaces().Contains(typeof(IConvertible)) || type == typeof(object))
+                return false;
+            if (typeof(IEnumerable).IsAssignableFrom(type))
+                return false;
+            if (type == TypeHelper.LinqBinaryType)
+                return false;
+
+            if (TypeHelper.IsAtomicType(type))
+                return false;
+
 			if (typeof(IEnumerable).IsAssignableFrom(type))
 				return false;
 
@@ -30,10 +41,16 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override bool CanDeserialize(Type type)
+		public override bool CanDeserialize(Type sourceType, Type targetType)
 		{
 			return false;
 		}
+
+        /// <inheritdoc/>
+        public override DbType GetSerializedDbType(Type type, DbType dbType)
+        {
+            return DbType.String;
+        }
 
 		/// <inheritdoc/>
 		public override object SerializeObject(Type type, object o)

@@ -16,19 +16,22 @@ namespace Insight.Database
 	{
 		#region IDbObjectSerializer Methods
 		/// <inheritdoc/>
-		public virtual bool CanSerialize(Type type)
+        public virtual bool CanSerialize(Type type, DbType dbType)
+        {
+            if (!TypeHelper.IsDbTypeAString(dbType))
+                return false;
+
+            return true;
+        }
+
+		/// <inheritdoc/>
+		public virtual bool CanDeserialize(Type sourceType, Type targetType)
 		{
-			return CanDeserialize(type);
+            return sourceType == typeof(string) && !TypeHelper.IsAtomicType(targetType) && targetType != typeof(object);
 		}
 
 		/// <inheritdoc/>
-		public virtual bool CanDeserialize(Type type)
-		{
-			return !TypeHelper.IsAtomicType(type) && type != typeof(object);
-		}
-
-		/// <inheritdoc/>
-		public virtual DbType GetSerializedDbType(Type type)
+		public virtual DbType GetSerializedDbType(Type type, DbType dbType)
 		{
 			return DbType.String;
 		}

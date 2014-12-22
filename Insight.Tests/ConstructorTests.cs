@@ -152,9 +152,9 @@ namespace Insight.Tests
 
         public class StringTrimDeserializer : DbObjectSerializer
         {
-            public override bool CanDeserialize(Type type)
+            public override bool CanDeserialize(Type sourceType, Type targetType)
             {
-                return type == typeof(String);
+                return targetType == typeof(String);
             }
             public override object SerializeObject(Type type, object o)
             {
