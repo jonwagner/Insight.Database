@@ -13,6 +13,7 @@ namespace Insight.Database.Structure
 	/// </summary>
 	class ChildMapperHelper
 	{
+
 		/// <summary>
 		/// Gets the ID accessor for the given type.
 		/// </summary>
@@ -21,30 +22,87 @@ namespace Insight.Database.Structure
 		/// <returns>The ID field for the type.</returns>
 		internal static IDAccessor GetIDAccessor(Type type, string name = null)
 		{
-			var idFields = FindIdFields<RecordIdAttribute>(type, name, "ID");
+			string mappingIssueDetails;
 
-			if (idFields != null)
-				return new IDAccessor(idFields);
+			var idMembers = FindIDProperties<RecordIdAttribute>(type, name, IDTypes.ID, out mappingIssueDetails);
 
-			throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a way to get the ID from {0}. Please add a hint.", type));
+			if (idMembers != null)
+				return new IDAccessor(idMembers);
+
+			else  // we have failed to find the id
+			{
+				if (string.IsNullOrEmpty(mappingIssueDetails))
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
+															"Cannot find a way to get the ID from {0}. Please add a hint.", type));
+				else
+					throw new InvalidOperationException(mappingIssueDetails);
+			}
 		}
 
 		/// <summary>
-		/// Finds the ID accessor for the given type.
+		/// Finds the ParentID accessor for the given type using the supplied set of names
 		/// </summary>
 		/// <param name="type">The type to analyze.</param>
-		/// <param name="name">The name of the id field or null to auto-detect.</param>
-		/// <returns>The ID field for the type, or null if it's not found.</returns>
-		internal static IDAccessor FindParentIDAccessor(Type type, string name = null)
+		/// <param name="names">The name of the id fields. (a name or comma separated list)</param>
+		/// <returns>The ParentID field for the type</returns>
+		internal static IDAccessor FindParentIDAccessor(Type type, string names)
 		{
-			var idFields = FindIdFields<ParentRecordIdAttribute>(type, name, "ParentID");
+			var idMembers = FindIDProperties<ParentRecordIdAttribute>(type, names, IDTypes.ParentID);
 
-			if (idFields != null)
-				return new IDAccessor(idFields);
+			if (idMembers != null)
+				return new IDAccessor(idMembers);
 
 			return null;
 		}
 
+		/// <summary>
+		/// Finds the ID accessor for the given type using attributes or the parents ID
+		/// </summary>
+		/// <param name="type">The type to analyze, e.g. InvoiceLine</param>
+		/// <param name="parentType">The type's parent, e.g. Invoice</param>
+		/// <returns>The ParentID field for the type</returns>
+		internal static IDAccessor FindParentIDAccessor(Type type, Type parentType)
+		{
+			var idMembers = FindIDProperties<ParentRecordIdAttribute>(type, null, IDTypes.ParentID);
+
+			if (idMembers != null)
+				return new IDAccessor(idMembers);
+
+			else if (parentType != null)
+			{
+				idMembers = InferParentIDAccessorFromParentClass(type, parentType);
+
+				if (idMembers != null)
+					return new IDAccessor(idMembers);
+			}
+			return null;
+		}
+
+		/// <summary>
+		/// Tries to use the parent's ID as the ParentID of the child
+		/// </summary>
+		/// <param name="type"></param>
+		/// <param name="parentType"></param>
+		/// <example>Eg, given classes Invoice and InvoiceLine, if 
+		/// Invoice_ID is the ID of Invoice, we can infer that Invoice_ID is the ParentID of Invoice line (if it exists)</example>
+		/// <returns></returns>
+		internal static IEnumerable<ClassPropInfo> InferParentIDAccessorFromParentClass(Type type, Type parentType)
+		{
+			var myParentsIDProperties = FindIDProperties<RecordIdAttribute>(parentType, null, IDTypes.ID);
+
+			if (myParentsIDProperties == null)  // We're done if its null
+				return null;
+
+			// Prevent us from saying the Invoice.ID  maps to the InvoiceLine.ID (ID can't be the FK of InvoiceLine) 
+			if ((myParentsIDProperties.Count() == 1) && StringsAreTheSame(myParentsIDProperties.First().Name, IDDefaultName))
+				return null;
+
+			var parentIDPropertyNames = myParentsIDProperties.Select(p => p.Name).ToArray();
+
+			var idProperties = FindIDPropertiesByName(type, parentIDPropertyNames);
+
+			return idProperties;
+		}
 
 		/// <summary>
 		/// Gets the list setter for the class, looking for an IList that matches the type.
@@ -55,9 +113,9 @@ namespace Insight.Database.Structure
 		/// <returns>An accessor for the ID field.</returns>
 		internal static ClassPropInfo GetListSetter(Type parentType, Type childType, string name = null)
 		{
-			var members = ClassPropInfo.GetMembersForType(parentType).Where(mi => mi.CanSetMember);
-
 			ClassPropInfo member;
+
+			var members = ClassPropInfo.GetMembersForType(parentType).Where(mi => mi.CanSetMember);
 
 			// if a name was specified, use that
 			if (name != null)
@@ -65,6 +123,7 @@ namespace Insight.Database.Structure
 				member = members.SingleOrDefault(m => String.Compare(m.Name, name, StringComparison.OrdinalIgnoreCase) == 0);
 				if (member == null)
 					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Set Member {0} not found on type {1}", name, parentType.FullName));
+				
 				return member;
 			}
 
@@ -118,135 +177,210 @@ namespace Insight.Database.Structure
 		/// </summary>
 		/// <typeparam name="TAttribute">The type of IRecordIDAttribute to use to look for the fields.</typeparam>
 		/// <param name="type">The type to search.</param>
-		/// <param name="name">Optional names of fields to use (comma-separated).</param>
-		/// <param name="defaultFieldName"></param>The name of the default field to use.</param>
-		/// <returns>The list of properties in the ID or null.  It will throw an exception if you search by name and its not found 
-		/// (Legacy behavior we'll move up one or two levels when we improve the parent id code) </returns>
-		private static IEnumerable<ClassPropInfo> FindIdFields<TAttribute>(Type type, string name, string defaultFieldName)
-			where TAttribute : IRecordIdAttribute
+		/// <param name="names">Optional nameArray of fields to use (comma-separated).</param>
+		/// <param name="idType">The type of ID to look for: ID (Primary ID) or ParentID.</param>
+		/// <returns>The list of property(s) in the ID or null if they were not found.</returns>
+		private static IEnumerable<ClassPropInfo> FindIDProperties<TAttribute>(Type type, string names, IDTypes idType)
+																	where TAttribute : IRecordIdAttribute
 		{
-			IEnumerable<ClassPropInfo> idFields;
+			string mappingIssueDetails;
 
-			var allFields = ClassPropInfo.GetMembersForType(type).Where(mi => mi.CanGetMember);
+			return FindIDProperties<TAttribute>(type, names, idType, out mappingIssueDetails);
+		}
 
-			// if a name was specified, split on commas and use that
-			if (name != null)
+		/// <summary>
+		/// Finds the property(s) that make up the ID
+		/// </summary>
+		/// <typeparam name="TAttribute">The type of IRecordIDAttribute to use to look for the fields.</typeparam>
+		/// <param name="type">The type to search.</param>
+		/// <param name="names">Optional nameArray of fields to use (comma-separated).</param>
+		/// <param name="idType">The type of ID to look for: ID (Primary ID) or ParentID.</param>
+		/// <param name="mappingIssueDetails_out">Issues with the mapping that might explain a Null result.</param>
+		/// 
+		/// <returns>The list of property(s) in the ID or null if they were not found.</returns>
+		private static IEnumerable<ClassPropInfo> FindIDProperties<TAttribute>(Type type, string names, IDTypes idType, out string mappingIssueDetails_out)
+												where TAttribute : IRecordIdAttribute
+		{
+			IEnumerable<ClassPropInfo> idMembers;
+			mappingIssueDetails_out = null;
+
+			var allMembers = ClassPropInfo.GetMembersForType(type).Where(mi => mi.CanGetMember);
+
+			// if names were specified, split on commas and use that only
+			if (string.IsNullOrEmpty(names) == false)
 			{
-				idFields = FindIDPropertiesByName(type, name);  //TODO this throws an exception if the name is not found, throw from here?
+				var nameArray = CommaSeparatedStringToArray(names);
+				idMembers = FindIDPropertiesByName(type, nameArray, out mappingIssueDetails_out);
+				return idMembers;
 			}
-			else
-			{
-				idFields = FindIDPropertiesByAttribute<TAttribute>(allFields);
 
-				if ((idFields == null) || (idFields.Any() == false))
-					idFields = FindIDPropertiesByConvention(defaultFieldName, allFields);
-			}
-			return idFields;
+			idMembers = FindIDPropertiesByAttribute<TAttribute>(allMembers);
+
+			if (idMembers != null)
+				return idMembers;
+
+			var idMember = FindIDPropertiesByConvention(type, idType, allMembers);
+
+			if (idMember != null) // Convert to a list so we can return it
+				idMembers = new List<ClassPropInfo>(1) { idMember };
+
+			return idMembers;
 		}
 
 		/// <summary>
 		/// Finds the property(s) that make up the ID
 		/// </summary>
 		/// <param name="type">The type to search.</param>
-		/// <param name="name">Optional names of fields to use (comma-separated).</param>
-		/// <returns></returns>
-		private static List<ClassPropInfo> FindIDPropertiesByName(Type type, string name)
-		{
-			var names = name.Split(',');
-
-			return FindIDPropertiesByName(type, names);
-		}
-
-		/// <summary>
+		/// <param name="names">Array of the names to find.</param>
+		/// <returns>A list of the matching properties or NULL when the lookup fails to fin the list</returns>
 		/// 
-		/// </summary>
-		/// <param name="type"></param>
-		/// <param name="names"></param>
-		/// <returns></returns>
-		/// 
-		/// <summary>
-		/// Finds the property(s) that make up the ID
-		/// </summary>
-		/// <param name="type">The type to search.</param>
-		/// <param name="name">Optional array of the names of the fields to use.</param>
-		/// <returns>A list of the matching properties, with NULLs when something can't be </returns>
 		private static List<ClassPropInfo> FindIDPropertiesByName(Type type, string[] names)
 		{
+			string mappingIssueDetails;
+
+			return FindIDPropertiesByName(type, names, out mappingIssueDetails);
+		}
+
+		/// <summary>
+		/// Finds the property(s) that make up the ID
+		/// </summary>
+		/// <param name="type">The type to search.</param>
+		/// <param name="names">Array of the names to find.</param>
+		/// <param name="mappingIssueDetails_out"></param>
+		/// <returns>A list of the matching properties or NULL when the lookup fails to fin the list</returns>
+		/// 
+		private static List<ClassPropInfo> FindIDPropertiesByName(Type type, string[] names, out string mappingIssueDetails_out)
+		{
+			//Find the member in 'names', preserving the order.  Unmateched names have a null entry in the list:
 			List<ClassPropInfo> matches = names.Select(n => ClassPropInfo.GetMemberByName(type, n.Trim())).ToList();
 
-			// it assumes fields will come back in the same order (even when one is missing)
-			for (int i = 0; i < names.Length; i++)
-				if (matches[i] == null || !matches[i].CanGetMember)
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture,
-						"Get Member '{0}' not found on type '{1}'", names[i], type.FullName));
+			mappingIssueDetails_out = null;
 
+			for (int i = 0; i < names.Length; i++)
+			{
+				if (matches[i] == null)
+				{
+					mappingIssueDetails_out = String.Format(CultureInfo.InvariantCulture
+														, "Get Member '{0}' not found on type '{1}'", names[i], type.FullName);
+					return null;
+				}
+				if (!matches[i].CanGetMember)
+				{
+					mappingIssueDetails_out = String.Format(CultureInfo.InvariantCulture
+														, "Get Member '{0}' is inaccessible on type '{1}'", names[i], type.FullName);
+					return null;
+				}
+			}
 			return matches;
 		}
 
 		private static IEnumerable<ClassPropInfo> FindIDPropertiesByAttribute<TAttribute>(IEnumerable<ClassPropInfo> members
 																		) where TAttribute : IRecordIdAttribute
 		{
-			IList<ClassPropInfo> taggedMembers;
-
-			// check for a member with an id attribute
-			taggedMembers = members.Where(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Any()).ToList();
+			var taggedMembers = members.Where(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Any()).ToList();
 
 			if (taggedMembers.Count >= 1)
-			{
-				var orderedIdFields = taggedMembers.OrderBy(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Single().Order);
-				return orderedIdFields;
-			}
+				return taggedMembers.OrderBy(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Single().Order);
+
 			return null;
 		}
 
-		private static List<ClassPropInfo> FindIDPropertiesByConvention(string defaultFieldName, IEnumerable<ClassPropInfo> members)
+		private static ClassPropInfo FindIDPropertiesByConvention(Type type, IDTypes idType, IEnumerable<ClassPropInfo> allMembers)
 		{
-			ClassPropInfo idField;
-			List<ClassPropInfo> idFields = null;
+			ClassPropInfo idMember = null;
 
-			// look for anything that looks like an ID
-			idField =
-				members.FirstOrDefault(m => String.Compare(m.Name, defaultFieldName, StringComparison.OrdinalIgnoreCase) == 0) ?? /* Ex*/
-				members.SingleOrDefault(m => m.Name.EndsWith("_" + defaultFieldName, StringComparison.OrdinalIgnoreCase)) ??
-				members.SingleOrDefault(m => m.Name.EndsWith(defaultFieldName, StringComparison.OrdinalIgnoreCase));
+			if (idType == IDTypes.ID)
+				idMember = FindPrimaryIDPropertiesByConvention(type, allMembers);
+			else if (idType == IDTypes.ParentID)
+				idMember = FindParentIDPropertiesByConvention(type, allMembers);
 
-			if (idField != null)
-			{
-				idFields = new List<ClassPropInfo>(1);
-				idFields.Add(idField);
-			}
-
-			return idFields;
+			return idMember;
 		}
 
+		private static ClassPropInfo FindPrimaryIDPropertiesByConvention(Type type, IEnumerable<ClassPropInfo> members)
+		{
+			ClassPropInfo member = null;
+
+			member = members.FirstOrDefault(m => String.Compare(m.Name, IDDefaultName, StringComparison.OrdinalIgnoreCase) == 0) ??
+					members.FirstOrDefault(m => String.Compare(m.Name, type.Name + "_" + IDDefaultName, StringComparison.OrdinalIgnoreCase) == 0) ??
+					members.FirstOrDefault(m => String.Compare(m.Name, type.Name + IDDefaultName, StringComparison.OrdinalIgnoreCase) == 0) ??
+					members.SingleOrDefault(m => m.Name.EndsWith("_" + IDDefaultName, StringComparison.OrdinalIgnoreCase)) ??
+					members.SingleOrDefault(m => m.Name.EndsWith(IDDefaultName, StringComparison.OrdinalIgnoreCase));
+
+			return member;
+		}
+
+		private static ClassPropInfo FindParentIDPropertiesByConvention(Type type, IEnumerable<ClassPropInfo> members)
+		{
+			ClassPropInfo member = null;
+
+			// Prevent us from saying that Parent.ParentID is the class' 'ParentID' (its the ID), a special case 
+			if (StringsAreTheSame(type.Name + IDDefaultName, ParentIDDefaultName) == false)
+			{
+				member = members.FirstOrDefault(m => String.Compare(m.Name, ParentIDDefaultName, StringComparison.OrdinalIgnoreCase) == 0);
+
+				if (member != null)
+					return member;
+			}
+
+			member = members.FirstOrDefault(m => String.Compare(m.Name, type.Name + "_" + ParentIDDefaultName, StringComparison.OrdinalIgnoreCase) == 0) ??
+					members.FirstOrDefault(m => String.Compare(m.Name, type.Name + ParentIDDefaultName, StringComparison.OrdinalIgnoreCase) == 0) ??
+					members.FirstOrDefault(m => m.Name.EndsWith("_" + ParentIDDefaultName, StringComparison.OrdinalIgnoreCase)) ??
+					members.FirstOrDefault(m => m.Name.EndsWith(ParentIDDefaultName, StringComparison.OrdinalIgnoreCase));
+
+			return member;
+		}
+
+		/// <summary> Performs a case insensitive string comparision</summary>
+		private static bool StringsAreTheSame(string string1, string string2)
+		{
+			return String.Compare(string1, string2, StringComparison.OrdinalIgnoreCase) == 0;
+		}
+
+		/// <summary>Converts a comma separated list into an array</summary>
+		private static string[] CommaSeparatedStringToArray(string commaSeparatedString)
+		{
+			var array = commaSeparatedString.Split(',');
+
+			for (int i = 0; i < array.Length - 1; i++)
+				array[i] = array[i].Trim();
+
+			return array;
+		}
+
+		/// <summary>The type of ID to look for: ID (Primary ID) or ParentID</summary>
+		enum IDTypes { ID = 1, ParentID = 2 }
+
+		private const string IDDefaultName = "ID";
+		private const string ParentIDDefaultName = "ParentID";
 	}
 
 #if DEBUG
 
+	/// <summary>
+	/// A shim to help unit tests.  Insight.Schema is not signed, so we can't can't sign Insight.Tests and use InternalVisibleTo
+	/// </summary>
 	public class ChildMapperHelperTests
 	{
 		public static IEnumerable<String> GetIDAccessor(Type type, string name = null)
 		{
 			var accessor = ChildMapperHelper.GetIDAccessor(type, name);
 
-			if (accessor == null)
-			{
-				return null;
-			}
+			if (accessor != null) 
+				return accessor.GetIdFields();
 
-			return accessor.GetIdFields();
+			return new List<string>();
 		}
 
-		public static IEnumerable<String> FindParentIDAccessor(Type type, string name = null)
+		public static IEnumerable<String> FindParentIDAccessor(Type type, Type parentType)
 		{
-			var accessor = ChildMapperHelper.FindParentIDAccessor(type, name);
+			var accessor = ChildMapperHelper.FindParentIDAccessor(type, parentType);
 
-			if (accessor == null)
-				return null;
+			if (accessor != null) 
+				return accessor.GetIdFields();
 
-			return accessor.GetIdFields();
+			return new List<string>();
 		}
-
 	}
 
 #endif
