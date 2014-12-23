@@ -80,7 +80,7 @@ namespace Insight.Database.Structure
 		private IChildRecordReader<T, TId> CreateAutoGroupBy<TId>(Type parentType)
 		{
 			// if we can detect the parent ids from the child class, then use that to do the mapping
-			var idAccessor = ChildMapperHelper.FindParentIDAccessor(typeof(T));
+			var idAccessor = ChildMapperHelper.FindParentIDAccessor(typeof(T), parentType);
 			if (idAccessor != null)
 			{
 				var getid = idAccessor.CreateGetMethod<T, TId>();

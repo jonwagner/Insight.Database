@@ -210,62 +210,429 @@ namespace Insight.Tests
 			Assert.AreEqual(3, results.Children[0].Foo);
 		}
 		#endregion
-    }
+	}
 
-    #region Single Child Tests
-    [TestFixture]
-    public class SingleChildTest : BaseTest
-    {
-        public class Parent
-        {
-            public int ID;
-            public Child Child;
-        }
+	#region Single Child Tests
+	[TestFixture]
+	public class SingleChildTest : BaseTest
+	{
+		public class Parent
+		{
+			public int ID;
+			public Child Child;
+		}
 
-        public class Child
-        {
-            public int ID;
-            public string Name;
-        }
+		public class Child
+		{
+			public int ID;
+			public string Name;
+		}
 
-        public interface IHaveSingleChild
-        {
-            [Sql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'")]
-            [Recordset(1, typeof(Child), Into="Child", IsChild = true)]
-            Parent GetParent();
-        }
+		public interface IHaveSingleChild
+		{
+			[Sql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'")]
+			[Recordset(1, typeof(Child), Into = "Child", IsChild = true)]
+			Parent GetParent();
+		}
 
-        [Test]
-        public void CanHaveSingleChild()
-        {
-            var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
-                Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records, into: (p, l) => p.Child = l.First())).First();
+		[Test]
+		public void CanHaveSingleChild()
+		{
+			var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
+				Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records, into: (p, l) => p.Child = l.First())).First();
 
-            Assert.AreEqual("Alice", result.Child.Name);
-        }
+			Assert.AreEqual("Alice", result.Child.Name);
+		}
 
-        [Test]
-        public void CanHaveSingleChildAutoDetect()
-        {
-            var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
-                Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records)).First();
+		[Test]
+		public void CanHaveSingleChildAutoDetect()
+		{
+			var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
+				Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records)).First();
 
-            Assert.AreEqual("Alice", result.Child.Name);
-        }
+			Assert.AreEqual("Alice", result.Child.Name);
+		}
 
-        [Test]
-        public void InterfaceCanHaveSingleChild()
-        {
-            var result = Connection().As<IHaveSingleChild>().GetParent();
+		[Test]
+		public void InterfaceCanHaveSingleChild()
+		{
+			var result = Connection().As<IHaveSingleChild>().GetParent();
 
-            Assert.AreEqual("Alice", result.Child.Name);
-        }
-    }
-    #endregion
+			Assert.AreEqual("Alice", result.Child.Name);
+		}
+
+	}
+	#endregion
+
+	#region ChildMappingHelper Unit Tests
+
+	[TestFixture]
+	public class StructureTest_ChildMappingHelperUnitTests
+	{
+		// I think this test needs to be here becuase the rest are wrapped in the DEBUG (causes UI issues, I think)
+		[Test]
+		public void PlaceholderTest()
+		{
+			Assert.IsTrue(true);
+		}
+
+#if DEBUG
+		[Test]
+		public void GetIDAccessor_PlainID()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ClassNamePlusUnderscoreID_Simple()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.Invoice));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("Invoice_id", result.ElementAt(0));
+		}
+
+		// TODO Failing Test, fix OR submit issue once this is checked in
+		/// <summary>
+		/// This is the case where there are multiple fields ending with '_'
+		/// It should first try to match to [ClassName]_ID
+		/// New Functionality (see issue 169 in root repo)
+		/// </summary>
+		[Test]
+		public void GetIDAccessor_ClassNamePlusUnderscoreID_MultipleOptions()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.InvoiceLine));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+		}
+
+		/// <summary>
+		/// This is the case where there are multiple fields ending with '_'
+		/// New Functionality (see issue 169 in root repo)
+		/// </summary>
+		[Test]
+		public void GetParentIDAccessor_UseParentsIDToGetParentID()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.InvoiceLine), typeof(TestClasses.Invoice));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("Invoice_id", result.ElementAt(0));
+		}
+
+		// throws System.InvalidOperationException 'Sequence contains more than one matching element'
+		// This was barfing on   public int Paid as it end with ID			 
+		/// It should first try to match to [ClassName]ID aka  public int ClassWithSuffixedId;  
+		/// New Functionality (see issue 169 in root repo) 
+		[Test]
+		public void GetIDAccessor_ClassNamePlusId_WithOtherIdFields()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixed));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ClassWithSuffixedId", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ClassNamePlusId()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixed2));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ClassWithSuffixed2Id", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ClassNamePlusUnderscoreID()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ClassWithSuffixedUnderscore_ID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ByName()
+		{
+			//-----------------test single fields-----------------
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID");
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "AnotherID");
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("AnotherID", result.ElementAt(0));
+
+			//-----------------test multiple fields-----------------
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID, AnotherID");
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+			Assert.AreEqual("AnotherID", result.ElementAt(1));
+
+			// take out the spaces
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID,AnotherID");
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("ID", result.ElementAt(0));
+			Assert.AreEqual("AnotherID", result.ElementAt(1));
+
+			// reverse the order
+			result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "AnotherID, ID");
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("AnotherID", result.ElementAt(0));
+			Assert.AreEqual("ID", result.ElementAt(1));
+		}
+
+		/// <summary> Verifies bad requests throw the expected exceptions</summary>
+		[Test]
+		public void GetIDAccessor_ByName_BadName()
+		{
+			var ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123"));
+			Assert.That(ex.Message, Is.StringContaining("foo123"));
+
+			ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ClassWithSuffixedUnderscore_ID, foo123"));
+			Assert.That(ex.Message, Is.StringContaining("foo123"));
+
+			ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123, ClassWithSuffixedUnderscore_ID"));
+			Assert.That(ex.Message, Is.StringContaining("foo123"));
+
+			// we could clean up trailing commas, but this test verifies current behavior
+			ex = Assert.Throws<InvalidOperationException>(()
+					=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ID, "));
+		}
 
 
-    #region Issue 130 Tests
-    [TestFixture]
+		/// <summary> Tests the base case, a field named ParentID</summary>
+		[Test]
+		public void FindParentIDAccessor_ChildWithGenericNames()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildWithGenericNames), null);
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("ParentID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void FindParentIDAccessor_ChildEndingWithUnderscoreParentID()
+		{
+			// This is case in the rules, a field ending in _ParentID
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildEndingWithUnderscoreParentID), null);
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("My_ParentID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void FindParentIDAccessor_ChildEndingWithParentID()
+		{
+			// This is case in the rules, a field ending in ParentID
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ChildEndingWithParentID), null);
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("MyParentID", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ByAttribute()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.InvoiceLineWithAttributes));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetParentIDAccessor_ByAttribute()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.InvoiceLineWithAttributes), null);
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("Invoice_id", result.ElementAt(0));
+		}
+
+		[Test]
+		public void GetIDAccessor_ByMultiAttribute()
+		{
+			var result = ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.InvoiceLineWithMultiAttributes));
+
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+			Assert.AreEqual("Company_id", result.ElementAt(1));
+		}
+
+		[Test]
+		public void GetParentIDAccessor_ByMultiAttribute()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.InvoiceLineWithMultiAttributes), null);
+
+			Assert.AreEqual(2, result.Count());
+			Assert.AreEqual("Company_id", result.ElementAt(0));
+			Assert.AreEqual("Invoice_id", result.ElementAt(1));
+		}
+
+		[Test]
+		public void GetIDAccessor_ClassWithNoDetectableID()
+		{
+			var ex = Assert.Throws<InvalidOperationException>(()
+							=> ChildMapperHelperTests.GetIDAccessor(typeof(TestClasses.ClassWithInsufficientData)));
+
+			Assert.That(ex.Message, Is.StringStarting("Cannot find a way to get the ID from"));
+		}
+
+		[Test]
+		public void GetParentIDAccessor_ClassWithNoDetectableParentID()
+		{
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.ClassWithInsufficientData), null);
+
+			//FindParentIDAccessor does not throw an exception like FindIDAccessor does:
+			Assert.AreEqual(0, result.Count());
+		}
+
+		[Test]
+		public void FindParentIDAccessor_RespectReservedWords()
+		{
+			// This is case in the rules, a field ending in _ParentID
+			var result = ChildMapperHelperTests.FindParentIDAccessor(typeof(TestClasses.Parent), typeof(TestClasses.Grandparent));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("GrandparentID", result.ElementAt(0));
+		}
+
+		//*************************** Test Classes ***************************
+		public class TestClasses
+		{
+
+			public class ClassWithPlainID
+			{
+				public int AnotherID;
+				public int ID;   //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				public string Name;
+			}
+
+			public class ClassWithSuffixed
+			{
+				public int ClassWithSuffixedId;  //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				public int Paid;
+				public string Name;
+			}
+
+			public class ClassWithSuffixed2
+			{
+				public int ClassWithSuffixed2Id;  //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				//public int Paid;
+				public string Name;
+			}
+
+			public class ClassWithSuffixedUnderscore
+			{
+				public int AnotherID;
+				public int ClassWithSuffixedUnderscoreID;
+				public int ClassWithSuffixedUnderscore_ID;      //should match this first
+				public ChildWithGenericNames ChildWithGenericNames;
+				public string Name;
+			}
+
+			public class ChildWithGenericNames
+			{
+				public int ID;
+				public int ParentID;
+				public string Name;
+			}
+
+			public class ChildEndingWithUnderscoreParentID
+			{
+				public int ID;
+				public int My_ParentID;
+				public string Name;
+			}
+
+			public class ChildEndingWithParentID
+			{
+				public int ID;
+				public int MyParentID;
+				public string Name;
+			}
+
+			public class Invoice
+			{
+				public int InvoiceDisruptor_id;  // baiting the for a mismatch
+				public int Invoice_id;  //ID
+				public string Name;
+			}
+
+			public class InvoiceLine
+			{
+				public int InvoiceLineDisruptor_id;  // baiting the for a mismatch
+				public int InvoiceLine_id;  //ID
+				public int Invoice_id;      //ParentId
+				public string Name;
+			}
+
+			public class InvoiceLineWithAttributes
+			{
+				[RecordId]
+				public int InvoiceLine_id;  //ID
+				[ParentRecordId]
+				public int Invoice_id;      //ParentId
+				public string Name;
+			}
+
+			public class InvoiceLineWithMultiAttributes
+			{
+				[RecordId]
+				public int InvoiceLine_id;  //ID
+
+				[RecordId]
+				[ParentRecordId]
+				public int Company_id;  //ID, ParentId
+
+				[ParentRecordId]
+				public int Invoice_id;      //ParentId
+
+				public string Name;
+			}
+
+			public class ClassWithInsufficientData
+			{
+				public int NotMe;
+				public int Nope;
+				public ChildWithGenericNames ChildWithGenericNames;
+				public string Name;
+			}
+
+			public class Grandparent
+			{
+				public int GrandparentID;
+				public int ParentId;
+				public ChildWithGenericNames ChildWithGenericNames;
+				public string Name;
+			}
+
+			public class Parent
+			{
+				public int GrandparentID;
+				public int ParentId;
+				public ChildWithGenericNames ChildWithGenericNames;
+				public string Name;
+			}
+
+		}
+#endif
+	}
+
+
+	#endregion
+
+	#region Issue 130 Tests
+	[TestFixture]
 	public class Issue130 : BaseTest
 	{
 		public class Test
@@ -357,7 +724,7 @@ namespace Insight.Tests
 			Assert.AreEqual(1, result.ID);
 			Assert.AreEqual(1, result.Children.Count);
 		}
- 	}
+	}
 	#endregion
 
 	#region Issue 142 Tests
@@ -420,46 +787,46 @@ namespace Insight.Tests
 	}
 	#endregion
 
-    #region Issue 160 Tests
-    [TestFixture]
-    public class Issue160 : BaseTest
-    {
-        public class TestParent
-        {
-            public int ID;
-            public List<TestChild> Children;
-        }
+	#region Issue 160 Tests
+	[TestFixture]
+	public class Issue160 : BaseTest
+	{
+		public class TestParent
+		{
+			public int ID;
+			public List<TestChild> Children;
+		}
 
-        public class TestChild
-        {
-            public int ChildA;
-            public int ChildB;
-            public TestChild() { }
-            public TestChild(int a, int b)
-            {
-                ChildA = a;
-                ChildB = b;
-            }
-        }
+		public class TestChild
+		{
+			public int ChildA;
+			public int ChildB;
+			public TestChild() { }
+			public TestChild(int a, int b)
+			{
+				ChildA = a;
+				ChildB = b;
+			}
+		}
 
-        [Test]
-        public void CustomRecordReaderCanDropNulls()
-        {
-            var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ChildA=2, ChildB=3", null,
-                        Query.Returns(Some<TestParent>.Records)
-                            .ThenChildren(CustomRecordReader<TestChild>.Read(r =>
-                            {
-                                var childValue = (int)r["ChildA"];
-                                if (childValue != 2)
-                                    return new TestChild(childValue, (int)r["ChildB"]);
-                                return null;
-                            }),
-                            into: (p, children) => p.Children = children.Where(c => c != null).ToList()));
+		[Test]
+		public void CustomRecordReaderCanDropNulls()
+		{
+			var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ChildA=2, ChildB=3", null,
+						Query.Returns(Some<TestParent>.Records)
+							.ThenChildren(CustomRecordReader<TestChild>.Read(r =>
+							{
+								var childValue = (int)r["ChildA"];
+								if (childValue != 2)
+									return new TestChild(childValue, (int)r["ChildB"]);
+								return null;
+							}),
+							into: (p, children) => p.Children = children.Where(c => c != null).ToList()));
 
-            var result = results.First();
-            Assert.AreEqual(1, result.ID);
-            Assert.AreEqual(0, result.Children.Count);  // FAIL! I would expect that the child wouldn't be added, but a null is added
-        }
-    }
-    #endregion
+			var result = results.First();
+			Assert.AreEqual(1, result.ID);
+			Assert.AreEqual(0, result.Children.Count);  // FAIL! I would expect that the child wouldn't be added, but a null is added
+		}
+	}
+	#endregion
 }
