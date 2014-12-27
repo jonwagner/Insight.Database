@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -8,11 +9,57 @@ using Insight.Database.CodeGenerator;
 
 namespace Insight.Database.Structure
 {
+    /// <summary>
+    /// Used for internal testing.
+    /// </summary>
+    [SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "This is a class for testing.")]
+    public static class ChildMapperTestingHelper
+    {
+        /// <summary>
+        /// Used for internal testing.
+        /// </summary>
+        /// <param name="type">The parameter is not used.</param>
+        /// <param name="name">The parameter is not used.</param>
+        /// <returns>The parameter is not used.</returns>
+        public static IList<string> GetIDAccessor(Type type, string name = null)
+        {
+            return ChildMapperHelper.GetIDAccessor(type, name).MemberNames.ToList();
+        }
+
+        /// <summary>
+        /// Used for internal testing.
+        /// </summary>
+        /// <param name="type">The parameter is not used.</param>
+        /// <param name="name">The parameter is not used.</param>
+        /// <param name="parentType">The parameter is not used.</param>
+        /// <returns>The parameter is not used.</returns>
+        public static IList<string> FindParentIDAccessor(Type type, string name, Type parentType)
+        {
+            var accessor = ChildMapperHelper.FindParentIDAccessor(type, name, parentType);
+
+            if (accessor == null)
+                return new List<string>();
+            else
+                return accessor.MemberNames.ToList();
+        }
+    }
+
 	/// <summary>
 	/// Helper methods for mapping parent-child relationships.
 	/// </summary>
-	class ChildMapperHelper
+    [SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "This is a class for testing.")]
+    class ChildMapperHelper
 	{
+        /// <summary>
+        /// The default field name for ID fields.
+        /// </summary>
+        private const string DefaultIDField = "ID";
+
+        /// <summary>
+        /// The default field name for Parent ID fields.
+        /// </summary>
+        private const string DefaultParentIDField = "ParentID";
+
 		/// <summary>
 		/// Gets the ID accessor for the given type.
 		/// </summary>
@@ -21,12 +68,13 @@ namespace Insight.Database.Structure
 		/// <returns>The ID field for the type.</returns>
 		internal static IDAccessor GetIDAccessor(Type type, string name = null)
 		{
-			var member = FindIDAccessor<RecordIdAttribute>(type, name, "ID");
+            var names = (name != null) ? name.Split(',') : null;
+            var accessor = FindIDAccessor<RecordIdAttribute>(type, names, DefaultIDField);
 
-			if (member == null)
+			if (accessor == null)
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a way to get the ID from {0}. Please add a hint.", type));
 
-			return member;
+			return accessor;
 		}
 
 		/// <summary>
@@ -34,10 +82,13 @@ namespace Insight.Database.Structure
 		/// </summary>
 		/// <param name="type">The type to analyze.</param>
 		/// <param name="name">The name of the id field or null to auto-detect.</param>
-		/// <returns>The ID field for the type, or null if it's not found.</returns>
-		internal static IDAccessor FindParentIDAccessor(Type type, string name = null)
+        /// <param name="parentType">The type containing the current type.</param>
+        /// <returns>The ID field for the type, or null if it's not found.</returns>
+		internal static IDAccessor FindParentIDAccessor(Type type, string name, Type parentType)
 		{
-			return FindIDAccessor<ParentRecordIdAttribute>(type, name, "ParentID");
+            var names = (name != null) ? name.Split(',') : null;
+            return FindIDAccessor<ParentRecordIdAttribute>(type, names, DefaultParentIDField) ??
+                InferParentIDAccessorFromParentClass(type, parentType);
 		}
 
 		/// <summary>
@@ -62,20 +113,21 @@ namespace Insight.Database.Structure
 				return member;
 			}
 
+            var listMembers = members.Where(m => IsGenericListType(m.MemberType, childType));
+
 			// find the right match with a childrecords attribute
-			member = members.SingleOrDefault(m => IsGenericListType(m.MemberType, childType) && m.MemberInfo.GetCustomAttributes(true).OfType<ChildRecordsAttribute>().Any());
+            member = listMembers.SingleOrDefault(m => m.MemberInfo.GetCustomAttributes(true).OfType<ChildRecordsAttribute>().Any());
 			if (member != null)
 				return member;
 
 			// look for anything that looks like the right list
-			member = members.SingleOrDefault(m => m.SetMethodInfo != null && IsGenericListType(m.MemberType, childType)) ??
-				members.SingleOrDefault(m => m.FieldInfo != null && IsGenericListType(m.MemberType, childType));
+            member = listMembers.SingleOrDefault(m => m.SetMethodInfo != null) ?? listMembers.SingleOrDefault(m => m.FieldInfo != null);
             if (member != null)
                 return member;
 
             // look for a single record of the given type
-            member = members.SingleOrDefault(m => m.SetMethodInfo != null && m.MemberType == childType) ??
-                members.SingleOrDefault(m => m.FieldInfo != null && m.MemberType == childType);
+            var childTypeMembers = members.Where(m => m.MemberType == childType);
+            member = childTypeMembers.SingleOrDefault(m => m.SetMethodInfo != null) ?? childTypeMembers.SingleOrDefault(m => m.FieldInfo != null);
 
             if (member == null)
 				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a way to set a list of {0} into {1}. Please add a hint.", childType, parentType));
@@ -112,26 +164,20 @@ namespace Insight.Database.Structure
 		/// </summary>
 		/// <typeparam name="TAttribute">The type of IRecordIDAttribute to use to look for the fields.</typeparam>
 		/// <param name="type">The type to search.</param>
-		/// <param name="name">Optional names of fields to use (comma-separated).</param>
+		/// <param name="names">Optional names of fields to use.</param>
 		/// <param name="defaultFieldName">The name of the default field to use.</param>
 		/// <returns>The IDAccessor or null.</returns>
-		private static IDAccessor FindIDAccessor<TAttribute>(Type type, string name, string defaultFieldName) where TAttribute : IRecordIdAttribute
+		private static IDAccessor FindIDAccessor<TAttribute>(Type type, IList<string> names, string defaultFieldName) where TAttribute : IRecordIdAttribute
 		{
-			var members = ClassPropInfo.GetMembersForType(type).Where(mi => mi.CanGetMember);
+            if (names != null && !names.Any())
+                throw new ArgumentException("ID field names cannot be empty", "names");
+
+            var members = ClassPropInfo.GetMembersForType(type).Where(mi => mi.CanGetMember);
 			ClassPropInfo member;
 
 			// if a name was specified, split on commas and use that
-			if (name != null)
-			{
-				var names = name.Split(',');
-				var matches = names.Select(n => ClassPropInfo.GetMemberByName(type, n.Trim())).ToList();
-
-				for (int i = 0; i < names.Length; i++)
-					if (matches[i] == null || !matches[i].CanGetMember)
-						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Get Member {0} not found on type {1}", names[i], type.FullName));
-
-				return new IDAccessor(matches);
-			}
+			if (names != null)
+                return FindIDAccessorByNameList(type, names, true);
 
 			// check for a member with an id attribute
 			var taggedMembers = members.Where(m => m.MemberInfo.GetCustomAttributes(true).OfType<TAttribute>().Any()).ToList();
@@ -145,15 +191,71 @@ namespace Insight.Database.Structure
 				return new IDAccessor(ordered);
 			}
 
+            // handle the special case where the class Parent has a ParentID
+            var parentIDFieldIsReserved = defaultFieldName.IsIEqualTo(type.Name + DefaultIDField);
+
 			// look for anything that looks like an ID
-			member = members.FirstOrDefault(m => String.Compare(m.Name, defaultFieldName, StringComparison.OrdinalIgnoreCase) == 0) ??
-				members.SingleOrDefault(m => m.Name.EndsWith("_" + defaultFieldName, StringComparison.OrdinalIgnoreCase)) ??
-				members.SingleOrDefault(m => m.Name.EndsWith(defaultFieldName, StringComparison.OrdinalIgnoreCase));
+            member = members.SingleOrDefault(m => m.Name.IsIEqualTo(defaultFieldName) && !parentIDFieldIsReserved) ??
+                members.SingleOrDefault(m => m.Name.IsIEqualTo(type.Name + "_" + defaultFieldName)) ??
+                members.SingleOrDefault(m => m.Name.IsIEqualTo(type.Name + defaultFieldName)) ??
+				members.OnlyOrDefault(m => m.Name.EndsWith("_" + defaultFieldName, StringComparison.OrdinalIgnoreCase)) ??
+				members.OnlyOrDefault(m => m.Name.EndsWith(defaultFieldName, StringComparison.OrdinalIgnoreCase));
 
 			if (member != null)
 				return new IDAccessor(member);
 
 			return null;
 		}
+
+        /// <summary>
+        /// Finds an IDAccessor that matches the list of names exactly.
+        /// </summary>
+        /// <param name="type">The type to analyze.</param>
+        /// <param name="names">The list of fields to find.</param>
+        /// <param name="required">If required, and the names are not all found, an exception is thrown.</param>
+        /// <returns>The ID accessor matching the list of names.</returns>
+        private static IDAccessor FindIDAccessorByNameList(Type type, IList<string> names, bool required)
+        {
+            var members = new List<ClassPropInfo>();
+
+            foreach (string name in names)
+            {
+                var member = ClassPropInfo.GetMemberByName(type, name.Trim());
+                if (member == null || !member.CanGetMember)
+                {
+                    if (required)
+                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "A public get Member {0} not found on type {1}", name, type.FullName));
+                    else
+                        return null;
+                }
+
+                members.Add(member);
+            }
+
+            return new IDAccessor(members);
+        }
+
+        /// <summary>
+        /// Attempts to infer the parent ID accessor by finding a set of fields that exactly match the parent type's ID accessor.
+        /// </summary>
+        /// <param name="type">The type to analyze.</param>
+        /// <param name="parentType">The parent type to analyze.</param>
+        /// <returns>A matching IDAccessor or null.</returns>
+        private static IDAccessor InferParentIDAccessorFromParentClass(Type type, Type parentType)
+        {
+            if (parentType == null)
+                return null;
+
+            var parentIDAccessor = FindIDAccessor<RecordIdAttribute>(parentType, null, DefaultIDField);
+            if (parentIDAccessor == null)
+                return null;
+
+            // don't match an "ID" field of the parent to the "ID" field on this type
+            var parentIDNames = parentIDAccessor.MemberNames.ToList();
+            if (parentIDNames.Count() == 1 && parentIDNames.First().IsIEqualTo(DefaultIDField))
+                return null;
+
+            return FindIDAccessorByNameList(type, parentIDNames, false);
+        }
 	}
 }

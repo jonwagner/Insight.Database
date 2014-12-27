@@ -25,21 +25,78 @@ namespace Insight.Tests
 				public int Value;
 			}
 
+			public class Parent2
+			{
+				public int ID;
+				public List<Child2> Children;
+			}
+
+			public class Child2
+			{
+				public int Value;
+				public int ParentID;
+			}
+
+			public class Parent3
+			{
+				public int Parent3_id;
+				public List<Child3> Children;
+			}
+
+			public class Child3
+			{
+				public int Value;
+				public int Parent3_id;
+			}
+
 			public interface IGroupBy
 			{
 				[Sql("SELECT ID=1; SELECT ParentID=1, Value=2 UNION SELECT ParentID=1, Value=3")]
 				[Recordset(0, typeof(Parent))]
-				[Recordset(1, typeof(Child), IsChild=true)]
+				[Recordset(1, typeof(Child), IsChild = true)]
 				IList<Parent> Get();
 			}
 
 			[Test]
 			public void List()
 			{
+				// This is the fallback case, where the child's parentID is being set by postion 
+				// (Child's ParentID is is not present in the class, so class based mapping hints are not possible)
 				var parent = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, Value=2 UNION SELECT ParentID=1, Value=3", null,
 					Query.Returns(Some<Parent>.Records)
 						.ThenChildren(Some<Child>.Records))
 						.First();
+				Verify(parent);
+			}
+
+			[Test]
+			public void List_MappingOnParentID_InClass()
+			{
+
+				// Existing Functionality?? (confirm), note that we are now using child with the parentID property present,
+				// so class based mapping hints works
+				var parent = Connection().QuerySql(
+								"SELECT ID=1; SELECT ID=66, ParentID=1, Value=2 UNION SELECT ID=66, ParentID=1, Value=3", null,
+								Query.Returns(Some<Parent2>.Records)
+								.ThenChildren(Some<Child2>.Records))
+								.First();
+
+				Verify(parent);
+			}
+
+			/// <summary>
+			/// Detecting Child's parent id by looking at Parent's ID (Parent3_id), auto everything
+			/// New Functionality (see issue 169 in root repo) 
+			/// </summary>
+			[Test]
+			public void List_MappingOnParentID_ByParentPK()
+			{
+				var parent = Connection().QuerySql(
+								"SELECT Parent3_id=1; SELECT ID=66, Parent3_id=1, Value=2 UNION SELECT ID=66, Parent3_id=1, Value=3", null,
+								Query.Returns(Some<Parent3>.Records)
+								.ThenChildren(Some<Child3>.Records))
+								.First();
+
 				Verify(parent);
 			}
 
@@ -67,6 +124,27 @@ namespace Insight.Tests
 				Assert.AreEqual(2, parent.Children[0].Value);
 				Assert.AreEqual(3, parent.Children[1].Value);
 			}
+
+			private static void Verify(Parent2 parent)
+			{
+				Assert.AreEqual(1, parent.ID);
+				Assert.AreEqual(2, parent.Children.Count);
+				Assert.AreEqual(2, parent.Children[0].Value);
+				Assert.AreEqual(3, parent.Children[1].Value);
+				Assert.AreEqual(1, parent.Children[0].ParentID);
+				Assert.AreEqual(1, parent.Children[1].ParentID);
+			}
+
+			private static void Verify(Parent3 parent)
+			{
+				Assert.AreEqual(1, parent.Parent3_id);
+				Assert.AreEqual(2, parent.Children.Count);
+				Assert.AreEqual(2, parent.Children[0].Value);
+				Assert.AreEqual(3, parent.Children[1].Value);
+				Assert.AreEqual(1, parent.Children[0].Parent3_id);
+				Assert.AreEqual(1, parent.Children[1].Parent3_id);
+			}
+
 		}
 		#endregion
 
@@ -90,7 +168,7 @@ namespace Insight.Tests
 			{
 				[Sql("SELECT ID=1; SELECT OtherID=1, Value=2 UNION SELECT OtherID=1, Value=3")]
 				[Recordset(0, typeof(Parent))]
-				[Recordset(1, typeof(Child), IsChild = true, GroupBy="OtherID")]
+				[Recordset(1, typeof(Child), IsChild = true, GroupBy = "OtherID")]
 				IList<Parent> Get();
 			}
 
@@ -194,6 +272,95 @@ namespace Insight.Tests
 		#endregion
 
 		#region AttributeParentAutoChildComposite Tests
+
+		[TestFixture]
+		public class AttributeParentAutoChild : BaseTest  //Attributes are on the parent, but auto detect the child setup
+		{
+
+			public class Parent
+			{
+				[RecordId]
+				public int Int1;
+				public int Int2;
+				public List<Child> Children;
+			}
+
+			public class Child
+			{
+				public int Value;
+				public int Int3 { get; set; }
+				public int ParentId { get; set; }
+			}
+
+			public class Parent2
+			{
+				[RecordId]
+				public int ParentKey;
+				public int Int2;
+				public List<Child2> Children;
+			}
+
+			public class Child2
+			{
+				public int Value;
+				public int ChildKey { get; set; }
+				public int ParentKey { get; set; }
+
+			}
+
+			/// <summary>
+			/// Detecting Child's parent id by its name, "ParentID"
+			/// Parent class' ID is set by attribute
+			/// </summary>
+			[Test]
+			public void List_MappingOfParentID_ByConvention()
+			{
+				var parent = Connection().QuerySql(
+								"SELECT Int1=1, Int2=10; " +
+								"SELECT ParentId=1, Int3=30, Value=2" + " UNION " +
+								"SELECT ParentId=1, Int3=31, Value=3"
+								, null,
+								Query.Returns(Some<Parent>.Records)
+								.ThenChildren(Some<Child>.Records))
+								.First();
+
+				Assert.AreEqual(1, parent.Int1 = 1);
+				Assert.AreEqual(10, parent.Int2);
+				Assert.AreEqual(2, parent.Children.Count);
+				Assert.AreEqual(2, parent.Children[0].Value);
+				Assert.AreEqual(3, parent.Children[1].Value);
+				Assert.AreEqual(1, parent.Children[0].ParentId);
+				Assert.AreEqual(30, parent.Children[0].Int3);
+			}
+
+			/// <summary>
+			/// Detecting Child's parent id by looking at Parent's ID
+			/// New Functionality (see issue 169 in root repo) 
+			/// </summary>
+			[Test]
+			public void List_MappingOfParentID_ByParentPK()
+			{
+				var parent = Connection().QuerySql(
+								"SELECT ParentKey=1, Int2=10; " +
+								"SELECT ChildKey=30, ParentKey=1, Value=2" + " UNION " +
+								"SELECT ChildKey=31, ParentKey=1, Value=3"
+								, null,
+								Query.Returns(Some<Parent2>.Records)
+								.ThenChildren(Some<Child2>.Records))
+								.First();
+
+				Assert.AreEqual(1, parent.ParentKey = 1);
+				Assert.AreEqual(10, parent.Int2);
+				Assert.AreEqual(2, parent.Children.Count);
+				Assert.AreEqual(2, parent.Children[0].Value);
+				Assert.AreEqual(3, parent.Children[1].Value);
+				Assert.AreEqual(1, parent.Children[0].ParentKey);
+				Assert.AreEqual(30, parent.Children[0].ChildKey);
+			}
+		}
+		#endregion
+
+		#region AttributeParentAutoChildComposite Tests
 		[TestFixture]
 		public class AttributeParentAutoChildComposite : BaseTest
 		{
@@ -275,6 +442,23 @@ namespace Insight.Tests
 				public int Value;
 			}
 
+			public class Parent4
+			{
+				[RecordId(0)]
+				public int Int1;
+				[RecordId(1)]
+				public int Int2;
+				public List<Child4> Children;
+			}
+
+			public class Child4
+			{
+				public int Value;
+				public int Int1 { get; set; }
+				public int Int2 { get; set; }
+				public int Int3 { get; set; }
+			}
+
 			public interface IGroupBy
 			{
 				[Sql("SELECT ID1=1, ID2=2; SELECT ParentID1=1, ParentID2=2, Value=2 UNION SELECT ParentID1=1, ParentID2=2, Value=3")]
@@ -291,6 +475,31 @@ namespace Insight.Tests
 					.ThenChildren(Some<Child>.Records.GroupByColumns<int, int>()))
 						.First();
 				Verify(parent);
+			}
+
+			/// <summary>
+			/// Detecting Child's parent id by looking at Parent's ID (CompositeKey)
+			/// New Functionality (see issue 169 in root repo) 
+			[Test]
+			public void List_MappingOnParentID_ByParentPK_MultiID()
+			{
+				// New Functionality, detecting Child's parent id by looking at Parent's ID (multiple properties in ID)
+				var parent = Connection().QuerySql(
+								"SELECT Int1=1, Int2=10; " +
+								"SELECT Int1=1, Int2=10, Int3=30, Value=2" + " UNION " +
+								"SELECT Int1=1, Int2=10, Int3=31, Value=3"
+								, null,
+								Query.Returns(Some<Parent4>.Records)
+								.ThenChildren(Some<Child4>.Records))
+								.First();
+
+				Assert.AreEqual(1, parent.Int1 = 1);
+				Assert.AreEqual(10, parent.Int2);
+				Assert.AreEqual(2, parent.Children.Count);
+				Assert.AreEqual(2, parent.Children[0].Value);
+				Assert.AreEqual(3, parent.Children[1].Value);
+				Assert.AreEqual(1, parent.Children[0].Int1);
+				Assert.AreEqual(10, parent.Children[0].Int2);
 			}
 
 			[Test]
@@ -544,7 +753,7 @@ namespace Insight.Tests
 			{
 				[Sql("SELECT ID1=1, ID2=2; SELECT ParentID1=1, ParentID2=2, Value=2 UNION SELECT ParentID1=1, ParentID2=2, Value=3")]
 				[Recordset(0, typeof(Parent))]
-				[Recordset(1, typeof(Child), IsChild = true, GroupBy="ParentID1,ParentID2")]
+				[Recordset(1, typeof(Child), IsChild = true, GroupBy = "ParentID1,ParentID2")]
 				IList<Parent> Get();
 			}
 
