@@ -521,7 +521,7 @@ namespace Insight.Database.CodeGenerator
 							// if groupby is specified, then convert the RecordReader to an IChildRecordReader by groupby
 							if (r.GroupBy != null)
 							{
-								var childid = ChildMapperHelper.FindParentIDAccessor(childType, r.GroupBy);
+								var childid = ChildMapperHelper.FindParentIDAccessor(childType, r.GroupBy, parentType);
 								if (childid == null)
 									throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find GroupBy {0} on {1}", r.GroupBy, childType.FullName));
 

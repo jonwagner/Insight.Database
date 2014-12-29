@@ -316,12 +316,7 @@ namespace Insight.Database.CodeGenerator
 					// we are sending up an XDocument. Use ToString.
 					il.Emit(OpCodes.Callvirt, memberType.GetMethod("ToString", new Type[] { }));
 				}
-				else if (memberType.GetInterfaces().Contains(typeof(IConvertible)) || memberType == typeof(object))
-				{
-					// if the type supports IConvertible, then let SQL convert it
-					// if the type is object, we can't do anything, so let SQL attempt to convert it
-				}
-				else if (!TypeHelper.IsAtomicType(memberType))
+                else if (serializer != null && serializer.CanSerialize(memberType, sqlType))
 				{
 					il.EmitLoadType(memberType);
 					StaticFieldStorage.EmitLoad(il, serializer);
@@ -558,6 +553,10 @@ namespace Insight.Database.CodeGenerator
 		{
 			DbType sqlType;
 
+            // if the serializer can serialize it, then it's a string
+            if (serializer != null && serializer.CanSerialize(type, parameterType))
+                return serializer.GetSerializedDbType(type, parameterType);
+
 			// if the type is nullable, get the underlying type
 			var nullUnderlyingType = Nullable.GetUnderlyingType(type);
 			if (nullUnderlyingType != null)
@@ -580,10 +579,6 @@ namespace Insight.Database.CodeGenerator
 			// support for enumerables
 			if (typeof(IEnumerable).IsAssignableFrom(type))
 			{
-				// if the list should be serialized, then return a string
-				if (serializer != null && serializer.CanSerialize(type))
-					return serializer.GetSerializedDbType(type);
-
 				// use -1 to denote its a list, hacky but will work on any DB
 				return DbTypeEnumerable;
 			}

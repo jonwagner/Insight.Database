@@ -70,19 +70,6 @@ namespace Insight.Tests
 			Assert.AreEqual(input.SubStruct.Bar, result.SubStruct.Bar);
 		}
 
-		[Test, ExpectedException(typeof(InvalidOperationException))]
-		public void AtomicFieldWithSerializerShouldThrow()
-		{
-			var date = DateTime.Now;
-			var input = new InvalidClass();
-			input.DateTimeField = date;
-
-			Assert.AreEqual(date.ToString(), Connection().Single<string>("FieldAsJsonParameter", input));
-
-			var result = Connection().Query<InvalidClass>("FieldAsJsonParameter", input).First();
-			Assert.AreEqual(input.DateTimeField, result.DateTimeField);
-		}
-
 		[Test]
 		public void ListOfClassCanBeSerializedAsJsonParameter()
 		{

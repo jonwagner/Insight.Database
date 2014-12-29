@@ -748,15 +748,13 @@ namespace Insight.Tests
 		[Test]
 		public void TestInheritedInterface()
 		{
-			var connection = Connection();
-
 			// make sure that we can create an interface
-			var i = connection.As<IDerivedSql>();
+			var i = Connection().As<IDerivedSql>();
 			Assert.IsNotNull(i);
 			Assert.AreEqual("base", i.Base());
 			Assert.AreEqual("derived", i.Derived());
 
-			i = connection.AsParallel<IDerivedSql>();
+            i = Connection().AsParallel<IDerivedSql>();
 			Assert.IsNotNull(i);
 			Assert.AreEqual("base", i.Base());
 			Assert.AreEqual("derived", i.Derived());
@@ -947,21 +945,19 @@ namespace Insight.Tests
 		[Test]
 		public void TestAbstractClass()
 		{
-			var connection = Connection();
-
 			// make sure that we can create an interface
-			var i = connection.As<AbstractClass>();
+            var i = Connection().As<AbstractClass>();
 			Assert.IsNotNull(i);
 			Assert.AreEqual("abstract", i.AbstractMethod());
-			i = connection.AsParallel<AbstractClass>();
+            i = Connection().AsParallel<AbstractClass>();
 			Assert.IsNotNull(i);
 			Assert.AreEqual("abstract", i.AbstractMethod());
 
-			var derived = connection.As<DerivedAbstractClass>();
+            var derived = Connection().As<DerivedAbstractClass>();
 			Assert.IsNotNull(derived);
 			Assert.AreEqual("abstract", derived.AbstractMethod());
 			Assert.AreEqual("derived", derived.DerivedAbstractMethod());
-			derived = connection.AsParallel<DerivedAbstractClass>();
+            derived = Connection().AsParallel<DerivedAbstractClass>();
 			Assert.IsNotNull(derived);
 			Assert.AreEqual("abstract", derived.AbstractMethod());
 			Assert.AreEqual("derived", derived.DerivedAbstractMethod());

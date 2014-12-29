@@ -56,9 +56,14 @@ namespace Insight.Database.Structure
 		public Type MemberType { get; private set; }
 
 		/// <summary>
-		/// Gets the list types contained in the ID.
+		/// Gets the list of types contained in the ID.
 		/// </summary>
 		public IEnumerable<Type> MemberTypes { get { return _propInfo.Select(p => p.MemberType); } }
+
+        /// <summary>
+        /// Gets the list of names of properties contained in the ID.
+        /// </summary>
+        public IEnumerable<string> MemberNames { get { return _propInfo.Select(p => p.Name); } }
 		#endregion
 
 		/// <summary>

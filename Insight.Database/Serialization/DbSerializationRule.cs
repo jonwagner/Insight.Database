@@ -146,10 +146,6 @@ namespace Insight.Database
 			var prop = ClassPropInfo.GetMemberByName(recordType, memberName);
 			var mode = Mode ?? prop.SerializationMode;
 
-			// if we allow atomic types to get a different serializer, then there are certain situations where we can't figure out the right thing to do
-			if (mode != SerializationMode.Default && TypeHelper.IsAtomicType(memberType) && memberType != typeof(string))
-				throw new InvalidOperationException(String.Format(System.Globalization.CultureInfo.InvariantCulture, "Atomic types cannot have a column serializer: {0}.{1}", prop.Type.Name, prop.Name));
-
 			switch (mode)
 			{
 				default:
