@@ -10,6 +10,7 @@ using System.Data.SqlClient;
 using System.Data;
 using Moq;
 using System.Threading.Tasks;
+using System.Data.Common;
 
 namespace Insight.Tests
 {
@@ -245,6 +246,18 @@ namespace Insight.Tests
 			Assert.IsFalse(retry.IsTransientException(new InvalidOperationException()));
 		}
 		#endregion
-	}
+
+        #region Transaction Tests
+        [Test]
+        public void ReliableShouldWorkWithTransaction()
+        {
+            var reliable = new ReliableConnection((DbConnection)Connection());
+            using (var conn = reliable.OpenWithTransaction())
+            {
+                var ret = conn.QuerySql(@"SELECT 1");
+            }
+        }
+        #endregion
+    }
 }
 #endif
