@@ -83,6 +83,7 @@
     <Compile Include="ColumnAttributeTests.cs" />
     <Compile Include="ConstructorTests.cs" />
     <Compile Include="GroupByTests.cs" />
+    <Compile Include="OdbcTests.cs" />
     <Compile Include="SerializationTests.cs" />
     <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StructureTests.cs" />

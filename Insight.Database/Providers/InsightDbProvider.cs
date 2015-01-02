@@ -49,7 +49,12 @@ namespace Insight.Database.Providers
 				return null;
 			}
 		}
-		#endregion
+
+        /// <summary>
+        /// Gets a value indicating whether SQL Text queries use positional parameters.
+        /// </summary>
+        protected virtual bool HasPositionalSqlTextParameters { get { return false; } }
+        #endregion
 
 		#region Static Members
 		/// <summary>
@@ -163,17 +168,21 @@ namespace Insight.Database.Providers
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
-			foreach (var p in _parameterRegex.Matches(command.CommandText)
-				.Cast<Match>()
-				.Select(m => m.Groups[1].Value)
-				.Distinct(StringComparer.OrdinalIgnoreCase)
-				.Select(p =>
-				{
-					var dbParameter = (IDataParameter)command.CreateParameter();
-					dbParameter.ParameterName = p;
-					return dbParameter;
-				}))
-				command.Parameters.Add(p);
+            var parameters = _parameterRegex.Matches(command.CommandText)
+                .Cast<Match>()
+                .Select(m => m.Groups[1].Value);
+
+            if (!HasPositionalSqlTextParameters)
+                parameters = parameters.Distinct(StringComparer.OrdinalIgnoreCase);
+
+            foreach (var p in parameters.Select(
+                p =>
+                {
+                    var dbParameter = (IDataParameter)command.CreateParameter();
+                    dbParameter.ParameterName = p;
+                    return dbParameter;
+                }))
+                command.Parameters.Add(p);
 		}
 
 		/// <summary>
@@ -214,8 +223,9 @@ namespace Insight.Database.Providers
 		/// <param name="command">The command to fix up.</param>
 		public virtual void FixupCommand(IDbCommand command)
 		{
-			// by default, do nothing
-		}
+            if (HasPositionalSqlTextParameters)
+                command.CommandText = _parameterRegex.Replace(command.CommandText, "?");
+        }
 
 		/// <summary>
 		/// When building the parameter template, this allows the provider to fix properties.
