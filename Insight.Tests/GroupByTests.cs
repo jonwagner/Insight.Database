@@ -49,6 +49,18 @@ namespace Insight.Tests
 				public int Parent3_id;
 			}
 
+			public class Parent4
+			{
+				public int ID;
+				public List<Child4> Children;
+			}
+
+			public class Child4
+			{
+				public int OtherID;
+				public int Value;
+			}
+
 			public interface IGroupBy
 			{
 				[Sql("SELECT ID=1; SELECT ParentID=1, Value=2 UNION SELECT ParentID=1, Value=3")]
@@ -114,6 +126,26 @@ namespace Insight.Tests
 			{
 				var parent = Connection().As<IGroupBy>().Get().First();
 				Verify(parent);
+			}
+
+			/// <summary>
+			/// Try to demonstrate an issue when the mapping is done via the Guardian.
+			/// The child parentId is set to 0.  (see issue #182).
+			/// </summary>
+			[Test]
+			public void List_AutoGroupByUsingGuardian()
+			{
+				var parent = Connection().QuerySql("SELECT ID=1; SELECT OtherID=1, Value=2 UNION SELECT OtherID=1, Value=3", null,
+					Query.Returns(Some<Parent4>.Records)
+						.ThenChildren(Some<Child4>.Records))  // .ThenChildren(Some<Child4>.Records.GroupBy(c => c.OtherID)))
+						.First();
+
+				Assert.AreEqual(1, parent.ID);
+				Assert.AreEqual(2, parent.Children.Count);
+				Assert.AreEqual(parent.ID, parent.Children[0].OtherID);
+				Assert.AreEqual(2, parent.Children[0].Value);
+				Assert.AreEqual(parent.ID, parent.Children[1].OtherID);
+				Assert.AreEqual(3, parent.Children[1].Value);
 			}
 
 			private static void Verify(Parent parent)
