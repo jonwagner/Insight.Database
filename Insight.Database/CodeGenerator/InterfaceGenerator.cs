@@ -749,7 +749,12 @@ namespace Insight.Database.CodeGenerator
 				if (parameterType.IsByRef)
 					parameterType = parameterType.GetElementType();
 
-				FieldBuilder fb = tb.DefineField(p.Name, parameterType, FieldAttributes.Public);
+                FieldBuilder fb = tb.DefineField(p.Name, parameterType, FieldAttributes.Public);
+
+                // if there is a column attribute, copy it to the field
+                var columnAttribute = (ColumnAttribute)p.GetCustomAttribute(typeof(ColumnAttribute));
+                if (columnAttribute != null)
+                    fb.SetCustomAttribute(columnAttribute.GetCustomAttributeBuilder());
 
 				ctorIL.Emit(OpCodes.Ldarg_0);					// this
 				ctorIL.Emit(OpCodes.Ldarg, p.Position + 1);		// parameter (in order)

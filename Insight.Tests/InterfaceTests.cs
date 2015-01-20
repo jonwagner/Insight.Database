@@ -1067,4 +1067,23 @@ namespace Insight.Tests
         }
     }
     #endregion  
+
+    #region Parameter Tests
+    [TestFixture]
+    public class ParameterWithAttributeTest : BaseTest
+    {
+        public interface IHaveColumnAttribute
+        {
+            [Sql("SELECT @p")]
+            int RenameParameter([Column("p")]int q);
+        }
+
+        [Test]
+        public void ParameterNameCanBeOverridden()
+        {
+            var p = Connection().As<IHaveColumnAttribute>().RenameParameter(5);
+            Assert.AreEqual(5, p);
+        }
+    }
+    #endregion
 }
