@@ -752,7 +752,7 @@ namespace Insight.Database.CodeGenerator
                 FieldBuilder fb = tb.DefineField(p.Name, parameterType, FieldAttributes.Public);
 
                 // if there is a column attribute, copy it to the field
-                var columnAttribute = (ColumnAttribute)p.GetCustomAttribute(typeof(ColumnAttribute));
+                var columnAttribute = (ColumnAttribute)p.GetCustomAttributes(false).OfType<ColumnAttribute>().FirstOrDefault();
                 if (columnAttribute != null)
                     fb.SetCustomAttribute(columnAttribute.GetCustomAttributeBuilder());
 

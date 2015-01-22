@@ -47,20 +47,31 @@ namespace Insight.Database
 		public Type Serializer { get; set; }
 		#endregion
 
+        /// <summary>
+        /// Returns a custom attribute builder for the attribute.
+        /// </summary>
+        /// <returns>The CustomAttributeBuilder.</returns>
         internal CustomAttributeBuilder GetCustomAttributeBuilder()
         {
-            return new CustomAttributeBuilder(
-                typeof(ColumnAttribute).GetConstructor(Type.EmptyTypes), Parameters.EmptyArray,
-                new[] { 
+            var properties = new[]
+                { 
                     typeof(ColumnAttribute).GetProperty("ColumnName"),
                     typeof(ColumnAttribute).GetProperty("SerializationMode"),
                     typeof(ColumnAttribute).GetProperty("Serializer")
-                },
-                new object[] {
+                };
+
+            var values = new object[]
+                {
                     ColumnName,
                     SerializationMode,
                     Serializer
-                });                     
+                };
+
+            return new CustomAttributeBuilder(
+                typeof(ColumnAttribute).GetConstructor(Type.EmptyTypes),
+                Parameters.EmptyArray,
+                properties,
+                values);                     
         }
 	}
 }
