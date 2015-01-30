@@ -120,6 +120,7 @@ Task Build40 {
 		Do-Build40 "Insight.Database"
 		Do-Build40 "Insight.Database.Configuration"
 		Do-Build40 "Insight.Database.Compatibility3x"
+		Do-Build40 "Insight.Database.Json"
 		Do-Build40 "Insight.Database.Providers.Default"
 		Do-Build40 "Insight.Database.Providers.DB2"
 		Do-Build40 "Insight.Database.Providers.Glimpse"
