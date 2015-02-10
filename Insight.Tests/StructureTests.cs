@@ -816,4 +816,47 @@ namespace Insight.Tests
 		}
 	}
 	#endregion
+
+    [TestFixture]
+    public class Issue188Tests : BaseTest
+    {
+        class Parent
+        {
+            public int ID;
+            public List<Child> Children;
+        }
+        class Child
+        {
+            public int ParentID;
+            public int ID;
+        }
+
+        [Test]
+        private void ResultsCanBeContinuedWithThenChildren()
+        {
+            var returns =
+            Query.Returns(Some<Parent>.Records)
+                    .ThenChildren(Some<Child>.Records)
+                    .Then(Some<Parent>.Records)
+                    .ThenChildren(Some<Child>.Records);
+
+            var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ID=2; SELECT ParentID=2, ID=3", null, returns);
+            Assert.AreEqual(2, results.Set2[0].ID);
+            Assert.AreEqual(3, results.Set2[0].ID);
+        }
+
+        [Test]
+        private void ResultsCanBeContinuedWithThenChildren2()
+        {
+            var returns =
+            Query.Returns(Some<Parent>.Records)
+                    .ThenChildren(Some<Child>.Records)
+                    .Then(Some<Parent>.Records)
+                    .ThenChildren<Parent, Parent, Child, int>(Some<Child>.Records.GroupBy(c => c.ParentID));
+
+            var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ID=2; SELECT ParentID=2, ID=3", null, returns);
+            Assert.AreEqual(2, results.Set2[0].ID);
+            Assert.AreEqual(3, results.Set2[0].ID);
+        }
+    }
 }
