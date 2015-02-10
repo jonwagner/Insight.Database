@@ -818,7 +818,7 @@ namespace Insight.Tests
 	#endregion
 
     [TestFixture]
-    public class Issue188Tests : BaseTest
+    public class Issue188 : BaseTest
     {
         class Parent
         {
@@ -832,7 +832,7 @@ namespace Insight.Tests
         }
 
         [Test]
-        private void ResultsCanBeContinuedWithThenChildren()
+        public void ResultsCanBeContinuedWithThenChildren()
         {
             var returns =
             Query.Returns(Some<Parent>.Records)
@@ -842,11 +842,11 @@ namespace Insight.Tests
 
             var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ID=2; SELECT ParentID=2, ID=3", null, returns);
             Assert.AreEqual(2, results.Set2[0].ID);
-            Assert.AreEqual(3, results.Set2[0].ID);
+            Assert.AreEqual(3, results.Set2[0].Children[0].ID);
         }
 
         [Test]
-        private void ResultsCanBeContinuedWithThenChildren2()
+        public void ResultsCanBeContinuedWithThenChildren2()
         {
             var returns =
             Query.Returns(Some<Parent>.Records)
@@ -856,7 +856,7 @@ namespace Insight.Tests
 
             var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ID=2; SELECT ParentID=2, ID=3", null, returns);
             Assert.AreEqual(2, results.Set2[0].ID);
-            Assert.AreEqual(3, results.Set2[0].ID);
+            Assert.AreEqual(3, results.Set2[0].Children[0].ID);
         }
     }
 }
