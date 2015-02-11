@@ -110,7 +110,7 @@ namespace Insight.Database
 				{
 					var then = typeof(Query)
 						.GetMethods(BindingFlags.Public | BindingFlags.Static)
-						.First(m => m.Name == "Then" && m.GetParameters().Length == 2 && m.GetParameters()[0].ParameterType.Name.StartsWith("IQueryReader"))
+						.First(m => m.Name == "Then" && m.GetParameters().Length == 2 && m.GetParameters()[0].ParameterType.Name.StartsWith("IQueryReader") && m.GetGenericArguments().Length == i + 1)
 						.MakeGenericMethod(types.Take(i + 1).ToArray());
 					def = (IQueryReader)then.Invoke(null, new object[] { def, oneToOne });
 				}
