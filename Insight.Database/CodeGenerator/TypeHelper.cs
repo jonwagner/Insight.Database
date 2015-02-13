@@ -126,7 +126,7 @@ namespace Insight.Database.CodeGenerator
 			if (type.IsGenericParameter || type.IsValueType)
 			{
 				var returnValue = mIL.DeclareLocal(type);
-				mIL.Emit(OpCodes.Ldloca_S, returnValue);
+				mIL.Emit(returnValue.LocalIndex < 256 ? OpCodes.Ldloca_S : OpCodes.Ldloca, returnValue);
 				mIL.Emit(OpCodes.Initobj, type);
 				mIL.Emit(OpCodes.Ldloc, returnValue);
 			}
