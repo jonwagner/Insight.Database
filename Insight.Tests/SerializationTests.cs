@@ -69,13 +69,9 @@ namespace Insight.Tests
             using (var c = Connection().OpenWithTransaction())
             {
                 var b = c.QuerySql<HasBool>("SELECT IsBool='Y', IsNullableBool=NULL").First();
-                Console.WriteLine(b.IsBool);
-                Console.WriteLine(b.IsNullableBool);
 
                 c.ExecuteSql("CREATE PROC TestBool(@IsBool varchar(10), @IsNullableBool varchar(10)) AS SELECT IsBool=@IsBool, IsNullableBool=@IsNullableBool;");
                 var b2 = c.Query<HasBool>("TestBool", b).First();
-                Console.WriteLine(b2.IsBool);
-                Console.WriteLine(b2.IsNullableBool);
             }
         }
 

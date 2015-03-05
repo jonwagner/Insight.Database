@@ -53,13 +53,13 @@ namespace Insight.Tests
 		[Test]
 		public void ForEachSqlBroken()
 		{
-			Connection().ForEachSql<int>("select 1", Parameters.Empty, Console.WriteLine);
+			Connection().ForEachSql<int>("select 1", Parameters.Empty, _ => { ; });
 		}
 
 		[Test]
 		public void ForEachBroken()
 		{
-			Connection().ForEach<FastExpando>("sp_who", Parameters.Empty, Console.WriteLine);
+			Connection().ForEach<FastExpando>("sp_who", Parameters.Empty, _ => { ; });
 		}
 
         [Test]

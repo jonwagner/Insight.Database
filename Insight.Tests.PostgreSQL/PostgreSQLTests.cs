@@ -247,7 +247,7 @@ namespace Insight.Tests.PostgreSQL
 			int retries = 0;
 			var retryStrategy = new RetryStrategy();
 			retryStrategy.MaxRetryCount = 1;
-			retryStrategy.Retrying += (sender, re) => { Console.WriteLine("Retrying. Attempt {0}", re.Attempt); retries++; };
+			retryStrategy.Retrying += (sender, re) => { retries++; };
 
 			try
 			{

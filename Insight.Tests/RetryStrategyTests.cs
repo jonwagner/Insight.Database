@@ -34,7 +34,7 @@ namespace Insight.Tests
 			_mockRetryStrategy.Setup(r => r.IsTransientException(It.IsAny<Exception>())).Returns(true);
 
 			// log messages so we can see what is going on
-			RetryStrategy.Retrying += (sender, re) => { Console.WriteLine("Retrying. Attempt {0}", re.Attempt); Retries++; };
+			RetryStrategy.Retrying += (sender, re) => { Retries++; };
 
 			// by default only retry once or tests will take long
 			RetryStrategy.MaxRetryCount = 1;
