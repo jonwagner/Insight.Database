@@ -214,7 +214,11 @@ CREATE PROC TestDateTime2 @date datetime2 AS SELECT @date
 GO
 CREATE PROC TestDateTimeConvert @p datetime2 AS SELECT @p
 GO
-CREATE PROC TestGuidParam @p uniqueidentifier AS SELECT @p
+CREATE PROC TestGuidFromStringParam @p uniqueidentifier AS SELECT @p
+GO
+CREATE PROC TestGuidToStringParam @p varchar(300) AS SELECT convert(uniqueidentifier, @p)
+GO
+CREATE PROC TestStringToGuidValue @p varchar(300) AS SELECT convert(uniqueidentifier, @p)
 GO
 CREATE PROC GeometryProc (@geo [geometry]) AS SELECT @geo
 GO

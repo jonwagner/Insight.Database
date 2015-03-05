@@ -948,9 +948,31 @@ namespace Insight.Tests
 		public void GuidsShouldConvertFromString()
 		{
 			Guid g = Guid.NewGuid();
-			var results = Connection().Query<Guid>("TestGuidParam", new { p = g.ToString() }).First();
+			var results = Connection().Query<Guid>("TestGuidFromStringParam", new { p = g.ToString() }).First();
 			Assert.AreEqual(g, results);
 		}
+
+        [Test]
+        public void GuidsShouldConvertToString()
+        {
+            Guid g = Guid.NewGuid();
+            var results = Connection().Query<Guid>("TestGuidToStringParam", new { p = g }).First();
+            Assert.AreEqual(g, results);
+        }
+
+        [Test]
+        public void GuidsShouldConvertAsValueResult()
+        {
+            var results = Connection().QuerySql<Guid>("SELECT CONVERT(varchar(200),NEWID())").First();
+        }
+
+        [Test]
+        public void GuidsShouldBeSentAsGuidToUntypedParameter()
+        {
+            Guid g = Guid.NewGuid();
+            var results = Connection().ExecuteScalarSql<object>("SELECT @p", new { p = g });
+            Assert.AreEqual(g, results);
+        }
 		#endregion
 
 		#region SqlGeometry Tests

@@ -61,9 +61,10 @@ namespace Insight.Database.CodeGenerator
 			_simpleDeserializers.TryAdd(typeof(XmlDocument), GetXmlDocumentDeserializer());
 			_simpleDeserializers.TryAdd(typeof(XDocument), GetXDocumentDeserializer());
 			_simpleDeserializers.TryAdd(typeof(byte[]), GetByteArrayDeserializer());
-			_simpleDeserializers.TryAdd(typeof(char), new Func<IDataReader, char>(r => TypeConverterGenerator.ReadChar(r.GetValue(0))));
+            _simpleDeserializers.TryAdd(typeof(char), new Func<IDataReader, char>(r => TypeConverterGenerator.ReadChar(r.GetValue(0))));
 			_simpleDeserializers.TryAdd(typeof(char?), new Func<IDataReader, char?>(r => TypeConverterGenerator.ReadNullableChar(r.GetValue(0))));
 			_simpleDeserializers.TryAdd(typeof(string), GetValueDeserializer<string>());
+            _simpleDeserializers.TryAdd(typeof(Guid), GetGuidDeserializer());
 
 			_simpleDeserializers.TryAdd(typeof(byte), GetValueDeserializer<byte>());
 			_simpleDeserializers.TryAdd(typeof(short), GetValueDeserializer<short>());
@@ -307,6 +308,26 @@ namespace Insight.Database.CodeGenerator
 				return (byte[])value;
 			};
 		}
+
+        /// <summary>
+        /// Get a deserializer that returns a single Guid value from the return result.
+        /// </summary>
+        /// <returns>The deserializer to use.</returns>
+        private static Func<IDataReader, Guid> GetGuidDeserializer()
+        {
+            return r =>
+            {
+                object value = r.GetValue(0);
+                if (value is Guid)
+                    return (Guid)value;
+
+#if NET35
+				return new Guid(value.ToString());
+#else
+                return Guid.Parse(value.ToString());
+#endif
+            };
+        }
 		#endregion
 
 		#region Dynamic Object Methods

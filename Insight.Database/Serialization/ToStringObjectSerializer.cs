@@ -31,6 +31,7 @@ namespace Insight.Database
             if (type == TypeHelper.LinqBinaryType)
                 return false;
 
+            // never try to convert an atomic type
             if (TypeHelper.IsAtomicType(type))
                 return false;
 
