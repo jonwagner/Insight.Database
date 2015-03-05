@@ -37,10 +37,12 @@ function Replace-Version {
         [string] $Path
     )
 
-    (Get-Content $Path) |
+    $x = (Get-Content $Path) |
 		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } |
 		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyfileversion`")]" } |
-		Set-Content $Path
+		Out-String
+
+	$x.Trim() | Out-File $Path 
 }
 
 function ReplaceVersions {
@@ -208,9 +210,10 @@ Task PackageOnly {
 			$nuspec = $_.FullName
 
 			try {
-				(Get-Content $nuspec) |
+				$x = (Get-Content $nuspec) |
 					% { $_ -replace "<dependency id=`"Insight.Database.Core`" version=`"(\d+\.?)*`">","<dependency id=`"Insight.Database.Core`" version=`"$version`">" } |
-					Set-Content $nuspec
+					Out-String
+				$x.Trim() | Out-File $nuspec 
 
 				Invoke-Expression "$nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis"
 			}
