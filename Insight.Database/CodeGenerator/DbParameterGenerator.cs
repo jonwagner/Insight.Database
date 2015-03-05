@@ -529,24 +529,28 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Ldarg_1);
 
 				// if this is a deep mapping, then get the parent object, and do a null test if its not a value type
-				if (mapping.IsDeep)
-				{
-					ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
+                if (mapping.IsDeep)
+                {
+                    ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
 
-					if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.IsValueType)
-					{
-						il.Emit(OpCodes.Dup);
-						il.Emit(OpCodes.Brfalse, finishLabel);
-					}
-				}
+                    if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.IsValueType)
+                    {
+                        il.Emit(OpCodes.Dup);
+                        var label = il.DefineLabel();
+                        il.Emit(OpCodes.Brtrue, label);
+                        il.Emit(OpCodes.Pop);               // pop the object before finishing
+                        il.Emit(OpCodes.Br, finishLabel);
+                        il.MarkLabel(label);
+                    }
+                }
 
-				// get the parameter out of the collection
-				il.Emit(OpCodes.Ldloc, localParameters);
-				il.Emit(OpCodes.Ldstr, parameter.ParameterName);                 // push (parametername)
-				il.Emit(OpCodes.Callvirt, _iDataParameterCollectionGetItem);
+                // get the parameter out of the collection
+                il.Emit(OpCodes.Ldloc, localParameters);
+                il.Emit(OpCodes.Ldstr, parameter.ParameterName);                 // push (parametername)
+                il.Emit(OpCodes.Callvirt, _iDataParameterCollectionGetItem);
 
-				// get the value out of the parameter
-				il.Emit(OpCodes.Callvirt, _iDataParameterGetValue);
+                // get the value out of the parameter
+                il.Emit(OpCodes.Callvirt, _iDataParameterGetValue);
 
 				// emit the code to convert the value and set it on the object
 				TypeConverterGenerator.EmitConvertAndSetValue(il, _dbTypeToTypeMap[parameter.DbType], mapping);
