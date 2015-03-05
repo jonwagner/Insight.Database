@@ -58,7 +58,7 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, ListReader<<#= typeList #>>.Default, commandType, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -86,7 +86,7 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, ListReader<<#= typeList #>>.Default, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -101,7 +101,7 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		/// <param name="task">The data reader task to continue.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T1>> ToListAsync<<#= typeList #>>(this Task<IDataReader> task, CancellationToken? cancellationToken = null)
+		public static Task<IList<T1>> ToListAsync<<#= typeList #>>(this Task<IDataReader> task, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return task.ToListAsync(OneToOne<<#= typeList #>>.Records, cancellationToken);
 		}
@@ -141,7 +141,7 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, ResultsReader<<#= typeList #>>.Default, commandType, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -169,7 +169,7 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, ResultsReader<<#= typeList #>>.Default, CommandType.Text, commandBehavior | CommandBehavior.SequentialAccess, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -209,7 +209,7 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, SingleReader<<#= typeList #>>.Default, commandType, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -237,7 +237,7 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, SingleReader<<#= typeList #>>.Default, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);

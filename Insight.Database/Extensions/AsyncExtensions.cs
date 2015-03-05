@@ -43,11 +43,9 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
@@ -65,13 +63,13 @@ namespace Insight.Database
 					// DbCommand now supports async execute
 					DbCommand dbCommand = cmd as DbCommand;
 					if (dbCommand != null)
-						return dbCommand.ExecuteNonQueryAsync(ct);
+						return dbCommand.ExecuteNonQueryAsync(cancellationToken);
 					else
-						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), ct);
+						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), cancellationToken);
 #endif
 				},
 				closeConnection,
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 
@@ -94,7 +92,7 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.ExecuteAsync(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -124,11 +122,9 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
 				c => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
@@ -142,13 +138,13 @@ namespace Insight.Database
 					// DbCommand now supports async execute
 					DbCommand dbCommand = cmd as DbCommand;
 					if (dbCommand != null)
-						return dbCommand.ExecuteScalarAsync(ct).ContinueWith(t => ConvertScalar<T>(cmd, parameters, outputParameters, t.Result), TaskContinuationOptions.ExecuteSynchronously);
+						return dbCommand.ExecuteScalarAsync(cancellationToken).ContinueWith(t => ConvertScalar<T>(cmd, parameters, outputParameters, t.Result), TaskContinuationOptions.ExecuteSynchronously);
 					else
-						return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), ct);
+						return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), cancellationToken);
 #endif
 				},
 				closeConnection,
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 
@@ -172,7 +168,7 @@ namespace Insight.Database
 			bool closeConnection = false,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.ExecuteScalarAsync<T>(sql, parameters, CommandType.Text, closeConnection, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -204,18 +200,16 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
 				true,
-				(cmd, r) => returns.ReadAsync(cmd, r, ct),
+				(cmd, r) => returns.ReadAsync(cmd, r, cancellationToken),
 				commandBehavior,
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 
@@ -241,7 +235,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, returns, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -268,7 +262,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, ListReader<FastExpando>.Default, commandType, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -293,7 +287,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, ListReader<FastExpando>.Default, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -313,7 +307,7 @@ namespace Insight.Database
 		public static Task<IList<FastExpando>> QueryAsync(
 			this IDbCommand command,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return command.QueryAsync(ListReader<FastExpando>.Default, commandBehavior, cancellationToken, outputParameters);
@@ -334,21 +328,19 @@ namespace Insight.Database
 			this IDbCommand command,
 			IQueryReader<T> returns,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			if (command == null) throw new ArgumentNullException("command");
 			if (returns == null) throw new ArgumentNullException("returns");
 
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return command.Connection.ExecuteAsyncAndAutoClose(
 				null,
 				c => command,
 				true,
-				(cmd, r) => returns.ReadAsync(command, r, ct),
+				(cmd, r) => returns.ReadAsync(command, r, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 		#endregion
@@ -376,7 +368,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null) where T : Results, new()
 		{
 			return connection.QueryAsync(
@@ -411,7 +403,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null) where T : Results, new()
 		{
 			return connection.QueryResultsAsync<T>(
@@ -450,18 +442,16 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
 				true,
 				(cmd, r) => { read(r); return Helpers.FalseTask; },
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 
@@ -486,7 +476,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -516,18 +506,16 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
 				true,
 				(cmd, r) => Helpers.FromResult(read(r)),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 
@@ -553,7 +541,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync(sql, parameters, read, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -568,7 +556,7 @@ namespace Insight.Database
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<FastExpando>> ToListAsync(this IDataReader reader, CancellationToken? cancellationToken = null)
+		public static Task<IList<FastExpando>> ToListAsync(this IDataReader reader, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var ct = cancellationToken ?? CancellationToken.None;
 
@@ -583,7 +571,7 @@ namespace Insight.Database
 		/// <param name="recordReader">The record reader to use to read the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToListAsync<T>(this IDataReader reader, IRecordReader<T> recordReader = null, CancellationToken? cancellationToken = null)
+		public static Task<IList<T>> ToListAsync<T>(this IDataReader reader, IRecordReader<T> recordReader = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var ct = cancellationToken ?? CancellationToken.None;
 
@@ -596,7 +584,7 @@ namespace Insight.Database
 		/// <param name="reader">The data reader to read from.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<FastExpando>> ToListAsync(this IDataReader reader, CancellationToken? cancellationToken = null)
+		public static Task<IList<FastExpando>> ToListAsync(this IDataReader reader, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return reader.ToListAsync(OneToOne<FastExpando>.Records, cancellationToken);
 		}
@@ -609,11 +597,9 @@ namespace Insight.Database
 		/// <param name="recordReader">The reader to use to read the record.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToListAsync<T>(this IDataReader reader, IRecordReader<T> recordReader, CancellationToken? cancellationToken = null)
+		public static Task<IList<T>> ToListAsync<T>(this IDataReader reader, IRecordReader<T> recordReader, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
-			return reader.ToListAsync(recordReader, ct, firstRecordOnly: false);
+			return reader.ToListAsync(recordReader, cancellationToken, firstRecordOnly: false);
 		}
 #endif
 		
@@ -625,14 +611,13 @@ namespace Insight.Database
 		/// <param name="recordReader">The reader to use to read the record.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToListAsync<T>(this Task<IDataReader> task, IRecordReader<T> recordReader, CancellationToken? cancellationToken = null)
+		public static Task<IList<T>> ToListAsync<T>(this Task<IDataReader> task, IRecordReader<T> recordReader, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (task == null) throw new ArgumentNullException("task");
 
-			var ct = cancellationToken ?? CancellationToken.None;
-			ct.ThrowIfCancellationRequested();
+			cancellationToken.ThrowIfCancellationRequested();
 
-			return task.ContinueWith(reader => reader.ToListAsync(recordReader), ct).Unwrap();
+			return task.ContinueWith(reader => reader.ToListAsync(recordReader), cancellationToken).Unwrap();
 		}
 		#endregion
 
@@ -666,18 +651,16 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters ?? inserted,
 				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
 				true,
 				(cmd, r) => r.MergeAsync(inserted, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 
@@ -707,7 +690,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.InsertAsync(sql, inserted, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -741,18 +724,16 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
 			return connection.ExecuteAsyncAndAutoClose(
 				parameters ?? inserted,
 				c => c.CreateCommand(sql, parameters ?? inserted, commandType, commandTimeout, transaction),
 				true,
 				(cmd, r) => r.MergeAsync(inserted, cancellationToken),
 				commandBehavior.HasFlag(CommandBehavior.CloseConnection),
-				ct,
+				cancellationToken,
 				outputParameters);
 		}
 
@@ -782,7 +763,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.InsertListAsync(sql, inserted, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -816,7 +797,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.InsertAsync(sql, onto, parameters, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -846,7 +827,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.InsertSqlAsync(sql, onto, parameters, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -878,7 +859,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.InsertListAsync(sql, onto, parameters, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -908,7 +889,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.InsertListSqlAsync(sql, onto, parameters, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -929,7 +910,7 @@ namespace Insight.Database
 		/// The reader is then advanced to the next result or disposed.
 		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
 		/// </remarks>
-		public static Task<T> MergeAsync<T>(this IDataReader reader, T item, CancellationToken? cancellationToken = null)
+		public static Task<T> MergeAsync<T>(this IDataReader reader, T item, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var ct = cancellationToken ?? CancellationToken.None;
 
@@ -949,7 +930,7 @@ namespace Insight.Database
 		/// The reader is then advanced to the next result or disposed.
 		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
 		/// </remarks>
-		public static Task<IEnumerable<T>> MergeAsync<T>(this IDataReader reader, IEnumerable<T> items, CancellationToken? cancellationToken = null)
+		public static Task<IEnumerable<T>> MergeAsync<T>(this IDataReader reader, IEnumerable<T> items, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var ct = cancellationToken ?? CancellationToken.None;
 
@@ -969,7 +950,7 @@ namespace Insight.Database
 		/// The reader is then advanced to the next result or disposed.
 		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
 		/// </remarks>
-		public static async Task<T> MergeAsync<T>(this IDataReader reader, T item, CancellationToken? cancellationToken = null)
+		public static async Task<T> MergeAsync<T>(this IDataReader reader, T item, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			await reader.MergeAsync<T>(new T[] { item }, cancellationToken).ConfigureAwait(false);
 
@@ -989,10 +970,9 @@ namespace Insight.Database
 		/// The reader is then advanced to the next result or disposed.
 		/// To merge multiple records from the reader, pass an IEnumerable&lt;T&gt; to the method.
 		/// </remarks>
-		public static async Task<IEnumerable<T>> MergeAsync<T>(this IDataReader reader, IEnumerable<T> items, CancellationToken? cancellationToken = null)
+		public static async Task<IEnumerable<T>> MergeAsync<T>(this IDataReader reader, IEnumerable<T> items, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-			ct.ThrowIfCancellationRequested();
+			cancellationToken.ThrowIfCancellationRequested();
 
 			bool moreResults = false;
 
@@ -1008,15 +988,15 @@ namespace Insight.Database
 				// read the identities of each item from the recordset and merge them into the objects
 				foreach (T item in items)
 				{
-					await dbReader.ReadAsync(ct).ConfigureAwait(false);
+					await dbReader.ReadAsync(cancellationToken).ConfigureAwait(false);
 
-					ct.ThrowIfCancellationRequested();
+					cancellationToken.ThrowIfCancellationRequested();
 
 					merger(reader, item);
 				}
 
 				// we are done with this result set, so move onto the next or clean up the reader
-				moreResults = await dbReader.NextResultAsync(ct).ConfigureAwait(false);
+				moreResults = await dbReader.NextResultAsync(cancellationToken).ConfigureAwait(false);
 
 				return items;
 			}
@@ -1083,7 +1063,7 @@ namespace Insight.Database
 			bool closeConnection = false,
 			InsightBulkCopyOptions options = InsightBulkCopyOptions.Default,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var reader = GetObjectReader(connection, tableName, transaction, list);
 
@@ -1094,7 +1074,7 @@ namespace Insight.Database
 				closeConnection,
 				options,
 				transaction,
-				cancellationToken ?? CancellationToken.None);
+				cancellationToken);
 		}
 
 		/// <summary>
@@ -1117,7 +1097,7 @@ namespace Insight.Database
 			bool closeConnection = false,
 			InsightBulkCopyOptions options = InsightBulkCopyOptions.Default,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (source == null) throw new ArgumentNullException("source");
 
@@ -1141,7 +1121,7 @@ namespace Insight.Database
 								},
 								TaskContinuationOptions.ExecuteSynchronously);
 					},
-					cancellationToken ?? CancellationToken.None);
+					cancellationToken);
 		}
 		#endregion
 
@@ -1430,7 +1410,7 @@ namespace Insight.Database
 			this IDbCommand command,
 			IQueryReader returns,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			// this method lets us convert QueryCoreAsync to a delegate for dynamic calls

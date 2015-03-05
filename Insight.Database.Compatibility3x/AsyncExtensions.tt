@@ -58,7 +58,7 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<<#= typeList #>>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -86,7 +86,7 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<<#= typeList #>>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}

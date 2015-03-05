@@ -91,7 +91,7 @@ namespace Insight.Database
 		/// <param name="builder">The connection string to open and return.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<T> OpenAsAsync<T>(this SqlConnectionStringBuilder builder, CancellationToken? cancellationToken = null) where T : class, IDbConnection
+		public static Task<T> OpenAsAsync<T>(this SqlConnectionStringBuilder builder, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection
 		{
 			return builder.Connection().OpenAsAsync<T>(cancellationToken);
 		}
@@ -112,7 +112,7 @@ namespace Insight.Database
 		/// <param name="builder">The builder for the connection.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
-		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this SqlConnectionStringBuilder builder, CancellationToken? cancellationToken = null)
+		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this SqlConnectionStringBuilder builder, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return builder.Connection().OpenWithTransactionAsync(cancellationToken);
 		}
@@ -135,7 +135,7 @@ namespace Insight.Database
 		/// <param name="builder">The builder for the connection.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
-		public static Task<T> OpenWithTransactionAsAsync<T>(this SqlConnectionStringBuilder builder, CancellationToken? cancellationToken = null) where T : class, IDbConnection, IDbTransaction
+		public static Task<T> OpenWithTransactionAsAsync<T>(this SqlConnectionStringBuilder builder, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
 		{
 			return builder.Connection().OpenWithTransactionAsAsync<T>(cancellationToken);
 		}

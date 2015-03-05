@@ -22,7 +22,7 @@ namespace Insight.Database
 		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<TResult>> ToListAsync<TResult>(this IDataReader reader, Type withGraph = null, CancellationToken? cancellationToken = null)
+		public static Task<IList<TResult>> ToListAsync<TResult>(this IDataReader reader, Type withGraph = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
 
@@ -37,7 +37,7 @@ namespace Insight.Database
 		/// <param name="withGraph">The object graph to use to deserialize the objects or null to use the default graph.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<TResult>> ToListAsync<TResult>(this IDataReader reader, Type withGraph = null, CancellationToken? cancellationToken = null)
+		public static Task<IList<TResult>> ToListAsync<TResult>(this IDataReader reader, Type withGraph = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var oneToOne = Graph.GetOneToOne<TResult>(withGraph);
 			return reader.ToListAsync(oneToOne, cancellationToken);
@@ -52,14 +52,13 @@ namespace Insight.Database
 		/// <param name="withGraph">The object graph to use to deserialize the objects.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken? cancellationToken = null)
+		public static Task<IList<TResult>> ToListAsync<TResult>(this Task<IDataReader> task, Type withGraph = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (task == null) throw new ArgumentNullException("task");
 
-			CancellationToken ct = (cancellationToken != null) ? cancellationToken.Value : CancellationToken.None;
-			ct.ThrowIfCancellationRequested();
+			cancellationToken.ThrowIfCancellationRequested();
 
-			return task.ContinueWith(reader => reader.ToListAsync<TResult>(withGraph), ct).Unwrap();
+			return task.ContinueWith(reader => reader.ToListAsync<TResult>(withGraph), cancellationToken).Unwrap();
 		}
 		#endregion
 
@@ -79,7 +78,7 @@ namespace Insight.Database
 			this IDbCommand command,
 			Type withGraph,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			var returns = new ListReader<T>(Graph.GetOneToOne<T>(withGraph));
@@ -112,7 +111,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryResultsAsync<Results<TResult>>(sql, parameters, Graph.ToArray(withGraph), commandType, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters)
@@ -141,7 +140,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);
@@ -164,7 +163,7 @@ namespace Insight.Database
 			this IDbCommand command,
 			Type[] withGraphs,
 			CommandBehavior commandBehavior = CommandBehavior.Default,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null) where T : Results, new()
 		{
 			var definition = (IQueryReader<T>)Graph.GetDefinitionFromGraphArray(typeof(T), withGraphs);
@@ -195,7 +194,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null) where T : Results, new()
 		{
 			var returns = (IQueryReader<T>)Graph.GetDefinitionFromGraphArray(typeof(T), withGraphs);
@@ -225,7 +224,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null) where T : Results, new()
 		{
 			var returns = (IQueryReader<T>)Graph.GetDefinitionFromGraphArray(typeof(T), withGraphs);
@@ -259,7 +258,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.QueryAsync<TResult>(sql, parameters, withGraph, commandType, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters)
@@ -288,7 +287,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null,
+			CancellationToken cancellationToken = default(CancellationToken),
 			object outputParameters = null)
 		{
 			return connection.SingleAsync<TResult>(sql, parameters, withGraph, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken, outputParameters);

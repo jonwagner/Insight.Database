@@ -43,7 +43,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -70,7 +70,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -100,7 +100,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -128,7 +128,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -159,7 +159,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -188,7 +188,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -220,7 +220,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -250,7 +250,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -283,7 +283,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -314,7 +314,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -348,7 +348,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -380,7 +380,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -415,7 +415,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -448,7 +448,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -484,7 +484,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -518,7 +518,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -555,7 +555,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -590,7 +590,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -628,7 +628,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -664,7 +664,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -703,7 +703,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -740,7 +740,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -780,7 +780,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -818,7 +818,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -859,7 +859,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -898,7 +898,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -940,7 +940,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -980,7 +980,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -1023,7 +1023,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>>(sql, parameters, withGraphs, commandType, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}
@@ -1064,7 +1064,7 @@ namespace Insight.Database
 			CommandBehavior commandBehavior = CommandBehavior.Default,
 			int? commandTimeout = null,
 			IDbTransaction transaction = null,
-			CancellationToken? cancellationToken = null)
+			CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return connection.QueryResultsAsync<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>>(sql, parameters, withGraphs, CommandType.Text, commandBehavior, commandTimeout, transaction, cancellationToken);
 		}

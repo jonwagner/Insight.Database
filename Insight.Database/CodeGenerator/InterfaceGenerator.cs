@@ -404,9 +404,9 @@ namespace Insight.Database.CodeGenerator
 						if (EmitSpecialParameter(mIL, "cancellationToken", parameters, executeParameters))
 							break;
 
-						var cancellationToken = mIL.DeclareLocal(typeof(CancellationToken?));
+						var cancellationToken = mIL.DeclareLocal(typeof(CancellationToken));
 						mIL.Emit(OpCodes.Ldloca_S, cancellationToken);
-						mIL.Emit(OpCodes.Initobj, typeof(CancellationToken?));
+						mIL.Emit(OpCodes.Initobj, typeof(CancellationToken));
 						mIL.Emit(OpCodes.Ldloc, cancellationToken);
 						break;
 

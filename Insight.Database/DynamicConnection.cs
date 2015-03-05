@@ -33,7 +33,7 @@ namespace Insight.Database
 		private static ConcurrentDictionary<Type, object> _queryAsyncMethods = new ConcurrentDictionary<Type, object>();
 		private static ConcurrentDictionary<Type, object> _queryMethods = new ConcurrentDictionary<Type, object>();
 #else
-		private static ConcurrentDictionary<Type, Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken?, object, object>> _queryAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken?, object, object>>();
+		private static ConcurrentDictionary<Type, Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>> _queryAsyncMethods = new ConcurrentDictionary<Type, Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>>();
 		private static ConcurrentDictionary<Type, Func<IDbCommand, IQueryReader, CommandBehavior, object, object>> _queryMethods = new ConcurrentDictionary<Type, Func<IDbCommand, IQueryReader, CommandBehavior, object, object>>();
 #endif
 
@@ -117,7 +117,7 @@ namespace Insight.Database
 			IDbTransaction transaction = null;
 			IQueryReader returns = null;
 			object outputParameters = null;
-			CancellationToken cancellationToken = CancellationToken.None;
+			CancellationToken cancellationToken = default(CancellationToken);
 
 			CallInfo callInfo = binder.CallInfo;
 			int unnamedParameterCount = callInfo.ArgumentCount - callInfo.ArgumentNames.Count;
@@ -329,12 +329,12 @@ namespace Insight.Database
 		/// <param name="queryReader">The reader to use to read the records.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>The result of the invocation.</returns>
-		private static object CallQueryAsync(IDbCommand command, IQueryReader queryReader, CancellationToken? cancellationToken)
+		private static object CallQueryAsync(IDbCommand command, IQueryReader queryReader, CancellationToken cancellationToken)
 		{
 			var method = _queryAsyncMethods.GetOrAdd(
 				queryReader.ReturnType,
-				t => (Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken?, object, object>)Delegate.CreateDelegate(
-					typeof(Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken?, object, object>),
+				t => (Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>)Delegate.CreateDelegate(
+					typeof(Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>),
 					typeof(DBConnectionExtensions).GetMethod("QueryCoreAsyncUntyped", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t)));
 			return method(command, queryReader, CommandBehavior.Default, cancellationToken, null);
 		}
