@@ -19,6 +19,7 @@ namespace Insight.Database
 		/// <summary>
 		/// The singleton Serializer.
 		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2104:DoNotDeclareReadOnlyMutableReferenceTypes")]
 		public static readonly JsonObjectSerializer Serializer = new JsonObjectSerializer();
 
 		/// <summary>

@@ -99,6 +99,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="allowBindChild">True if the columns should be allowed to bind to children.</param>
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		/// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject, bool isRootObject, bool allowBindChild)
 		{
 			// if there are no columns detected for the class, then the deserializer is null

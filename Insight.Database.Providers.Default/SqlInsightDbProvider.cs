@@ -83,6 +83,8 @@ namespace Insight.Database
         /// <inheritdoc/>
         public override IDbConnection CloneDbConnection(IDbConnection connection)
         {
+			if (connection == null) throw new ArgumentNullException("connection");
+
             var sqlConnection = (SqlConnection)connection;
 
             // check to make sure that the template connection hasn't already been used
@@ -274,10 +276,10 @@ namespace Insight.Database
 		/// <param name="configure">A callback method to configure the bulk copy object.</param>
 		/// <param name="options">Options for initializing the bulk copy object.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
-		/// <param name="ct">The cancellation token that can be used to cancel the operation.</param>
+		/// <param name="cancellationToken">The cancellation token that can be used to cancel the operation.</param>
 		/// <remarks>Number of rows copied if supported, -1 otherwise.</remarks>
 		/// <returns>A task representing the completion of the operation.</returns>
-		public override async Task BulkCopyAsync(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction, System.Threading.CancellationToken ct)
+		public override async Task BulkCopyAsync(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction, System.Threading.CancellationToken cancellationToken)
 		{
 			using (var bcp = PrepareBulkCopy(connection, tableName, reader, configure, options, transaction))
 			{
@@ -434,7 +436,7 @@ namespace Insight.Database
 		/// <param name="options">Options for initializing the bulk copy object.</param>
 		/// <param name="transaction">An optional transaction to participate in.</param>
 		/// <returns>The configured bulk copy object.</returns>
-		private SqlInsightBulkCopy PrepareBulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
+		private static SqlInsightBulkCopy PrepareBulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
@@ -458,8 +460,6 @@ namespace Insight.Database
 			try
 			{
 				bulk = new SqlBulkCopy((SqlConnection)connection, sqlOptions, (SqlTransaction)transaction);
-				insightBulk = new SqlInsightBulkCopy(bulk);
-
 				bulk.DestinationTableName = tableName;
 #if !NODBASYNC
 				bulk.EnableStreaming = true;
@@ -468,6 +468,9 @@ namespace Insight.Database
 				// map the columns by name, in case we skipped a readonly column
 				foreach (DataRow row in reader.GetSchemaTable().Rows)
 					bulk.ColumnMappings.Add((string)row["ColumnName"], (string)row["ColumnName"]);
+
+				insightBulk = new SqlInsightBulkCopy(bulk);
+				bulk = null;
 
 				if (configure != null)
 					configure(insightBulk);
@@ -478,6 +481,8 @@ namespace Insight.Database
 			{
 				if (insightBulk != null)
 					insightBulk.Dispose();
+				if (bulk != null)
+					((IDisposable)bulk).Dispose();
 
 				throw;
 			}

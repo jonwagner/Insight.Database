@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -117,7 +118,7 @@ namespace Insight.Database
 		/// <param name="serializer">The serializer to use.</param>
 		public static void Serialize<T>(string fieldName, IDbObjectSerializer serializer)
 		{
-			AddRule(new DbSerializationRule() { RecordType = typeof(T), Mode = SerializationMode.Custom, Serializer = serializer });
+			AddRule(new DbSerializationRule() { RecordType = typeof(T), FieldName = fieldName, Mode = SerializationMode.Custom, Serializer = serializer });
 		}
 		#endregion
 
@@ -164,7 +165,7 @@ namespace Insight.Database
 						return Serializer;
 
 					if (prop.Serializer == null)
-						throw new InvalidOperationException(String.Format("No custom serializer was provided for {0} on type {1}", prop.Name, prop.Type));
+						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "No custom serializer was provided for {0} on type {1}", prop.Name, prop.Type));
 
 					IDbObjectSerializer serializer;
 					if (!_cachedSerializers.TryGetValue(prop.Serializer, out serializer))

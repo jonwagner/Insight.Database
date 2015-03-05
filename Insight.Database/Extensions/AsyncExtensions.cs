@@ -1091,7 +1091,7 @@ namespace Insight.Database
 				tableName,
 				reader,
 				configure,
-				false,
+				closeConnection,
 				options,
 				transaction,
 				cancellationToken ?? CancellationToken.None);

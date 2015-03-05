@@ -161,6 +161,8 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		string IColumnMapper.MapColumn(Type type, IDataReader reader, int column)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			string columnName = reader.GetName(column);
 
 			if (ColumnOverrides == null)

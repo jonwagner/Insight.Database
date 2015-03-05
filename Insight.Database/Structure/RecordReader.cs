@@ -41,11 +41,11 @@ namespace Insight.Database.Structure
 		/// Returns a child record reader that reads this type of record and groups by the given function.
 		/// </summary>
 		/// <typeparam name="TId">The type of the ID.</typeparam>
-		/// <param name="groupBy">The function that gets the ID to group by.</param>
+		/// <param name="grouping">The function that gets the ID to group by.</param>
 		/// <returns>A child record reader.</returns>
-		public IChildRecordReader<T, TId> GroupBy<TId>(Func<T, TId> groupBy)
+		public IChildRecordReader<T, TId> GroupBy<TId>(Func<T, TId> grouping)
 		{
-			return new ChildRecordReader<T, TId, T>(this, records => records.GroupBy(groupBy, r => r));
+			return new ChildRecordReader<T, TId, T>(this, records => records.GroupBy(grouping, r => r));
 		}
 		
 		/// <summary>
@@ -72,6 +72,28 @@ namespace Insight.Database.Structure
 		}
 
 		/// <summary>
+		/// Gets the type of a guardian that contains the given number of items.
+		/// </summary>
+		/// <param name="count">The number of items.</param>
+		/// <returns>The guardian type.</returns>
+		private static Type GetGuardianType(int count)
+		{
+			switch (count)
+			{
+				case 1: return typeof(Guardian<>);
+				case 2: return typeof(Guardian<,>);
+				case 3: return typeof(Guardian<,,>);
+				case 4: return typeof(Guardian<,,,>);
+				case 5: return typeof(Guardian<,,,,>);
+				case 6: return typeof(Guardian<,,,,,>);
+				case 7: return typeof(Guardian<,,,,,,>);
+				case 8: return typeof(Guardian<,,,,,,,>);
+				default:
+					throw new ArgumentException("Too many child levels.");
+			}
+		}
+
+		/// <summary>
 		/// Creates a child record reader that autogroups the given type, based on the parent's ids.
 		/// </summary>
 		/// <typeparam name="TId">The type of the ID.</typeparam>
@@ -93,7 +115,7 @@ namespace Insight.Database.Structure
 				// if a selector was specified, use it, else use the parent's ID accessor to define external columns to use as the key
 				if (typeof(TId) != typeof(object))
 				{
-					if (typeof(TId).Name.StartsWith("Tuple`"))
+					if (typeof(TId).Name.StartsWith("Tuple`", StringComparison.OrdinalIgnoreCase))
 						guardianTypes.AddRange(typeof(TId).GetGenericArguments());
 					else
 						guardianTypes.Add(typeof(TId));
@@ -113,28 +135,6 @@ namespace Insight.Database.Structure
 				var reader = (IRecordReader<Guardian<T>>)getReader.Invoke(this, Parameters.EmptyArray);
 
 				return new ChildRecordReader<Guardian<T>, TId, T>(reader, records => records.GroupBy(g => (TId)g.GetID(), g => g.Object));
-			}
-		}
-
-		/// <summary>
-		/// Gets the type of a guardian that contains the given number of items.
-		/// </summary>
-		/// <param name="count">The number of items.</param>
-		/// <returns>The guardian type.</returns>
-		private Type GetGuardianType(int count)
-		{
-			switch (count)
-			{
-				case 1: return typeof(Guardian<>);
-				case 2: return typeof(Guardian<,>);
-				case 3: return typeof(Guardian<,,>);
-				case 4: return typeof(Guardian<,,,>);
-				case 5: return typeof(Guardian<,,,,>);
-				case 6: return typeof(Guardian<,,,,,>);
-				case 7: return typeof(Guardian<,,,,,,>);
-				case 8: return typeof(Guardian<,,,,,,,>);
-				default:
-					throw new ArgumentException("count");
 			}
 		}
 

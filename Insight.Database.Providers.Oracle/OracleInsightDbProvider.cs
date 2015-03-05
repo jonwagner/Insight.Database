@@ -77,6 +77,8 @@ namespace Insight.Database.Providers.Oracle
 		/// <inheritdoc/>
 		public override void DeriveParametersFromSqlText(IDbCommand command)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
 			base.DeriveParametersFromSqlText(command);
 
 			// detect cursors in the command so we can automatically add the parameters as refcursors
@@ -216,6 +218,7 @@ namespace Insight.Database.Providers.Oracle
 		/// </summary>
 		/// <param name="exception">The exception to test.</param>
 		/// <returns>True if the exception is transient.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		public override bool IsTransientException(Exception exception)
 		{
 			OracleException oracleException = (OracleException)exception;

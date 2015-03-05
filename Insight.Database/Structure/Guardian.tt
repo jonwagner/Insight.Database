@@ -29,6 +29,7 @@ for (var typeCount = 2; typeCount <= 7; typeCount++)
 <# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
 	/// <typeparam name="T<#= typeIndex #>">The type of the data in the <#= ConvertToOrdinal(typeIndex) #> subobject.</typeparam>
 <# } #>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance")]
 	public class Guardian<TChild, <#= typeList #>> : Guardian<TChild, <#= baseTypeList #>>
 	{
 		/// <summary>
@@ -40,6 +41,8 @@ for (var typeCount = 2; typeCount <= 7; typeCount++)
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId<#= typeCount #> = (T<#= typeCount #>)reader[<#= typeCount - 1 #>];
 		}

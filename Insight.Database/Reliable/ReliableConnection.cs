@@ -64,9 +64,17 @@ namespace Insight.Database.Reliable
 		protected override DbCommand CreateDbCommand()
 		{
             var command = new ReliableCommand(RetryStrategy, this, InnerConnection.CreateCommand());
-            if (InnerTransaction != null)
-                command.Transaction = InnerTransaction;
-            return command;
+			try
+			{
+				if (InnerTransaction != null)
+					command.Transaction = InnerTransaction;
+				return command;
+			}
+			catch
+			{
+				command.Dispose();
+				throw;
+			}
 		}
 
 #if !NODBASYNC

@@ -9,7 +9,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Specifes when the fields of child objects can be bound on a class or on the parameters of an interface method.
 	/// </summary>
-	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments"), AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public sealed class BindChildrenAttribute : Attribute
 	{
 		/// <summary>
@@ -23,10 +23,10 @@ namespace Insight.Database
 		/// <summary>
 		/// Initializes a new instance of the BindChildrenAttribute class.
 		/// </summary>
-		/// <param name="deep">Specifies the times when child fields can be bound.</param>
-		public BindChildrenAttribute(BindChildrenFor deep)
+		/// <param name="bindFor">Specifies the times when child fields can be bound.</param>
+		public BindChildrenAttribute(BindChildrenFor bindFor)
 		{
-			For = deep;
+			For = bindFor;
 		}
 
 		/// <summary>

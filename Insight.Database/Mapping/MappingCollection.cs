@@ -10,6 +10,7 @@ namespace Insight.Database.Mapping
 	/// <summary>
 	/// Allows for configuration of mapping rules.
 	/// </summary>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
 	public abstract class MappingCollection
 	{
 		/// <summary>
@@ -24,7 +25,7 @@ namespace Insight.Database.Mapping
 	/// Allows for configuration of mapping rules and translations.
 	/// </summary>
 	/// <typeparam name="TMapper">The type of mapping in the collection.</typeparam>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix"), SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "The classes are related by implementing multiple generic signatures.")]
 	public class MappingCollection<TMapper> : MappingCollection where TMapper : IMapper
 	{
 		#region Private Members

@@ -42,14 +42,17 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public string TransformDatabaseName(Type type, string name)
+		public string TransformDatabaseName(Type type, string databaseName)
 		{
+			if (type == null) throw new ArgumentNullException("type");
+			if (databaseName == null) throw new ArgumentNullException("databaseName");
+
 			// if we aren't mapping the current type, just continue
 			if (type != typeof(T) && !type.IsSubclassOf(typeof(T)))
 				return null;
 
 			// perform a replacement on the target field name
-			return _regex.Replace(name, _replacement);
+			return _regex.Replace(databaseName, _replacement);
 		}
 	}
 

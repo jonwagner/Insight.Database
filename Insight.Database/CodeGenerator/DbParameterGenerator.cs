@@ -38,8 +38,6 @@ namespace Insight.Database.CodeGenerator
 		private static readonly MethodInfo _iDbCommandGetParameters = typeof(IDbCommand).GetProperty("Parameters").GetGetMethod();
 		private static readonly MethodInfo _iDataParameterCollectionGetItem = typeof(IDataParameterCollection).GetProperty("Item").GetGetMethod();
 		private static readonly MethodInfo _iDataParameterSetValue = typeof(IDataParameter).GetProperty("Value").GetSetMethod();
-		private static readonly MethodInfo _iDbDataParameterSetSize = typeof(IDbDataParameter).GetProperty("Size").GetSetMethod();
-		private static readonly MethodInfo _stringGetLength = typeof(string).GetProperty("Length").GetGetMethod();
 		private static readonly MethodInfo _iDataParameterGetValue = typeof(IDataParameter).GetProperty("Value").GetGetMethod();
 
 		/// <summary>

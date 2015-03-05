@@ -14,6 +14,7 @@ namespace Insight.Database.Structure
 	/// <typeparam name="TChild">The type of the child.</typeparam>
 	/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
 	/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance")]
 	public class Guardian<TChild, T1, T2> : Guardian<TChild, T1>
 	{
 		/// <summary>
@@ -25,6 +26,8 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId2 = (T2)reader[1];
 		}
@@ -44,6 +47,7 @@ namespace Insight.Database.Structure
 	/// <typeparam name="T1">The type of the data in the first subobject.</typeparam>
 	/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
 	/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance")]
 	public class Guardian<TChild, T1, T2, T3> : Guardian<TChild, T1, T2>
 	{
 		/// <summary>
@@ -55,6 +59,8 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId3 = (T3)reader[2];
 		}
@@ -75,6 +81,7 @@ namespace Insight.Database.Structure
 	/// <typeparam name="T2">The type of the data in the second subobject.</typeparam>
 	/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
 	/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance")]
 	public class Guardian<TChild, T1, T2, T3, T4> : Guardian<TChild, T1, T2, T3>
 	{
 		/// <summary>
@@ -86,6 +93,8 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId4 = (T4)reader[3];
 		}
@@ -107,6 +116,7 @@ namespace Insight.Database.Structure
 	/// <typeparam name="T3">The type of the data in the third subobject.</typeparam>
 	/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
 	/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance")]
 	public class Guardian<TChild, T1, T2, T3, T4, T5> : Guardian<TChild, T1, T2, T3, T4>
 	{
 		/// <summary>
@@ -118,6 +128,8 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId5 = (T5)reader[4];
 		}
@@ -140,6 +152,7 @@ namespace Insight.Database.Structure
 	/// <typeparam name="T4">The type of the data in the fourth subobject.</typeparam>
 	/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
 	/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance")]
 	public class Guardian<TChild, T1, T2, T3, T4, T5, T6> : Guardian<TChild, T1, T2, T3, T4, T5>
 	{
 		/// <summary>
@@ -151,6 +164,8 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId6 = (T6)reader[5];
 		}
@@ -174,6 +189,7 @@ namespace Insight.Database.Structure
 	/// <typeparam name="T5">The type of the data in the fifth subobject.</typeparam>
 	/// <typeparam name="T6">The type of the data in the sixth subobject.</typeparam>
 	/// <typeparam name="T7">The type of the data in the seventh subobject.</typeparam>
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1501:AvoidExcessiveInheritance")]
 	public class Guardian<TChild, T1, T2, T3, T4, T5, T6, T7> : Guardian<TChild, T1, T2, T3, T4, T5, T6>
 	{
 		/// <summary>
@@ -185,6 +201,8 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId7 = (T7)reader[6];
 		}

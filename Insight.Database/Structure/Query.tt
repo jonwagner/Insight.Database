@@ -54,6 +54,9 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			RecordReader<TChild> recordReader,
 			Action<T<#= typeCount #>, List<TChild>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<T<#= typeCount #>, object>(), null, into);
 		}
 
@@ -76,6 +79,9 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 			Func<T<#= typeCount #>, TId> id,
 			Action<T<#= typeCount #>, List<TChild>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<TChild, TId>(), id, into);
 		}
 		

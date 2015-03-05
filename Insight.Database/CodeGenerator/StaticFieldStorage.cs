@@ -30,6 +30,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Initializes static members of the StaticFieldStorage class.
 		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
 		static StaticFieldStorage()
 		{
 			// create a shared assembly for all of the static fields to live in

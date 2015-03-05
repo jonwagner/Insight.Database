@@ -23,6 +23,8 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override bool CanSerialize(Type type, DbType dbType)
 		{
+			if (type == null) throw new ArgumentNullException("type");
+
             // no point in converting convertibles or enumerables
             if (type.GetInterfaces().Contains(typeof(IConvertible)) || type == typeof(object))
                 return false;
@@ -56,6 +58,8 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override object SerializeObject(Type type, object o)
 		{
+			if (o == null) throw new ArgumentNullException("o");
+
 			return o.ToString();
 		}
 

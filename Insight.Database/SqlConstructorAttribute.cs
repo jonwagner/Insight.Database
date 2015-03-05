@@ -10,7 +10,7 @@ namespace Insight.Database
     /// Marks a constructor as the preffered constructor to use when deserializing objects from the database.
     /// </summary>
     [AttributeUsage(AttributeTargets.Constructor)]
-    public class SqlConstructorAttribute : Attribute
+    public sealed class SqlConstructorAttribute : Attribute
     {
     }
 }

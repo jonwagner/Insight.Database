@@ -69,14 +69,17 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Gets the provider that supports the given object.
 		/// </summary>
-		/// <param name="o">The object to inspect.</param>
+		/// <param name="databaseObject">The object to inspect.</param>
 		/// <returns>The provider for the object.</returns>
-		public static InsightDbProvider For(object o)
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1720:IdentifiersShouldNotContainTypeNames", MessageId = "object")]
+		public static InsightDbProvider For(object databaseObject)
 		{
+			if (databaseObject == null) throw new ArgumentNullException("databaseObject");
+
 			InsightDbProvider provider;
 
 			// walk the base classes to see if we know anything about what class it is derived from
-			for (Type type = o.GetType(); type != null; type = type.BaseType)
+			for (Type type = databaseObject.GetType(); type != null; type = type.BaseType)
 			{
 				if (_providerMap.Value.TryGetValue(type, out provider) && provider != null)
 					return provider;
@@ -221,8 +224,11 @@ namespace Insight.Database.Providers
 		/// Called after parameters are added to a command.
 		/// </summary>
 		/// <param name="command">The command to fix up.</param>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
 		public virtual void FixupCommand(IDbCommand command)
 		{
+			if (command == null) throw new ArgumentNullException("command");
+
             if (HasPositionalSqlTextParameters)
                 command.CommandText = _parameterRegex.Replace(command.CommandText, "?");
         }

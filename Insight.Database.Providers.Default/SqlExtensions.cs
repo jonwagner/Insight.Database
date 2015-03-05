@@ -19,8 +19,11 @@ namespace Insight.Database
         /// </summary>
         /// <param name="command">The command to execute.</param>
         /// <returns>The XmlDocument.</returns>
-        public static XmlDocument ExecuteXml(this SqlCommand command)
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
+		public static XmlDocument ExecuteXml(this SqlCommand command)
         {
+			if (command == null) throw new ArgumentNullException("command");
+
             using (var reader = command.ExecuteXmlReader())
             {
                 var doc = new XmlDocument();
@@ -41,7 +44,8 @@ namespace Insight.Database
         /// <param name="transaction">An optional transaction to participate in.</param>
         /// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
         /// <returns>An XmlDocument with the results.</returns>
-        public static XmlDocument QueryXml(
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
+		public static XmlDocument QueryXml(
             this SqlConnection connection,
             string sql,
             object parameters = null,
@@ -74,7 +78,8 @@ namespace Insight.Database
         /// <param name="transaction">An optional transaction to participate in.</param>
         /// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
         /// <returns>An XmlDocument with the results.</returns>
-        public static XmlDocument QueryXmlSql(
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
+		public static XmlDocument QueryXmlSql(
             this SqlConnection connection,
             string sql,
             object parameters = null,

@@ -55,10 +55,18 @@ namespace Insight.Database.Providers
 			var innerProvider = InsightDbProvider.For(innerConnection);
 			var clonedInnerConnection = innerProvider.CloneDbConnection(innerConnection);
 
-			var clone = (DbConnectionWrapper)new DbConnectionWrapper();
-			clone.InnerConnection = (DbConnection)clonedInnerConnection;
-
-			return clone;
+			var wrapper = new DbConnectionWrapper();
+			try
+			{
+				var clone = (DbConnectionWrapper)wrapper;
+				clone.InnerConnection = (DbConnection)clonedInnerConnection;
+				return clone;
+			}
+			catch
+			{
+				wrapper.Dispose();
+				throw;
+			}
 		}
 
 		/// <summary>

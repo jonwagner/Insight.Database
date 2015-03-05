@@ -21,7 +21,7 @@ namespace Insight.Database.CodeGenerator
 	/// <summary>
 	/// Implements a given interface by binding to the extension methods on DbConnection.
 	/// </summary>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Organization is by functionality.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Organization is by functionality.")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	class InterfaceGenerator
 	{
@@ -56,6 +56,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Initializes static members of the InterfaceGenerator class.
 		/// </summary>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
 		static InterfaceGenerator()
 		{
 			// make a new assembly for the generated types
@@ -147,7 +148,7 @@ namespace Insight.Database.CodeGenerator
 #else
 				if (e.HResult == -2146233054)
 #endif
-					throw new InvalidOperationException(String.Format("{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add [assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"Insight.Database\")] to your assembly. If the interface is nested, then it must be public to the world, or public to the assembly while using the InternalsVisibleTo attribute.", type.FullName));
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add [assembly: System.Runtime.CompilerServices.InternalsVisibleTo(\"Insight.Database\")] to your assembly. If the interface is nested, then it must be public to the world, or public to the assembly while using the InternalsVisibleTo attribute.", type.FullName));
 
 				throw;
 			}

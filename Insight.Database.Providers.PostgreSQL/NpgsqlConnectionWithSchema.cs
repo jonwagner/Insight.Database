@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -33,18 +34,19 @@ namespace Insight.Database.Providers.PostgreSQL
         {
             if (schema == null)
                 throw new ArgumentNullException("schema");
-            if (!Regex.Match(schema, String.Format("^{0}(,{0})*$", _validPostgresIdentifier)).Success)
+            if (!Regex.Match(schema, String.Format(CultureInfo.InvariantCulture, "^{0}(,{0})*$", _validPostgresIdentifier)).Success)
                 throw new ArgumentException("Schema contained invalid characters", "schema");
 
             Schema = schema;
 
-            _switchSchemaSql = String.Format("SET SCHEMA '{0}'", Schema);
+			_switchSchemaSql = String.Format(CultureInfo.InvariantCulture, "SET SCHEMA '{0}'", Schema);
         }
 
         /// <summary>
         /// Gets the schema for this connection.
         /// </summary>
-        public string Schema { get; private set; }
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
+		public string Schema { get; private set; }
 
         /// <inheritdoc/>
         public override void Open()

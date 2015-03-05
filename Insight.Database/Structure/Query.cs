@@ -81,6 +81,9 @@ namespace Insight.Database
 			RecordReader<T2> recordReader,
 			Action<T1, List<T2>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<T1, object>(), null, into);
 		}
 
@@ -101,6 +104,9 @@ namespace Insight.Database
 			Func<T1, TId> id,
 			Action<T1, List<T2>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<T1, TId>(), id, into);
 		}
 
@@ -167,6 +173,9 @@ namespace Insight.Database
 			Func<T1, TId> id,
 			Action<T1, List<T2>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<T1, TId>(), id, into);
 		}
 
@@ -208,6 +217,9 @@ namespace Insight.Database
 			RecordReader<T2> recordReader,
 			Action<T1, List<T2>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<T1, object>(), null, into);
 		}
 
@@ -228,6 +240,9 @@ namespace Insight.Database
 			Func<T1, TId> id,
 			Action<T1, List<T2>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<T1, TId>(), id, into);
 		}
 
@@ -248,6 +263,9 @@ namespace Insight.Database
 			Func<T1, TId> id = null,
 			Action<T1, List<T2>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.AddChild(new Children<T1, T2, TId>(recordReader, new ChildMapper<T1, T2, TId>(id, into)));
 		}
 
@@ -296,6 +314,9 @@ namespace Insight.Database
 			Func<TParent, TId> id,
 			Action<TParent, List<TChild>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<TParent, TId>(), parents, id, into);
 		}
 
@@ -343,6 +364,9 @@ namespace Insight.Database
 			Func<TRoot, IEnumerable<TParent>> parents,
 			Action<TParent, List<TChild>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<TParent, object>(), parents, null, into);
 		}
 
@@ -366,6 +390,9 @@ namespace Insight.Database
 			Func<TParent, TId> id,
 			Action<TParent, List<TChild>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<TParent, TId>(), parents, id, into);
 		}
 
@@ -413,6 +440,9 @@ namespace Insight.Database
 			Func<TRoot, IEnumerable<TParent>> parents,
 			Action<TParent, List<TChild>> into = null)
 		{
+			if (previous == null) throw new ArgumentNullException("previous");
+			if (recordReader == null) throw new ArgumentNullException("recordReader");
+
 			return previous.ThenChildren(recordReader.GroupByAuto<TParent, object>(), parents, null, into);
 		}
 

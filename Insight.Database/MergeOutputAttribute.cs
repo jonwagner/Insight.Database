@@ -27,11 +27,11 @@ namespace Insight.Database
 		/// <summary>
 		/// Initializes a new instance of the MergeOutputAttribute class.
 		/// </summary>
-		/// <param name="merge">True to merge the outputs, false to skip merging.</param>
+		/// <param name="mergeOutputs">True to merge the outputs, false to skip merging.</param>
 		/// <remarks>Use MergeOutput(false) to disable merging for methods named InsertXXX, UpdateXXX, or UpsertXXX.</remarks>
-		public MergeOutputAttribute(bool merge = true)
+		public MergeOutputAttribute(bool mergeOutputs = true)
 		{
-			MergeOutputs = merge;
+			MergeOutputs = mergeOutputs;
 		}
 
 		/// <summary>

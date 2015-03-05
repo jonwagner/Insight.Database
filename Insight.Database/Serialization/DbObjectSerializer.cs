@@ -37,7 +37,7 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public abstract object SerializeObject(Type type, object o);
+		public abstract object SerializeObject(Type type, object value);
 
 		/// <inheritdoc/>
 		public abstract object DeserializeObject(Type type, object encoded);

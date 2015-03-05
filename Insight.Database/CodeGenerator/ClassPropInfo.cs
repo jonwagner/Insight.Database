@@ -452,7 +452,7 @@ namespace Insight.Database.CodeGenerator
 
 				pi = FindMember(type, member);
 				if (pi == null || !pi.CanGetMember)
-					throw new InvalidOperationException(String.Format("Get method {0} not found on {1}", member, type));
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Get method {0} not found on {1}", member, type));
 
 				pi.EmitGetValue(il);
 

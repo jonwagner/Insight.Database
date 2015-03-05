@@ -111,7 +111,7 @@ namespace Insight.Database.Structure
 		/// </summary>
 		/// <param name="count">The number of parameters.</param>
 		/// <returns>The tuple type.</returns>
-		private Type GetTupleType(int count)
+		private static Type GetTupleType(int count)
 		{
 			switch (count)
 			{
@@ -123,7 +123,7 @@ namespace Insight.Database.Structure
 				case 6: return typeof(Tuple<,,,,,>);
 				case 7: return typeof(Tuple<,,,,,,>);
 				default:
-					throw new ArgumentException("count");
+					throw new ArgumentException("Too many levels of children.");
 			}
 		}
 	}

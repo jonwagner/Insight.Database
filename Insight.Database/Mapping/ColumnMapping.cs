@@ -19,14 +19,9 @@ namespace Insight.Database
 	/// <summary>
 	/// A singleton class that handles the mapping operations from recordsets to objects.
 	/// </summary>
-	public class ColumnMapping
+	public static class ColumnMapping
 	{
 		#region Internal Fields
-		/// <summary>
-		/// An internal lock structure.
-		/// </summary>
-		private static object _lock = new object();
-
 		/// <summary>
 		/// The singleton instance of the ColumnMapping configuration for Tables and Table Valued Parameters.
 		/// </summary>
@@ -153,7 +148,7 @@ namespace Insight.Database
 			// allow the first column to match the * wildcard on Guardian records
 			if (fieldName == null)
 			{
-				var wildcards = ClassPropInfo.GetMembersForType(type).Where(m => m.ColumnName.StartsWith("*")).OrderBy(m => m.ColumnName).ToList();
+				var wildcards = ClassPropInfo.GetMembersForType(type).Where(m => m.ColumnName.StartsWith("*", StringComparison.OrdinalIgnoreCase)).OrderBy(m => m.ColumnName).ToList();
 				if (column < wildcards.Count)
 					fieldName = wildcards[column].Name;
 			}

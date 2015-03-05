@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -64,9 +65,9 @@ namespace Insight.Database.Serialization
         }
 
         /// <inheritdoc/>
-        public override object SerializeObject(Type type, object o)
+        public override object SerializeObject(Type type, object value)
         {
-            bool? b = (bool?)o;
+            bool? b = (bool?)value;
             if (b == null)
                 return null;
 
@@ -82,21 +83,21 @@ namespace Insight.Database.Serialization
             if (encoded is string)
             {
                 var s = encoded.ToString();
-                if (String.Compare(s, TrueValue.ToString(), true) == 0)
+                if (s.IsIEqualTo(TrueValue.ToString()))
                     return true;
-                if (String.Compare(s, FalseValue.ToString(), true) == 0)
+				if (s.IsIEqualTo(FalseValue.ToString()))
                     return false;
             }
             else
             {
-                var value = Convert.ChangeType(encoded, type);
+                var value = Convert.ChangeType(encoded, type, CultureInfo.InvariantCulture);
                 if (value == TrueValue)
                     return true;
                 else if (value == FalseValue)
                     return false;
             }
 
-            throw new InvalidOperationException(String.Format("Value {0} could not be converted to bool.", encoded));
+            throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Value {0} could not be converted to bool.", encoded));
         }
     }
 

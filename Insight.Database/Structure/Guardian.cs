@@ -34,6 +34,7 @@ namespace Insight.Database.Structure
 		/// Returns the ID portion of the guardian.
 		/// </summary>
 		/// <returns>The ID of the guardian.</returns>
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1024:UsePropertiesWhereAppropriate")]
 		public abstract object GetID();
 	}
 
@@ -55,6 +56,8 @@ namespace Insight.Database.Structure
 		/// <inheritdoc/>
 		public override void ReadCurrent(IDataReader reader)
 		{
+			if (reader == null) throw new ArgumentNullException("reader");
+
 			base.ReadCurrent(reader);
 			ParentId1 = (TId)reader[0];
 		}

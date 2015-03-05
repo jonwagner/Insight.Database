@@ -41,9 +41,9 @@ namespace Insight.Database
 		/// Serializes an object, using the type as the root type.
 		/// </summary>
 		/// <param name="type">The root type of object.</param>
-		/// <param name="o">The object to serialize.</param>
+		/// <param name="value">The object to serialize.</param>
 		/// <returns>The serialized form of the object.</returns>
-		object SerializeObject(Type type, object o);
+		object SerializeObject(Type type, object value);
 
 		/// <summary>
 		/// Deserializes an object, using the type as the root type.

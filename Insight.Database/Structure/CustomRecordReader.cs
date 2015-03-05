@@ -30,11 +30,12 @@ namespace Insight.Database.Structure
 		/// <summary>
 		/// Constructs a CustomRecordReader from a function.
 		/// </summary>
-		/// <param name="read">The function to read the record.</param>
+		/// <param name="reader">The function to read the record.</param>
 		/// <returns>A CustomRecordReader.</returns>
-		public static CustomRecordReader<T> Read(Func<IDataReader, T> read)
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1000:DoNotDeclareStaticMembersOnGenericTypes")]
+		public static CustomRecordReader<T> Read(Func<IDataReader, T> reader)
 		{
-			return new CustomRecordReader<T>(read);
+			return new CustomRecordReader<T>(reader);
 		}
 
 		/// <inheritdoc/>

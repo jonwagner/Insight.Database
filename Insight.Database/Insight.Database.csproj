@@ -253,6 +253,7 @@
     <None Include="..\Insight.Database.snk">
       <Link>Insight.Database.snk</Link>
     </None>
+    <None Include="CodeAnalysisRules.ruleset" />
     <None Include="Compatibility.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>Compatibility.generated.cs</LastGenOutput>
