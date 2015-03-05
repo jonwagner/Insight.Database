@@ -16,7 +16,7 @@ namespace Insight.Tests.SybaseAse
 	/// <summary>
 	/// Sybase ASE-specific tests
 	/// </summary>
-	[TestFixture]
+	[TestFixture, Ignore]
     public class SybaseAseTests
     {
 		private AseConnectionStringBuilder _connectionStringBuilder;
