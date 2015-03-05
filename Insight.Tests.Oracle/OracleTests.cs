@@ -41,7 +41,7 @@ namespace Insight.Tests.Oracle
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=))(ADDRESS=(PROTOCOL=TCP)(HOST=testserver)(PORT=1521))); User Id = system; Password = Password1";
+			_connectionStringBuilder.ConnectionString = "Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=))(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))); User Id = system; Password = password";
 			_connection = _connectionStringBuilder.Open();
 		}
 

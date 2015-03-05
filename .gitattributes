@@ -1,0 +1,4 @@
+# vagrant configurations should be lf endings
+vagrant/* text eol=lf
+Vagrant/*.cnf text eol=lf
+Vagrant/*.conf text eol=lf

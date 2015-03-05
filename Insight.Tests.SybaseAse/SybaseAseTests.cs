@@ -16,7 +16,7 @@ namespace Insight.Tests.SybaseAse
 	/// <summary>
 	/// Sybase ASE-specific tests
 	/// </summary>
-	[TestFixture, Ignore]
+	[TestFixture]
     public class SybaseAseTests
     {
 		private AseConnectionStringBuilder _connectionStringBuilder;
@@ -39,7 +39,7 @@ namespace Insight.Tests.SybaseAse
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new AseConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Data Source=testserver;Port=5000;User ID=sa;Password=Password1";
+			_connectionStringBuilder.ConnectionString = "Data Source=127.0.0.1;Port=5000;User ID=sa;Password=password";
 			_connection = new AseConnection(_connectionStringBuilder.ConnectionString);
 			_connection.Open();
 		}

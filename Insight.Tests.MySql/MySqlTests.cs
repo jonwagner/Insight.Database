@@ -39,7 +39,7 @@ namespace Insight.Tests.MySql
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new MySqlConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Server = testserver; Database = test; User Id = root; Password = Password1";
+			_connectionStringBuilder.ConnectionString = "Server = localhost; Database = test; User Id = root";
 			_connection = _connectionStringBuilder.Open();
 		}
 

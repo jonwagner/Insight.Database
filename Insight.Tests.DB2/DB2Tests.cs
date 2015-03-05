@@ -35,9 +35,9 @@ namespace Insight.Tests.DB2
 		public void SetUpFixture()
 		{
 			DB2ConnectionStringBuilder connectionStringBuilder = new DB2ConnectionStringBuilder();
-			connectionStringBuilder.ConnectionString = "Server=testserver:50000;Database=SAMPLE";
-			connectionStringBuilder.UserID = "db2admin";
-			connectionStringBuilder.Password = "Password1";
+            connectionStringBuilder.ConnectionString = "Server=localhost:50000;Database=sample";
+			connectionStringBuilder.UserID = "db2inst1";
+			connectionStringBuilder.Password = "sql";
 
 			_connectionStringBuilder = connectionStringBuilder;
 			_connection = _connectionStringBuilder.Open();
@@ -52,7 +52,7 @@ namespace Insight.Tests.DB2
 		[Test]
 		public void TestExecuteWithParameters()
 		{
-			var result = _connection.QuerySql<int>("SELECT @p as p FROM SYSIBM.DUAL", new { p = 5 });
+			var result = _connection.QuerySql<int>("SELECT CAST(@p AS INT) as p FROM SYSIBM.DUAL", new { p = 5 });
 
 			Assert.AreEqual(1, result.Count);
 			Assert.AreEqual(5, result[0]);

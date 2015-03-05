@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2013
-VisualStudioVersion = 12.0.30501.0
+VisualStudioVersion = 12.0.31101.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests", "Insight.Tests\Insight.Tests.csproj", "{DEB0A47D-FC34-4B7F-A2FB-151B3697533E}"
 EndProject
@@ -16,8 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Insight.Database.snk = Insight.Database.snk
 		License.txt = License.txt
 		Settings.StyleCop = Settings.StyleCop
-		StartServers.bat = StartServers.bat
-		StopServers.bat = StopServers.bat
+		Vagrantfile = Vagrantfile
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Sample", "Insight.Database.Sample\Insight.Database.Sample.csproj", "{89533C41-533A-47BD-BCF3-51C7AA1B8718}"
@@ -71,6 +70,22 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{A9DD5BE4-9E5E-47DD-84AB-BC353B469F5E}"
 	ProjectSection(SolutionItems) = preProject
 		.nuget\packages.config = .nuget\packages.config
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vagrant", "Vagrant", "{1F526CFD-E8A0-4108-8DCE-A2E6A2D96022}"
+	ProjectSection(SolutionItems) = preProject
+		Vagrant\60-databases.conf = Vagrant\60-databases.conf
+		Vagrant\chkconfig = Vagrant\chkconfig
+		Vagrant\cleandisk.sh = Vagrant\cleandisk.sh
+		Vagrant\fstab.diff = Vagrant\fstab.diff
+		Vagrant\my.cnf = Vagrant\my.cnf
+		Vagrant\oracle-shm = Vagrant\oracle-shm
+		Vagrant\oracle-xe.rsp = Vagrant\oracle-xe.rsp
+		Vagrant\pg_hba.conf = Vagrant\pg_hba.conf
+		Vagrant\postgresql.conf = Vagrant\postgresql.conf
+		Vagrant\sybase.init = Vagrant\sybase.init
+		Vagrant\sybase.rsp = Vagrant\sybase.rsp
+		Vagrantfile = Vagrantfile
 	EndProjectSection
 EndProject
 Global
@@ -346,5 +361,8 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{1F526CFD-E8A0-4108-8DCE-A2E6A2D96022} = {CEDD5EAD-7CF5-45EE-8676-EFEC0CBAB552}
 	EndGlobalSection
 EndGlobal
