@@ -260,7 +260,7 @@ namespace Insight.Database
 							throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Table parameter {0} must be specified", p.ParameterName));
 
 						// convert the value to an objectreader
-						DbParameterGenerator.ListParameterHelper.AddListParameter(p, p.Value, cmd);
+						DbParameterGenerator.ListParameterHelper.ConvertListParameter(p, p.Value, cmd);
 					}
 				}
 

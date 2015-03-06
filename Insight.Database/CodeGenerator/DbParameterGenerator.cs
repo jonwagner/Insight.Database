@@ -191,7 +191,7 @@ namespace Insight.Database.CodeGenerator
 					// don't use the provider above. The command may be unwrapped by the time we get back here
 					var tableParameter = InsightDbProvider.For(cmd).CloneParameter(cmd, parameters.OfType<IDataParameter>().Single(p => p.Direction.HasFlag(ParameterDirection.Input)));
 					cmd.Parameters.Add(tableParameter);
-					ListParameterHelper.AddListParameter(tableParameter, o, cmd);
+					ListParameterHelper.ConvertListParameter(tableParameter, o, cmd);
 				};
 			}
 
@@ -262,7 +262,7 @@ namespace Insight.Database.CodeGenerator
 					// we have the parameter and the value as object, add the command
 					ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il);
 					il.Emit(OpCodes.Ldarg_0);
-					il.Emit(OpCodes.Call, typeof(ListParameterHelper).GetMethod("AddListParameter", BindingFlags.Static | BindingFlags.NonPublic));
+					il.Emit(OpCodes.Call, typeof(ListParameterHelper).GetMethod("ConvertListParameter", BindingFlags.Static | BindingFlags.NonPublic));
 					continue;
 				}
 
@@ -424,7 +424,7 @@ namespace Insight.Database.CodeGenerator
 
 				foreach (var template in parameters)
 				{
-					var p = provider.CloneParameter(command, template);
+					var p = provider.CloneParameter(cmd, template);
 
 					// get the value from the object, converting null to db null
 					// note that if the dictionary does not have the value, we leave the value null and then the parameter gets defaulted
@@ -440,7 +440,8 @@ namespace Insight.Database.CodeGenerator
                             DbType sqlType = LookupDbType(value.GetType(), null, p.DbType);
                             if (sqlType == DbTypeEnumerable)
                             {
-                                ListParameterHelper.AddListParameter(p, value, command);
+								cmd.Parameters.Add(p);
+								ListParameterHelper.ConvertListParameter(p, value, cmd);
                                 continue;
                             }
                         }
@@ -629,7 +630,7 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="parameter">The parameter to modify.</param>
 			/// <param name="value">The value of the parameter.</param>
 			/// <param name="command">The command to add to.</param>
-			internal static void AddListParameter(IDataParameter parameter, object value, IDbCommand command)
+			internal static void ConvertListParameter(IDataParameter parameter, object value, IDbCommand command)
 			{
 				// convert the value to an enumerable
 				IEnumerable list = (IEnumerable)value;
@@ -647,9 +648,9 @@ namespace Insight.Database.CodeGenerator
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;
 
 				if (command.CommandType == CommandType.Text && (listType.IsValueType || listType == typeof(string)))
-					AddListParameterByValue(parameter, list, command);
+					ConvertListParameterByValue(parameter, list, command);
 				else
-					AddListParameterByClass(parameter, list, command, listType);
+					ConvertListParameterByClass(parameter, list, command, listType);
 			}
 
 			/// <summary>
@@ -659,7 +660,7 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="list">The list of objects to add.</param>
 			/// <param name="command">The command to add parameters to.</param>
 			[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities")]
-			private static void AddListParameterByValue(IDataParameter parameter, IEnumerable list, IDbCommand command)
+			private static void ConvertListParameterByValue(IDataParameter parameter, IEnumerable list, IDbCommand command)
 			{
 				// we are going to replace the current parameter with a list of new parameters
 				command.Parameters.Remove(parameter);
@@ -722,7 +723,7 @@ namespace Insight.Database.CodeGenerator
 			/// <param name="list">The list to add to the parameter.</param>
 			/// <param name="command">The command to add parameters to.</param>
 			/// <param name="listType">The type that the list contains.</param>
-			private static void AddListParameterByClass(IDataParameter parameter, IEnumerable list, IDbCommand command, Type listType)
+			private static void ConvertListParameterByClass(IDataParameter parameter, IEnumerable list, IDbCommand command, Type listType)
 			{
 				InsightDbProvider.For(command).SetupTableValuedParameter(command, parameter, list, listType);
 			}

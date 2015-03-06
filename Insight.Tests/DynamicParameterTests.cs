@@ -170,4 +170,50 @@ namespace Insight.Tests
         }
     }
     #endregion 
+
+	#region Tests for Issue #193
+	[TestFixture]
+	public class Issue193 : BaseTest
+	{
+		public class TestData
+		{
+			public int X;
+			public int Z;
+		}
+
+		[Test]
+		public void DynamicParametersShouldPopulateListElements()
+		{
+			using (var c = Connection())
+			{
+				c.Open();
+				var parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+
+				parameters.Add("data", new List<TestData>() { new TestData() { X = 1, Z = 2 } });
+
+				var cmd = c.CreateCommand("ReflectMultipleTestData", parameters);
+				var results = cmd.ExecuteReader().ToList<TestData>();
+
+				// this was failing because the list parameter was not being added to the command
+				Assert.AreEqual(1, results.Count());
+				Assert.AreEqual(2, results[0].Z);
+			}
+
+			// this was failing the second time because there was a closure with a command with an old connection
+			// and the old connection's connection string goes blank
+			using (var c = Connection())
+			{
+				c.Open();
+				var parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+
+				parameters.Add("data", new List<TestData>() { new TestData() { X = 1, Z = 2 } });
+
+				var cmd = c.CreateCommand("ReflectMultipleTestData", parameters);
+				var results = cmd.ExecuteReader().ToList<TestData>();
+				Assert.AreEqual(1, results.Count());
+				Assert.AreEqual(2, results[0].Z);
+			}
+		}
+	}
+	#endregion
 }

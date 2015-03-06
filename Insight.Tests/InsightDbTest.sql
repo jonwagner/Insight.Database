@@ -292,6 +292,9 @@ GO
 CREATE PROC UpsertMultipleTestData @data [InsertTestDataTVP] READONLY AS
 	UPDATE InsertTestDataTable SET Z=data.Z FROM @data data WHERE data.X = InsertTestDataTable.X SELECT X=0 FROM @data
 GO
+CREATE PROC ReflectMultipleTestData @data [InsertTestDataTVP] READONLY AS
+	SELECT * FROM @data
+GO
 
 CREATE PROC ExecuteWithOutputParameter (@p int = NULL OUTPUT) AS
 	SELECT @p = @p + 1
