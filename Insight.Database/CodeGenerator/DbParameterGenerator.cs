@@ -424,7 +424,7 @@ namespace Insight.Database.CodeGenerator
 
 				foreach (var template in parameters)
 				{
-					var p = provider.CloneParameter(command, template);
+					var p = provider.CloneParameter(cmd, template);
 
 					// get the value from the object, converting null to db null
 					// note that if the dictionary does not have the value, we leave the value null and then the parameter gets defaulted
@@ -440,7 +440,7 @@ namespace Insight.Database.CodeGenerator
                             DbType sqlType = LookupDbType(value.GetType(), null, p.DbType);
                             if (sqlType == DbTypeEnumerable)
                             {
-                                ListParameterHelper.AddListParameter(p, value, command);
+                                ListParameterHelper.AddListParameter(p, value, cmd);
                                 continue;
                             }
                         }
