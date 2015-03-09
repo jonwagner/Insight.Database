@@ -65,6 +65,7 @@ namespace Insight.Database.CodeGenerator
 			_simpleDeserializers.TryAdd(typeof(char?), new Func<IDataReader, char?>(r => TypeConverterGenerator.ReadNullableChar(r.GetValue(0))));
 			_simpleDeserializers.TryAdd(typeof(string), GetValueDeserializer<string>());
             _simpleDeserializers.TryAdd(typeof(Guid), GetGuidDeserializer());
+			_simpleDeserializers.TryAdd(typeof(Guid?), GetNullableGuidDeserializer());
 
 			_simpleDeserializers.TryAdd(typeof(byte), GetValueDeserializer<byte>());
 			_simpleDeserializers.TryAdd(typeof(short), GetValueDeserializer<short>());
@@ -314,9 +315,12 @@ namespace Insight.Database.CodeGenerator
         /// </summary>
         /// <returns>The deserializer to use.</returns>
         private static Func<IDataReader, Guid> GetGuidDeserializer()
-        {
+		{
             return r =>
             {
+				if (r.IsDBNull(0))
+					return Guid.Empty;
+
                 object value = r.GetValue(0);
                 if (value is Guid)
                     return (Guid)value;
@@ -326,6 +330,23 @@ namespace Insight.Database.CodeGenerator
 #else
                 return Guid.Parse(value.ToString());
 #endif
+            };
+		}
+
+		/// <summary>
+		/// Get a deserializer that returns a single Guid value from the return result.
+		/// </summary>
+		/// <returns>The deserializer to use.</returns>
+		private static Func<IDataReader, Guid?> GetNullableGuidDeserializer()
+        {
+			Func<IDataReader, Guid> guidDeserializer = GetGuidDeserializer();
+
+            return r =>
+            {
+				if (r.IsDBNull(0))
+					return null;
+
+				return guidDeserializer(r);
             };
         }
 		#endregion

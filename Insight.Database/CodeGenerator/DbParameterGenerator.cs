@@ -329,7 +329,7 @@ namespace Insight.Database.CodeGenerator
 				il.MarkLabel(readyToSetLabel);
 				if (memberType == typeof(string))
 					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterStringValue", BindingFlags.NonPublic | BindingFlags.Static));
-                else if (memberType == typeof(Guid) && dbParameter.DbType != DbType.Guid && command.CommandType == CommandType.StoredProcedure)
+                else if ((memberType == typeof(Guid?) || (memberType == typeof(Guid))) && dbParameter.DbType != DbType.Guid && command.CommandType == CommandType.StoredProcedure)
                     il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterGuidValue", BindingFlags.NonPublic | BindingFlags.Static));
                 else
 					il.Emit(OpCodes.Callvirt, _iDataParameterSetValue);
@@ -359,13 +359,14 @@ namespace Insight.Database.CodeGenerator
         /// <param name="value">The string value.</param>
         private static void SetParameterGuidValue(IDbDataParameter parameter, object value)
         {
+			parameter.Value = value;
+
             if (parameter.DbType != DbType.Guid)
             {
-                parameter.Value = value.ToString();
+				if (value != DBNull.Value)
+	                parameter.Value = value.ToString();
                 parameter.DbType = DbType.AnsiString;
             }
-            else
-                parameter.Value = value;
         }
 
 		/// <summary>

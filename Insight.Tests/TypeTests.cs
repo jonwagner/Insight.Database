@@ -973,6 +973,30 @@ namespace Insight.Tests
             var results = Connection().ExecuteScalarSql<object>("SELECT @p", new { p = g });
             Assert.AreEqual(g, results);
         }
+
+        [Test]
+        public void NullableGuidsShouldConvertToString()
+        {
+            Guid? g = Guid.NewGuid();
+            var results = Connection().Query<Guid>("TestGuidToStringParam", new { p = g }).First();
+            Assert.AreEqual(g, results);
+        }
+
+		[Test]
+		public void NullGuidsShouldConvertToNullString()
+		{
+			Guid? g = null;
+			var results = Connection().Query<Guid?>("TestGuidToStringParam", new { p = g }).First();
+			Assert.AreEqual(g, results);
+		}
+
+		[Test]
+		public void NullStringShouldConvertToEmptyGuid()
+		{
+			Guid? g = null;
+			var results = Connection().Query<Guid>("TestGuidToStringParam", new { p = g }).First();
+			Assert.AreEqual(Guid.Empty, results);
+		}
 		#endregion
 
 		#region SqlGeometry Tests
