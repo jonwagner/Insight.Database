@@ -825,7 +825,21 @@ namespace Insight.Tests
 			Assert.AreEqual(i1.GetType().Assembly, i2.GetType().Assembly);
         }
 		#endregion
-    }
+
+		#region Ambiguous Match Test
+		public interface IHaveAmbiguousMatch
+		{
+			// this method had a conflict with the create method that converts a connection to an interface
+			void Create(int installation);
+		}
+
+		[Test]
+		public void TestInterfaceWithMethodNamedCreate()
+		{
+			var c = Connection().As<IHaveAmbiguousMatch>();
+		}
+		#endregion
+	}
 
 	#region Interface Update Tests
 	[TestFixture]

@@ -138,7 +138,8 @@ namespace Insight.Database.CodeGenerator
 				Type t = tb.CreateType();
 
 				// return the create method
-				return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), t.GetMethod("Create"));
+				var createMethod = t.GetMethod("Create", _ifuncDbConnectionParameterTypes);
+				return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), createMethod);
 			}
 			catch (TypeLoadException e)
 			{
