@@ -132,8 +132,11 @@ Vagrant.configure(2) do |config|
 		sudo service mysql restart
 		
 		# install PostgreSQL
+		sudo add-apt-repository "deb http://apt.postgresql.org/pub/repos/apt/ trusty-pgdg main"
+		wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+		sudo apt-get update
 		sudo -E apt-get -y install postgresql
-		export PGHOME=/etc/postgresql/9.3/main
+		export PGHOME=/etc/postgresql/9.4/main
 		sudo -E cp $VAGRANTHOME/postgresql.conf $PGHOME/postgresql.conf
 		sudo -E cp $VAGRANTHOME/pg_hba.conf $PGHOME/pg_hba.conf
 		sudo service postgresql restart

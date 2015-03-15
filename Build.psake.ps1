@@ -91,7 +91,7 @@ Task Build35 {
 		Do-Build35 "Insight.Database.Configuration"
 		Do-Build35 "Insight.Database.Compatibility3x"
 		Do-Build35 "Insight.Database.Providers.Default"
-		Do-Build35 "Insight.Database.Providers.PostgreSQL" "Insight.Database.Providers.PostgreSQL.NET35"
+		Do-Build35 "Insight.Database.Providers.PostgreSQL"
 		Do-Build35 "Insight.Tests"
 		Do-Build35 "Insight.Tests.Compatibility3x"
     }

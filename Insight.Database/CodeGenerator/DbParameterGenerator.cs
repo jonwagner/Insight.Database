@@ -382,7 +382,7 @@ namespace Insight.Database.CodeGenerator
 			var s = value as string;
 			if (s != null)
 			{
-				if (parameter.DbType != DbType.Xml)
+				if (parameter.DbType != DbType.Xml && parameter.DbType != DbType.Object)
 					parameter.DbType = DbType.String;
 
 				var dbParameter = parameter as IDbDataParameter;

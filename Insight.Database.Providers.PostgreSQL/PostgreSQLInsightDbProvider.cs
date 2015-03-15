@@ -117,6 +117,27 @@ namespace Insight.Database.Providers.PostgreSQL
 			return (IDataParameter)p.Clone();
 		}
 
+		/// <inheritdoc/>
+		public override void FixupCommand(IDbCommand command)
+		{
+			if (command == null) throw new ArgumentNullException("command");
+
+			base.FixupCommand(command);
+
+#if !NET35 
+			// automatically encode any json parameters that we find
+			foreach (NpgsqlParameter p in command.Parameters)
+			{
+				if ((p.NpgsqlDbType == NpgsqlDbType.Json || p.NpgsqlDbType == NpgsqlDbType.Jsonb) &&
+					!(p.Value is String))
+				{
+					var value = p.Value;
+					p.Value = JsonObjectSerializer.Serializer.SerializeObject(value.GetType(), value);
+				}
+			}
+#endif
+		}
+
 		/// <summary>
 		/// Determines if the given column in the schema table is an XML column.
 		/// </summary>

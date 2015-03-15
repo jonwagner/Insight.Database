@@ -358,7 +358,211 @@ namespace Insight.Tests.PostgreSQL
                 Cleanup("DROP SCHEMA test1");
             }
         }
-        
+
+		public class Users
+		{
+			public long Id { get; set; }
+			public string JsonData { get; set; }
+		}
+
+		public class UsersWithTestData
+		{
+			public long Id { get; set; }
+
+			[Column(SerializationMode=SerializationMode.Json)]
+			public TestData JsonData { get; set; }
+		}
+
+		[Test]
+		public void TestStringToJsonProcParameters()
+		{
+			try
+			{
+				var input = new TestData() { X = 1, Z = 2 };
+				var users = new Users() { Id = 1, JsonData = (string)JsonObjectSerializer.Serializer.SerializeObject(typeof(TestData), input) };
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData json)");
+				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData json)");
+				_connection.ExecuteSql(@"
+					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) 
+					RETURNS SETOF PostgreSQLTestType
+					AS $$
+					BEGIN 
+						RETURN QUERY SELECT id as id, JsonData as JsonData;
+					END;
+					$$ LANGUAGE plpgsql;");
+				var result = _connection.Query<Users>("PostgreSQLTestExecute", users).First();
+
+				Assert.AreEqual(users.JsonData, result.JsonData);
+			}
+			finally
+			{
+				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) ");
+				Cleanup("DROP TYPE PostgreSQLTestType");
+				Cleanup("DROP TABLE Users");
+			}
+		}
+
+		[Test]
+		public void TestStringToJsonbProcParameters()
+		{
+			try
+			{
+				var input = new TestData() { X = 1, Z = 2 };
+				var users = new Users() { Id = 1, JsonData = (string)JsonObjectSerializer.Serializer.SerializeObject(typeof(TestData), input) };
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData jsonb)");
+				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData jsonb)");
+				_connection.ExecuteSql(@"
+					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) 
+					RETURNS SETOF PostgreSQLTestType
+					AS $$
+					BEGIN 
+						RETURN QUERY SELECT id as id, JsonData as JsonData;
+					END;
+					$$ LANGUAGE plpgsql;");
+				var result = _connection.Query<Users>("PostgreSQLTestExecute", users).First();
+
+				var deserialized = (TestData)JsonObjectSerializer.Serializer.DeserializeObject(typeof(TestData), result.JsonData);
+				Assert.AreEqual(input.X, deserialized.X);
+				Assert.AreEqual(input.Z, deserialized.Z);
+			}
+			finally
+			{
+				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) ");
+				Cleanup("DROP TYPE PostgreSQLTestType");
+				Cleanup("DROP TABLE Users");
+			}
+		}
+
+		[Test]
+		public void TestObjectToJsonProcParameters()
+		{
+			try
+			{
+				var input = new TestData() { X = 1, Z = 2 };
+				var users = new UsersWithTestData() { Id = 1, JsonData = input };
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData json)");
+				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData json)");
+				_connection.ExecuteSql(@"
+					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) 
+					RETURNS SETOF PostgreSQLTestType
+					AS $$
+					BEGIN 
+						RETURN QUERY SELECT id as id, JsonData as JsonData;
+					END;
+					$$ LANGUAGE plpgsql;");
+
+				var result = _connection.Query<UsersWithTestData>("PostgreSQLTestExecute", users).First();
+				Assert.AreEqual(input.X, result.JsonData.X);
+				Assert.AreEqual(input.Z, result.JsonData.Z);
+			}
+			finally
+			{
+				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) ");
+				Cleanup("DROP TYPE PostgreSQLTestType");
+				Cleanup("DROP TABLE Users");
+			}
+		}
+
+		[Test]
+		public void TestObjectToJsonbProcParameters()
+		{
+			try
+			{
+				var input = new TestData() { X = 1, Z = 2 };
+				var users = new UsersWithTestData() { Id = 1, JsonData = input };
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData jsonb)");
+				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData jsonb)");
+				_connection.ExecuteSql(@"
+					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) 
+					RETURNS SETOF PostgreSQLTestType
+					AS $$
+					BEGIN 
+						RETURN QUERY SELECT id as id, JsonData as JsonData;
+					END;
+					$$ LANGUAGE plpgsql;");
+
+				var result = _connection.Query<UsersWithTestData>("PostgreSQLTestExecute", users).First();
+				Assert.AreEqual(input.X, result.JsonData.X);
+				Assert.AreEqual(input.Z, result.JsonData.Z);
+			}
+			finally
+			{
+				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) ");
+				Cleanup("DROP TYPE PostgreSQLTestType");
+				Cleanup("DROP TABLE Users");
+			}
+		}
+
+		[Test]
+		public void TestStringToJsonSqlParameter()
+		{
+			try
+			{
+				var users = new Users()
+				{
+					Id = 1,
+					JsonData = (string)JsonObjectSerializer.Serializer.SerializeObject(typeof (TestData), new TestData() { X = 1, Z = 2 })
+				};
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData json)");
+				_connection.ExecuteSql("INSERT INTO Users (Id, JsonData) VALUES (@Id, @JsonData::JSON)", users);
+
+				var result = _connection.QuerySql<Users>(@"SELECT Users.* FROM Users").First();
+
+				Assert.AreEqual(users.JsonData, result.JsonData);
+			}
+			finally
+			{
+				Cleanup("DROP TABLE Users");
+			}
+		}
+
+		[Test]
+		public void TestObjectToJsonSqlParameter()
+		{
+			try
+			{
+				var input = new TestData() { X = 1, Z = 2 };
+				var users = new UsersWithTestData() { Id = 1, JsonData = input };
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData json)");
+				_connection.ExecuteSql("INSERT INTO Users (Id, JsonData) VALUES (@Id, @JsonData)", users);
+
+				var result = _connection.QuerySql<UsersWithTestData>(@"SELECT Users.* FROM Users").First();
+				Assert.AreEqual(input.X, result.JsonData.X);
+				Assert.AreEqual(input.Z, result.JsonData.Z);
+			}
+			finally
+			{
+				Cleanup("DROP TABLE Users");
+			}
+		}
+
+		[Test]
+		public void TestObjectToJsonbSqlParameter()
+		{
+			try
+			{
+				var input = new TestData() { X = 1, Z = 2 };
+				var users = new UsersWithTestData() { Id = 1, JsonData = input };
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData jsonb)");
+				_connection.ExecuteSql("INSERT INTO Users (Id, JsonData) VALUES (@Id, @JsonData)", users);
+
+				var result = _connection.QuerySql<UsersWithTestData>(@"SELECT Users.* FROM Users").First();
+				Assert.AreEqual(input.X, result.JsonData.X);
+				Assert.AreEqual(input.Z, result.JsonData.Z);
+			}
+			finally
+			{
+				Cleanup("DROP TABLE Users");
+			}
+		}
+       
         [Test, ExpectedException(typeof(ArgumentException))]
         public void InvalidSchemaShouldThrow()
         {
