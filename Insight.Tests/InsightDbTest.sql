@@ -103,13 +103,13 @@ GO
 CREATE PROC InsertIdentityReturn2 (@OtherValue int) AS SELECT Id=1, Id2=@OtherValue
 GO
 
-CREATE TABLE InsertByTableTable (ID [int] IDENTITY, ID2 [int] DEFAULT (2), Text [varchar](128), Value int)
+CREATE TABLE InsertByTableTable (ID [int] IDENTITY(1,1), ID2 [int] DEFAULT (2), Text [varchar](128), Value int)
 GO
 CREATE TYPE InsertByTableType AS TABLE (Text [varchar](128), Value int)
 GO
 CREATE PROC InsertByTable(@OtherValue int, @Items [InsertByTableType] READONLY) AS 
-	DELETE FROM InsertByTableTable
-	DBCC CHECKIDENT ('InsertByTableTable', RESEED, 0)
+	TRUNCATE TABLE InsertByTableTable
+	DBCC CHECKIDENT ('InsertByTableTable', RESEED, 1)
 	INSERT INTO InsertByTableTable (Text, Value)
 		OUTPUT inserted.ID, inserted.ID2
 		SELECT Text, @OtherValue FROM @Items
