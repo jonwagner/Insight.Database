@@ -214,9 +214,9 @@ namespace Insight.Database.CodeGenerator
                             }
                             else if (p.ColumnName != p.Name)
                             {
-                                // if we override the column name at this level, then apply it to the mapping
-                                // i'm not happy that we're modifying columnmame, but we know that the object was created just for this loop.
-                                match.ColumnName = p.ColumnName;
+								// we are overriding the column name at this level, so clone the property and rename it
+								members.Remove(match);
+								members.Add(new ClassPropInfo(p.MemberInfo));
                             }
                         }
                     }

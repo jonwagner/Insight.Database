@@ -210,6 +210,36 @@ namespace Insight.Tests
 			Assert.AreEqual(3, results.Children[0].Foo);
 		}
 		#endregion
+
+		#region Issue 199 Tests
+		public abstract class BaseRecord
+		{
+			public abstract int? Id { get; set; }
+		}
+
+		public class ChildRecord : BaseRecord
+		{
+			[Column("ChildRecordID")]
+			public override int? Id { get; set; }
+
+			internal GrandChildRecord GrandChild { get; set; }
+		}
+
+		public class GrandChildRecord : BaseRecord
+		{
+			[Column("GrandChildRecordId")]
+			public override int? Id { get; set; }
+		}
+
+		[Test]
+		public void TestIssue199()
+		{
+			// overriding Id two different ways was causing a conflict in some of the internal reflection structures
+			var result = Connection().SingleSql<ChildRecord, GrandChildRecord>("SELECT ChildRecordID=12345, GrandChildRecordId=99999");
+			Assert.AreEqual(12345, result.Id);
+			Assert.AreEqual(99999, result.GrandChild.Id);
+		}
+		#endregion
 	}
 
 	#region Single Child Tests
