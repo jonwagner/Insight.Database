@@ -160,7 +160,8 @@ namespace Insight.Database.Providers
 		/// <param name="command">The command to derive.</param>
 		public virtual void DeriveParametersFromStoredProcedure(IDbCommand command)
 		{
-			throw new NotImplementedException("Cannot derive parameters from this stored procedure. Have you loaded the provider for your database?");
+			if (command == null) throw new ArgumentNullException("command");
+			throw CreateNotRegisteredException(command, String.Format(CultureInfo.InvariantCulture, "Cannot derive parameters for the stored procedure {0}", command.CommandText));
 		}
 
 		/// <summary>
@@ -283,7 +284,8 @@ namespace Insight.Database.Providers
 		/// <param name="listType">The type of object in the list.</param>
 		public virtual void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, IEnumerable list, Type listType)
 		{
-			throw new NotImplementedException("Cannot set up this table valued parameter. Have you loaded the provider for your database?");
+			if (parameter == null) throw new ArgumentNullException("parameter");
+			throw CreateNotRegisteredException(command, String.Format(CultureInfo.InvariantCulture, "Cannot set up the table valued parameter for parameter {0}.", parameter.ParameterName));
 		}
 
 		/// <summary>
@@ -294,7 +296,7 @@ namespace Insight.Database.Providers
 		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
 		public virtual string GetTableSchemaSql(IDbConnection connection, string tableName)
 		{
-			throw new NotImplementedException("Cannot get the schema for this table. Have you loaded the provider for your database?");
+			throw CreateNotRegisteredException(connection, String.Format(CultureInfo.InvariantCulture, "Cannot get the schema for table {0}.", tableName));
 		}
 
 		/// <summary>
@@ -319,7 +321,7 @@ namespace Insight.Database.Providers
 		/// <param name="transaction">An optional transaction to participate in.</param>
 		public virtual void BulkCopy(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction)
 		{
-			throw new NotImplementedException("Cannot bulk copy into this database. Have you loaded the provider for your database?");
+			throw CreateNotRegisteredException(connection, String.Format(CultureInfo.InvariantCulture, "Cannot bulk copy into table {0}", tableName));
 		}
 
 		/// <summary>
@@ -372,6 +374,17 @@ namespace Insight.Database.Providers
 			}
 
 			return array;
+		}
+
+		/// <summary>
+		/// Creates a NotImplementedException when we can't handle particular type of database object.
+		/// </summary>
+		/// <param name="databaseObject">The object we're working with.</param>
+		/// <param name="message">The error message.</param>
+		/// <returns>An exception that can be thrown.</returns>
+		private static Exception CreateNotRegisteredException(object databaseObject, string message)
+		{
+			return new NotImplementedException(String.Format(CultureInfo.InvariantCulture, "{0}. Have you loaded the provider that suppoerts {1}?", message, databaseObject.GetType().Name));
 		}
 
 		#region Registration
