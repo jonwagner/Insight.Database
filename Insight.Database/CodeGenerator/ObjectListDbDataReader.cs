@@ -116,6 +116,10 @@ namespace Insight.Database.CodeGenerator
 				if (_current == null && !_objectReader.IsAtomicType)
 					throw new InvalidOperationException("Cannot send a list of objects to a table-valued parameter when the list contains a null value");
 			}
+			else
+			{
+				_enumerator.Reset();
+			}
 
 			return hasItems;
 		}
