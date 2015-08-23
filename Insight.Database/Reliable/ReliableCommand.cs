@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Insight.Database.CodeGenerator;
 
 namespace Insight.Database.Reliable
 {
@@ -42,19 +43,34 @@ namespace Insight.Database.Reliable
 		/// <inheritdoc/>
 		public override int ExecuteNonQuery()
 		{
-			return ExecuteWithRetry(() => InnerCommand.ExecuteNonQuery());
+			return ExecuteWithRetry(
+				() =>
+				{
+					FixupParameters();
+					return InnerCommand.ExecuteNonQuery();
+				});
 		}
 
-		/// <inheritdoc/>
+		/// <inheritdoc/>	
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
-			return ExecuteWithRetry(() => InnerCommand.ExecuteReader(behavior));
+			return ExecuteWithRetry(
+				() =>
+				{
+					FixupParameters();
+					return InnerCommand.ExecuteReader(behavior);
+				});
 		}
 
 		/// <inheritdoc/>
 		public override object ExecuteScalar()
 		{
-			return ExecuteWithRetry(() => InnerCommand.ExecuteScalar());
+			return ExecuteWithRetry(
+				() =>
+				{
+					FixupParameters();
+					return InnerCommand.ExecuteScalar();
+				});
 		}
 		#endregion
 
@@ -71,6 +87,8 @@ namespace Insight.Database.Reliable
 			// fallback to calling execute reader in a blocking task
 			return ExecuteWithRetryAsync(() =>
 			{
+				FixupParameters();
+
 				// start the sql command executing
 				var sqlCommand = InnerCommand as System.Data.SqlClient.SqlCommand;
 				if (sqlCommand != null)
@@ -91,13 +109,23 @@ namespace Insight.Database.Reliable
 		/// <inheritdoc/>
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
 		{
-			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteReaderAsync(behavior, cancellationToken));
+			return ExecuteWithRetryAsync(
+				() =>
+				{
+					FixupParameters();
+					return InnerCommand.ExecuteReaderAsync(behavior, cancellationToken);
+				});
 		}
 
 		/// <inheritdoc/>
 		public override Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken)
 		{
-			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteNonQueryAsync(cancellationToken));
+			return ExecuteWithRetryAsync(
+				() =>
+				{
+					FixupParameters();
+					return InnerCommand.ExecuteNonQueryAsync(cancellationToken);
+				});
 		}
 
 		/// <inheritdoc/>
@@ -139,5 +167,11 @@ namespace Insight.Database.Reliable
 			return _retryStrategy.ExecuteWithRetryAsync(this, function);
 		}
 		#endregion
+
+		private void FixupParameters()
+		{
+			foreach (var reader in Parameters.OfType<DbParameter>().Select(p => p.Value).OfType<ObjectListDbDataReader>())
+				reader.Reset();
+		}
 	}
 }

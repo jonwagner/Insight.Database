@@ -106,11 +106,8 @@ namespace Insight.Database.CodeGenerator
 				_current = _enumerator.Current;
 
 				// reset the column that we are currently reading
-				_currentOrdinal = -1;
-				_currentValue = null;
-				_currentStringOrdinal = -1;
-				_currentStringValue = null;
-			    _readRowCount++;
+				ResetRow();
+				_readRowCount++;
 
 				// not allowed to have nulls in the list
 				if (_current == null && !_objectReader.IsAtomicType)
@@ -253,6 +250,30 @@ namespace Insight.Database.CodeGenerator
 		public override int RecordsAffected
 		{
             get { return _readRowCount; }
+		}
+		#endregion
+
+		#region Private Methods
+		/// <summary>
+		/// Reset the reader so that it can read the records again.
+		/// </summary>
+		public void Reset()
+		{
+			_enumerator = _enumerable.GetEnumerator();
+			_readRowCount = 0;
+			_current = null;
+			ResetRow();
+		}
+
+		/// <summary>
+		/// Reset the internal variables at the end of each row.
+		/// </summary>
+		private void ResetRow()
+		{
+			_currentOrdinal = -1;
+			_currentValue = null;
+			_currentStringOrdinal = -1;
+			_currentStringValue = null;
 		}
 		#endregion
 	}
