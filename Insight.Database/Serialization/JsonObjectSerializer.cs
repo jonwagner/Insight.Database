@@ -28,6 +28,12 @@ namespace Insight.Database
 		public static DbObjectSerializer OverrideSerializer { get; set; }
 
 		/// <inheritdoc/>
+		public override bool CanSerialize(Type type, DbType dbType)
+		{
+			return base.CanSerialize(type, dbType) || dbType == DbType.Object;
+		}
+
+		/// <inheritdoc/>
 		public override object SerializeObject(Type type, object value)
 		{
 			if (OverrideSerializer != null)

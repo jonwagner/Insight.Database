@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using System.Data;
 
 namespace Insight.Database.Json
 {
@@ -19,6 +20,12 @@ namespace Insight.Database.Json
 		{
 			// override the type used to serialize
 			Insight.Database.JsonObjectSerializer.OverrideSerializer = new JsonNetObjectSerializer();
+		}
+
+		/// <inheritdoc/>
+		public override bool CanSerialize(Type type, DbType dbType)
+		{
+			return base.CanSerialize(type, dbType) || dbType == DbType.Object;
 		}
 
 		/// <summary>

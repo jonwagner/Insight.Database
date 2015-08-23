@@ -576,6 +576,32 @@ namespace Insight.Tests.PostgreSQL
                 _connection.ExecuteSql(sql);
             }
             catch { }
-        }
+		}
+
+		#region Issue 210
+		public class JsonColumn
+		{
+			[Column("id")]
+			public int Id { get; set; }
+
+			[Column("list", SerializationMode = SerializationMode.Json)]
+			public IEnumerable<int> List { get; set; }
+		}
+
+		[Test]
+        public void TestIssue210() 
+        {
+			using (var connection = _connectionStringBuilder.Connection().OpenWithTransaction())
+			{
+				connection.ExecuteSql("DROP TABLE IF EXISTS foo");
+				connection.ExecuteSql("DROP FUNCTION IF EXISTS insert_foo(integer, jsonb)");
+				connection.ExecuteSql("CREATE TABLE foo (id integer, list jsonb)");
+				connection.ExecuteSql(
+					@"CREATE FUNCTION insert_foo(id integer, list jsonb) RETURNS void
+						AS $body$ INSERT INTO foo VALUES (id, list) $body$ LANGUAGE SQL");
+				connection.Execute("insert_foo", new JsonColumn { Id = 1, List = new[] { 1, 2, 3, 4, 5 } });
+			}
+		}
+		#endregion
 	}
 }
