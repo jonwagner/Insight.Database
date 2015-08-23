@@ -103,7 +103,7 @@ namespace Insight.Tests
 
             public override object SerializeObject(Type type, object o)
             {
-                switch (o.ToString())
+				switch (o.ToString())
                 {
                     case "One":
                         return 1;
@@ -145,5 +145,81 @@ namespace Insight.Tests
                 Assert.AreEqual(e.Encoded, e2.Encoded);
             }
         }
+
+		public class EncodedTypeSerializer : DbObjectSerializer
+		{
+			public override bool CanDeserialize(Type sourceType, Type targetType)
+			{
+				return sourceType == typeof(int);
+			}
+
+			public override bool CanSerialize(Type type, DbType dbType)
+			{
+				return dbType == DbType.Int32;
+			}
+
+			public override DbType GetSerializedDbType(Type type, DbType dbType)
+			{
+				return DbType.Int32;
+			}
+
+			public override object SerializeObject(Type type, object o)
+			{
+				var encoded = (EncodedInt)o;
+				switch (encoded.Encoded)
+				{
+					case "One":
+						return 1;
+					case "Two":
+						return 2;
+					default:
+						return null;
+				}
+			}
+
+			public override object DeserializeObject(Type type, object encoded)
+			{
+				switch ((int)encoded)
+				{
+					case 1:
+						return new EncodedInt() { Encoded = "One" };
+					case 2:
+						return new EncodedInt() { Encoded = "Two" };
+					default:
+						return null;
+				}
+			}
+		}
+
+		public class TestWithSerializedObject
+		{
+			public EncodedInt Encoded;
+		}
+
+		[Test]
+		public void CustomSerializerWorksWithTVPs()
+		{
+			DbSerializationRule.Serialize<EncodedInt>(new EncodedTypeSerializer());
+
+			var e = new EncodedInt() { Encoded = "Two" };
+			var o = new TestWithSerializedObject() { Encoded = e };
+			var data = new List<TestWithSerializedObject>() { o };
+
+			try
+			{
+				Connection().ExecuteSql("CREATE TYPE TestTableWithEncodedInt AS TABLE (Encoded int)");
+
+				using (var c = Connection().OpenWithTransaction())
+				{
+					c.ExecuteSql("CREATE PROC TestEncoded(@Encoded [TestTableWithEncodedInt] READONLY) AS SELECT * FROM @Encoded");
+					var e2 = c.Query<TestWithSerializedObject>("TestEncoded", new { Encoded = data }).First();
+					Assert.AreEqual(e.Encoded, e2.Encoded.Encoded);
+				}
+			}
+			finally
+			{
+				Connection().ExecuteSql("DROP TYPE TestTableWithEncodedInt");
+			}
+		}
     }
 }
