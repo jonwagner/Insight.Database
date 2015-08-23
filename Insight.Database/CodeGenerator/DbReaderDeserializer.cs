@@ -183,14 +183,19 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The deserializer to use.</returns>
 		private static Func<IDataReader, T> GetValueDeserializer<T>()
 		{
-			return r =>
+			if (typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
+				return r => (T)r.GetValue(0);
+			else
 			{
-				object o = r.GetValue(0);
-				if (o == DBNull.Value)
-					return default(T);
-				else
-					return (T)o;
-			};
+				return r =>
+				{
+					object o = r.GetValue(0);
+					if (o == DBNull.Value)
+						return default(T);
+					else
+						return (T)o;
+				};
+			}
 		}
 
 		/// <summary>

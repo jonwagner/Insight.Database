@@ -71,5 +71,27 @@ namespace Insight.Tests
 
             Assert.AreEqual(null, result);
         }
+
+		[Test]
+		public void Given_a_null_result_When_querying_for_a_scalar_int_Then_the_result_is_not_silently_converted()
+		{
+			using (var connection = ConnectionWithTransaction())
+			{
+				TestDelegate act = () => connection.ExecuteScalarSql<int>("SELECT NULL");
+
+				Assert.That(act, Throws.Exception);
+			}
+		}
+
+		[Test]
+		public void Given_a_null_result_When_expecting_an_int_Then_the_result_is_not_silently_converted()
+		{
+			using (var connection = ConnectionWithTransaction())
+			{
+				TestDelegate act = () => connection.QuerySql<int>("SELECT NULL").Single();
+
+				Assert.That(act, Throws.Exception);
+			}
+		}
 	}
 }
