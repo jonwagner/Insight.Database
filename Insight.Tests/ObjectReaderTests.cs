@@ -7,7 +7,9 @@ using Insight.Database;
 using NUnit.Framework;
 using Insight.Database.Reliable;
 using System.Data.Common;
+#if NET45
 using Moq;
+#endif
 
 #pragma warning disable 0649
 
@@ -337,6 +339,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
+#if NET45
 		#region Retry Tests
 		public class TestIssue215 : BaseTest
 		{
@@ -391,5 +394,6 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
+#endif
 	}
 }
