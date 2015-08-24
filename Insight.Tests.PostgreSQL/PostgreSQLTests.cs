@@ -603,5 +603,18 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 		#endregion
+
+		#region Issue 207
+		[Test]
+		public void TestIssue207()
+		{
+			using (var connection = _connectionStringBuilder.Connection().OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE TABLE foo (id int, isnew bool)");
+				connection.ExecuteSql("INSERT INTO foo VALUES (1, true)");
+				connection.ExecuteSql("SELECT * FROM foo WHERE isnew = @isnew", new { isnew = true });
+			}
+		}
+		#endregion
 	}
 }
