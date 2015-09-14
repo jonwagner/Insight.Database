@@ -1465,8 +1465,8 @@ namespace Insight.Database
 				if (reader != null && !reader.IsClosed)
 					reader.Dispose();
 
-				if (closeConnection && connection.State != ConnectionState.Closed)
-					connection.Close();
+				if (closeConnection)
+                    connection.AutoClose();
 			}
 		}
 
@@ -1489,7 +1489,7 @@ namespace Insight.Database
 			finally
 			{
 				if (closeConnection)
-					connection.Close();
+					connection.AutoClose();
 			}
 		}
 
@@ -1548,6 +1548,34 @@ namespace Insight.Database
 
 			return (T)result;
 		}
+
+        /// <summary>
+        /// Will automatically close the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently closed.
+        /// </summary>
+        /// <param name="connection">The connection in context.</param>
+	    internal static void AutoClose(this IDbConnection connection)
+	    {
+	        if (connection == null || connection.State == ConnectionState.Closed)
+	        {
+	            return;
+	        }
+
+            connection.Close();
+	    }
+
+        /// <summary>
+        /// Will automatically open the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently open.
+        /// </summary>
+        /// <param name="connection">The connection in context.</param>
+        internal static void AutoOpen(this IDbConnection connection)
+        {
+            if (connection == null || connection.State == ConnectionState.Open)
+            {
+                return;
+            }
+
+            connection.Open();
+        }
 		#endregion
 	}
 }

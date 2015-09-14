@@ -95,21 +95,38 @@ namespace Insight.Database.Reliable
 			{
 				try
 				{
-					return func();
+                    return func();
 				}
 				catch (Exception ex)
 				{
 					// if it's not a transient error, then let it go
-					if (!IsTransientException(ex))
-						throw;
+				    if (!IsTransientException(ex))
+				    {
+				        commandContext.AutoClose();
+				        throw;
+				    }
 
 					// if the number of retries has been exceeded then throw
-					if (attempt >= MaxRetryCount)
-						throw;
+				    if (attempt >= MaxRetryCount)
+				    {
+                        commandContext.AutoClose();
+				        throw;
+				    }
 
 					// first off the event to tell someone that we are going to retry this
-					if (OnRetrying(commandContext, ex, attempt))
-						throw;
+				    if (OnRetrying(commandContext, ex, attempt))
+				    {
+                        commandContext.AutoClose();
+				        throw;
+				    }
+
+                    // if something went wrong and we currently have an open connection
+                    // release the open connection back to the connection pool
+                    // but only if not within a transaction, not sure what should be done?
+                    if (commandContext != null && commandContext.Transaction == null)
+				    {
+                        commandContext.AutoClose();
+				    }
 
 					// wait before retrying the command
 					// unless this is the first attempt or first retry is disabled
@@ -199,7 +216,7 @@ namespace Insight.Database.Reliable
 
 						// if it's not a transient error, then let it go
 						var ex = t.Exception;
-						if (!ex.Flatten().InnerExceptions.Any(x => IsTransientException(x)))
+						if (!ex.Flatten().InnerExceptions.Any(IsTransientException))
 						{
 							tcs.SetException(ex);
 							return;
@@ -234,11 +251,14 @@ namespace Insight.Database.Reliable
 						// create a timer for the retry
 						// note that we need to put the timer into a closure so we can dispose it
 						// but we have to wait for the local variable to be assigned before we can start the timer
-						Timer timer = null;
-						timer = new Timer(_ =>
+						Timer timer = new Timer(self =>
 						{
 							CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
-							timer.Dispose();
+						    var tmr = self as Timer;
+						    if (tmr != null)
+						    {
+						        tmr.Dispose();
+						    }
 						});
 
 						// start the timer
