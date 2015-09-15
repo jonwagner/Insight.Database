@@ -362,6 +362,8 @@ namespace Insight.Tests
 				{
 					Connection().ExecuteSql("CREATE TYPE TestTable AS TABLE (value int)");
 
+                    // TODO  ::  Jon, please fix me... I'm not sure what should be done here (2 of 2).
+
 					using (var connection = ConnectionWithTransaction())
 					{
 						var reliable = new ReliableConnection((DbConnection)connection, retryStrategy);

@@ -1466,7 +1466,7 @@ namespace Insight.Database
 					reader.Dispose();
 
 				if (closeConnection)
-                    connection.AutoClose();
+                    connection.EnsureIsClosed();
 			}
 		}
 
@@ -1489,7 +1489,7 @@ namespace Insight.Database
 			finally
 			{
 				if (closeConnection)
-					connection.AutoClose();
+					connection.EnsureIsClosed();
 			}
 		}
 
@@ -1553,7 +1553,7 @@ namespace Insight.Database
         /// Will automatically close the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently closed.
         /// </summary>
         /// <param name="connection">The connection in context.</param>
-	    internal static void AutoClose(this IDbConnection connection)
+	    internal static void EnsureIsClosed(this IDbConnection connection)
 	    {
 	        if (connection == null || connection.State == ConnectionState.Closed)
 	        {
@@ -1567,7 +1567,7 @@ namespace Insight.Database
         /// Will automatically open the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently open.
         /// </summary>
         /// <param name="connection">The connection in context.</param>
-        internal static void AutoOpen(this IDbConnection connection)
+        internal static void EnsureIsOpen(this IDbConnection connection)
         {
             if (connection == null || connection.State == ConnectionState.Open)
             {
@@ -1575,6 +1575,21 @@ namespace Insight.Database
             }
 
             connection.Open();
+        }
+
+	    /// <summary>
+	    /// Will automatically open the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently open.
+	    /// </summary>
+	    /// <param name="connection">The connection in context.</param>
+	    /// <param name="cancellationToken"></param>
+        internal static Task EnsureIsOpenAsync(this DbConnectionWrapper connection, CancellationToken cancellationToken = default(CancellationToken))
+        {
+            if (connection == null || connection.State == ConnectionState.Open)
+            {
+                return Task.FromResult(false);
+            }
+
+            return connection.OpenAsync(cancellationToken);
         }
 		#endregion
 	}

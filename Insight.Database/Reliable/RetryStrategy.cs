@@ -101,31 +101,33 @@ namespace Insight.Database.Reliable
 				{
 					// if it's not a transient error, then let it go
 				    if (!IsTransientException(ex))
-				    {
-				        commandContext.AutoClose();
 				        throw;
-				    }
 
-					// if the number of retries has been exceeded then throw
+				    // if the number of retries has been exceeded then throw
 				    if (attempt >= MaxRetryCount)
-				    {
-                        commandContext.AutoClose();
 				        throw;
-				    }
 
-					// first off the event to tell someone that we are going to retry this
+				    // first off the event to tell someone that we are going to retry this
 				    if (OnRetrying(commandContext, ex, attempt))
-				    {
-                        commandContext.AutoClose();
 				        throw;
-				    }
 
-                    // if something went wrong and we currently have an open connection
+				    // if something went wrong and we currently have an open connection
                     // release the open connection back to the connection pool
                     // but only if not within a transaction, not sure what should be done?
-                    if (commandContext != null && commandContext.Transaction == null)
+                    if (commandContext != null)
 				    {
-                        commandContext.AutoClose();
+				        if (commandContext.Transaction == null)
+				        {
+				            commandContext.EnsureIsClosed();
+				        }
+				        else
+				        {
+                            // TODO  ::  Jon, please fix me... I'm not sure what should be done here (1 of 2).
+                            commandContext.Transaction.Rollback();
+                            throw new Exception("The IDbCommand.Transaction instance was not committed and has been rolled back. " +
+                                                "There was an error when attempting to execute the command.", 
+                                                ex);
+				        }
 				    }
 
 					// wait before retrying the command

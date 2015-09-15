@@ -198,14 +198,14 @@ namespace Insight.Database
         /// Will automatically close the underlying connection of the <see cref="IDbCommand"/> instance in context, if it is not currently closed.
         /// </summary>
         /// <param name="command">The command in context.</param>
-        internal static void AutoClose(this IDbCommand command)
+        internal static void EnsureIsClosed(this IDbCommand command)
         {
             if (command == null)
             {
                 return;
             }
 
-            command.Connection.AutoClose();
+            command.Connection.EnsureIsClosed();
         }
 		#endregion
 	}
