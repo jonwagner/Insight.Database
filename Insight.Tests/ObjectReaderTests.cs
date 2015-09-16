@@ -7,7 +7,7 @@ using Insight.Database;
 using NUnit.Framework;
 using Insight.Database.Reliable;
 using System.Data.Common;
-#if NET45
+#if !NET35
 using Moq;
 #endif
 
@@ -339,7 +339,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
-#if NET45
+#if !NET35
 		#region Retry Tests
 		public class TestIssue215 : BaseTest
 		{
@@ -365,7 +365,7 @@ namespace Insight.Tests
 				{
 					Connection().ExecuteSql("CREATE TYPE TestTable AS TABLE (value int)");
 
-					using (var connection = ConnectionWithTransaction())
+					using (var connection = Connection())
 					{
 						var reliable = new ReliableConnection((DbConnection)connection, retryStrategy);
 
@@ -389,6 +389,8 @@ namespace Insight.Tests
 				}
 				finally
 				{
+					Connection().ExecuteSql("DROP PROC ProcWithTestTable");
+					Connection().ExecuteSql("DROP TABLE TestTableFlag");
 					Connection().ExecuteSql("DROP TYPE TestTable");
 				}
 			}

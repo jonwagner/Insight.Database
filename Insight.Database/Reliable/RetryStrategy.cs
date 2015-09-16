@@ -95,21 +95,31 @@ namespace Insight.Database.Reliable
 			{
 				try
 				{
-					return func();
+                    return func();
 				}
 				catch (Exception ex)
 				{
 					// if it's not a transient error, then let it go
-					if (!IsTransientException(ex))
+				    if (!IsTransientException(ex))
+				        throw;
+
+				    // if the number of retries has been exceeded then throw
+				    if (attempt >= MaxRetryCount)
+				        throw;
+
+				    // first off the event to tell someone that we are going to retry this
+				    if (OnRetrying(commandContext, ex, attempt))
+				        throw;
+
+					// the retry might take a while. we shouldn't hold open transactions that long, so abort
+					// and let another retry mechanism handle it
+					if (commandContext != null && commandContext.Transaction != null)
 						throw;
 
-					// if the number of retries has been exceeded then throw
-					if (attempt >= MaxRetryCount)
-						throw;
-
-					// first off the event to tell someone that we are going to retry this
-					if (OnRetrying(commandContext, ex, attempt))
-						throw;
+					// since we're retrying the command, we don't want to hold open the transaction
+					// so close it here and we'll reopen on retry
+					if (commandContext != null)
+				        commandContext.EnsureIsClosed();
 
 					// wait before retrying the command
 					// unless this is the first attempt or first retry is disabled
@@ -199,7 +209,7 @@ namespace Insight.Database.Reliable
 
 						// if it's not a transient error, then let it go
 						var ex = t.Exception;
-						if (!ex.Flatten().InnerExceptions.Any(x => IsTransientException(x)))
+						if (!ex.Flatten().InnerExceptions.Any(IsTransientException))
 						{
 							tcs.SetException(ex);
 							return;
@@ -237,8 +247,14 @@ namespace Insight.Database.Reliable
 						Timer timer = null;
 						timer = new Timer(_ =>
 						{
-							CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
-							timer.Dispose();
+							try
+							{
+								CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
+							}
+							finally
+							{
+								timer.Dispose();
+							}
 						});
 
 						// start the timer
