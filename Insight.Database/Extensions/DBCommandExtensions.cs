@@ -193,6 +193,20 @@ namespace Insight.Database
 			// this method lets us convert QueryCore to a delegate for dynamic calls
 			return command.Query<T>((IQueryReader<T>)returns, commandBehavior, outputParameters);
 		}
+
+        /// <summary>
+        /// Will automatically close the underlying connection of the <see cref="IDbCommand"/> instance in context, if it is not currently closed.
+        /// </summary>
+        /// <param name="command">The command in context.</param>
+        internal static void EnsureIsClosed(this IDbCommand command)
+        {
+            if (command == null)
+            {
+                return;
+            }
+
+            command.Connection.EnsureIsClosed();
+        }
 		#endregion
 	}
 }

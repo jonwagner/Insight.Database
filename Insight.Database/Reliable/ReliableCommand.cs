@@ -47,6 +47,7 @@ namespace Insight.Database.Reliable
 				() =>
 				{
 					FixupParameters();
+                    InnerConnection.EnsureIsOpen();
 					return InnerCommand.ExecuteNonQuery();
 				});
 		}
@@ -58,6 +59,7 @@ namespace Insight.Database.Reliable
 				() =>
 				{
 					FixupParameters();
+                    InnerConnection.EnsureIsOpen();
 					return InnerCommand.ExecuteReader(behavior);
 				});
 		}
@@ -69,6 +71,7 @@ namespace Insight.Database.Reliable
 				() =>
 				{
 					FixupParameters();
+                    InnerConnection.EnsureIsOpen();
 					return InnerCommand.ExecuteScalar();
 				});
 		}
@@ -88,6 +91,7 @@ namespace Insight.Database.Reliable
 			return ExecuteWithRetryAsync(() =>
 			{
 				FixupParameters();
+                InnerConnection.EnsureIsOpen();
 
 				// start the sql command executing
 				var sqlCommand = InnerCommand as System.Data.SqlClient.SqlCommand;
@@ -106,32 +110,40 @@ namespace Insight.Database.Reliable
 #endif
 
 #if !NODBASYNC
-		/// <inheritdoc/>
-		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
+        /// <inheritdoc/>
+		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			return ExecuteWithRetryAsync(
 				() =>
 				{
 					FixupParameters();
-					return InnerCommand.ExecuteReaderAsync(behavior, cancellationToken);
+
+                    return InnerConnection.EnsureIsOpenAsync(cancellationToken)
+                                          .ContinueWith(_ => InnerCommand.ExecuteReaderAsync(behavior, cancellationToken), cancellationToken)
+                                          .Unwrap();
 				});
 		}
 
 		/// <inheritdoc/>
-		public override Task<int> ExecuteNonQueryAsync(System.Threading.CancellationToken cancellationToken)
+		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
 		{
 			return ExecuteWithRetryAsync(
 				() =>
 				{
 					FixupParameters();
-					return InnerCommand.ExecuteNonQueryAsync(cancellationToken);
+
+                    return InnerConnection.EnsureIsOpenAsync(cancellationToken)
+				                          .ContinueWith(_ => InnerCommand.ExecuteNonQueryAsync(cancellationToken), cancellationToken)
+				                          .Unwrap();
 				});
 		}
 
 		/// <inheritdoc/>
-		public override Task<object> ExecuteScalarAsync(System.Threading.CancellationToken cancellationToken)
+		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
 		{
-			return ExecuteWithRetryAsync(() => InnerCommand.ExecuteScalarAsync(cancellationToken));
+		    return ExecuteWithRetryAsync(() => InnerConnection.EnsureIsOpenAsync(cancellationToken)
+		                                                      .ContinueWith(_ => InnerCommand.ExecuteScalarAsync(cancellationToken), cancellationToken)
+		                                                      .Unwrap());
 		}
 #endif
 		#endregion
@@ -166,12 +178,12 @@ namespace Insight.Database.Reliable
 		{
 			return _retryStrategy.ExecuteWithRetryAsync(this, function);
 		}
-		#endregion
 
-		private void FixupParameters()
-		{
-			foreach (var reader in Parameters.OfType<DbParameter>().Select(p => p.Value).OfType<ObjectListDbDataReader>())
-				reader.Reset();
-		}
+        private void FixupParameters()
+        {
+            foreach (var reader in Parameters.OfType<DbParameter>().Select(p => p.Value).OfType<ObjectListDbDataReader>())
+                reader.Reset();
+        }
+		#endregion
 	}
 }
