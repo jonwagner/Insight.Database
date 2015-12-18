@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using ChildMappingTests =Insight.Tests.StructureTest_ChildMappingHelperUnitTests;
 
 namespace Insight.Tests
 {
@@ -357,6 +358,35 @@ namespace Insight.Tests
 				Assert.AreEqual(1, parent.Children[0].ParentKey);
 				Assert.AreEqual(30, parent.Children[0].ChildKey);
 			}
+
+			/// <summary>
+			/// Detecting Child's parent id by looking at Parent's ID
+			/// Handle InvoiceLine.Invoice_ID => Invoice.ID
+			/// aka Glass.BeerId ->Beer.Id
+			/// New Functionality (see issue 238 in root repo) 
+			/// </summary>
+			[Test]
+			public void List_MappingOfParentID_ByParentPK_NakedId()
+			{
+				var beer = Connection().QuerySql(
+								"SELECT ID=1, Int2=10; " +
+								"SELECT ID=30, Beer238_ID=1, Value=40" + " UNION " +
+								"SELECT ID=31, Beer238_ID=1, Value=41"
+								, null,
+								Query.Returns(Some<ChildMappingTests.TestClasses.Beer238>.Records)
+								.ThenChildren(Some<ChildMappingTests.TestClasses.Glass238b>.Records))
+								.First();
+
+				Assert.AreEqual(1, beer.ID = 1);
+				Assert.AreEqual(2, beer.GlassesB.Count);
+				Assert.IsNull(beer.GlassesA);
+				Assert.AreEqual(2, beer.GlassesB.Count);
+				Assert.AreEqual(1, beer.GlassesB[0].Beer238_ID);
+				Assert.AreEqual(1, beer.GlassesB[1].Beer238_ID);
+				Assert.AreEqual(40, beer.GlassesB[0].Value);
+				Assert.AreEqual(41, beer.GlassesB[1].Value);
+			}
+
 		}
 		#endregion
 

@@ -343,6 +343,31 @@ namespace Insight.Tests
 			Assert.AreEqual("Invoice_id", result.ElementAt(0));
 		}
 
+		/// <summary>
+		/// Issue 238: Support myClass.BeerId ->Beer.ID
+		/// </summary>
+		[Test]
+		public void GetParentIDAccessor_WhenPKIsJustId()
+		{
+			var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.Glass238a), null, typeof(TestClasses.Beer238));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("Beer238ID", result.ElementAt(0));
+		}
+
+		/// <summary>
+        /// Issue 238: Support myClass.BeerId ->Beer.ID
+        /// </summary>
+		[Test]
+		public void GetParentIDAccessor_WhenPKIsJustId_Underscored()
+		{
+			var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.Glass238b), null, typeof(TestClasses.Beer238));
+
+			Assert.AreEqual(1, result.Count());
+			Assert.AreEqual("Beer238_ID", result.ElementAt(0));
+		}
+
+
 		// throws System.InvalidOperationException 'Sequence contains more than one matching element'
 		// This was barfing on   public int Paid as it end with ID			 
 		/// It should first try to match to [ClassName]ID aka  public int ClassWithSuffixedId;  
@@ -642,6 +667,26 @@ namespace Insight.Tests
 				public int ParentId;
 				public ChildWithGenericNames ChildWithGenericNames;
 				public string Name;
+			}
+
+			public class Beer238
+			{
+				public int ID;
+				public IList<Glass238a> GlassesA;
+				public IList<Glass238b> GlassesB;
+			}
+
+			public class Glass238a
+			{
+				public int ID;
+				public int Beer238ID;
+			}
+
+			public class Glass238b
+			{
+				public int ID;
+				public int Beer238_ID;
+				public int Value;
 			}
 
 		}
