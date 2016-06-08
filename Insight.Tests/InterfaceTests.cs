@@ -967,6 +967,26 @@ namespace Insight.Tests
 		protected abstract string AbstractMethod();
 	}
 
+    public abstract class AbstractClassWithDefaultConstructor
+    {
+        public bool DefaultConstructorCalled { get; }
+
+        protected AbstractClassWithDefaultConstructor()
+        { DefaultConstructorCalled = true; }
+
+        [Sql("SELECT 'abstract'")]
+        public abstract string AbstractMethod();
+    }
+
+    public abstract class AbstractClassWithNonDefaultConstructor
+    {
+        protected AbstractClassWithNonDefaultConstructor(int x)
+        {}
+
+        [Sql("SELECT 'abstract'")]
+        public abstract string AbstractMethod();
+    }
+
 	[TestFixture]
 	public class AbstractClassTests : BaseTest
 	{
@@ -1036,6 +1056,27 @@ namespace Insight.Tests
 
 			var i = connection.As<AbstractClassWithProtectedMethod>();
 			Assert.AreEqual("abstract", i.PublicMethod());
+		}
+
+		[Test]
+		public void BaseClassDefaultConstructorIsInvoked()
+		{
+			var connection = Connection();
+
+            var i = connection.As<AbstractClassWithDefaultConstructor>();
+			Assert.IsTrue(i.DefaultConstructorCalled);
+
+            var i2 = connection.AsParallel<AbstractClassWithDefaultConstructor>();
+			Assert.IsTrue(i2.DefaultConstructorCalled);
+		}
+
+		[Test]
+		public void WhenBaseClassHasNoValidConstructorsThrows()
+		{
+			var connection = Connection();
+
+			Assert.Throws<InvalidOperationException>(() => connection.As<AbstractClassWithNonDefaultConstructor>());
+			Assert.Throws<InvalidOperationException>(() => connection.AsParallel<AbstractClassWithNonDefaultConstructor>());
 		}
 	}
 	#endregion

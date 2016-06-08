@@ -180,6 +180,8 @@ namespace Insight.Database.CodeGenerator
 			var ctor0IL = ctor0.GetILGenerator();
 			ctor0IL.Emit(OpCodes.Ldarg_0);
 			ctor0IL.Emit(OpCodes.Ldarg_1);
+
+			var baseConstructorCalled = false;
 			if (singleThreaded)
 			{
 				// for single-threaded, unwrap the connection provider once at construction time
@@ -198,6 +200,22 @@ namespace Insight.Database.CodeGenerator
 
 					// the connection is *this*
 					ctor0IL.Emit(OpCodes.Ldarg_0);
+					baseConstructorCalled = true;
+				}
+			}
+
+			if (!baseConstructorCalled)
+			{
+				var defaultBaseConstructor = tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
+				if (defaultBaseConstructor != null)
+				{
+					ctor0IL.Emit(OpCodes.Ldarg_0);
+					ctor0IL.Emit(OpCodes.Call, defaultBaseConstructor);
+				}
+				else if (tb.BaseType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Length > 0)
+				{
+					// There are constructors with parameters which we can't call
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "{0} cannot be implemented Insight.Database. Make sure that the class has a default constructor, or another constructor that Insight can call.", tb.BaseType.FullName));
 				}
 			}
 
