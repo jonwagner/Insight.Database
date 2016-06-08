@@ -242,7 +242,7 @@ namespace Insight.Database.CodeGenerator
 			}
 			else
 			{
-				return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
+				return type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod)
 					.Where(m => m.IsAbstract);
 			}
 		}
