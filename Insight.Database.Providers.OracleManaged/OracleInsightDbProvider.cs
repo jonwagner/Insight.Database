@@ -131,7 +131,7 @@ namespace Insight.Database.Providers.OracleManaged
 		/// <returns>SQL that queries a table for the schema only, no rows.</returns>
 		public override string GetTableSchemaSql(IDbConnection connection, string tableName)
 		{
-			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} WHERE rownum = 0", tableName);
+			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} WHERE 1=0", tableName);
 		}
 
 		/// <summary>
