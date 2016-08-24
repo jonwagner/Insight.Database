@@ -61,7 +61,9 @@ namespace Insight.Database.CodeGenerator
 		{
 			// make a new assembly for the generated types
 			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+            // following line is just a workaround for VS2015 debugger https://github.com/jonwagner/Insight.Database/issues/224
+            an.Name += ".Tmp";
+            AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
 
 			_moduleBuilder = ab.DefineDynamicModule(an.Name);
 		}
