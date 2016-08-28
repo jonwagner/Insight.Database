@@ -243,19 +243,36 @@ namespace Insight.Database.Structure
         /// <returns>A matching IDAccessor or null.</returns>
         private static IDAccessor InferParentIDAccessorFromParentClass(Type type, Type parentType)
         {
+            IDAccessor idAccessor = null;
+
             if (parentType == null)
                 return null;
 
+            // Determine the PK of the parent so we can try to translate it to the child            
             var parentIDAccessor = FindIDAccessor<RecordIdAttribute>(parentType, null, DefaultIDField);
             if (parentIDAccessor == null)
                 return null;
 
-            // don't match an "ID" field of the parent to the "ID" field on this type
             var parentIDNames = parentIDAccessor.MemberNames.ToList();
-            if (parentIDNames.Count() == 1 && parentIDNames.First().IsIEqualTo(DefaultIDField))
-                return null;
 
-            return FindIDAccessorByNameList(type, parentIDNames, false);
+            // If the parent's PK is just ID, we can't say 
+            // InvoiceLine.ID => Invoice.ID, but InvoiceLine.Invoice_ID => Invoice.ID makes sense
+            if (parentIDNames.Count() == 1 && parentIDNames.First().IsIEqualTo(DefaultIDField))
+            {
+                parentIDNames[0] = parentType.Name + '_' + DefaultIDField;
+                idAccessor = FindIDAccessorByNameList(type, parentIDNames, false);
+
+                if (idAccessor == null)
+                {
+                    // Now try InvoiceLine.InvoiceID => Invoice.ID
+                    parentIDNames[0] = parentType.Name + DefaultIDField;
+                    idAccessor = FindIDAccessorByNameList(type, parentIDNames, false);    
+                }
+            }
+            else
+                idAccessor = FindIDAccessorByNameList(type, parentIDNames, false);
+
+            return idAccessor;
         }
-	}
+    }
 }
