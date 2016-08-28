@@ -1,4 +1,43 @@
 Notes for Building Insight.Database
 ===================================
 
-* Building requires Psake - you can get it from http://nuget.org/packages/psake/
+Getting the basics up and running, e.g. for a pull request
+-------------------------------------------------------------
+* Install the Visual Studio extension EditorConfig.  This will read the .editorconfig file in the solution dir so when you edit files you don't mess with the tab scheme etc and make it hard to diff and merge you code.
+
+
+Install special Database drivers
+-------------------------------------------------------------
+If you are doing a small edit, you can skip this section and just unload these 3 projects and their test projects.
+
+* Db2:
+  - Go to http://www-01.ibm.com/support/docview.wss?uid=swg24041038  and  get the IBM Data Server Client
+  - Run \CLIENT\db2\Windows\IBM Data Server Client.msi
+  - Choose custom install, only choose 'Base client support' and 'IBM Data Server Provider for .NET
+
+* Sybase ASE:
+  - Download the "Get a Free "Developer" Edition" from http://scn.sap.com/community/developer-center/oltp-db
+  - Choose Custom Install when given the option.
+  - Only install the .Net ADO package from the custom install. (make sure X'd and half ticks are cleared)
+  - Install it in the default location
+
+* Oracle (unmanaged):
+  - Go to http://www.oracle.com/technetwork/topics/dotnet/index-085163.html
+  - Click 'Download ODP.NET via ODAC'
+  - Choose the ODAC download, not ODP_Managed.  I downloaded the msi version (Note there is also an XCopy version which may be less annoying.)
+  - Options are:
+    - install location: C:\Oracle
+    - Install: 'Oracle Data Provider for .NET' (again avoid the managed driver for this project)
+
+    You know that you have succeeded when you have C:\Oracle\odp.net\bin\4\Oracle.DataAccess.dll installed.
+
+
+Doing a full build
+-------------------------------------------------------------
+Do this to ensure your code runs on all platforms (.Net 3.5, Mono, etc)
+  - This does require install the database drivers listed above
+  - A full build requires Psake
+    - you can get it from http://nuget.org/packages/psake/
+    - Or, with PowerShell 5 run this from the PS cmd prompt:
+        Install-Module "psake"  #Note: consider adding  -Scope CurrentUser
+  - To build run 'build.bat'
