@@ -1,5 +1,5 @@
-Notes for Building Insight.Database
-===================================
+Notes for Building Insight
+===============================================
 
 Getting the basics up and running, e.g. for a pull request
 -------------------------------------------------------------
@@ -7,40 +7,76 @@ Getting the basics up and running, e.g. for a pull request
   This will read the .editorconfig file in the solution dir so when you edit files you don't mess with the tab scheme etc
   and make it hard to diff and merge your code.  If you don't do this it's hard to ensure that you get 'credit'
   for the lines of code you are contributing.
+* Everything but Insight.SQLite.Tests should build properly when you build the solution (SQLite is addressed below)
 
+Set up the test database
+-------------------------------------------------------------
+* By default Insight.Tests' config file is looking for local installed SQL server with a database named InsightDbTests
+* To use a LocalDb option instead (or skip the the next '*'):
+  - Install LocalDb, e.g. from here https://msdn.microsoft.com/en-us/library/hh510202.aspx
+  - >cd C:\Program Files\Microsoft SQL Server\130\Tools\Binn
+  - >sqllocaldb create InsightDb
+  - Enable the LocalDb connection string that is commented out in app.config. (note that '(localdb)' is literal):
+  - Confirm all tests pass for Insight.Tests 
+  - Now set up the "Test" connection string for the following projects as well:
+    - Insight.Tests.Compatiblity3x
+    - Insight.Tests.Glimpse
+    - Insight.Tests.Json
+    - Insight.Tests.MiniProfiler
+* Confirm for Insight.Tests and these 4 projects all pass testing
 
 Install special Database drivers
 -------------------------------------------------------------
 If you are doing a small edit, you can skip this section and just unload these 3 projects and their test projects.
 
+* SQLite. 
+  - Resolve the error in Insight.SQLite.Tests
+    - The SQLite files will be downloaded by Nuget to <Solution>\packages on first compile.
+    - Go to \packages\System.Data.SQLite.Core.x.x.x.x\content\net451 
+    - Copy the \x86 and \x64 directories to the root of Insight.Tests.SQLite
 * Db2:
   - Go to http://www-01.ibm.com/support/docview.wss?uid=swg24041038  and  get the 'IBM Data Server Client'
+  - IF YOU ARE RUNNING UAC, YOU MUST TURN IT OFF.  There is no UAC prompt, you just get error 10...You must disable UAC
   - Run \CLIENT\db2\Windows\IBM Data Server Client.msi
-  - Choose custom install, only choose 'Base client support' and 'IBM Data Server Provider for .NET
-
+  - Choose custom install, only choose 'Base client support' and 'IBM Data Server Provider for .NET'
+  - Use the default path
+  - Uncheck 'enable OS Security' OR run cmd 'net localgroup db2users "YourUserName" /Add' (I just unchecked the check box)
+  - Turn UAC back on
+  - You must copy db2app64.dll and db2app.dll from %Program Files%\IBM\SQLLIB\BIN to ..\Insight.Tests.DB2\bin\db2app64.dll
+    (Thx http://stackoverflow.com/questions/7484349/sql1159-initialization-error-with-db2-net-data-provider-reason-code-2)
+  
 * Sybase ASE:
   - Download the "Get a Free Developer Edition" from http://scn.sap.com/community/developer-center/oltp-db
   - Choose Custom Install when given the option.
   - Only install the .Net ADO package from the custom install. (make sure the faint half ticks are cleared)
   - Install it in the default location
 
-* Oracle (unmanaged):
+* Oracle (Not OracleManaged):
   - Go to http://www.oracle.com/technetwork/topics/dotnet/index-085163.html
   - Click 'Download ODP.NET via ODAC'
-  - Choose the ODAC download, not ODP_Managed.  I downloaded the msi (Note there is also an XCopy version which may be better.)
+  - Choose the ODAC download, not ODP_Managed.  I downloaded the msi, but note there is also an XCopy version which may be better.
   - Options are:
     - install location: C:\Oracle
     - Install: 'Oracle Data Provider for .NET' (again avoid the managed driver for this project)
-
-    You know that you have succeeded when you have C:\Oracle\odp.net\bin\4\Oracle.DataAccess.dll installed.
+  - You should now see C:\Oracle\odp.net\bin\4\Oracle.DataAccess.dll
 
 
 Doing a full build
 -------------------------------------------------------------
-Do this to ensure your code runs on all platforms (.Net 3.5, Mono, etc)
-  - This does require install the database drivers listed above
-  - A full build also requires Psake
-    - you can get it from http://nuget.org/packages/psake/
-    - Or, with PowerShell 5 run this from the PS cmd prompt:
-        Install-Module "psake"  #Note: consider adding  -Scope CurrentUser
-  - To build run 'build.bat'
+Do this to ensure your code runs on all platforms (.Net 3.5, 4.0, 4.5, Mono, etc.)
+* This does require install the database drivers listed above
+* A full build also requires Psake
+  - You can get it from http://nuget.org/packages/psake/
+  - Or, with PowerShell 5 run this from the PowerShell cmd prompt:
+    Install-Module "psake"  
+	Note: add  '-Scope CurrentUser' or run this from an elevated Powershell prompt
+* To build run 'build.bat'
+
+Use Vagrant to get a virtual server with Db2, Sybase & Oracle so those tests work
+---------------------------------------------------------------------------------------
+* Install Vagrant - https://www.vagrantup.com/
+* Install Virtual Box or other VM Provider (Note that Vagrant wants money to link up with VMware)
+* From the root of Insight, run 'Vagrant up', this will provision your VM (it takes ~15 mins the first time)
+* To shut down: 'Vagrant Suspend',  Restart: 'Vagrant Reload'
+* One issue I had to fix was that the PostgreSQL version changed and that required some small vagrant updates.
+  See the commit 1bfa684 for details when this happens again.
