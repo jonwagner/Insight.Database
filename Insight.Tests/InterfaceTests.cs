@@ -7,12 +7,17 @@ using NUnit.Framework;
 using Insight.Database;
 using System.Data.Common;
 using System.Data;
+using System.Runtime.CompilerServices;
 using System.Threading;
 using Insight.Tests.Cases;
 using Insight.Database.Reliable;
 
 // since the interface and types are private, we have to let insight have access to them
-[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Insight.Database")]
+[assembly: InternalsVisibleTo("Insight.Database")]
+
+// TODO: uncomment this InternalsVisibleTo in v6:
+// To _debug_ some unit test you will need to enable this[assembly: InternalsVisibleTo("Insight.Database.DynamicAssembly")]
+// it should remain commented out in v5 to ensure we preserve Insight's ability to access non-public strcutures
 
 namespace Insight.Tests
 {

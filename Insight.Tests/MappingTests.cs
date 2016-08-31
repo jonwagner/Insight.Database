@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
+using Insight.Tests.Cases;
 using Microsoft.SqlServer.Types;
 using NUnit.Framework;
 
@@ -390,31 +391,97 @@ namespace Insight.Tests
 		}
 		#endregion
 
-        #region Test for Issue #156
-        public class BaseForRenaming
-        {
-            public virtual string RenamedInDerived { get; set; }
-            [Column("BaseRenamed")]
-            public virtual string RenamedInBase { get; set; }
-        }
+		#region Test for Issue #156
+		public class BaseForRenaming
+		{
+			public virtual string RenamedInDerived { get; set; }
+			[Column("BaseRenamed")]
+			public virtual string RenamedInBase { get; set; }
+		}
 
-        public class DerivedForRenaming : BaseForRenaming
-        {
-            [Column("DerivedRenamed")]
-            public override string RenamedInDerived { get; set; }
-            public override string RenamedInBase { get; set; }
-        }
+		public class DerivedForRenaming : BaseForRenaming
+		{
+			[Column("DerivedRenamed")]
+			public override string RenamedInDerived { get; set; }
+			public override string RenamedInBase { get; set; }
+		}
 
-        [Test]
-        public void CanUseColumnAttributeOnDerivedClass()
-        {
-            var result = Connection().QuerySql<DerivedForRenaming>("SELECT DerivedRenamed='derived', BaseRenamed='base'", null).First();
-            Assert.AreEqual("derived", result.RenamedInDerived);
-            Assert.AreEqual("base", result.RenamedInBase);
-        }
-        #endregion
+		[Test]
+		public void CanUseColumnAttributeOnDerivedClass()
+		{
+			var result = Connection().QuerySql<DerivedForRenaming>("SELECT DerivedRenamed='derived', BaseRenamed='base'", null).First();
+			Assert.AreEqual("derived", result.RenamedInDerived);
+			Assert.AreEqual("base", result.RenamedInBase);
+		}
+		#endregion
+
+		#region "Object Access tests"
+
+		// Test access levels for an auto implemented repo interface
+		// Note that this project allows Insight.Database access to its internals (InternalsVisibleTo)
+		// Interestingly this test does not need InternalsVisibleTo set to work
+		[Test]
+		public void PrivateFieldsAreAccessible()
+		{
+			var p = new ObjectAccess_PrivateParams();
+			var result = Connection().QuerySql<ObjectAccess_Result>("SELECT MyValue=@ImPrivate", p).First();
+			Assert.AreEqual("abc", result.MyValue);
+		}
+
+		private class ObjectAccess_PrivateParams
+		{
+			internal ObjectAccess_PrivateParams()
+			{
+				ImPrivate = "abc";
+			}
+			private string ImPrivate { get; set; }
+		}
+
+		private class ObjectAccess_Result { internal String MyValue; }
+
+		// Test access levels for an auto implemented repo interface
+		// Note that this project allows Insight.Database access to its internals (internalsvisibleto)
+		[Test]
+		public void CanAccessAutoRepo_Interface()
+		{
+			IMyRepoInterface repo = Connection().As<IMyRepoInterface>();
+
+			IList<String> listOfFoo = repo.GetOneFooString();
+			dynamic listOfFoo2 = repo.GetOneFooString();
+
+			Assert.AreEqual(1, listOfFoo.Count());
+			Assert.AreEqual("foo", listOfFoo[0]);
+		}
+
+		internal interface IMyRepoInterface
+		{
+			[Sql("Select 'foo'")]
+			IList<String> GetOneFooString();
+		}
+
+		// Test an auto implemented repo via abstract class 
+		// Note that this project allows Insight.Database access to its internals (internalsvisibleto)
+		[Test]
+		public void CanAccessAutoRepo_Abstract()
+		{
+			MyAbstractRepo repo = Connection().As<MyAbstractRepo>();
+
+			IList<String> listOfFoo = repo.GetOneFooString();
+			dynamic listOfFoo2 = repo.GetOneFooString();
+
+			Assert.AreEqual(1, listOfFoo.Count());
+			Assert.AreEqual("foo", listOfFoo[0]);
+		}
+
+		internal abstract class MyAbstractRepo
+		{
+			[Sql("Select 'foo'")]
+			public abstract IList<String> GetOneFooString();
+		}
+
+		#endregion
 	}
-	
+
 	/// <summary>
 	/// Tests dynamic connection.
 	/// </summary>
