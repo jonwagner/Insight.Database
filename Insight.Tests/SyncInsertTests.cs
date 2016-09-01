@@ -77,6 +77,29 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void TestInsertWithIDReturn_ScopeIdentity()
+		{
+			using (var c = Connection().OpenWithTransaction())
+			{
+				var beer = Beer.GetSample();
+				c.Insert(Beer.InsertProcScopeIdentity, beer);
+				beer.VerifySample();
+			}
+		}
+
+
+		[Test]
+		public void TestInsertWithIDReturn_ScopeIdentity_SQL()
+		{
+			using (DbConnectionWrapper c = Connection().OpenWithTransaction())
+			{
+				var beer = Beer.GetSample();
+				c.InsertSql("INSERT INTO[dbo].[Beer] ([Name], [Style]) VALUES(@Name , @Style ); SELECT SCOPE_IDENTITY() AS [Id]", beer);
+				beer.VerifySample();
+			}
+		}
+
+		[Test]
 		public void TestInsertListWithIDReturn()
 		{
 			using (var c = Connection().OpenWithTransaction())
