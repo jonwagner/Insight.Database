@@ -11,19 +11,26 @@ Getting the basics up and running, e.g. for a pull request
 
 Set up the test database
 -------------------------------------------------------------
-* By default Insight.Tests' config file is looking for local installed SQL server with a database named InsightDbTests
+* By default Insight.Tests' config file is looking for local installed SQL server (default instance) with a database named InsightDbTests
 * To use a LocalDb option instead (or skip the the next '*'):
   - Install LocalDb, e.g. from here https://msdn.microsoft.com/en-us/library/hh510202.aspx
   - >cd C:\Program Files\Microsoft SQL Server\130\Tools\Binn
-  - >sqllocaldb create InsightDb
-  - Enable the LocalDb connection string that is commented out in app.config. (note that '(localdb)' is literal):
-  - Confirm all tests pass for Insight.Tests 
-  - Now set up the "Test" connection string for the following projects as well:
-    - Insight.Tests.Compatiblity3x
-    - Insight.Tests.Glimpse
-    - Insight.Tests.Json
-    - Insight.Tests.MiniProfiler
-* Confirm for Insight.Tests and these 4 projects all pass testing
+  - >SqlLocalDb create InsightDb
+  - There are two option to get the tests connected your sql server when using local db:
+  	  1) Create an alias for your instance:
+  	     a) SqlLocalDb start followed by SqlLocalDb info.  Copy the pipe, excluding 'np:'
+  	     b) Open 'SQL Server Configuration Manaager'
+  	     c) Goto SQL Native Client Configuration/Alias, select 'New Alias'
+  	     d) Fill in the fields in exactly this order because otherwise the UI will 'fix' things for you!
+  	         - Protocool   = Named Pipes
+  	         - Alias Name  = .           # (just a dot)
+  	         - Server      = .           # (just a dot)
+  	         - Pipe        = <pipe name> # Eg: \\.\pipe\LOCALDB#SH66D071\tsql\query  (pipe name seems stable since VS2015 Update 3)
+  	     e) repeat this for the 32 bit version of the QL Native Client Configuration/Alias
+  	  2) Or, instead, enable the LocalDb connection string that is commented out in app.config. (note that '(localdb)' is literal).
+  	     Repeat for Tests.Compatiblity3x, Tests.Glimpse, Tests.Json, Tests.MiniProfiler
+* Confirm all tests pass for Insight.Tests 
+
 
 Install special Database drivers
 -------------------------------------------------------------
