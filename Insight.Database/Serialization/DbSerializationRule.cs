@@ -25,7 +25,7 @@ namespace Insight.Database
 		/// <summary>
 		/// The cached serializers.
 		/// </summary>
-        private static ConcurrentDictionary<Type, IDbObjectSerializer> _cachedSerializers = new ConcurrentDictionary<Type, IDbObjectSerializer>();
+		private static ConcurrentDictionary<Type, IDbObjectSerializer> _cachedSerializers = new ConcurrentDictionary<Type, IDbObjectSerializer>();
 
 		/// <summary>
 		/// The default serialization handler.
@@ -172,7 +172,7 @@ namespace Insight.Database
 					if (!_cachedSerializers.TryGetValue(prop.Serializer, out serializer))
 					{
 						serializer = (IDbObjectSerializer)System.Activator.CreateInstance(prop.Serializer);
-						_cachedSerializers.TryAdd(prop.Serializer, serializer);
+						_cachedSerializers.GetOrAdd(prop.Serializer, serializer);
 					}
 
 					return serializer;
