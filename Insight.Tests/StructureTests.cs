@@ -855,6 +855,7 @@ namespace Insight.Tests
 			public int ID;
 			public List<Child> Children;
 		}
+
 		class Child
 		{
 			public int ParentID;
@@ -865,7 +866,7 @@ namespace Insight.Tests
 		public void ResultsCanBeContinuedWithThenChildren()
 		{
 			var returns =
-			Query.Returns(Some<Parent>.Records)
+				Query.Returns(Some<Parent>.Records)
 					.ThenChildren(Some<Child>.Records)
 					.Then(Some<Parent>.Records)
 					.ThenChildren(Some<Child>.Records);
@@ -879,7 +880,7 @@ namespace Insight.Tests
 		public void ResultsCanBeContinuedWithThenChildren2()
 		{
 			var returns =
-			Query.Returns(Some<Parent>.Records)
+				Query.Returns(Some<Parent>.Records)
 					.ThenChildren(Some<Child>.Records)
 					.Then(Some<Parent>.Records)
 					.ThenChildren<Parent, Parent, Child, int>(Some<Child>.Records.GroupBy(c => c.ParentID));
@@ -888,25 +889,25 @@ namespace Insight.Tests
 			Assert.AreEqual(2, results.Set2[0].ID);
 			Assert.AreEqual(3, results.Set2[0].Children[0].ID);
 		}
+	}
 
-		[TestFixture]
-		public class Issue265 : BaseTest
+	[TestFixture]
+	public class Issue265 : BaseTest
+	{
+		class Parent
 		{
-			class Parent
-			{
-				public int? ID;
-				public List<int> Children;
-			}
+			public int? ID;
+			public List<int> Children;
+		}
 
-			[Test]
-			public void ChildMapsToParentWithNullableId()
-			{
-				var returns = Query.Returns(Some<Parent>.Records)
-					.ThenChildren(Some<int>.Records, x => x.ID, (p, r) => p.Children = r.Select(x => x).ToList());
-				var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2;", null, returns);
-				Assert.AreEqual(1, results[0].ID);
-				Assert.AreEqual(2, results[0].Children[0]);
-			}
+		[Test]
+		public void ChildMapsToParentWithNullableId()
+		{
+			var returns = Query.Returns(Some<Parent>.Records)
+				.ThenChildren(Some<int>.Records, x => x.ID, (p, r) => p.Children = r.Select(x => x).ToList());
+			var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2;", null, returns);
+			Assert.AreEqual(1, results[0].ID);
+			Assert.AreEqual(2, results[0].Children[0]);
 		}
 	}
 }
