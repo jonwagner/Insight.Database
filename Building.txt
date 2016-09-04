@@ -16,6 +16,7 @@ Set up the test database
   - Install LocalDb, e.g. from here https://msdn.microsoft.com/en-us/library/hh510202.aspx
   - >cd C:\Program Files\Microsoft SQL Server\130\Tools\Binn
   - >SqlLocalDb create InsightDb
+  - >sqllocaldb share insightdb insightshare  # We are only sharing so the pipe won't change on each start
   - There are two option to get the tests connected your sql server when using local db:
   	  1) Create an alias for your instance:
   	     a) SqlLocalDb start followed by SqlLocalDb info.  Copy the pipe, excluding 'np:'
@@ -25,10 +26,11 @@ Set up the test database
   	         - Protocool   = Named Pipes
   	         - Alias Name  = .           # (just a dot)
   	         - Server      = .           # (just a dot)
-  	         - Pipe        = <pipe name> # Eg: \\.\pipe\LOCALDB#SH66D071\tsql\query  (pipe name seems stable since VS2015 Update 3)
+  	         - Pipe        = <pipe name> # Eg: \\.\pipe\LOCALDB#SH66D071\tsql\query
   	     e) repeat this for the 32 bit version of the QL Native Client Configuration/Alias
+  	     (Note that you could also do this step with cliconfg.exe, just do it in both: in /System32  & /SysWOW64)
   	  2) Or, instead, enable the LocalDb connection string that is commented out in app.config. (note that '(localdb)' is literal).
-  	     Repeat for Tests.Compatiblity3x, Tests.Glimpse, Tests.Json, Tests.MiniProfiler
+  	     Repeat for Tests.Compatiblity3x, Tests.Glimpse, Tests.Json, Tests.MiniProfiler (easier, but way more annoying over time)
 * Confirm all tests pass for Insight.Tests 
 
 
