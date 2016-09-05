@@ -72,8 +72,11 @@ function Do-Build35 {
 
 	if ($ProjectFile -eq "") { $ProjectFile = $Project }
 
+	$args = "/p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=""NODBASYNC;NODYNAMIC;NET35"" '/t:Clean;Build'"
+	echo "Build Args: $args"
+
 	Exec {
-		Invoke-Expression "$msbuild $baseDir\$Project\$ProjectFile.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 /p:DefineConstants=```"NODBASYNC``;NODYNAMIC``;NET35```" '/t:Clean;Build'"
+		Invoke-Expression "$msbuild $baseDir\$Project\$ProjectFile.csproj $args"
 	}
 
     # copy the binaries to the net35 folder
@@ -106,8 +109,11 @@ function Do-Build40 {
 		[string] $Project
 	)
 
+	$args = " /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=""NODBASYNC;CODE_ANALYSIS"" '/t:Clean;Build'"
+	echo "Build Args: $args"
+
 	Exec {
-        Invoke-Expression "$msbuild $baseDir\$Project\$Project.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 /p:DefineConstants=```"NODBASYNC``;CODE_ANALYSIS```" '/t:Clean;Build'"
+        Invoke-Expression "$msbuild $baseDir\$Project\$Project.csproj $args"
 	}
 
     # copy the binaries to the net40 folder
@@ -142,8 +148,12 @@ Task Build45 {
 
     try {
         # build the NET45 binaries
+
+		$args = "'/p:Configuration=$configuration' '/t:Clean;Build'"
+		echo "Build Args: $args"
+
         Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.sln '/p:Configuration=$configuration' '/t:Clean;Build'"
+            Invoke-Expression "$msbuild $baseDir\Insight.sln $args"
         }
  
         # copy the binaries to the net45 folder
@@ -159,9 +169,12 @@ Task BuildMono {
     ReplaceVersions
 
     try {
+		$args = "/p:Configuration=$configuration /p:DefineConstants=""MONO"" '/t:Clean;Build'"
+		echo "Build Args: $args"
+
         # build the binaries for mono
         Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj /p:Configuration=$configuration /p:DefineConstants=```"MONO```" '/t:Clean;Build'"
+            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj $args"
         }
  
         # copy the binaries to the mono folder
