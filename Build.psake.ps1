@@ -118,6 +118,8 @@ Task Build40 {
     ReplaceVersions
 
     try {
+        Wipe-Folder $net40Path
+
         # build the NET40 binaries
 		Do-Build40 "Insight.Database"
 		Do-Build40 "Insight.Database.Configuration"
