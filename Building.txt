@@ -41,10 +41,13 @@ If you are doing a small edit, you can skip this section and just unload these 3
 * SQLite. 
   - Resolve the error in Insight.SQLite.Tests
     - The SQLite files will be downloaded by Nuget to <Solution>\packages on first compile.
+	- SQLLite on Windows requires the SQLLite runtime to be in the project directory.
     - Go to \packages\System.Data.SQLite.Core.x.x.x.x\content\net451 
     - Copy the \x86 and \x64 directories to the root of Insight.Tests.SQLite
 * Db2:
-  - Go to http://www-01.ibm.com/support/docview.wss?uid=swg24041038  and  get the 'IBM Data Server Client'
+  - Direct Link: https://1drv.ms/u/s!Aisu0-5GSeCIsjJiLV_SKSgIG_qe
+  - OR: Go to http://www-01.ibm.com/support/docview.wss?uid=swg24041038  and  get the 'IBM Data Server Client'
+  - (Wags' Note: I didn't have to turn off UAC or copy the files below.)
   - IF YOU ARE RUNNING UAC, YOU MUST TURN IT OFF.  There is no UAC prompt, you just get error 10...You must disable UAC
   - Run \CLIENT\db2\Windows\IBM Data Server Client.msi
   - Choose custom install, only choose 'Base client support' and 'IBM Data Server Provider for .NET'
@@ -55,13 +58,15 @@ If you are doing a small edit, you can skip this section and just unload these 3
     (Thx http://stackoverflow.com/questions/7484349/sql1159-initialization-error-with-db2-net-data-provider-reason-code-2)
   
 * Sybase ASE:
-  - Download the "Get a Free Developer Edition" from http://scn.sap.com/community/developer-center/oltp-db
+  - Direct Link: https://1drv.ms/u/s!Aisu0-5GSeCIsjay_paw3f_1GEcW
+  - OR: Download the "Get a Free Developer Edition" from http://scn.sap.com/community/developer-center/oltp-db
   - Choose Custom Install when given the option.
   - Only install the .Net ADO package from the custom install. (make sure the faint half ticks are cleared)
   - Install it in the default location
 
 * Oracle (Not OracleManaged):
-  - Go to http://www.oracle.com/technetwork/topics/dotnet/index-085163.html
+  - Direct Link: https://1drv.ms/u/s!Aisu0-5GSeCIsjT6GwdJNyuwLYCb
+  - OR: Go to http://www.oracle.com/technetwork/topics/dotnet/index-085163.html
   - Click 'Download ODP.NET via ODAC'
   - Choose the ODAC download, not ODP_Managed.  I downloaded the msi, but note there is also an XCopy version which may be better.
   - Options are:
