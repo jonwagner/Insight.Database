@@ -17,7 +17,7 @@ Automatically installs Oracle ODP.NET Managed Driver. Depends on Insight.Databas
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
 		<dependency id="Insight.Database.Core" version="4.1.3"></dependency>
-		<dependency id="odp.net.managed"></dependency>
+		<dependency id="Oracle.ManagedDataAccess"></dependency>
 	</dependencies>
   </metadata>
   <files>
