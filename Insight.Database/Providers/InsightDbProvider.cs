@@ -384,7 +384,7 @@ namespace Insight.Database.Providers
 		/// <returns>An exception that can be thrown.</returns>
 		private static Exception CreateNotRegisteredException(object databaseObject, string message)
 		{
-			return new NotImplementedException(String.Format(CultureInfo.InvariantCulture, "{0}. Have you loaded the provider that suppoerts {1}?", message, databaseObject.GetType().Name));
+			return new NotImplementedException(String.Format(CultureInfo.InvariantCulture, "{0}. Have you loaded the provider that supports {1}?", message, databaseObject.GetType().Name));
 		}
 
 		#region Registration
