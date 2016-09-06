@@ -1521,6 +1521,7 @@ namespace Insight.Database
 			connection.Open();
 		}
 
+#if !NODBASYNC
 		/// <summary>
 		/// Will automatically open the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently open.
 		/// </summary>
@@ -1536,6 +1537,7 @@ namespace Insight.Database
 
 			return connection.OpenAsync(cancellationToken);
 		}
+#endif
 
 		/// <summary>
 		/// Gets a reader that can read the list of objects into the given table. Used for bulk copy.
