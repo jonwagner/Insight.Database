@@ -953,6 +953,15 @@ namespace Insight.Tests
 		}
 	}
 
+	public abstract class AbstractClassWithProtectedMethod
+	{
+		public string PublicMethod()
+		{ return AbstractMethod(); }
+
+		[Sql("SELECT 'abstract'")]
+		protected abstract string AbstractMethod();
+	}
+
 	[TestFixture]
 	public class AbstractClassTests : BaseTest
 	{
@@ -1013,6 +1022,15 @@ namespace Insight.Tests
 			var connection = Connection();
 
 			Assert.Throws<InvalidOperationException>(() => connection.AsParallel<AbstractClassOfDbConnectionWrapper>());
+		}
+
+		[Test]
+		public void ProtectedAbstractMethodIsImplemented()
+		{
+			var connection = Connection();
+
+			var i = connection.As<AbstractClassWithProtectedMethod>();
+			Assert.AreEqual("abstract", i.PublicMethod());
 		}
 	}
 	#endregion
