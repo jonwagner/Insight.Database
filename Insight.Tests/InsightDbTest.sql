@@ -115,6 +115,21 @@ CREATE PROC InsertByTable(@OtherValue int, @Items [InsertByTableType] READONLY) 
 		SELECT Text, @OtherValue FROM @Items
 GO
 
+CREATE PROCEDURE [dbo].[InsertBeer_ScopeIdentity]
+(
+	@Name varchar(256) = NULL,
+	@Style varchar(256) = NULL
+)
+AS
+
+	INSERT INTO [dbo].[Beer] ([Name], [Style])
+		VALUES 	(@Name,	@Style)
+
+	SELECT SCOPE_IDENTITY() AS [Id]
+
+GO
+
+
 ----------------------------------------------------------
 -- General test types
 ----------------------------------------------------------

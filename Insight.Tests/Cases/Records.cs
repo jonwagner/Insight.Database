@@ -17,6 +17,7 @@ namespace Insight.Tests.Cases
 		public const string SelectAllProc = "SelectAllBeer";
 		public const string SelectAllChildrenProc = "SelectAllBeerChildren";
 		public const string InsertProc = "InsertBeer";
+		public const string InsertProcScopeIdentity = "InsertBeer_ScopeIdentity";
 		public const string InsertManyProc = "InsertBeers";
 
 		public static Beer GetSample()
