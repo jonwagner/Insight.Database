@@ -20,6 +20,12 @@ Vagrant.configure(2) do |config|
 		v.memory = 2048
 	end  
 
+	config.vm.provider "hyperv" do |v, override|
+		override.vm.box = "ericmann/trusty64"
+		v.vmname = "InsightTest"
+		v.memory = 2048
+	end
+
 	# DB2 Port
 	config.vm.network "forwarded_port", guest: 50000, host: 50000, host_ip: "127.0.0.1"
 	# MySQL Port
