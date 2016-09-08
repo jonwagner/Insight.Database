@@ -52,7 +52,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
-
+#if !NODYNAMIC
 		[Test]
 		public void TestFastExpandoResult()
 		{
@@ -66,6 +66,7 @@ namespace Insight.Tests
 			Assert.AreEqual(row.Field123, 123);
 			Assert.AreEqual(row.FieldAbc, "abC");
 		}
+#endif
 
 		[Test]
 		public void TestChildrenWithAutoMapping()

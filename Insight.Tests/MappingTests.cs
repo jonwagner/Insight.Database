@@ -447,7 +447,6 @@ namespace Insight.Tests
 			IMyRepoInterface repo = Connection().As<IMyRepoInterface>();
 
 			IList<String> listOfFoo = repo.GetOneFooString();
-			dynamic listOfFoo2 = repo.GetOneFooString();
 
 			Assert.AreEqual(1, listOfFoo.Count());
 			Assert.AreEqual("foo", listOfFoo[0]);
@@ -467,7 +466,6 @@ namespace Insight.Tests
 			MyAbstractRepo repo = Connection().As<MyAbstractRepo>();
 
 			IList<String> listOfFoo = repo.GetOneFooString();
-			dynamic listOfFoo2 = repo.GetOneFooString();
 
 			Assert.AreEqual(1, listOfFoo.Count());
 			Assert.AreEqual("foo", listOfFoo[0]);
