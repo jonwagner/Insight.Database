@@ -52,6 +52,21 @@ namespace Insight.Tests
 		}
 		#endregion
 
+
+		[Test]
+		public void TestFastExpandoResult()
+		{
+			var result = Connection().QuerySql("SELECT Field123=123, FieldAbc='abC'");
+
+			Assert.AreEqual(1, result.Count());
+
+			dynamic row = result.First();
+			Assert.IsNotNull(row);
+
+			Assert.AreEqual(row.Field123, 123);
+			Assert.AreEqual(row.FieldAbc, "abC");
+		}
+
 		[Test]
 		public void TestChildrenWithAutoMapping()
 		{
