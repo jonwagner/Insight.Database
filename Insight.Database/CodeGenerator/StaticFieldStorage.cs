@@ -18,10 +18,15 @@ namespace Insight.Database.CodeGenerator
 	/// </remarks>
 	class StaticFieldStorage
 	{
-	   /// <summary>
-	   /// The shared module that stores all of the static variables.
-	   /// </summary>
+		/// <summary>
+		/// The shared module that stores all of the static variables.
+		/// </summary>
 		private static ModuleBuilder _dynamicModule;
+
+		/// <summary>
+		/// Temporary variable to cache whether a debugger is attached. Remove in v6.
+		/// </summary>
+		private static bool? _isDebuggerAttached;
 
 		/// <summary>
 		/// The cache of the static fields.
@@ -67,6 +72,19 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		/// <summary>
+		/// Indicates if the debugger is attached.  Only evaluated once so that the answer is stable
+		/// Temporary method, remove in v6
+		/// </summary>
+		/// <returns>True if there is a debugger attached.</returns>
+		internal static bool DebuggerIsAttached()
+		{
+			if (!_isDebuggerAttached.HasValue)
+				_isDebuggerAttached = Debugger.IsAttached;
+
+			return _isDebuggerAttached.Value;
+		}
+
+		/// <summary>
 		/// Creates a static field that contains the given value.
 		/// </summary>
 		/// <param name="moduleBuilder">The modulebuilder to write to.</param>
@@ -84,28 +102,5 @@ namespace Insight.Database.CodeGenerator
 
 			return field;
 		}
-
-		private static bool? _isDebuggerAttached;
-
-		/// <summary>
-		/// Indicates if the debugger is attached.  Only evaluated once so that the answer is stable
-		/// Temporary method, remove in v6
-		/// </summary>
-		internal static bool DebuggerIsAttached()
-		{
-			if (!_isDebuggerAttached.HasValue)
-				try
-				{
-					_isDebuggerAttached = Debugger.IsAttached;
-				}
-				catch
-					(Exception)
-				{
-					_isDebuggerAttached = false;
-				}
-
-			return _isDebuggerAttached.Value;
-		}
-
 	}
 }

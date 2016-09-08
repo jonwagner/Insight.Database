@@ -154,11 +154,13 @@ namespace Insight.Database.CodeGenerator
 #else
 				if (e.HResult == -2146233054)
 #endif
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, 
-						"{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add " +
+				{
+					var template = "{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add " +
 						"[assembly:InternalsVisibleTo(\"Insight.Database\")] and [assembly:InternalsVisibleTo(\"Insight.Database.DynamicAssembly\")] " +
 						"to your assembly (System.Runtime.CompilerServices).  If the interface is nested, then it must be public to the world, " +
-						"or public to the assembly while using the InternalsVisibleTo attribute.", type.FullName));
+						"or public to the assembly while using the InternalsVisibleTo attribute.";
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, template, type.FullName));
+				}
 
 				throw;
 			}
