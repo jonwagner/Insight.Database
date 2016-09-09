@@ -168,14 +168,7 @@ namespace Insight.Database
 					if (prop.Serializer == null)
 						throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "No custom serializer was provided for {0} on type {1}", prop.Name, prop.Type));
 
-					IDbObjectSerializer serializer;
-					if (!_cachedSerializers.TryGetValue(prop.Serializer, out serializer))
-					{
-						serializer = (IDbObjectSerializer)System.Activator.CreateInstance(prop.Serializer);
-						_cachedSerializers.GetOrAdd(prop.Serializer, serializer);
-					}
-
-					return serializer;
+					return _cachedSerializers.GetOrAdd(prop.Serializer, (serializer) => (IDbObjectSerializer)System.Activator.CreateInstance(serializer));
 			}
 		}
 		#endregion
