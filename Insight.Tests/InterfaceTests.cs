@@ -969,10 +969,9 @@ namespace Insight.Tests
 
     public abstract class AbstractClassWithDefaultConstructor
     {
-        public bool DefaultConstructorCalled { get; }
+        public bool DefaultConstructorCalled { get; set; }
 
-        protected AbstractClassWithDefaultConstructor()
-        { DefaultConstructorCalled = true; }
+        protected AbstractClassWithDefaultConstructor() { DefaultConstructorCalled = true; }
 
         [Sql("SELECT 'abstract'")]
         public abstract string AbstractMethod();
@@ -980,8 +979,7 @@ namespace Insight.Tests
 
     public abstract class AbstractClassWithNonDefaultConstructor
     {
-        protected AbstractClassWithNonDefaultConstructor(int x)
-        {}
+        protected AbstractClassWithNonDefaultConstructor(int x) {}
 
         [Sql("SELECT 'abstract'")]
         public abstract string AbstractMethod();

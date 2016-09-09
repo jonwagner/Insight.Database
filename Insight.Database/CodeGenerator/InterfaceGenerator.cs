@@ -178,49 +178,34 @@ namespace Insight.Database.CodeGenerator
 			// create a constructor for the type - just store the connection provider
 			var ctor0 = tb.DefineConstructor(MethodAttributes.Public, CallingConventions.Standard, _ifuncDbConnectionParameterTypes);
 			var ctor0IL = ctor0.GetILGenerator();
-			ctor0IL.Emit(OpCodes.Ldarg_0);
+
+			// for single-threaded mode, create the connection once at construction
+			var localConnection = ctor0IL.DeclareLocal(singleThreaded ? typeof(IDbConnection) : typeof(Func<IDbConnection>));
 			ctor0IL.Emit(OpCodes.Ldarg_1);
-
-			var baseConstructorCalled = false;
 			if (singleThreaded)
-			{
-				// for single-threaded, unwrap the connection provider once at construction time
 				ctor0IL.Emit(OpCodes.Call, typeof(Func<IDbConnection>).GetMethod("Invoke"));
+			ctor0IL.Emit(OpCodes.Stloc, localConnection);
 
-				// if the base constructor takes an IDbConnection, then invoke that constructor
-				var baseConstructor = tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, _idbConnectionParameterTypes, null);
-				if (baseConstructor != null)
-				{
-					// we are implementing a single-threaded wrapper. pass the connection the base constructor.
-					var lb = ctor0IL.DeclareLocal(typeof(IDbConnection));
-					ctor0IL.Emit(OpCodes.Stloc, lb);
-					ctor0IL.Emit(OpCodes.Ldarg_0);
-					ctor0IL.Emit(OpCodes.Ldloc, lb);
-					ctor0IL.Emit(OpCodes.Call, baseConstructor);
+			// call the base constructor first
+			var baseConstructorParameters = singleThreaded ? _idbConnectionParameterTypes : _ifuncDbConnectionParameterTypes;
+			var baseConstructor = tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, baseConstructorParameters, null) ??
+								  tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
+			if (baseConstructor == null)
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "{0} cannot be implemented Insight.Database. Make sure that the class has a default constructor, or another constructor that Insight can call.", tb.BaseType.FullName));
+			var hasParameters = (baseConstructor.GetParameters().Length == 1);
+			ctor0IL.Emit(OpCodes.Ldarg_0);
+			if (hasParameters)
+				ctor0IL.Emit(OpCodes.Ldloc, localConnection);
+			ctor0IL.Emit(OpCodes.Call, baseConstructor);
 
-					// the connection is *this*
-					ctor0IL.Emit(OpCodes.Ldarg_0);
-					baseConstructorCalled = true;
-				}
-			}
-
-			if (!baseConstructorCalled)
-			{
-				var defaultBaseConstructor = tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
-				if (defaultBaseConstructor != null)
-				{
-					ctor0IL.Emit(OpCodes.Ldarg_0);
-					ctor0IL.Emit(OpCodes.Call, defaultBaseConstructor);
-				}
-				else if (tb.BaseType.GetConstructors(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance).Length > 0)
-				{
-					// There are constructors with parameters which we can't call
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "{0} cannot be implemented Insight.Database. Make sure that the class has a default constructor, or another constructor that Insight can call.", tb.BaseType.FullName));
-				}
-			}
-
-			// store off the connection field
+			// store the connection in our connection field for later
+			ctor0IL.Emit(OpCodes.Ldarg_0);
+			if (hasParameters)
+				ctor0IL.Emit(OpCodes.Ldarg_0);
+			else
+				ctor0IL.Emit(OpCodes.Ldloc, localConnection);
 			ctor0IL.Emit(OpCodes.Stfld, connectionField);
+
 			ctor0IL.Emit(OpCodes.Ret);
 
 			return ctor0;
