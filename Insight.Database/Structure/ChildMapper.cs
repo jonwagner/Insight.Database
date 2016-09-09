@@ -74,7 +74,7 @@ namespace Insight.Database.Structure
 			if (children == null) throw new ArgumentNullException("children");
 
 			// convert the children into lists by their parent ID
-			Dictionary<TId, List<TChild>> lists = children.ToDictionary(g => ConvertToParentType<TId>(g.Key), g => g.ToList());
+			Dictionary<TId, List<TChild>> lists = children.ToDictionary(g => g.Key, g => g.ToList());
 
 			// fill in each parent
 			foreach (var root in roots)
@@ -104,32 +104,6 @@ namespace Insight.Database.Structure
 		private static Action<TParent, List<TChild>> GetListSetter()
 		{
 			return ChildMapperHelper.GetListSetter(typeof(TParent), typeof(TChild)).CreateSetMethod<TParent, List<TChild>>();
-		}
-
-		/// <summary>
-		/// Converts an ID property to its parent type
-		/// </summary>
-		/// <param name="id">The parent ID value</param>
-		/// <typeparam name="T">The type of the parent ID</typeparam>
-		/// <returns>The type of the parent ID property</returns>
-		private T ConvertToParentType<T>(object id)
-		{
-			if (_idType == typeof(object))
-				return (T)id;
-
-			var t = _idType;
-
-			if (t.IsGenericType && t.GetGenericTypeDefinition() == typeof(Nullable<>))
-			{
-				if (id == null)
-				{
-					return default(T);
-				}
-
-				t = Nullable.GetUnderlyingType(t);
-			}
-
-			return (T)Convert.ChangeType(id, t, CultureInfo.InvariantCulture);
 		}
 		#endregion
 	}
