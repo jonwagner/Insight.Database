@@ -15,6 +15,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Mapping;
 using Insight.Database.Structure;
+using Insight.Database.PlatformCompatibility;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -82,7 +83,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An implmementor of the given interface.</returns>
 		public static object GetImplementorOf(Type type, Func<IDbConnection> connectionProvider, bool singleThreaded)
 		{
-			if (!type.IsInterface && !type.IsAbstract)
+			if (!type.GetTypeInfo().IsInterface && !type.GetTypeInfo().IsAbstract)
 				throw new ArgumentException("type must be an interface or abstract class", "type");
 
 			var constructors = singleThreaded ? _singleThreadedConstructors : _constructors;
