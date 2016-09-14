@@ -20,4 +20,9 @@
 			<Term>SqlCommand</Term>
 		</DiscreteExceptions>
 	</Words>
+	<Acronyms>
+		<CasingExceptions>
+			<Acronym>Db</Acronym>
+		</CasingExceptions>
+	</Acronyms>
 </Dictionary>
