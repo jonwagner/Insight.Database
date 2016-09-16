@@ -14,6 +14,9 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.Structure;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -220,7 +223,7 @@ namespace Insight.Database.CodeGenerator
 			// But since IsDbNull isn't as trivial as you would think, performance tests show that there is a little bit of extra overhead making that extra call.
 			// NOTE: this also just used to be a lambda expression in a generic method, but getting rid of the generic lets us make more flexible code.
 			var dm = new DynamicMethod(
-				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.GetTypeInfo().FullName, Guid.NewGuid()),
 				type,
 				new[] { typeof(IDataReader) },
 				true);
@@ -275,7 +278,7 @@ namespace Insight.Database.CodeGenerator
 			// is null, so return a default
 			il.MarkLabel(isNull);
 			il.Emit(OpCodes.Pop);
-			if (type.IsValueType)
+			if (type.GetTypeInfo().IsValueType)
 			{
 				// return default(T)
 				il.Emit(OpCodes.Ldloca, result);

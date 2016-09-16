@@ -15,6 +15,9 @@ using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
 using Insight.Database.Reliable;
 using Insight.Database.Structure;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database
 {
@@ -1584,7 +1587,7 @@ namespace Insight.Database
 		/// <returns>The result of the command, converted to the given type.</returns>
 		private static T ConvertScalar<T>(IDbCommand cmd, object parameters, object outputParameters, object result)
 		{
-			if (result == null && typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
+			if (result == null && typeof(T).GetTypeInfo().IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
 				throw new InvalidOperationException("Recordset returned no rows, but ExecuteScalar is trying to return a non-nullable type.");
 
 			cmd.OutputParameters(parameters, outputParameters);

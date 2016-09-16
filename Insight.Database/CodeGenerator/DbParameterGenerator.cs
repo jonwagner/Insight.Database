@@ -16,6 +16,9 @@ using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.Mapping;
 using Insight.Database.Providers;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -278,7 +281,7 @@ namespace Insight.Database.CodeGenerator
 				}
 
 				// if it's class type, boxed value type (in an object), or nullable, then we have to check for null
-				if (!memberType.IsValueType || Nullable.GetUnderlyingType(memberType) != null)
+				if (!memberType.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(memberType) != null)
 				{
 					Label notNull = il.DefineLabel();
 
@@ -533,7 +536,7 @@ namespace Insight.Database.CodeGenerator
                 {
                     ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
 
-                    if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.IsValueType)
+                    if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.GetTypeInfo().IsValueType)
                     {
                         il.Emit(OpCodes.Dup);
                         var label = il.DefineLabel();
@@ -585,7 +588,7 @@ namespace Insight.Database.CodeGenerator
 				type = nullUnderlyingType;
 
 			// if it's an enum, get the underlying type
-			if (type.IsEnum)
+			if (type.GetTypeInfo().IsEnum)
 				type = Enum.GetUnderlyingType(type);
 
 			// look up the type
@@ -637,7 +640,7 @@ namespace Insight.Database.CodeGenerator
 				IEnumerable list = (IEnumerable)value;
 
 				Type listType = list.GetType();
-				if (listType.IsArray)
+				if (listType.GetTypeInfo().IsArray)
 					listType = listType.GetElementType();
 				else
 				{
@@ -648,7 +651,7 @@ namespace Insight.Database.CodeGenerator
 
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;
 
-				if (command.CommandType == CommandType.Text && (listType.IsValueType || listType == typeof(string)))
+				if (command.CommandType == CommandType.Text && (listType.GetTypeInfo().IsValueType || listType == typeof(string)))
 					ConvertListParameterByValue(parameter, list, command);
 				else
 					ConvertListParameterByClass(parameter, list, command, listType);

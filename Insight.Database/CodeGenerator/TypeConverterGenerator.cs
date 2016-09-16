@@ -14,6 +14,9 @@ using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.Mapping;
 using Insight.Database.Providers;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -24,22 +27,22 @@ namespace Insight.Database.CodeGenerator
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	static class TypeConverterGenerator
 	{
-		#region Private Members
+#region Private Members
 		internal static readonly MethodInfo CreateDataExceptionMethod = typeof(TypeConverterGenerator).GetMethod("CreateDataException");
 		internal static readonly MethodInfo IsAllDbNullMethod = typeof(TypeConverterGenerator).GetMethod("IsAllDbNull");
 		private static readonly MethodInfo _enumParse = typeof(Enum).GetMethod("Parse", new Type[] { typeof(Type), typeof(string), typeof(bool) });
-		private static readonly MethodInfo _readChar = typeof(TypeConverterGenerator).GetMethod("ReadChar");
-		private static readonly MethodInfo _readNullableChar = typeof(TypeConverterGenerator).GetMethod("ReadNullableChar");
-		private static readonly MethodInfo _readXmlDocument = typeof(TypeConverterGenerator).GetMethod("ReadXmlDocument");
-		private static readonly MethodInfo _readXDocument = typeof(TypeConverterGenerator).GetMethod("ReadXDocument");
+		private static readonly MethodInfo _readChar = typeof(TypeConverterGenerator).GetTypeInfo().GetMethod("ReadChar");
+		private static readonly MethodInfo _readNullableChar = typeof(TypeConverterGenerator).GetTypeInfo().GetMethod("ReadNullableChar");
+		private static readonly MethodInfo _readXmlDocument = typeof(TypeConverterGenerator).GetTypeInfo().GetMethod("ReadXmlDocument");
+		private static readonly MethodInfo _readXDocument = typeof(TypeConverterGenerator).GetTypeInfo().GetMethod("ReadXDocument");
 
 		/// <summary>
 		/// The number of ticks to offset when converting between .NET TimeSpan and SQL DateTime.
 		/// </summary>
 		private static readonly long SqlZeroTime = new DateTime(1900, 1, 1, 0, 0, 0).Ticks;
-		#endregion
+#endregion
 
-		#region Code Generation Members
+#region Code Generation Members
 		/// <summary>
 		/// Emit the IL to convert the current value on the stack and set the value of the object.
 		/// </summary>
@@ -129,10 +132,10 @@ namespace Insight.Database.CodeGenerator
                 // assume the column is a serialized data type and that we want to deserialize it
                 il.EmitLoadType(targetType);
                 StaticFieldStorage.EmitLoad(il, serializer);
-                il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("DeserializeObject", BindingFlags.NonPublic | BindingFlags.Static));
+                il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetTypeInfo().GetMethod("DeserializeObject", BindingFlags.NonPublic | BindingFlags.Static));
                 il.Emit(OpCodes.Unbox_Any, targetType);
             }
-            else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
+            else if (underlyingTargetType.GetTypeInfo().IsEnum && sourceType == typeof(string))
             {
                 var localString = il.DeclareLocal(typeof(string));
 
@@ -171,14 +174,14 @@ namespace Insight.Database.CodeGenerator
                                 CultureInfo.InvariantCulture,
                                 "Field {0} cannot be converted from {1} to {2}. Create a conversion constructor or conversion operator.",
                                 memberName,
-                                sourceType.AssemblyQualifiedName,
-                                targetType.AssemblyQualifiedName));
+                                sourceType.GetTypeInfo().AssemblyQualifiedName,
+                                targetType.GetTypeInfo().AssemblyQualifiedName));
                         }
                     }
 
                     // if the target is nullable, then construct the nullable from the data
                     if (Nullable.GetUnderlyingType(targetType) != null)
-                        il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { underlyingTargetType }));
+                        il.Emit(OpCodes.Newobj, targetType.GetTypeInfo().GetConstructor(new[] { underlyingTargetType }));
                 }
             }
 
@@ -191,9 +194,9 @@ namespace Insight.Database.CodeGenerator
 
             il.MarkLabel(finishLabel);
         }
-        #endregion
+#endregion
 
-		#region Helper Methods
+#region Helper Methods
 		/// <summary>
 		/// Wrap an exception with a DataException that contains more information.
 		/// </summary>
@@ -288,9 +291,9 @@ namespace Insight.Database.CodeGenerator
 
 			return true;
 		}
-		#endregion
+#endregion
 
-		#region TimeSpan Helpers
+#region TimeSpan Helpers
 		/// <summary>
 		/// Converts a DateTime from the SQL side into a .NET TimeSpan by offseting by SqlZeroTime.
 		/// </summary>
@@ -382,9 +385,9 @@ namespace Insight.Database.CodeGenerator
 			// We don't know how to convert it. Let .NET handle it.
 			return o;
 		}
-		#endregion
+#endregion
 
-		#region Code Generation Helpers
+#region Code Generation Helpers
 		/// <summary>
 		/// Emit a conversion or coersion from the source type to the target type.
 		/// </summary>
@@ -398,7 +401,7 @@ namespace Insight.Database.CodeGenerator
 				return true;
 
 			Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-			Type rawTargetType = underlyingTargetType.IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
+			Type rawTargetType = underlyingTargetType.GetTypeInfo().IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
 
 			return TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType);
 		}
@@ -415,7 +418,7 @@ namespace Insight.Database.CodeGenerator
 			if (sourceType == targetType)
 				return false;
 
-			ConstructorInfo ci = targetType.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { sourceType }, null);
+			ConstructorInfo ci = targetType.GetTypeInfo().GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, new Type[] { sourceType }, null);
 			if (ci == null)
 				return false;
 
@@ -448,7 +451,7 @@ namespace Insight.Database.CodeGenerator
 			// support converting any value to type of object
 			if (targetType == typeof(object))
 			{
-				if (sourceType.IsValueType)
+				if (sourceType.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Box, sourceType);
 				return true;
 			}
@@ -485,12 +488,12 @@ namespace Insight.Database.CodeGenerator
 			// if the target type is an enum or nullable, try converting to one of those
 			if (Nullable.GetUnderlyingType(targetType) != null)
 				return FindConversionMethod(sourceType, Nullable.GetUnderlyingType(targetType));
-			if (targetType.IsEnum)
+			if (targetType.GetTypeInfo().IsEnum)
 				return FindConversionMethod(sourceType, Enum.GetUnderlyingType(targetType));
 
 			// handle converting sql datetime to timespan
 			if (sourceType == typeof(DateTime) && targetType == typeof(TimeSpan))
-				return typeof(TypeConverterGenerator).GetMethod("SqlDateTimeToTimeSpan");
+				return typeof(TypeConverterGenerator).GetTypeInfo().GetMethod("SqlDateTimeToTimeSpan");
 
 			return null;
 		}
@@ -505,7 +508,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A conversion method or null if none could be found.</returns>
 		private static MethodInfo FindConversionMethod(string methodName, Type searchType, Type sourceType, Type targetType)
 		{
-			var members = searchType.FindMembers(
+			var members = searchType.GetTypeInfo().FindMembers(
 				MemberTypes.Method,
 				BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
 				new MemberFilter(
@@ -552,8 +555,8 @@ namespace Insight.Database.CodeGenerator
 				return true;
 			}
 
-			if (!sourceType.IsPrimitive) return false;
-			if (!targetType.IsPrimitive) return false;
+			if (!sourceType.GetTypeInfo().IsPrimitive) return false;
+			if (!targetType.GetTypeInfo().IsPrimitive) return false;
 
 			// if the enum is based on a different type of integer than returned, then do the conversion
 			if (targetType == typeof(Int32) && sourceType != typeof(Int32)) il.Emit(OpCodes.Conv_I4);
@@ -571,6 +574,6 @@ namespace Insight.Database.CodeGenerator
 
 			return true;
 		}
-		#endregion
+#endregion
 	}
 }

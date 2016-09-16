@@ -7,6 +7,9 @@ using System.Reflection.Emit;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.Structure
 {
@@ -81,7 +84,7 @@ namespace Insight.Database.Structure
 			else
 			{
 				var dm = new DynamicMethod(
-					String.Format(CultureInfo.InvariantCulture, "Get-{0}-{1}-{2}", typeof(TObject).FullName, "IDs", Guid.NewGuid()),
+					String.Format(CultureInfo.InvariantCulture, "Get-{0}-{1}-{2}", typeof(TObject).GetTypeInfo().FullName, "IDs", Guid.NewGuid()),
 					MemberType,
 					new Type[] { typeof(TObject) },
 					true);

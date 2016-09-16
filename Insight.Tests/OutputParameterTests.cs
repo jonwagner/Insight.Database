@@ -9,6 +9,7 @@ using System.Transactions;
 using System.Data.Common;
 using System.Threading.Tasks;
 using System.Data;
+using System.Reflection;
 
 #pragma warning disable 0649
 
@@ -91,7 +92,7 @@ namespace Insight.Tests
 				{
 					// special case for formatting enums in our proc definition
 					string stringValue = value.ToString();
-					if (typeof(T).IsEnum)
+					if (typeof(T).GetTypeInfo().IsEnum)
 						stringValue = Enum.Format(typeof(T), value, "D");
 
 					// generate the test proc name

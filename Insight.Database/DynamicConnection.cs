@@ -14,6 +14,9 @@ using System.Threading;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
 using Insight.Database.Structure;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database
 {
@@ -199,7 +202,7 @@ namespace Insight.Database
 				// this is so you can send an entire object to an insert method
 				if (unnamedParameterCount == 1 &&
 					(callInfo.ArgumentNames.Count == specialParameters) &&
-					!args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
+					!args[0].GetType().GetTypeInfo().IsValueType && args[0].GetType() != typeof(String))
 				{
 					cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
 				}

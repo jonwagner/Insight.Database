@@ -15,7 +15,9 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Mapping;
 using Insight.Database.Structure;
+#if NET35 || NET40
 using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -104,9 +106,9 @@ namespace Insight.Database.CodeGenerator
 		private static Func<Func<IDbConnection>, object> CreateImplementorOf(Type type, bool singleThreaded)
 		{
 			// create the type
-			string typeName = type.FullName + Guid.NewGuid().ToString();
+			string typeName = type.GetTypeInfo().FullName + Guid.NewGuid().ToString();
 			TypeBuilder tb;
-			if (type.IsInterface)
+			if (type.GetTypeInfo().IsInterface)
 			{
 				if (singleThreaded)
 					tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { type });
@@ -144,7 +146,7 @@ namespace Insight.Database.CodeGenerator
 				Type t = tb.CreateType();
 
 				// return the create method
-				var createMethod = t.GetMethod("Create", _ifuncDbConnectionParameterTypes);
+				var createMethod = t.GetTypeInfo().GetMethod("Create", _ifuncDbConnectionParameterTypes);
 				return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), createMethod);
 			}
 			catch (TypeLoadException e)
@@ -160,7 +162,7 @@ namespace Insight.Database.CodeGenerator
 						"[assembly:InternalsVisibleTo(\"Insight.Database\")] and [assembly:InternalsVisibleTo(\"Insight.Database.DynamicAssembly\")] " +
 						"to your assembly (System.Runtime.CompilerServices).  If the interface is nested, then it must be public to the world, " +
 						"or public to the assembly while using the InternalsVisibleTo attribute.";
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, template, type.FullName));
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, template, type.GetTypeInfo().FullName));
 				}
 
 				throw;
@@ -192,7 +194,7 @@ namespace Insight.Database.CodeGenerator
 			var baseConstructor = tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, baseConstructorParameters, null) ??
 								  tb.BaseType.GetConstructor(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, Type.EmptyTypes, null);
 			if (baseConstructor == null)
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "{0} cannot be implemented Insight.Database. Make sure that the class has a default constructor, or another constructor that Insight can call.", tb.BaseType.FullName));
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "{0} cannot be implemented Insight.Database. Make sure that the class has a default constructor, or another constructor that Insight can call.", tb.BaseType.GetTypeInfo().FullName));
 			var hasParameters = (baseConstructor.GetParameters().Length == 1);
 			ctor0IL.Emit(OpCodes.Ldarg_0);
 			if (hasParameters)
@@ -223,7 +225,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			const string GetConnectionName = "GetConnection";
 
-			var getConnection = baseType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+			MethodInfo getConnection = baseType.GetTypeInfo().GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
 				.FirstOrDefault(m => String.Compare(m.Name, GetConnectionName, StringComparison.OrdinalIgnoreCase) == 0 && m.ReturnType == typeof(IDbConnection) && m.GetParameters().Length == 0);
 			if (getConnection != null && getConnection.IsAbstract)
 			{
@@ -250,14 +252,14 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>All of the methods defined on the interface.</returns>
 		private static IEnumerable<MethodInfo> DiscoverMethods(Type type)
 		{
-			if (type.IsInterface)
+			if (type.GetTypeInfo().IsInterface)
 			{
 				return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
-					.Union(type.GetInterfaces().Where(i => !i.FullName.StartsWith("System", StringComparison.OrdinalIgnoreCase)).SelectMany(i => DiscoverMethods(i)));
+					.Union(type.GetInterfaces().Where(i => !i.GetTypeInfo().FullName.StartsWith("System", StringComparison.OrdinalIgnoreCase)).SelectMany(i => DiscoverMethods(i)));
 			}
 			else
 			{
-				return type.GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod)
+				return type.GetTypeInfo().GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.InvokeMethod)
 					.Where(m => m.IsAbstract);
 			}
 		}
@@ -326,7 +328,7 @@ namespace Insight.Database.CodeGenerator
 						{
 							// one parameter that is a non-atomic object, just pass it and let the insight framework handle it
 							mIL.Emit(OpCodes.Ldarg_1);
-							if (parameters[0].ParameterType.IsValueType)
+							if (parameters[0].ParameterType.GetTypeInfo().IsValueType)
 								mIL.Emit(OpCodes.Box, parameters[0].ParameterType);
 						}
 						else
@@ -540,7 +542,7 @@ namespace Insight.Database.CodeGenerator
 							{
 								var childid = ChildMapperHelper.FindParentIDAccessor(childType, r.GroupBy, parentType);
 								if (childid == null)
-									throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find GroupBy {0} on {1}", r.GroupBy, childType.FullName));
+									throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find GroupBy {0} on {1}", r.GroupBy, childType.GetTypeInfo().FullName));
 
 								var getMethod = childid.GetType().GetMethod("CreateGetMethod").MakeGenericMethod(childType, parentIdType).Invoke(childid, Parameters.EmptyArray);
 								StaticFieldStorage.EmitLoad(mIL, getMethod, _moduleBuilder);
@@ -848,7 +850,8 @@ namespace Insight.Database.CodeGenerator
 
 			// the types must match
 			if (interfaceParameter.ParameterType != executeParameter.ParameterType)
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Special Parameter {0} must have type {1}", parameterName, executeParameter.ParameterType.FullName));
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture
+									, "Special Parameter {0} must have type {1}", parameterName, executeParameter.ParameterType.GetTypeInfo().FullName));
 
 			// the parameter list is 0-based, but 0 is the this pointer, so we add one
 			il.Emit(OpCodes.Ldarg, (int)interfaceParameter.Position + 1);

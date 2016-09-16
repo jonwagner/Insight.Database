@@ -1,8 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database
 {
@@ -53,11 +57,13 @@ namespace Insight.Database
         /// <returns>The CustomAttributeBuilder.</returns>
         internal CustomAttributeBuilder GetCustomAttributeBuilder()
         {
-            var properties = new[]
-                { 
-                    typeof(ColumnAttribute).GetProperty("ColumnName"),
-                    typeof(ColumnAttribute).GetProperty("SerializationMode"),
-                    typeof(ColumnAttribute).GetProperty("Serializer")
+	        var typInfo = typeof(ColumnAttribute).GetTypeInfo();
+
+			var properties = new[]
+                {
+					typInfo.GetProperty("ColumnName"),
+					typInfo.GetProperty("SerializationMode"),
+					typInfo.GetProperty("Serializer")
                 };
 
             var values = new object[]
@@ -68,7 +74,7 @@ namespace Insight.Database
                 };
 
             return new CustomAttributeBuilder(
-                typeof(ColumnAttribute).GetConstructor(Type.EmptyTypes),
+				typInfo.GetConstructor(Type.EmptyTypes),
                 Parameters.EmptyArray,
                 properties,
                 values);                     
