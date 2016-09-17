@@ -15,7 +15,7 @@ using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
 using Insight.Database.Reliable;
 using Insight.Database.Structure;
-#if NET35 || NET40
+#if NET35 || NET40 || NETCORE
 using Insight.Database.PlatformCompatibility;
 #endif
 

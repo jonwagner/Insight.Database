@@ -148,7 +148,7 @@ namespace Insight.Database.Structure
 		/// <returns>True if it is a list type.</returns>
 		private static bool IsGenericListType(Type type, Type childType)
 		{
-			if (!type.IsGenericType)
+			if (!type.GetTypeInfo().IsGenericType)
 				return false;
 
 			var genericParameters = type.GetGenericArguments();

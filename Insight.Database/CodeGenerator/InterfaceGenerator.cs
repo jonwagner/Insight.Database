@@ -15,7 +15,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Mapping;
 using Insight.Database.Structure;
-#if NET35 || NET40
+#if NET35 || NET40 || NETCORE
 using Insight.Database.PlatformCompatibility;
 #endif
 
@@ -436,7 +436,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			// if we are returning a task, unwrap the task result
 			var returnType = interfaceMethod.ReturnType;
-			if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
+			if (returnType.GetTypeInfo().IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
 				returnType = returnType.GetGenericArguments()[0];
 			
 			// if there are returns attributes specified, then build the structure for the coder
@@ -595,7 +595,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if the type is a single reader.</returns>
 		private static bool TypeIsSingleReader(Type type)
 		{
-			if (!type.IsGenericType)
+			if (!type.GetTypeInfo().IsGenericType)
 				return false;
 
 			var generic = type.GetGenericTypeDefinition();
@@ -639,7 +639,7 @@ namespace Insight.Database.CodeGenerator
 				// methods that start with insert/upsert map to insert
 				if (type != null && !TypeHelper.IsAtomicType(type) && IsMethodAnUpsert(method))
 				{
-					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
 						return _insertListMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
 
@@ -687,7 +687,7 @@ namespace Insight.Database.CodeGenerator
 				// methods that start with insert/upsert map to insert
 				if (type != null && !TypeHelper.IsAtomicType(type) && IsMethodAnUpsert(method))
 				{
-					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
 						return _insertListAsyncMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
 
@@ -699,7 +699,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// if the returntype is Task<T>, look a little deeper
-			if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+			if (method.ReturnType.GetTypeInfo().IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
 			{
 				// get the inside of the task
 				var taskResultType = method.ReturnType.GetGenericArguments()[0];
@@ -795,7 +795,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if it is a list type.</returns>
 		private static bool IsGenericListType(Type type)
 		{
-			if (!type.IsGenericType)
+			if (!type.GetTypeInfo().IsGenericType)
 				return false;
 
 			var generic = type.GetGenericTypeDefinition();

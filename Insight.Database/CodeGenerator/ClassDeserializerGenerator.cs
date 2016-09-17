@@ -7,7 +7,7 @@ using System.Reflection;
 using System.Reflection.Emit;
 using Insight.Database.Mapping;
 using Insight.Database.Structure;
-#if NET35 || NET40
+#if NET35 || NET40 || NETCORE
 using Insight.Database.PlatformCompatibility;
 #endif
 
@@ -321,16 +321,20 @@ namespace Insight.Database.CodeGenerator
             var allConstructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             // allow the developer to specify a constructor to use when loading records from the database
-            // or use a single constructor if there is only one
-            // or use the default constructor
             var constructor = allConstructors.SingleOrDefault(c => c.GetCustomAttributes(true).OfType<SqlConstructorAttribute>().Any());
+
+            // or use a single constructor if there is only one
             if (constructor == null && allConstructors.Length == 1)
                 constructor = allConstructors[0];
+
+            // or use the default constructor
             if (constructor == null)
-                constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+                constructor = type.GetTypeInfo().GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
 
             if (constructor == null && !type.GetTypeInfo().IsValueType)
-                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}, and there was more than one constructor, but no DbConstructorAttribute was specified.", type.GetTypeInfo().FullName));
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture
+					, "Cannot find a default constructor for type {0}, and there was more than one constructor" +
+					  ", but no DbConstructorAttribute was specified.", type.GetTypeInfo().FullName));
 
             return constructor;
         }

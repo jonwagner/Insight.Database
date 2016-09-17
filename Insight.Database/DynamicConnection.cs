@@ -278,7 +278,7 @@ namespace Insight.Database
 				// if there is no returns definition supplied, get one from the return type
 				if (returns == null)
 				{
-					if (returnType.IsSubclassOf(typeof(Results)))
+					if (returnType.GetTypeInfo().IsSubclassOf(typeof(Results)))
 						returns = (IQueryReader)returnType.GetMethod("GetReader", BindingFlags.Public | BindingFlags.Static).Invoke(null, Parameters.EmptyArray);
 					else
 						returns = (IQueryReader)typeof(ListReader<>).MakeGenericType(returnType).GetField("Default", BindingFlags.Static | BindingFlags.Public).GetValue(null);

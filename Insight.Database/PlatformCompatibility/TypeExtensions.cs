@@ -6,9 +6,9 @@ namespace Insight.Database.PlatformCompatibility
 
 #if NET35 || NET40
 
-	/// <summary>
-	/// Provides Type.GetType() to .Net 3.5 / 4.0
-	/// </summary>
+/// <summary>
+/// Provides Type.GetType() to .Net 3.5 / 4.0
+/// </summary>
 	internal static class TypeExtensionsLegacy
 	{
 		internal static Type GetTypeInfo(this Type type)
@@ -30,24 +30,9 @@ namespace Insight.Database.PlatformCompatibility
 	internal static class TypeExtensionsNetCore
 	{
 
-		internal static MethodInfo GetMethod(this Type type, string name, System.Reflection.BindingFlags bindingAttr)
+		public static bool IsSubclassOf(this Type type, System.Type c)
 		{
-			return type.GetTypeInfo().GetMethod(name, bindingAttr);
-		}
-
-		internal static ConstructorInfo GetConstructor(this Type type, BindingFlags bindingAttr, Binder binder, Type[] types, ParameterModifier[] modifiers)
-		{
-			return type.GetTypeInfo().GetConstructor(bindingAttr, binder, types, modifiers);
-		}
-
-		internal static ConstructorInfo GetConstructor(this Type type, System.Type[] types)
-		{
-			return type.GetTypeInfo().GetConstructor(types);
-		}
-
-		internal static PropertyInfo GetProperty(this Type type, string name)
-		{
-			return type.GetTypeInfo().GetProperty(name);
+			return type.GetTypeInfo().IsSubclassOf(c);
 		}
 
 	}
@@ -55,5 +40,3 @@ namespace Insight.Database.PlatformCompatibility
 #endif
 
 }
-
-

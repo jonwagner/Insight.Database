@@ -12,6 +12,9 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+#if NET35 || NET40 || NETCORE
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.Providers
 {
@@ -79,7 +82,7 @@ namespace Insight.Database.Providers
 			InsightDbProvider provider;
 
 			// walk the base classes to see if we know anything about what class it is derived from
-			for (Type type = databaseObject.GetType(); type != null; type = type.BaseType)
+			for (Type type = databaseObject.GetType(); type != null; type = type.GetTypeInfo().BaseType)
 			{
 				if (_providerMap.Value.TryGetValue(type, out provider) && provider != null)
 					return provider;

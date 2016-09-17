@@ -16,7 +16,7 @@ using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.Mapping;
 using Insight.Database.Providers;
-#if NET35 || NET40
+#if NET35 || NET40 || NETCORE
 using Insight.Database.PlatformCompatibility;
 #endif
 
@@ -186,7 +186,7 @@ namespace Insight.Database.CodeGenerator
 			// special case if the parameters object is an IEnumerable or Array
 			// look for the parameter that is a Structured object and pass the array to the TVP
 			// note that string supports ienumerable, so exclude atomic types
-			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 			if (enumerable != null && type != typeof(string) && parameters.OfType<IDataParameter>().Where(p => p.Direction.HasFlag(ParameterDirection.Input)).Count() == 1)
 			{
 				return (IDbCommand cmd, object o) =>
@@ -644,9 +644,9 @@ namespace Insight.Database.CodeGenerator
 					listType = listType.GetElementType();
 				else
 				{
-					listType = listType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-					if (listType.IsGenericType)
-						listType = listType.GetGenericArguments()[0];
+					listType = listType.GetInterfaces().FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					if (listType.GetTypeInfo().IsGenericType)
+						listType = listType.GetTypeInfo().GetGenericArguments()[0];
 				}
 
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;

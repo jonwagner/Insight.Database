@@ -6,6 +6,9 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.Mapping;
+#if NET35 || NET40 || NETCORE
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database
 {

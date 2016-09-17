@@ -194,8 +194,8 @@ namespace Insight.Database.CodeGenerator
 
 					// if there is a base type, get those members first
 					// derived classes won't have access to the private members of the base class
-					if (type.BaseType != null)
-						members.AddRange(GetMembersForType(type.BaseType));
+					if (type.GetTypeInfo().BaseType != null)
+						members.AddRange(GetMembersForType(type.GetTypeInfo().BaseType));
 
 					// if this is a structured type get the get properties for the types that we pass in
 					// exception are the Xml/XDocument classes that we already have special handlers for
