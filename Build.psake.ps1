@@ -122,7 +122,7 @@ Task Build35 {
 }
 
 Task Build40 {
-    Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NODBASYNC,CODE_ANALYSIS -Projects `
+    Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NODBASYNC,CODE_ANALYSIS,NET40 -Projects `
 		Insight.Database,`
 		Insight.Database.Configuration,`
 		Insight.Database.Compatibility3x,`
