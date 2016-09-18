@@ -1,4 +1,5 @@
-﻿$psake.use_exit_on_error = $true
+﻿Framework '4.5.2'
+$psake.use_exit_on_error = $true
 
 #########################################
 # to build a new version
@@ -20,12 +21,8 @@ properties {
     $net45Path = "$baseDir\Insight.Database\bin\NET45"
     $monoPath = "$baseDir\Insight.Database\bin\Mono"
 
-    $framework = "$env:systemroot\Microsoft.NET\Framework\v4.0.30319\"
-    $msbuild = $framework + "msbuild.exe"
-    $configuration = "Release"
-    $nuget = "nuget.exe"
-    $nunit = Get-ChildItem "$baseDir\packages" -Recurse -Include nunit-console.exe
-    $nunitx86 = Get-ChildItem "$baseDir\packages" -Recurse -Include nunit-console-x86.exe
+    $configuration = 'Release'
+    $nuget = 'nuget.exe'
 }
 
 Task default -depends Build
@@ -37,22 +34,19 @@ function Replace-Version {
         [string] $Path
     )
 
-    $x = (Get-Content $Path) |
-		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } |
-		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyfileversion`")]" } |
-		Out-String
+    $x = Get-Content $Path | `
+		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } | `
+		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyfileversion`")]" }
 
-	$x.Trim() | Out-File $Path 
+    Set-Content $Path $x.Trim()
 }
 
 function ReplaceVersions {
-    Get-ChildItem $baseDir -Include AssemblyInfo.cs -Recurse |% { Replace-Version $_.FullName }
+    Get-ChildItem $baseDir AssemblyInfo.cs -Recurse | %{ Replace-Version $_.FullName }
 }
 
 function RestoreVersions {
-    Get-ChildItem $baseDir -Include AssemblyInfo.cs -Recurse |% {
-        git checkout $_.FullName
-    }
+    Get-ChildItem $baseDir AssemblyInfo.cs -Recurse | %{ git checkout $_.FullName }
 }
 
 function Wipe-Folder {
@@ -60,150 +54,115 @@ function Wipe-Folder {
         [string] $Path
     )
 
-    if (Test-Path $Path) { Remove-Item $Path -Recurse }
-    New-Item -Path $Path -ItemType Directory | Out-Null
+    if (Test-Path $Path) {
+        Remove-Item $Path -Recurse -Force -ErrorAction SilentlyContinue 
+    }
+    [System.IO.Directory]::CreateDirectory($Path) | Out-Null
 }
 
-function Do-Build35 {
-	param (
-		[string] $Project,
-		[string] $ProjectFile
-	)
+function Do-Build {
+    Param
+    (
+        [String]
+        $Framework,
 
-	if ($ProjectFile -eq "") { $ProjectFile = $Project }
+        [String]
+        $OutputPath,
 
-	Exec {
-		Invoke-Expression "$msbuild $baseDir\$Project\$Project.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v3.5 `"/p:DefineConstants=```"NODBASYNC;NODYNAMIC;NET35```"`" '/t:Clean;Build'"
-	}
+        [String[]]
+        $Projects,
 
-    # copy the binaries to the net35 folder
-    Copy-Item $baseDir\$Project\bin\Release\*.* $net35Path
+        [String[]]
+        $DefineConstants
+    )
+
+    $parameters = @('/m', '/t:Clean;Build', "/p:Configuration=$configuration", "/p:OutputPath=`"$OutputPath`"")
+    
+    if ($Framework) {
+        $parameters += "/p:TargetFrameworkVersion=v$Framework"
+    }
+
+    if ($DefineConstants) {
+        $parameters += "/p:DefineConstants=`"$([String]::Join(';', $DefineConstants))`""
+    }
+
+    if ($VerbosePreference -eq 'SilentlyContinue') {
+        $parameters += '/verbosity:quiet'
+    }
+
+    if ($Projects) {
+        $projectFiles = $Projects | %{ "$baseDir\$_\$_.csproj" }
+    } else {
+        # Default to building the solution, if no projects are specified
+        $projectFiles = @("$baseDir\Insight.sln")
+    }
+
+    Wipe-Folder $OutputPath 
+    ReplaceVersions
+    try {
+        foreach ($project in $projectFiles) {
+            Write-Verbose "Running build: msbuild `"$project`" $parameters"
+            exec { msbuild "`"$project`"" @parameters  }
+        }
+    }
+    finally {
+        RestoreVersions
+    }
 }
 
 Task Build35 {
-    ReplaceVersions
-
-    try {
-        Wipe-Folder $net35Path
-
-        # build the NET35 binaries
-		Do-Build35 "Insight.Database"
-		Do-Build35 "Insight.Database.Configuration"
-		Do-Build35 "Insight.Database.Compatibility3x"
-		Do-Build35 "Insight.Database.Providers.Default"
-		Do-Build35 "Insight.Database.Providers.PostgreSQL"
-		Do-Build35 "Insight.Tests"
-		Do-Build35 "Insight.Tests.Compatibility3x"
-    }
-    finally {
-        RestoreVersions
-    }
-}
-
-
-function Do-Build40 {
-	param (
-		[string] $Project
-	)
-
-	Exec {
-		Invoke-Expression "$msbuild $baseDir\$Project\$Project.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 `"/p:DefineConstants=```"NODBASYNC;CODE_ANALYSIS```"`" '/t:Clean;Build'"
-	}
-
-    # copy the binaries to the net40 folder
-    Copy-Item $baseDir\$Project\bin\Release\*.* $net40Path
+    Do-Build -Framework 3.5 -OutputPath $net35Path -DefineConstants NODBASYNC,NODYNAMIC,NET35 -Projects `
+		Insight.Database,`
+		Insight.Database.Configuration,`
+		Insight.Database.Compatibility3x,`
+		Insight.Database.Providers.Default,`
+		Insight.Database.Providers.PostgreSQL,`
+		Insight.Tests,`
+		Insight.Tests.Compatibility3x
 }
 
 Task Build40 {
-    ReplaceVersions
-
-    try {
-        Wipe-Folder $net40Path
-
-        # build the NET40 binaries
-		Do-Build40 "Insight.Database"
-		Do-Build40 "Insight.Database.Configuration"
-		Do-Build40 "Insight.Database.Compatibility3x"
-		Do-Build40 "Insight.Database.Json"
-		Do-Build40 "Insight.Database.Providers.Default"
-		Do-Build40 "Insight.Database.Providers.DB2"
-		Do-Build40 "Insight.Database.Providers.Glimpse"
-		Do-Build40 "Insight.Database.Providers.Oracle"
-		Do-Build40 "Insight.Database.Providers.OracleManaged"
-		Do-Build40 "Insight.Database.Providers.PostgreSQL"
-		Do-Build40 "Insight.Tests"
-		Do-Build40 "Insight.Tests.Compatibility3x"
-    }
-    finally {
-        RestoreVersions
-    }
+    Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NODBASYNC,CODE_ANALYSIS -Projects `
+		Insight.Database,`
+		Insight.Database.Configuration,`
+		Insight.Database.Compatibility3x,`
+		Insight.Database.Json,`
+		Insight.Database.Providers.Default,`
+		Insight.Database.Providers.DB2,`
+		Insight.Database.Providers.Glimpse,`
+		Insight.Database.Providers.Oracle,`
+		Insight.Database.Providers.OracleManaged,`
+		Insight.Database.Providers.PostgreSQL,`
+		Insight.Tests,`
+		Insight.Tests.Compatibility3x
 }
 
 Task Build45 {
-    ReplaceVersions
-
-    try {
-        # build the NET45 binaries
-
-        Exec {
-			$args = "'/p:Configuration=$configuration' '/t:Clean;Build'"
-			echo "Build Args: $args"
-
-            Invoke-Expression "$msbuild $baseDir\Insight.sln $args"
-        }
- 
-        # copy the binaries to the net45 folder
-        Wipe-Folder $net45Path
-        Copy-Item $baseDir\*.*\bin\Release\*.* $net45Path
-	}
-    finally {
-        RestoreVersions
-    }
+    Do-Build -Framework 4.5 -OutputPath $net45Path -DefineConstants CODE_ANALYSIS
 }
 
 Task BuildMono {
-    ReplaceVersions
-
-    try {
-		$args = "/p:Configuration=$configuration /p:DefineConstants=""MONO"" '/t:Clean;Build'"
-		echo "Build Args: $args"
-
-        # build the binaries for mono
-        Exec {
-            Invoke-Expression "$msbuild $baseDir\Insight.Database\Insight.Database.csproj $args"
-        }
- 
-        # copy the binaries to the mono folder
-        Wipe-Folder $monoPath
-        Copy-Item $baseDir\Insight.Database\bin\Release\*.* $monoPath
-	}
-    finally {
-        RestoreVersions
-    }
+    Do-Build -OutputPath $monoPath -DefineConstants MONO -Projects Insight.Database
 }
 
 Task Test35 -depends Build35 { 
-    Exec {
-        Invoke-Expression "$nunit $net35Path\Insight.Tests.dll"
-    }
+    $nunit = Get-ChildItem $baseDir\packages nunit-console.exe -Recurse
+    exec { & $nunit $net35Path\Insight.Tests.dll }
 }
 
 Task Test40 -depends Build40 { 
-    Exec {
-        Invoke-Expression "$nunit $net40Path\Insight.Tests.dll"
-    }
+    $nunit = Get-ChildItem $baseDir\packages nunit-console.exe -Recurse
+    exec { & $nunit $net40Path\Insight.Tests.dll }
 }
 
 Task Test45Only {
-	Get-ChildItem $baseDir\Insight.Tests* |% {
-	    Exec {
-			if ($_.Name -eq 'Insight.Tests.SQLite') {
-				Invoke-Expression "$nunit $baseDir\$($_.Name)\bin\Release\$($_.Name).dll"
-			}
-			else {
-				Invoke-Expression "$nunit $net45Path\$($_.Name).dll"
-			}
-		}
+	Get-ChildItem $baseDir\Insight.Tests* | %{
+        if ($_.Name -eq 'Insight.Tests.SQLite') {
+            exec { & $nunit "$baseDir\$($_.Name)\bin\Release\$($_.Name).dll" }
+        }
+        else {
+            exec { & $nunit "$net45Path\$($_.Name).dll" }
+        }
 	}
 }
 
@@ -214,24 +173,19 @@ Task PackageOnly {
     Wipe-Folder $outputDir
 
 	# package nuget
-	Get-ChildItem $baseDir\Insight* |% { Get-ChildItem -Path $_ } |? Extension -eq .nuspec |% {
-		Exec {
-			$nuspec = $_.FullName
+	Get-ChildItem $baseDir\Insight* *.nuspec | %{
+        $nuspec = $_.FullName
 
-			try {
-				$x = (Get-Content $nuspec) |
-					% { $_ -replace "<dependency id=`"Insight.Database.Core`" version=`"(\d+\.?)*`">","<dependency id=`"Insight.Database.Core`" version=`"$version`">" } |
-					Out-String
-				$x.Trim() | Out-File $nuspec 
+        $x = Get-Content $nuspec | %{ 
+            $_ -replace "<dependency id=`"Insight.Database.Core`" version=`"(\d+\.?)*`">","<dependency id=`"Insight.Database.Core`" version=`"$version`">" 
+        }
 
-				Invoke-Expression "$nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis"
-			}
-			finally {
-		        git checkout $nuspec
-			}
-		}
+        try {
+            Set-Content $nuspec $x.Trim()
+            exec { & $nuget pack $nuspec -OutputDirectory $outputDir -Version $version -NoPackageAnalysis }
+        }
+        finally {
+            git checkout $nuspec
+        }
 	}
-}
-
-Task Package -depends Test, PackageOnly {
 }
