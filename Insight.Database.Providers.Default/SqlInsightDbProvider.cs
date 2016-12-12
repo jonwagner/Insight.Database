@@ -92,7 +92,7 @@ namespace Insight.Database
             if (!builder.IntegratedSecurity && builder.Password.IsNullOrWhiteSpace())
                 throw new InvalidOperationException("The database connection has already been opened and the password has been cleared. In order to use password-based credentials with parallel connections, set Persist Security Info=True on your connection string.");
 
-            return new SqlConnection(builder.ConnectionString);
+            return new SqlConnection(connection.ConnectionString);
         }
 
 		/// <summary>
