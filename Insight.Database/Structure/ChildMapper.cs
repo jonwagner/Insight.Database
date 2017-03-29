@@ -76,7 +76,7 @@ namespace Insight.Database.Structure
  			// function to convert ids to the parent type
 			Func<object, TId> convertID;
 			if (_idType != typeof(object))
-				convertID = (object id) => (TId)Convert.ChangeType(id, _idType, CultureInfo.InvariantCulture);
+                convertID = (object id) => ChangeType<TId>(id);
 			else
 				convertID = (object id) => (TId)id;
 			
@@ -95,11 +95,31 @@ namespace Insight.Database.Structure
 			}
 		}
 
-		/// <summary>
-		/// Gets the ID selector from the class, looking for ID, classID, and then anything with xxxID.
-		/// </summary>
-		/// <returns>An accessor for the ID field.</returns>
-		private static Func<TParent, TId> GetIDSelector()
+        /// <summary>
+        /// Helper function created to map the objects while also validating its nullability.
+        /// </summary>
+        /// <typeparam name="T">The type that we wish to convert to</typeparam>
+        /// <param name="value">The object we wish to convert</param>
+        /// <returns>The type specified on the T or null</returns>
+        private static T ChangeType<T>(object value)
+        {
+            var t = typeof(T);
+
+            if (t.IsGenericType && t.GetGenericTypeDefinition().Equals(typeof(Nullable<>)))
+            {
+                if (value == null) return default(T); 
+
+                t = Nullable.GetUnderlyingType(t);
+            }
+
+            return (T)Convert.ChangeType(value, t, CultureInfo.InvariantCulture);
+        }
+
+        /// <summary>
+        /// Gets the ID selector from the class, looking for ID, classID, and then anything with xxxID.
+        /// </summary>
+        /// <returns>An accessor for the ID field.</returns>
+        private static Func<TParent, TId> GetIDSelector()
 		{
 			return ChildMapperHelper.GetIDAccessor(typeof(TParent)).CreateGetMethod<TParent, TId>();
 		}
