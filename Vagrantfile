@@ -142,7 +142,7 @@ Vagrant.configure(2) do |config|
 		wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 		sudo apt-get update
 		sudo -E apt-get -y install postgresql
-		export PGHOME=/etc/postgresql/9.5/main
+		export PGHOME=/etc/postgresql/9.6/main
 		sudo -E cp $VAGRANTHOME/postgresql.conf $PGHOME/postgresql.conf
 		sudo -E cp $VAGRANTHOME/pg_hba.conf $PGHOME/pg_hba.conf
 		sudo service postgresql restart
