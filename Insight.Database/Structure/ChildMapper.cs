@@ -79,8 +79,11 @@ namespace Insight.Database.Structure
 			// fill in each parent
 			foreach (var root in roots)
 			{
-				// get a filled in list or create an empty list
-				List<TChild> list;
+                // In certain instances the elements inside are null, dont do any mappings then.
+                if (root == null) break;
+
+                // get a filled in list or create an empty list
+                List<TChild> list;
 				if (!lists.TryGetValue(_idSelector(root), out list))
 					list = new List<TChild>();
 
