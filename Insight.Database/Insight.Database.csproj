@@ -82,6 +82,7 @@
       <DesignTime>True</DesignTime>
       <DependentUpon>Compatibility.tt</DependentUpon>
     </Compile>
+    <Compile Include="Reliable\ReliableConnectionInsightDbProvider.cs" />
     <Compile Include="Serialization\BooleanSerializer.cs" />
     <Compile Include="SqlConstructorAttribute.cs" />
     <Compile Include="DbDataReaderWrapper.cs" />

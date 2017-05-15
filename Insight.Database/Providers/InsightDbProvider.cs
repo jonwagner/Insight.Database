@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.Reliable;
 
 namespace Insight.Database.Providers
 {
@@ -398,6 +399,7 @@ namespace Insight.Database.Providers
 			var providerMap = new Dictionary<Type, InsightDbProvider>();
 
 			// load the internal providers
+			RegisterProvider(providerMap, new ReliableConnectionInsightDbProvider());
 			RegisterProvider(providerMap, new DbConnectionWrapperInsightDbProvider());
 
 			// look for any provider assemblies in the search path and load them automatically

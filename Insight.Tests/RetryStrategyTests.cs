@@ -257,7 +257,40 @@ namespace Insight.Tests
                 var ret = conn.QuerySql(@"SELECT 1");
             }
         }
-        #endregion
-    }
+		#endregion
+
+		#region Retry and Reliable Tests (Issue #242)
+		public class FailingStrategy : IRetryStrategy
+		{
+			public TResult ExecuteWithRetry<TResult>(IDbCommand commandContext, Func<TResult> func)
+			{
+				throw new AggregateException();
+			}
+
+			public Task<TResult> ExecuteWithRetryAsync<TResult>(IDbCommand commandContext, Func<Task<TResult>> func)
+			{
+				throw new AggregateException();
+			}
+		}
+		
+		public interface IParallelQuery
+		{
+			[Sql("SELECT x = 1")]
+			Task<int> Test();
+		}
+
+		[Test]
+		public void ParallelRetryShouldUseCustomRetryStrategy()
+		{
+			var connection = (DbConnection)Connection();
+			var retryStrategy = new FailingStrategy();
+			var reliableConnection = new ReliableConnection(connection, retryStrategy);
+
+			var target = reliableConnection.AsParallel<IParallelQuery>();
+
+			Assert.Throws<AggregateException>(() => { var x = target.Test().Result; });
+		}
+		#endregion
+	}
 }
 #endif
