@@ -9,6 +9,7 @@ using Insight.Database;
 using Insight.Tests.Cases;
 using Microsoft.SqlServer.Types;
 using NUnit.Framework;
+using Insight.Database.Mapping;
 
 #pragma warning disable 0649
 
@@ -477,6 +478,43 @@ namespace Insight.Tests
 			public abstract IList<String> GetOneFooString();
 		}
 
+		#endregion
+
+		#region IColumnMapper Tests
+		class MyColumnMapper : IColumnMapper
+		{
+			string IColumnMapper.MapColumn(Type type, IDataReader reader, int column)
+			{
+				if (type != typeof(ParentTestData))
+					return null;            // null allows another handler to try
+
+				if (reader.GetName(column) == "ParentX")
+					return "__unmapped__";         // a string value specifies the name of the field/property
+
+				if (reader.GetName(column) == "ParentY")
+					return "ParentX";
+
+				return null;
+			}
+		}
+
+		[Test]
+		public void CustomMapperCanMapFields()
+		{
+			ColumnMapping.Tables.AddMapper(new MyColumnMapper());
+
+			var results = Connection().QuerySql<ParentTestData>("SELECT ParentY = 2, WithMapping = 1");
+			Assert.AreEqual(results.First().ParentX, 2);
+		}
+
+		[Test]
+		public void CustomMapperShouldNotThrowWhenFieldIsUnmapped()
+		{
+			ColumnMapping.Tables.AddMapper(new MyColumnMapper());
+
+			var results = Connection().QuerySql<ParentTestData>("SELECT ParentX = 2, NoMapping = 1");
+			Assert.AreEqual(results.First().ParentX, 0);
+		}
 		#endregion
 	}
 

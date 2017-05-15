@@ -164,6 +164,9 @@ namespace Insight.Database
 				return null;
 
 			var member = ClassPropInfo.FindMember(type, fieldName);
+			if (member == null)
+				return null;
+
 			return new FieldMapping(fieldName, member, DbSerializationRule.GetSerializer(reader, column, member));
 		}
 		#endregion
