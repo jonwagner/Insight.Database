@@ -80,6 +80,7 @@
       <DependentUpon>AsyncQueryCoreTests.tt</DependentUpon>
     </Compile>
     <Compile Include="BulkCopyTests.cs" />
+    <Compile Include="Cases\Issue281Test.cs" />
     <Compile Include="ColumnAttributeTests.cs" />
     <Compile Include="ConstructorTests.cs" />
     <Compile Include="GroupByTests.cs" />
@@ -109,9 +110,7 @@
     </Compile>
     <Compile Include="ObjectReaderTests.cs" />
     <Compile Include="OpenTests.cs" />
-    <Compile Include="InterfaceTests.cs">
-      <SubType>Component</SubType>
-    </Compile>
+    <Compile Include="InterfaceTests.cs" />
     <Compile Include="MappingTests.cs" />
     <Compile Include="OptimisticTests.cs" />
     <Compile Include="OutputParameterTests.cs" />

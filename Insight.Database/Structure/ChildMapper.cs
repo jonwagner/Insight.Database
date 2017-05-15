@@ -39,11 +39,6 @@ namespace Insight.Database.Structure
 		/// The action that sets the children into the proper parent.
 		/// </summary>
 		private Action<TParent, List<TChild>> _listSetter;
-
-		/// <summary>
-		/// The type of the ID for the parent class.
-		/// </summary>
-		private Type _idType;
 		#endregion
 
 		#region Constructors
@@ -56,11 +51,6 @@ namespace Insight.Database.Structure
 			Func<TParent, TId> idSelector,
 			Action<TParent, List<TChild>> listSetter)
 		{
-			if (idSelector == null)
-				_idType = ChildMapperHelper.GetIDAccessor(typeof(TParent)).MemberType;
-			else
-				_idType = typeof(TId);
-
 			_idSelector = idSelector ?? _defaultIDSelector.Value;
 			_listSetter = listSetter ?? _defaultListSetter.Value;
 		}
@@ -79,7 +69,7 @@ namespace Insight.Database.Structure
 			// fill in each parent
 			foreach (var root in roots)
 			{
-                // In certain instances the elements inside are null, dont do any mappings then.
+				// In certain instances the elements inside are null, dont do any mappings then.
                 if (root == null) break;
 
                 // get a filled in list or create an empty list
