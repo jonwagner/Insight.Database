@@ -23,6 +23,7 @@ properties {
 
     $configuration = 'Release'
     $nuget = 'nuget.exe'
+    $nunit = (Get-ChildItem $baseDir\packages nunit-console.exe -Recurse)[0].fullname
 }
 
 Task default -depends Build
@@ -33,7 +34,6 @@ function Replace-Version {
     param (
         [string] $Path
     )
-
     $x = Get-Content $Path | `
 		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } | `
 		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyfileversion`")]" }
@@ -146,23 +146,16 @@ Task BuildMono {
 }
 
 Task Test35 -depends Build35 { 
-    $nunit = Get-ChildItem $baseDir\packages nunit-console.exe -Recurse
     exec { & $nunit $net35Path\Insight.Tests.dll }
 }
 
 Task Test40 -depends Build40 { 
-    $nunit = Get-ChildItem $baseDir\packages nunit-console.exe -Recurse
     exec { & $nunit $net40Path\Insight.Tests.dll }
 }
 
 Task Test45Only {
 	Get-ChildItem $baseDir\Insight.Tests* | %{
-        if ($_.Name -eq 'Insight.Tests.SQLite') {
-            exec { & $nunit "$baseDir\$($_.Name)\bin\Release\$($_.Name).dll" }
-        }
-        else {
-            exec { & $nunit "$net45Path\$($_.Name).dll" }
-        }
+		exec { & $nunit "$net45Path\$($_.Name).dll" }
 	}
 }
 
@@ -173,7 +166,7 @@ Task PackageOnly {
     Wipe-Folder $outputDir
 
 	# package nuget
-	Get-ChildItem $baseDir\Insight* *.nuspec | %{
+	Get-ChildItem $baseDir\Insight* |% { Get-ChildItem -Path $_ } |? Extension -eq .nuspec |% {
         $nuspec = $_.FullName
 
         $x = Get-Content $nuspec | %{ 
@@ -188,4 +181,7 @@ Task PackageOnly {
             git checkout $nuspec
         }
 	}
+}
+
+Task Package -depends Test, PackageOnly {
 }
