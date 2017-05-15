@@ -1,4 +1,5 @@
-﻿param (
+﻿[CmdletBinding()]
+param (
     [string] $target = "default"
 )
 

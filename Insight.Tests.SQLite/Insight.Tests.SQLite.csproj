@@ -76,14 +76,6 @@
       <Name>Insight.Database</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="x64\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="x86\SQLite.Interop.dll">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -92,4 +84,13 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <ItemGroup>
+    <SQLiteInteropFiles Condition="'$(TargetFrameworkVersion)' == 'v4.5.1' Or '$(TargetFrameworkVersion)' == 'v4.5.2'" Include="..\packages\System.Data.SQLite.Core.1.0.92.0\content\net451\**\SQLite.Interop.*" />
+    <SQLiteInteropFiles Condition="'$(TargetFrameworkVersion)' == 'v4.5'" Include="..\packages\System.Data.SQLite.Core.1.0.92.0\content\net45\**\SQLite.Interop.*" />
+    <SQLiteInteropFiles Condition="'$(TargetFrameworkVersion)' == 'v4.0'" Include="..\packages\System.Data.SQLite.Core.1.0.92.0\content\net40\**\SQLite.Interop.*" />
+    <SQLiteInteropFiles Condition="'$(TargetFrameworkVersion)' == 'v3.5'" Include="..\packages\System.Data.SQLite.Core.1.0.92.0\content\net20\**\SQLite.Interop.*" />
+  </ItemGroup>
+  <Target Name="CopySQLiteInteropFiles" BeforeTargets="AfterBuild" Inputs="@(SQLiteInteropFiles)" Outputs="@(SQLiteInteropFiles -> '$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')">
+    <Copy SourceFiles="@(SQLiteInteropFiles)" DestinationFiles="@(SQLiteInteropFiles -> '$(OutDir)%(RecursiveDir)%(Filename)%(Extension)')" />
+  </Target>
 </Project>
