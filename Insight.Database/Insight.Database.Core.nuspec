@@ -17,7 +17,7 @@ Install this package if you don't need the SQL Server, ODBC or OLEDB providers, 
     <tags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</tags>
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<frameworkAssemblies>
-		<frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="net40,net45,monoandroid" />
+		<frameworkAssembly assemblyName="Microsoft.CSharp" targetFramework="net40,net45" />
 	</frameworkAssemblies>	  
   </metadata>
   <files>

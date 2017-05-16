@@ -19,7 +19,6 @@ properties {
     $net35Path = "$baseDir\Insight.Database\bin\NET35"
     $net40Path = "$baseDir\Insight.Database\bin\NET40"
     $net45Path = "$baseDir\Insight.Database\bin\NET45"
-    $monoPath = "$baseDir\Insight.Database\bin\Mono"
 
     $configuration = 'Release'
     $nuget = 'nuget.exe'
@@ -27,7 +26,7 @@ properties {
 }
 
 Task default -depends Build
-Task Build -depends Build45,Build40,Build35,BuildMono
+Task Build -depends Build45,Build40,Build35
 Task Test -depends Test45,Test40,Test35
 
 function Replace-Version {
@@ -135,10 +134,6 @@ Task Build40 {
 
 Task Build45 {
     Do-Build -Framework 4.5 -OutputPath $net45Path -DefineConstants CODE_ANALYSIS
-}
-
-Task BuildMono {
-    Do-Build -OutputPath $monoPath -DefineConstants MONO -Projects Insight.Database
 }
 
 Task Test35 -depends Build35 { 
