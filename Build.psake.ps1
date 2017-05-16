@@ -107,7 +107,7 @@ function Do-Build40 {
 	)
 
 	Exec {
-		Invoke-Expression "$msbuild $baseDir\$Project\$Project.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 `"/p:DefineConstants=```"NODBASYNC;CODE_ANALYSIS```"`" '/t:Clean;Build'"
+		Invoke-Expression "$msbuild $baseDir\$Project\$Project.csproj /p:Configuration=$configuration /p:TargetFrameworkVersion=v4.0 `"/p:DefineConstants=```"NODBASYNC;CODE_ANALYSIS;NET40```"`" '/t:Clean;Build'"
 	}
 
     # copy the binaries to the net40 folder
