@@ -13,11 +13,7 @@ using Insight.Tests.Cases;
 using Insight.Database.Reliable;
 
 // since the interface and types are private, we have to let insight have access to them
-[assembly: InternalsVisibleTo("Insight.Database")]
-
-// TODO: uncomment this InternalsVisibleTo in v6:
-// To _debug_ some unit test you will need to enable this[assembly: InternalsVisibleTo("Insight.Database.DynamicAssembly")]
-// it should remain commented out in v5 to ensure we preserve Insight's ability to access non-public strcutures
+[assembly: InternalsVisibleTo("Insight.Database.DynamicAssembly")]
 
 namespace Insight.Tests
 {

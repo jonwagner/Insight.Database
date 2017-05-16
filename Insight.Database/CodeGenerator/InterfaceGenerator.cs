@@ -61,10 +61,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			// make a new assembly for the generated types
 			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-
-			// TODO remove debugger condition for v6
-			if (StaticFieldStorage.DebuggerIsAttached())  // Make the dynamic assembly have a unique name.  Fixes debugger issue #224.  
-				an.Name = an.Name + ".DynamicAssembly";
+			an.Name += ".DynamicAssembly";
 
 			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
 			
@@ -156,7 +153,7 @@ namespace Insight.Database.CodeGenerator
 #endif
 				{
 					var template = "{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add " +
-						"[assembly:InternalsVisibleTo(\"Insight.Database\")] and [assembly:InternalsVisibleTo(\"Insight.Database.DynamicAssembly\")] " +
+						"[assembly:InternalsVisibleTo(\"Insight.Database.DynamicAssembly\")] " +
 						"to your assembly (System.Runtime.CompilerServices).  If the interface is nested, then it must be public to the world, " +
 						"or public to the assembly while using the InternalsVisibleTo attribute.";
 					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, template, type.FullName));
