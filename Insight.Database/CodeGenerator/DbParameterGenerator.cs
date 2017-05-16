@@ -167,6 +167,20 @@ namespace Insight.Database.CodeGenerator
 		}
 		#endregion
 
+		/// <summary>
+		/// Look up a DbType from a .Net type.
+		/// </summary>
+		/// <param name="type">The type of object to look up.</param>
+		/// <returns>The equivalent DbType.</returns>
+		internal static DbType LookupDbType(Type type)
+		{
+			// look up the type
+			DbType sqlType = DbType.String;
+			_typeToDbTypeMap.TryGetValue(type, out sqlType);
+
+			return sqlType;
+		}
+
 		#region Input Parameter Code Generation Members
 		/// <summary>
 		/// Create the Parameter generator method.
@@ -570,7 +584,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="type">The type of object to look up.</param>
 		/// <param name="serializer">The serializer that has been detected for the field.</param>
 		/// <param name="parameterType">The expected sql parameter type. Used as the default.</param>
-		/// <returns>The equivalend DbType.</returns>
+		/// <returns>The equivalent DbType.</returns>
 		private static DbType LookupDbType(Type type, IDbObjectSerializer serializer, DbType parameterType)
 		{
 			DbType sqlType;

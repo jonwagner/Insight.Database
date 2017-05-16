@@ -126,8 +126,17 @@ namespace Insight.Database.CodeGenerator
 						sourceType = underlyingType;
 					}
 
-					if (sourceType != targetType && !sourceType.IsValueType && sourceType != typeof(string))
+					// if the serializer isn't the default ToStringSerializer, and it can serialize the type properly, then use it
+					// otherwise we'll use coersion or conversion
+					var targetDbType = DbParameterGenerator.LookupDbType(targetType);
+					bool canSerialize = sourceType != typeof(string) &&
+						mapping.Serializer.GetType() != typeof(ToStringObjectSerializer) &&
+						mapping.Serializer.CanSerialize(sourceType, targetDbType);
+
+					if (sourceType != targetType && canSerialize)
 					{
+						if (sourceType.IsValueType)
+							il.Emit(OpCodes.Box, sourceType);
 						il.EmitLoadType(sourceType);
 						StaticFieldStorage.EmitLoad(il, mapping.Serializer);
 						il.Emit(OpCodes.Call, typeof(ObjectReader).GetMethod("SerializeObject", BindingFlags.NonPublic | BindingFlags.Static));
