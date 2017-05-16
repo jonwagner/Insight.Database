@@ -81,6 +81,7 @@
     </Compile>
     <Compile Include="BulkCopyTests.cs" />
     <Compile Include="Cases\Issue281Test.cs" />
+    <Compile Include="TableValuedParametersTests.cs" />
     <Compile Include="ColumnAttributeTests.cs" />
     <Compile Include="ConstructorTests.cs" />
     <Compile Include="GroupByTests.cs" />
