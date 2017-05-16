@@ -16,7 +16,7 @@ An Insight.Database provider for MiniProfiler profiling framework so the two can
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
 		<dependency id="Insight.Database.Core" version="4.1"></dependency>
-		<dependency id="MiniProfiler" version="3.1.0"></dependency>
+		<dependency id="MiniProfiler" version="3.2"></dependency>
 	</dependencies>
   </metadata>
   <files>
