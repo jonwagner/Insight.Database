@@ -14,7 +14,7 @@
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
 		<dependency id="Insight.Database.Core" version="4.1"></dependency>
-		<dependency id="Newtonsoft.Json" version="6.0.3"></dependency>
+		<dependency id="Newtonsoft.Json" version="10.0"></dependency>
 	</dependencies>   
   </metadata>
   <files>
