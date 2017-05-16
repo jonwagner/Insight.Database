@@ -4,6 +4,9 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -76,7 +79,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			var isNull = il.DefineLabel();
 
-			if (sourceType.IsValueType)
+			if (sourceType.GetTypeInfo().IsValueType)
 			{
 				// convert values to a pointer we can call on
 				var local = il.DeclareLocal(sourceType);

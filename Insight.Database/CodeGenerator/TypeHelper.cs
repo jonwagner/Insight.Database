@@ -9,6 +9,9 @@ using System.Reflection.Emit;
 using System.Runtime.Serialization;
 using System.Text;
 using System.Xml;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -65,19 +68,19 @@ namespace Insight.Database.CodeGenerator
 			type = Nullable.GetUnderlyingType(type) ?? type;
 
 			if (type == typeof(string))	return true;
-			if (type.IsArray) return true;
-			if (type.IsEnum) return true;
+			if (type.GetTypeInfo().IsArray) return true;
+			if (type.GetTypeInfo().IsEnum) return true;
 
 			// anything marked as a user-defined type is atomic for our purposes
 			if (IsSqlUserDefinedType(type))
 				return true;
 
 			// value references are atomic
-			if (type.IsByRef)
+			if (type.GetTypeInfo().IsByRef)
 				return true;
 
 			// treat all references as non-atomic
-			if (!type.IsValueType)
+			if (!type.GetTypeInfo().IsValueType)
 				return false;
 
 			// these are structures, but we want to treat them as atomic
@@ -88,7 +91,7 @@ namespace Insight.Database.CodeGenerator
 			if (type == typeof(TimeSpan)) return true;
 
 			// all of the primitive types, array, etc. are atomic
-			return type.IsPrimitive;
+			return type.GetTypeInfo().IsPrimitive;
 		}
 
 		/// <summary>
@@ -123,7 +126,7 @@ namespace Insight.Database.CodeGenerator
 				return;
 
 			// for generics and values, init a local object with a blank object
-			if (type.IsGenericParameter || type.IsValueType)
+			if (type.GetTypeInfo().IsGenericParameter || type.GetTypeInfo().IsValueType)
 			{
 				var returnValue = mIL.DeclareLocal(type);
 				mIL.Emit(returnValue.LocalIndex < 256 ? OpCodes.Ldloca_S : OpCodes.Ldloca, returnValue);
@@ -141,7 +144,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if it is a Sql UDT.</returns>
 		public static bool IsSqlUserDefinedType(Type type)
 		{
-			return type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
+			return type.GetTypeInfo().GetCustomAttributes(true).Any(a => a.GetType().GetTypeInfo().Name == "SqlUserDefinedTypeAttribute");
 		}
 
 		#region Method Implementation Helpers
@@ -156,14 +159,15 @@ namespace Insight.Database.CodeGenerator
 			{
 				// get the interface's generic types and make our own
 				var oldTypes = sourceMethod.GetGenericArguments();
-				var newTypes = targetMethod.DefineGenericParameters(oldTypes.Select(t => t.Name).ToArray());
+				var newTypes = targetMethod.DefineGenericParameters(oldTypes.Select(t => t.GetTypeInfo().Name).ToArray());
+
 				for (int i = 0; i < newTypes.Length; i++)
 				{
-					var oldType = oldTypes[i];
-					var newType = newTypes[i];
+					Type oldType = oldTypes[i];
+					GenericTypeParameterBuilder newType = newTypes[i];
 
-					newType.SetGenericParameterAttributes(oldType.GenericParameterAttributes);
-					newType.SetInterfaceConstraints(oldType.GetGenericParameterConstraints());
+					newType.SetGenericParameterAttributes(oldType.GetTypeInfo().GenericParameterAttributes);
+					newType.SetInterfaceConstraints(oldType.GetTypeInfo().GetGenericParameterConstraints());
 				}
 			}
 		}

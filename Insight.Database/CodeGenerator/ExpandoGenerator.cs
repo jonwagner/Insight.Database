@@ -6,6 +6,9 @@ using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -50,7 +53,7 @@ namespace Insight.Database.CodeGenerator
 		private static Func<object, FastExpando> CreateConverter(Type type)
 		{
 			// create a dynamic method
-			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "ExpandoGenerator-{0}", type.FullName), typeof(FastExpando), new[] { typeof(object) }, typeof(ExpandoGenerator), true);
+			var dm = new DynamicMethod(String.Format(CultureInfo.InvariantCulture, "ExpandoGenerator-{0}", type.GetTypeInfo().FullName), typeof(FastExpando), new[] { typeof(object) }, typeof(ExpandoGenerator), true);
 
 			var il = dm.GetILGenerator();
 			var source = il.DeclareLocal(type);
@@ -74,7 +77,7 @@ namespace Insight.Database.CodeGenerator
 				accessor.EmitGetValue(il);
 
 				// value types need to be boxed
-				if (accessor.MemberType.IsValueType)
+				if (accessor.MemberType.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Box, accessor.MemberType);
 
 				// call expando.setvalue

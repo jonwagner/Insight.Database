@@ -14,6 +14,9 @@ using System.Threading;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
 using Insight.Database.Structure;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database
 {
@@ -199,7 +202,7 @@ namespace Insight.Database
 				// this is so you can send an entire object to an insert method
 				if (unnamedParameterCount == 1 &&
 					(callInfo.ArgumentNames.Count == specialParameters) &&
-					!args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
+					!args[0].GetType().GetTypeInfo().IsValueType && args[0].GetType() != typeof(String))
 				{
 					cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
 				}
@@ -275,7 +278,7 @@ namespace Insight.Database
 				// if there is no returns definition supplied, get one from the return type
 				if (returns == null)
 				{
-					if (returnType.IsSubclassOf(typeof(Results)))
+					if (returnType.GetTypeInfo().IsSubclassOf(typeof(Results)))
 						returns = (IQueryReader)returnType.GetMethod("GetReader", BindingFlags.Public | BindingFlags.Static).Invoke(null, Parameters.EmptyArray);
 					else
 						returns = (IQueryReader)typeof(ListReader<>).MakeGenericType(returnType).GetField("Default", BindingFlags.Static | BindingFlags.Public).GetValue(null);

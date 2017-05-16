@@ -3,9 +3,13 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.Structure
 {
@@ -109,7 +113,7 @@ namespace Insight.Database.Structure
 			{
 				member = members.SingleOrDefault(m => String.Compare(m.Name, name, StringComparison.OrdinalIgnoreCase) == 0);
 				if (member == null)
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Set Member {0} not found on type {1}", name, parentType.FullName));
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Set Member {0} not found on type {1}", name, parentType.GetTypeInfo().FullName));
 				return member;
 			}
 
@@ -144,7 +148,7 @@ namespace Insight.Database.Structure
 		/// <returns>True if it is a list type.</returns>
 		private static bool IsGenericListType(Type type, Type childType)
 		{
-			if (!type.IsGenericType)
+			if (!type.GetTypeInfo().IsGenericType)
 				return false;
 
 			var genericParameters = type.GetGenericArguments();
@@ -224,7 +228,7 @@ namespace Insight.Database.Structure
                 if (member == null || !member.CanGetMember)
                 {
                     if (required)
-                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "A public get Member {0} not found on type {1}", name, type.FullName));
+                        throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "A public get Member {0} not found on type {1}", name, type.GetTypeInfo().FullName));
                     else
                         return null;
                 }

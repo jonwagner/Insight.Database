@@ -10,6 +10,9 @@ using System.Text;
 using System.Xml;
 using System.Xml.Linq;
 using Insight.Database.Mapping;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -191,8 +194,8 @@ namespace Insight.Database.CodeGenerator
 
 					// if there is a base type, get those members first
 					// derived classes won't have access to the private members of the base class
-					if (type.BaseType != null)
-						members.AddRange(GetMembersForType(type.BaseType));
+					if (type.GetTypeInfo().BaseType != null)
+						members.AddRange(GetMembersForType(type.GetTypeInfo().BaseType));
 
 					// if this is a structured type get the get properties for the types that we pass in
 					// exception are the Xml/XDocument classes that we already have special handlers for
@@ -237,13 +240,13 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Ldfld, FieldInfo);
 			else if (GetMethodInfo != null)
 			{
-				if (Type.IsValueType)
+				if (Type.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Call, GetMethodInfo);
 				else
 					il.Emit(OpCodes.Callvirt, GetMethodInfo);
 			}
 			else
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a GetProperty method for {1} on class {0}.", Type.FullName, Name));
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a GetProperty method for {1} on class {0}.", Type.GetTypeInfo().FullName, Name));
 		}
 
 		/// <summary>
@@ -256,13 +259,13 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Stfld, FieldInfo);
 			else if (SetMethodInfo != null)
 			{
-				if (Type.IsValueType)
+				if (Type.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Call, SetMethodInfo);
 				else
 					il.Emit(OpCodes.Callvirt, SetMethodInfo);
 			}
 			else
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.FullName, Name));
+				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.GetTypeInfo().FullName, Name));
 		}
 		#endregion
 
@@ -276,7 +279,7 @@ namespace Insight.Database.CodeGenerator
 		public Func<TObject, TValue> CreateGetMethod<TObject, TValue>()
 		{
 			var dm = new DynamicMethod(
-				String.Format(CultureInfo.InvariantCulture, "Get-{0}-{1}-{2}", typeof(TObject).FullName, Name, Guid.NewGuid()),
+				String.Format(CultureInfo.InvariantCulture, "Get-{0}-{1}-{2}", typeof(TObject).GetTypeInfo().FullName, Name, Guid.NewGuid()),
 				typeof(TValue),
 				new Type[] { typeof(TObject) },
 				true);
@@ -288,7 +291,7 @@ namespace Insight.Database.CodeGenerator
 			else
 				il.Emit(OpCodes.Callvirt, GetMethodInfo);
 
-			if (typeof(TValue) == typeof(object) && MemberType.IsValueType)
+			if (typeof(TValue) == typeof(object) && MemberType.GetTypeInfo().IsValueType)
 				il.Emit(OpCodes.Box, MemberType);				
 
 			il.Emit(OpCodes.Ret);
@@ -305,7 +308,7 @@ namespace Insight.Database.CodeGenerator
 		public Action<TObject, TValue> CreateSetMethod<TObject, TValue>()
 		{
 			var dm = new DynamicMethod(
-				String.Format(CultureInfo.InvariantCulture, "Set-{0}-{1}-{2}", typeof(TObject).FullName, Name, Guid.NewGuid()),
+				String.Format(CultureInfo.InvariantCulture, "Set-{0}-{1}-{2}", typeof(TObject).GetTypeInfo().FullName, Name, Guid.NewGuid()),
 				null,
 				new Type[] { typeof(TObject), typeof(TValue) },
 				true);
@@ -444,7 +447,7 @@ namespace Insight.Database.CodeGenerator
 				var member = memberNames[i];
 
 				// if the value on the stack can be null, do a null check here
-				if (pi != null && !pi.MemberType.IsValueType)
+				if (pi != null && !pi.MemberType.GetTypeInfo().IsValueType)
 				{
 					il.Emit(OpCodes.Dup);
 					il.Emit(OpCodes.Brfalse, nullLabel);
@@ -477,7 +480,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
-			if (memberType.IsValueType)
+			if (memberType.GetTypeInfo().IsValueType)
 				il.Emit(OpCodes.Box, memberType);
 		}
 

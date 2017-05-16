@@ -5,11 +5,11 @@ using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Reflection.Emit;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml;
 using Insight.Database.Mapping;
 using Insight.Database.Structure;
+#if NET35 || NET40 || NETCORE
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -109,7 +109,7 @@ namespace Insight.Database.CodeGenerator
 			var mappings = MapColumns(type, reader, startColumn, columnCount, structure, allowBindChild && isRootObject);
 
 			// need to know the constructor for the object (except for structs)
-			bool isStruct = type.IsValueType;
+			bool isStruct = type.GetTypeInfo().IsValueType;
 			ConstructorInfo constructor = createNewObject ? SelectConstructor(type) : null;
 
 			// the method can either be:
@@ -117,7 +117,7 @@ namespace Insight.Database.CodeGenerator
 			// !createNewObject => Func<IDataReader, T, T>
 			// create a new anonymous method that takes an IDataReader and returns the given type
 			var dm = new DynamicMethod(
-				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.GetTypeInfo().FullName, Guid.NewGuid()),
 				type,
 				createNewObject ? new[] { typeof(IDataReader) } : new[] { typeof(IDataReader), type },
 				true);
@@ -280,7 +280,7 @@ namespace Insight.Database.CodeGenerator
 
 					// if the mapping parent is nullable, check to see if it is null.
 					// if so, pop the parent off the stack and move to the next field
-					if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.IsValueType)
+					if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.GetTypeInfo().IsValueType)
 					{
 						var notNullLabel = il.DefineLabel();
 						il.Emit(OpCodes.Dup);
@@ -321,16 +321,20 @@ namespace Insight.Database.CodeGenerator
             var allConstructors = type.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
             // allow the developer to specify a constructor to use when loading records from the database
-            // or use a single constructor if there is only one
-            // or use the default constructor
             var constructor = allConstructors.SingleOrDefault(c => c.GetCustomAttributes(true).OfType<SqlConstructorAttribute>().Any());
+
+            // or use a single constructor if there is only one
             if (constructor == null && allConstructors.Length == 1)
                 constructor = allConstructors[0];
-            if (constructor == null)
-                constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
 
-            if (constructor == null && !type.IsValueType)
-                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}, and there was more than one constructor, but no DbConstructorAttribute was specified.", type.FullName));
+            // or use the default constructor
+            if (constructor == null)
+                constructor = type.GetTypeInfo().GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+
+            if (constructor == null && !type.GetTypeInfo().IsValueType)
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture
+					, "Cannot find a default constructor for type {0}, and there was more than one constructor" +
+					  ", but no DbConstructorAttribute was specified.", type.GetTypeInfo().FullName));
 
             return constructor;
         }
@@ -373,7 +377,7 @@ namespace Insight.Database.CodeGenerator
 		private static Delegate CreateGraphDeserializer(Type[] subTypes, IDataReader reader, IRecordStructure structure, bool allowBindChild)
 		{
 			Type type = subTypes[0];
-			bool isStruct = type.IsValueType;
+			bool isStruct = type.GetTypeInfo().IsValueType;
 
 			// go through each of the subtypes
 			var deserializers = CreateDeserializersForSubObjects(subTypes, reader, structure, allowBindChild);
@@ -502,7 +506,7 @@ namespace Insight.Database.CodeGenerator
 
 			// create a new anonymous method that takes an IDataReader and returns T
 			var dm = new DynamicMethod(
-				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.GetTypeInfo().FullName, Guid.NewGuid()),
 				type,
 				new[] { typeof(IDataReader), typeof(Action<object[]>) },
 				true);
@@ -537,7 +541,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// we have a callback function to call with our objects, so set up the delegate and the array
-			il.Emit(OpCodes.Call, typeof(Action<object[]>).GetMethod("Invoke"));        // invoke the delegate
+			il.Emit(OpCodes.Call, typeof(Action<object[]>).GetTypeInfo().GetMethod("Invoke"));        // invoke the delegate
 
 			// return the result
 			il.Emit(OpCodes.Ldloc, localObject);							// put the root object back in for return
@@ -668,7 +672,7 @@ namespace Insight.Database.CodeGenerator
 		private static DynamicMethod CreateValueDeserializer(Type type, int column)
 		{
 			var dm = new DynamicMethod(
-				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.FullName, Guid.NewGuid()),
+				String.Format(CultureInfo.InvariantCulture, "Deserialize-{0}-{1}", type.GetTypeInfo().FullName, Guid.NewGuid()),
 				type,
 				new[] { typeof(IDataReader) },
 				true);
@@ -681,7 +685,7 @@ namespace Insight.Database.CodeGenerator
 			IlHelper.EmitLdInt32(il, column);					// push index, stack => [target][reader][index]
 			il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);		// call getItem, stack => [target][value-as-object]
 
-			il.Emit(OpCodes.Call, typeof(ClassDeserializerGenerator).GetMethod("DBValueToT", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(type));
+			il.Emit(OpCodes.Call, typeof(ClassDeserializerGenerator).GetTypeInfo().GetMethod("DBValueToT", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(type));
 			il.Emit(OpCodes.Ret);
 
 			return dm;

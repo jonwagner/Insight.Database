@@ -12,6 +12,9 @@ using System.Threading.Tasks;
 using Insight.Database.Mapping;
 using Insight.Database.Providers;
 using Insight.Database.Structure;
+#if NET35 || NET40
+using Insight.Database.PlatformCompatibility;
+#endif
 
 namespace Insight.Database.CodeGenerator
 {
@@ -75,12 +78,13 @@ namespace Insight.Database.CodeGenerator
 					ClassPropInfo propInfo = mapping.Member;
 
 					// create a new anonymous method that takes an object and returns the value
-					var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
+					var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.GetTypeInfo().FullName
+												, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
 					var il = dm.GetILGenerator();
 
 					// convert the object reference to the desired type
 					il.Emit(OpCodes.Ldarg_0);
-					if (type.IsValueType)
+					if (type.GetTypeInfo().IsValueType)
 					{
 						// access the field/property of a value type
 						var valueHolder = il.DeclareLocal(type);
@@ -94,7 +98,7 @@ namespace Insight.Database.CodeGenerator
 					// get the value from the object
 					var readyToSetLabel = il.DefineLabel();
 					ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
-					if (mapping.Member.MemberType.IsValueType)
+					if (mapping.Member.MemberType.GetTypeInfo().IsValueType)
 						il.Emit(OpCodes.Unbox_Any, mapping.Member.MemberType);
 
 					// if the type is nullable, handle nulls
@@ -126,7 +130,7 @@ namespace Insight.Database.CodeGenerator
 						sourceType = underlyingType;
 					}
 
-					if (sourceType != targetType && !sourceType.IsValueType && sourceType != typeof(string))
+					if (sourceType != targetType && !sourceType.GetTypeInfo().IsValueType && sourceType != typeof(string))
 					{
 						il.EmitLoadType(sourceType);
 						StaticFieldStorage.EmitLoad(il, mapping.Serializer);
