@@ -49,9 +49,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\Insight.Database.Schema.2.2.10\lib\NET45\Insight.Database.Schema.dll</HintPath>
     </Reference>
-    <Reference Include="Microsoft.SqlServer.Types, Version=11.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
+      <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\net40\Microsoft.SqlServer.Types.dll</HintPath>
       <Private>True</Private>
-      <HintPath>..\packages\Microsoft.SqlServer.Types.11.0.1\lib\net20\Microsoft.SqlServer.Types.dll</HintPath>
     </Reference>
     <Reference Include="Moq, Version=4.2.1402.2112, Culture=neutral, PublicKeyToken=69f491c39445e920, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
@@ -80,13 +80,13 @@
     </Compile>
     <Compile Include="BulkCopyTests.cs" />
     <Compile Include="Cases\Issue281Test.cs" />
+    <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="TableValuedParametersTests.cs" />
     <Compile Include="ColumnAttributeTests.cs" />
     <Compile Include="ConstructorTests.cs" />
     <Compile Include="GroupByTests.cs" />
     <Compile Include="OdbcTests.cs" />
     <Compile Include="SerializationTests.cs" />
-    <Compile Include="SqlServerTypes\Loader.cs" />
     <Compile Include="StructureTests.cs" />
     <Compile Include="SyncQueryCoreTests.cs" />
     <Compile Include="SyncInsertTests.cs" />
@@ -164,23 +164,19 @@
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x64\msvcr100.dll">
-      <Link>SqlServerTypes\x64\msvcr100.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x64\SqlServerSpatial110.dll">
-      <Link>SqlServerTypes\x64\SqlServerSpatial110.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x86\msvcr100.dll">
-      <Link>SqlServerTypes\x86\msvcr100.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
-    <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.1\nativeBinaries\x86\SqlServerSpatial110.dll">
-      <Link>SqlServerTypes\x86\SqlServerSpatial110.dll</Link>
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </Content>
     <Content Include="SqlServerTypes\readme.htm" />
+    <Content Include="SqlServerTypes\x64\msvcr120.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x64\SqlServerSpatial140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x86\msvcr120.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+    <Content Include="SqlServerTypes\x86\SqlServerSpatial140.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

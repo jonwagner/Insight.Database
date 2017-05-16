@@ -53,6 +53,7 @@ namespace Insight.Tests
 				installer.Install("Test", schema);
 			}
 #endif
+			SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
 		}
 	}
 }
