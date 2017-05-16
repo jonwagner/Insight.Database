@@ -16,20 +16,20 @@ namespace Insight.Tests
 	[TestFixture]
 	public class ConnectionStringSettingsTests
 	{
-		[Test, ExpectedException(typeof(ArgumentNullException))]
+		[Test]
 		public void ConnectionShouldThrowArgumentNullExceptionOnNull()
 		{
 			ConnectionStringSettings settings = null;
 
-			settings.Connection();
+			Assert.Throws<ArgumentNullException>(() => settings.Connection());
 		}
 
-		[Test, ExpectedException(typeof(ArgumentNullException))]
+		[Test]
 		public void OpenShouldThrowArgumentNullExceptionOnNull()
 		{
 			ConnectionStringSettings settings = null;
 
-			settings.Open();
+			Assert.Throws<ArgumentNullException>(() => settings.Open());
 		}
 	}
 }

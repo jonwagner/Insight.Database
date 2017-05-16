@@ -19,11 +19,11 @@ namespace Insight.Tests
 			opt.Execute("sp_who");
 		}
 
-		[Test, ExpectedException(typeof(OptimisticConcurrencyException))]
+		[Test]
 		public void OptimisticExceptionsAreTranslated()
 		{
 			var opt = new OptimisticConnection((DbConnection)Connection());
-			opt.ExecuteSql("RAISERROR('(CONCURRENCY CHECK)', 16, 1)");
+			Assert.Throws<OptimisticConcurrencyException>(() => opt.ExecuteSql("RAISERROR('(CONCURRENCY CHECK)', 16, 1)"));
 		}
 
 		[Test]

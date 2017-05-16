@@ -12,7 +12,7 @@ namespace Insight.Tests
     [TestFixture]
     public class OdbcTests
     {
-        [TestFixtureSetUp]
+        [OneTimeSetUp]
         public void SetUp()
         {
             OdbcInsightDbProvider.RegisterProvider();

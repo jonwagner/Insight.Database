@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using Insight.Tests.Cases;
 using Insight.Database.Reliable;
+using System.Data.SqlClient;
 
 // since the interface and types are private, we have to let insight have access to them
 [assembly: InternalsVisibleTo("Insight.Database.DynamicAssembly")]
@@ -479,10 +480,10 @@ namespace Insight.Tests
 			void InsertBeer(int beer);
 		}
 
-		[Test, ExpectedException(ExpectedMessage = "The stored procedure 'MySchema.MyOtherInsertProc' doesn't exist.")]
+		[Test]
 		public void SchemaShouldBeInherited()
 		{
-			Connection().As<IBeerRepositoryWithSchema>().InsertBeer(1);
+			Assert.Throws<InvalidOperationException>(() => Connection().As<IBeerRepositoryWithSchema>().InsertBeer(1), "The stored procedure 'MySchema.MyOtherInsertProc' doesn't exist.");
 		}
 		#endregion
 
@@ -805,10 +806,10 @@ namespace Insight.Tests
 		{
 		}
 
-		[Test, ExpectedException(typeof(InvalidOperationException))]
+		[Test]
 		public void PrivateInterfaceThrowsFriendlierError()
 		{
-			Connection().As<IAmAPrivateInterface>();
+			Assert.Throws<InvalidOperationException>(() => Connection().As<IAmAPrivateInterface>());
 		}
 		#endregion
 
@@ -1083,11 +1084,11 @@ namespace Insight.Tests
 
 	public class NullableReturnTests : BaseTest
 	{
-		[Test, ExpectedException(typeof(InvalidOperationException))]
+		[Test]
 		public void NonNullableReturnShouldThrowWhenNoRowsAreReturned()
 		{
 			var i = Connection().As<IDontReturnAScalar>();
-			i.Foo();
+			Assert.Throws<InvalidOperationException>(() => i.Foo());
 		}
 	}
 

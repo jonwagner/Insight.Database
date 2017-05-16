@@ -94,12 +94,12 @@ namespace Insight.Tests
 			Assert.AreEqual(2, i.Id2);
 		}
 
-		[Test, ExpectedException(typeof(OptimisticConcurrencyException))]
+		[Test]
 		public void TestIssue131()
 		{
 			var i = new InsertRecord();
 			var c = new OptimisticConnection((DbConnection)Connection());
-			var result = c.InsertSql<InsertRecord>("THROW 51000, 'At least one record has changed or does not exist. (CONCURRENCY CHECK)', 1;", i);
+			Assert.Throws<OptimisticConcurrencyException>(() => c.InsertSql<InsertRecord>("THROW 51000, 'At least one record has changed or does not exist. (CONCURRENCY CHECK)', 1;", i));
 		}
 
 		[Test]

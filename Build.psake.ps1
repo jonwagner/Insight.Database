@@ -22,7 +22,7 @@ properties {
 
     $configuration = 'Release'
     $nuget = 'nuget.exe'
-    $nunit = (Get-ChildItem $baseDir\packages nunit-console.exe -Recurse)[0].fullname
+    $nunit = (Get-ChildItem $baseDir\packages nunit3-console.exe -Recurse)[0].fullname
 }
 
 Task default -depends Build
@@ -136,12 +136,18 @@ Task Build45 {
     Do-Build -Framework 4.5 -OutputPath $net45Path -DefineConstants CODE_ANALYSIS
 }
 
-Task Test35 -depends Build35 { 
+Task Test35Only { 
     exec { & $nunit $net35Path\Insight.Tests.dll }
 }
 
-Task Test40 -depends Build40 { 
+Task Test35 -depends Build35, Test35Only { 
+}
+
+Task Test40Only { 
     exec { & $nunit $net40Path\Insight.Tests.dll }
+}
+
+Task Test40 -depends Build40, Test40Only { 
 }
 
 Task Test45Only {

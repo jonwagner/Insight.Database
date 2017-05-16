@@ -64,11 +64,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Configuration", "Insight.Database.Configuration\Insight.Database.Configuration.csproj", "{9DC0AC84-B760-42C4-8703-CAD48AEEF612}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".nuget", ".nuget", "{A9DD5BE4-9E5E-47DD-84AB-BC353B469F5E}"
-	ProjectSection(SolutionItems) = preProject
-		.nuget\packages.config = .nuget\packages.config
-	EndProjectSection
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vagrant", "Vagrant", "{1F526CFD-E8A0-4108-8DCE-A2E6A2D96022}"
 	ProjectSection(SolutionItems) = preProject
 		Vagrant\60-databases.conf = Vagrant\60-databases.conf

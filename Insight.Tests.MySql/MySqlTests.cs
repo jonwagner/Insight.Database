@@ -35,7 +35,7 @@ namespace Insight.Tests.MySql
 			public int Z;
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new MySqlConnectionStringBuilder();
@@ -160,31 +160,6 @@ namespace Insight.Tests.MySql
 				Assert.IsNotNull(items);
 				Assert.AreEqual(i, items.Count);
 			}
-		}
-
-		[Test, Ignore]
-		public void TestReliableConnection()
-		{
-			int retries = 0;
-			var retryStrategy = new RetryStrategy();
-			retryStrategy.MaxRetryCount = 1;
-			retryStrategy.Retrying += (sender, re) => { retries++; };
-
-			try
-			{
-				var builder = new MySqlConnectionStringBuilder(_connectionStringBuilder.ConnectionString);
-				builder.Server = "testserver";
-				builder.Port = 9999;
-				using (var reliable = new ReliableConnection<MySqlConnection>(builder.ConnectionString, retryStrategy))
-				{
-					reliable.Open();
-				}
-			}
-			catch
-			{
-			}
-
-			Assert.AreEqual(1, retries);
 		}
 	}
 }

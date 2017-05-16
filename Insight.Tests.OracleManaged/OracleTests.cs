@@ -39,7 +39,7 @@ namespace Insight.Tests.OracleManaged
 			public int Z;
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
@@ -213,30 +213,6 @@ namespace Insight.Tests.OracleManaged
 				END;");
 			Assert.AreEqual(1, results.Set1.First());
 			Assert.AreEqual(2, results.Set2.First());
-		}
-
-		[Test, Ignore]
-		public void TestReliableConnection()
-		{
-			int retries = 0;
-			var retryStrategy = new RetryStrategy();
-			retryStrategy.MaxRetryCount = 1;
-			retryStrategy.Retrying += (sender, re) => { retries++; };
-
-			try
-			{
-				var builder = new OracleConnectionStringBuilder(_connectionStringBuilder.ConnectionString);
-				builder.DataSource = "testserver:9999";
-				using (var reliable = new ReliableConnection<OracleConnection>(builder.ConnectionString, retryStrategy))
-				{
-					reliable.Open();
-				}
-			}
-			catch
-			{
-			}
-
-			Assert.AreEqual(1, retries);
 		}
 
 		#region Output Parameter Tests

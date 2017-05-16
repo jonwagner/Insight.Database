@@ -93,17 +93,14 @@ namespace Insight.Tests
 			private readonly List<Beer> _list = new List<Beer>();
 		}
 
-		[Test, ExpectedException(typeof(InvalidOperationException))]
+		[Test]
 		public void ReadOnlyListShouldThrowException()
 		{
-			var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2", null,
-				Query.Returns(Some<HasReadOnlyList>.Records)
-						.ThenChildren(Some<Beer>.Records))
-						.First();
-
-			Assert.AreEqual(1, result.ID);
-			Assert.AreEqual(1, result.List.Count);
-			Assert.AreEqual(2, result.List[0].ID);
+			Assert.Throws<InvalidOperationException>(() =>
+				Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2", null,
+					Query.Returns(Some<HasReadOnlyList>.Records)
+							.ThenChildren(Some<Beer>.Records))
+							.First());
 		}
 		#endregion
 
@@ -436,15 +433,15 @@ namespace Insight.Tests
 		{
 			var ex = Assert.Throws<InvalidOperationException>(()
 					=> ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123"));
-			Assert.That(ex.Message, Is.StringContaining("foo123"));
+			Assert.That(ex.Message, Does.Contain("foo123"));
 
 			ex = Assert.Throws<InvalidOperationException>(()
 					=> ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "ClassWithSuffixedUnderscore_ID, foo123"));
-			Assert.That(ex.Message, Is.StringContaining("foo123"));
+			Assert.That(ex.Message, Does.Contain("foo123"));
 
 			ex = Assert.Throws<InvalidOperationException>(()
 					=> ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore), "foo123, ClassWithSuffixedUnderscore_ID"));
-			Assert.That(ex.Message, Is.StringContaining("foo123"));
+			Assert.That(ex.Message, Does.Contain("foo123"));
 
 			// we could clean up trailing commas, but this test verifies current behavior
 			ex = Assert.Throws<InvalidOperationException>(()
@@ -526,7 +523,7 @@ namespace Insight.Tests
 			var ex = Assert.Throws<InvalidOperationException>(()
 							=> ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithInsufficientData)));
 
-			Assert.That(ex.Message, Is.StringStarting("Cannot find a way to get the ID from"));
+			Assert.That(ex.Message, Does.StartWith("Cannot find a way to get the ID from"));
 		}
 
 		[Test]

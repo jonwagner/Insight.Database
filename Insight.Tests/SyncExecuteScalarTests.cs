@@ -50,10 +50,10 @@ namespace Insight.Tests
 			input.Verify(output);
 		}
 
-		[Test, ExpectedException(typeof(InvalidOperationException))]
+		[Test]
 		public void NonNullableReturnShouldThrowWhenNoRowsAreReturned()
 		{
-			Connection().ExecuteScalarSql<int>("PRINT 1");
+			Assert.Throws<InvalidOperationException>(() => Connection().ExecuteScalarSql<int>("PRINT 1"));
 		}
 
 		[Test]

@@ -35,7 +35,7 @@ namespace Insight.Tests.SybaseAse
 			public int Z;
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new AseConnectionStringBuilder();
@@ -191,30 +191,6 @@ namespace Insight.Tests.SybaseAse
 				try { _connection.ExecuteSql("DROP TABLE InsightTestData"); }
 				catch { }
 			}
-		}
-
-		[Test, Ignore]
-		public void TestReliableConnection()
-		{
-			int retries = 0;
-			var retryStrategy = new RetryStrategy();
-			retryStrategy.MaxRetryCount = 1;
-			retryStrategy.Retrying += (sender, re) => { retries++; };
-
-			try
-			{
-				var builder = new AseConnectionStringBuilder();
-				builder.ConnectionString = "Data Source=testserver;Port=9999;User ID=sa;Password=Password1";
-				using (var reliable = new ReliableConnection<AseConnection>(builder.ConnectionString, retryStrategy))
-				{
-					reliable.Open();
-				}
-			}
-			catch
-			{
-			}
-
-			Assert.AreEqual(1, retries);
 		}
 	}
 }

@@ -31,7 +31,7 @@ namespace Insight.Tests.DB2
 			public int Z;
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
 			DB2ConnectionStringBuilder connectionStringBuilder = new DB2ConnectionStringBuilder();
@@ -239,32 +239,6 @@ namespace Insight.Tests.DB2
 				try { _connection.ExecuteSql("DROP TABLE InsightTestData"); }
 				catch { }
 			}
-		}
-
-		[Test, Ignore]
-		public void TestReliableConnection()
-		{
-			int retries = 0;
-			var retryStrategy = new RetryStrategy();
-			retryStrategy.MaxRetryCount = 1;
-			retryStrategy.Retrying += (sender, re) => { retries++; };
-
-			try
-			{
-				DB2ConnectionStringBuilder connectionStringBuilder = new DB2ConnectionStringBuilder();
-				connectionStringBuilder.ConnectionString = "Server=testserver:9999;Database=SAMPLE";
-				connectionStringBuilder.UserID = "db2admin";
-				connectionStringBuilder.Password = "Password1";
-				using (var reliable = new ReliableConnection<DB2Connection>(connectionStringBuilder.ConnectionString, retryStrategy))
-				{
-					reliable.Open();
-				}
-			}
-			catch
-			{
-			}
-
-			Assert.AreEqual(1, retries);
 		}
     }
 }

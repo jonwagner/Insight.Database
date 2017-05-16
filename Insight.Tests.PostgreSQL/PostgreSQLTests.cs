@@ -35,7 +35,7 @@ namespace Insight.Tests.PostgreSQL
 			public int Z;
 		}
 
-		[TestFixtureSetUp]
+		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new NpgsqlConnectionStringBuilder();
@@ -240,32 +240,7 @@ namespace Insight.Tests.PostgreSQL
 				Assert.AreEqual(i, items.Count);
 			}
 		}
-
-		[Test, Ignore]
-		public void TestReliableConnection()
-		{
-			int retries = 0;
-			var retryStrategy = new RetryStrategy();
-			retryStrategy.MaxRetryCount = 1;
-			retryStrategy.Retrying += (sender, re) => { retries++; };
-
-			try
-			{
-				var builder = new NpgsqlConnectionStringBuilder(_connectionStringBuilder.ConnectionString);
-				builder.Host = "testserver";
-				builder.Port = 9999;
-				using (var reliable = new ReliableConnection<NpgsqlConnection>(builder.ConnectionString, retryStrategy))
-				{
-					reliable.Open();
-				}
-			}
-			catch
-			{
-			}
-
-			Assert.AreEqual(1, retries);
-		}
-
+	
 		[Test]
 		public void TestXmlTypes()
 		{
@@ -563,10 +538,10 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
        
-        [Test, ExpectedException(typeof(ArgumentException))]
+        [Test]
         public void InvalidSchemaShouldThrow()
         {
-            _connectionStringBuilder.ConnectionWithSchema("; DROP TABLE InsightTestData");
+            Assert.Throws<ArgumentException>(() => _connectionStringBuilder.ConnectionWithSchema("; DROP TABLE InsightTestData"));
         }
 
         private void Cleanup(string sql)

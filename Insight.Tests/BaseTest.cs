@@ -36,7 +36,7 @@ namespace Insight.Tests
 	[SetUpFixture]
 	public class TestSetup
 	{
-		[SetUp]
+		[OneTimeSetUp]
 		public static void SetUpFixture()
 		{
 #if !NET35

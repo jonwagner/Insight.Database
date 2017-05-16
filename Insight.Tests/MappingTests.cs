@@ -204,14 +204,10 @@ namespace Insight.Tests
 			Assert.AreEqual(5, result["z2"]);
 		}
 
-		[Test, ExpectedException(typeof(SqlException))]
+		[Test]
 		public void AttributeCanDisableFlattening()
 		{
-			FastExpando result = Connection().As<IFlattenParameters>().DontFlatten(1, new FlattenedParameters() { Y1 = 2, Y2 = 3 });
-
-			Assert.AreEqual(1, result["x"]);
-			Assert.AreEqual(2, result["y1"]);
-			Assert.AreEqual(3, result["y2"]);
+			Assert.Throws<SqlException>(() => Connection().As<IFlattenParameters>().DontFlatten(1, new FlattenedParameters() { Y1 = 2, Y2 = 3 }));
 		}
 
 		[Test]
@@ -227,11 +223,10 @@ namespace Insight.Tests
 			Assert.AreEqual(3, result["y2"]);
 		}
 
-		[Test, ExpectedException(typeof(SqlException))]
+		[Test]
 		public void DeepBindingDisabledByDefault()
 		{
-			// we should be able to read in child fields
-			FastExpando result = (FastExpando)Connection().QuerySql("SELECT xx=@x, y1=@y1, y2=@y2", new { XX = 1, Y = new { Y1 = 2, Y2 = 3 } }).First();
+			Assert.Throws<SqlException>(() => Connection().QuerySql("SELECT xx=@x, y1=@y1, y2=@y2", new { XX = 1, Y = new { Y1 = 2, Y2 = 3 } }).First());
 		}
 
 		[Test]
@@ -249,7 +244,7 @@ namespace Insight.Tests
 			Assert.AreEqual(5, result["z2"]);
 		}
 
-		[Test, ExpectedException(typeof(SqlException), ExpectedMessage = "The parameterized query '(@parent int,@foo int)SELECT parent=@parent, child=@foo' expects the parameter '@foo', which was not supplied.")]
+		[Test]
 		public void InputParametersAreUndefinedWhenChildrenAreNull()
 		{
 			ColumnMapping.All.EnableChildBinding();
@@ -257,7 +252,7 @@ namespace Insight.Tests
 			var parent = new ParameterParent() { parent = 3 };
 
 			// we should be able to read in child fields
-			Connection().QuerySql("SELECT parent=@parent, child=@foo", parent).First();
+			Assert.Throws<SqlException>(() => Connection().QuerySql("SELECT parent=@parent, child=@foo", parent).First());
 		}
 
 		class ParameterParent
