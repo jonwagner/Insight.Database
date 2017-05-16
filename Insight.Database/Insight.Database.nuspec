@@ -24,24 +24,24 @@ Choose one of the Insight.Database.Providers.XYZ packages for other supported da
 	</frameworkAssemblies>
   </metadata>
   <files>
-	<file src="\bin\NET45\Insight.Database.Providers.Default.dll" target="lib\NET45" />
-	<file src="\bin\NET45\Insight.Database.Providers.Default.xml" target="lib\NET45" />
-	<file src="\bin\NET45\Insight.Database.Providers.Default.pdb" target="lib\NET45" />
-	<file src="\bin\NET40\Insight.Database.Providers.Default.dll" target="lib\NET40" />
-	<file src="\bin\NET40\Insight.Database.Providers.Default.xml" target="lib\NET40" />
-	<file src="\bin\NET40\Insight.Database.Providers.Default.pdb" target="lib\NET40" />
-	<file src="\bin\NET35\Insight.Database.Providers.Default.dll" target="lib\NET35" />
-	<file src="\bin\NET35\Insight.Database.Providers.Default.xml" target="lib\NET35" />
-	<file src="\bin\NET35\Insight.Database.Providers.Default.pdb" target="lib\NET35" />
+	<file src="bin\NET45\Insight.Database.Providers.Default.dll" target="lib\NET45" />
+	<file src="bin\NET45\Insight.Database.Providers.Default.xml" target="lib\NET45" />
+	<file src="bin\NET45\Insight.Database.Providers.Default.pdb" target="lib\NET45" />
+	<file src="bin\NET40\Insight.Database.Providers.Default.dll" target="lib\NET40" />
+	<file src="bin\NET40\Insight.Database.Providers.Default.xml" target="lib\NET40" />
+	<file src="bin\NET40\Insight.Database.Providers.Default.pdb" target="lib\NET40" />
+	<file src="bin\NET35\Insight.Database.Providers.Default.dll" target="lib\NET35" />
+	<file src="bin\NET35\Insight.Database.Providers.Default.xml" target="lib\NET35" />
+	<file src="bin\NET35\Insight.Database.Providers.Default.pdb" target="lib\NET35" />
   
-	<file src="\bin\NET45\Insight.Database.Configuration.dll" target="lib\NET45" />
-	<file src="\bin\NET45\Insight.Database.Configuration.xml" target="lib\NET45" />
-	<file src="\bin\NET45\Insight.Database.Configuration.pdb" target="lib\NET45" />
-	<file src="\bin\NET40\Insight.Database.Configuration.dll" target="lib\NET40" />
-	<file src="\bin\NET40\Insight.Database.Configuration.xml" target="lib\NET40" />
-	<file src="\bin\NET40\Insight.Database.Configuration.pdb" target="lib\NET40" />
-	<file src="\bin\NET35\Insight.Database.Configuration.dll" target="lib\NET35" />
-	<file src="\bin\NET35\Insight.Database.Configuration.xml" target="lib\NET35" />
-	<file src="\bin\NET35\Insight.Database.Configuration.pdb" target="lib\NET35" />
+	<file src="bin\NET45\Insight.Database.Configuration.dll" target="lib\NET45" />
+	<file src="bin\NET45\Insight.Database.Configuration.xml" target="lib\NET45" />
+	<file src="bin\NET45\Insight.Database.Configuration.pdb" target="lib\NET45" />
+	<file src="bin\NET40\Insight.Database.Configuration.dll" target="lib\NET40" />
+	<file src="bin\NET40\Insight.Database.Configuration.xml" target="lib\NET40" />
+	<file src="bin\NET40\Insight.Database.Configuration.pdb" target="lib\NET40" />
+	<file src="bin\NET35\Insight.Database.Configuration.dll" target="lib\NET35" />
+	<file src="bin\NET35\Insight.Database.Configuration.xml" target="lib\NET35" />
+	<file src="bin\NET35\Insight.Database.Configuration.pdb" target="lib\NET35" />
   </files>
 </package>
