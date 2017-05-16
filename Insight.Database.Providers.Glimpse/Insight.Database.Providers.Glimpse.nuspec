@@ -16,7 +16,8 @@ An Insight.Database provider for the Glimpse profiling framework so the two can 
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
 		<dependency id="Insight.Database.Core" version="4.1"></dependency>
-		<dependency id="Glimpse.Ado" version="1.7.1"></dependency>
+    <dependency id="Glimpse.Ado" version="1.8"></dependency>
+    <dependency id="Glimpse.Ado" version="1.7"></dependency>
 	</dependencies>
   </metadata>
   <files>
