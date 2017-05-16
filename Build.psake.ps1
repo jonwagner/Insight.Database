@@ -34,11 +34,11 @@ function Replace-Version {
     param (
         [string] $Path
     )
-    $x = Get-Content $Path | `
+    $x = Get-Content -raw $Path | `
 		% { $_ -replace "\[assembly: AssemblyVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyVersion(`"$assemblyversion`")]" } | `
 		% { $_ -replace "\[assembly: AssemblyFileVersion\(`"(\d+\.?)*`"\)\]","[assembly: AssemblyFileVersion(`"$assemblyfileversion`")]" }
 
-    Set-Content $Path $x.Trim()
+	[System.IO.File]::WriteAllText($Path, $x.Trim())
 }
 
 function ReplaceVersions {
