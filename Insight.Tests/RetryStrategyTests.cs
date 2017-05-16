@@ -8,7 +8,6 @@ using Insight.Database.Reliable;
 using NUnit.Framework;
 using System.Data.SqlClient;
 using System.Data;
-using Moq;
 using System.Threading.Tasks;
 using System.Data.Common;
 
@@ -20,20 +19,26 @@ namespace Insight.Tests
 	[TestFixture]
 	public class RetryStrategyTests : BaseTest
 	{
-		private Mock<RetryStrategy> _mockRetryStrategy;
-		private RetryStrategy RetryStrategy { get { return _mockRetryStrategy.Object; } }
+		private MyRetryStrategy RetryStrategy { get; set; }
 		private int Retries;
+
+		class MyRetryStrategy : RetryStrategy
+		{
+			public bool IsTransient = true;
+
+			public override bool IsTransientException(Exception exception)
+			{
+				return IsTransient;
+			}
+		}
 
 		[SetUp]
 		public void SetUp()
 		{
 			Retries = 0;
 
-			// set up all exceptions as transient, since it is hard to reproduce them
-			_mockRetryStrategy = new Mock<RetryStrategy>();
-			_mockRetryStrategy.Setup(r => r.IsTransientException(It.IsAny<Exception>())).Returns(true);
-
 			// log messages so we can see what is going on
+			RetryStrategy = new MyRetryStrategy();
 			RetryStrategy.Retrying += (sender, re) => { Retries++; };
 
 			// by default only retry once or tests will take long
@@ -82,7 +87,7 @@ namespace Insight.Tests
 		public void NonTransientExceptionDoesNotRetry()
 		{
 			// all exceptions are bad
-			_mockRetryStrategy.Setup(r => r.IsTransientException(It.IsAny<Exception>())).Returns(false);
+			RetryStrategy.IsTransient = false;
 
 			// try a bad connection
 			SqlConnectionStringBuilder b = new SqlConnectionStringBuilder(ConnectionString);

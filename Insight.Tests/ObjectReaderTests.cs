@@ -7,9 +7,6 @@ using Insight.Database;
 using NUnit.Framework;
 using Insight.Database.Reliable;
 using System.Data.Common;
-#if !NET35
-using Moq;
-#endif
 
 #pragma warning disable 0649
 
@@ -339,7 +336,6 @@ namespace Insight.Tests
 		}
 		#endregion
 
-#if !NET35
 		#region Retry Tests
 		public class TestIssue215 : BaseTest
 		{
@@ -348,18 +344,23 @@ namespace Insight.Tests
 				public int i;
 			}
 
+			class MyRetryStrategy : RetryStrategy
+			{
+				public override bool IsTransientException(Exception exception)
+				{
+					return true;
+				}
+			}
+
 			/// <summary>
 			/// When a TVP is retried, the ObjectList has already been read in the first pass and doesn't get sent up in the second pass.
 			/// </summary>
 			[Test]
 			public void RetryWithTableParameterShouldSendRecords()
 			{
-				// set up all exceptions as transient, since it is hard to reproduce them
-				var mockRetryStrategy = new Mock<RetryStrategy>();
-				mockRetryStrategy.Setup(r => r.IsTransientException(It.IsAny<Exception>())).Returns(true);
-				var retryStrategy = (RetryStrategy)mockRetryStrategy.Object;
+				var retryStrategy = new MyRetryStrategy();
 				retryStrategy.MaxRetryCount = 1;
-				retryStrategy.MaxBackOff = new TimeSpan(0, 0, 0, 0, 10);
+				retryStrategy.MaxBackOff = new TimeSpan(0, 0, 0, 0, 1);
 
 				try
 				{
@@ -396,6 +397,5 @@ namespace Insight.Tests
 			}
 		}
 		#endregion
-#endif
 	}
 }
