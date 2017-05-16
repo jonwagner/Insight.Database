@@ -170,25 +170,6 @@ namespace Insight.Database
 						outputParameters = args[i + unnamedParameterCount];
 						specialParameters++;
 						break;
-
-#if !NOCOMPATIBILITY
-					case "withGraph":
-						{
-							var withGraph = (Type)args[i + unnamedParameterCount];
-							dynamic graph = System.Activator.CreateInstance(withGraph);
-							returns = graph.GetListReader();
-							specialParameters++;
-							break;
-						}
-
-					case "withGraphs":
-						{
-							var types = (Type[])args[i + unnamedParameterCount];
-							returns = (IQueryReader)types[0].GetMethod("GetDefinitionFromGraphArray", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.FlattenHierarchy).Invoke(null, new object[] { returnType, types });
-							specialParameters++;
-							break;
-						}
-#endif
 				}
 			}
 
@@ -239,10 +220,6 @@ namespace Insight.Database
 							argumentName == "commandTimeout" ||
 							argumentName == "returnType" ||
 							argumentName == "returns" ||
-#if !NOCOMPATIBILITY
-							argumentName == "withGraph" ||
-							argumentName == "withGraphs" || 
-#endif
 							argumentName == "outputParameters")
 							continue;
 

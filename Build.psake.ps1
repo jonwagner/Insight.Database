@@ -114,18 +114,15 @@ Task Build35 {
     Do-Build -Framework 3.5 -OutputPath $net35Path -DefineConstants NODBASYNC,NODYNAMIC,NET35 -Projects `
 		Insight.Database,`
 		Insight.Database.Configuration,`
-		Insight.Database.Compatibility3x,`
 		Insight.Database.Providers.Default,`
 		Insight.Database.Providers.PostgreSQL,`
-		Insight.Tests,`
-		Insight.Tests.Compatibility3x
+		Insight.Tests
 }
 
 Task Build40 {
     Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NODBASYNC,CODE_ANALYSIS,NET40 -Projects `
 		Insight.Database,`
 		Insight.Database.Configuration,`
-		Insight.Database.Compatibility3x,`
 		Insight.Database.Json,`
 		Insight.Database.Providers.Default,`
 		Insight.Database.Providers.DB2,`
@@ -133,8 +130,7 @@ Task Build40 {
 		Insight.Database.Providers.Oracle,`
 		Insight.Database.Providers.OracleManaged,`
 		Insight.Database.Providers.PostgreSQL,`
-		Insight.Tests,`
-		Insight.Tests.Compatibility3x
+		Insight.Tests
 }
 
 Task Build45 {
