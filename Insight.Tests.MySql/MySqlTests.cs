@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Providers.MySql;
 using Insight.Database.Reliable;
-using Moq;
 using NUnit.Framework;
 using MySql.Data.MySqlClient;
 using System.Data;

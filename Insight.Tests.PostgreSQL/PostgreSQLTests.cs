@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Providers.PostgreSQL;
 using Insight.Database.Reliable;
-using Moq;
 using NUnit.Framework;
 using Npgsql;
 using System.Data;

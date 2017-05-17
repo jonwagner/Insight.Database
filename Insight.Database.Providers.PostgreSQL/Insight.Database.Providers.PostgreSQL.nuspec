@@ -31,4 +31,4 @@
     <file src="..\Insight.Database\bin\NET35\Insight.Database.Providers.PostgreSQL.xml" target="lib\NET35" />
     <file src="..\Insight.Database\bin\NET35\Insight.Database.Providers.PostgreSQL.pdb" target="lib\NET35" />
   </files>
-</package>
+</package>	

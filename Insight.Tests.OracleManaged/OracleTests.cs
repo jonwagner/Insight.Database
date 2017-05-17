@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Providers.OracleManaged;
 using Insight.Database.Reliable;
-using Moq;
 using NUnit.Framework;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;

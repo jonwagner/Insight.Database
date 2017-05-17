@@ -68,6 +68,9 @@ function Do-Build {
         [String]
         $OutputPath,
 
+		[String]
+		$FrameworkFolder,
+
         [String[]]
         $Projects,
 
@@ -75,7 +78,7 @@ function Do-Build {
         $DefineConstants
     )
 
-    $parameters = @('/m', '/t:Clean;Build', "/p:Configuration=$configuration", "/p:OutputPath=`"$OutputPath`"")
+    $parameters = @('/m', '/t:Clean;Build', "/p:Configuration=$configuration", "/p:OutputPath=`"$OutputPath`"", "/p:FrameworkFolder=$FrameworkFolder")
     
     if ($Framework) {
         $parameters += "/p:TargetFrameworkVersion=v$Framework"
@@ -100,7 +103,7 @@ function Do-Build {
     ReplaceVersions
     try {
         foreach ($project in $projectFiles) {
-            Write-Verbose "Running build: msbuild `"$project`" $parameters"
+            Write-Output "Running build: msbuild `"$project`" $parameters"
             exec { msbuild "`"$project`"" @parameters  }
         }
     }
@@ -110,7 +113,7 @@ function Do-Build {
 }
 
 Task Build35 {
-    Do-Build -Framework 3.5 -OutputPath $net35Path -DefineConstants NODBASYNC,NODYNAMIC,NET35 -Projects `
+    Do-Build -Framework 3.5 -OutputPath $net35Path -DefineConstants NODBASYNC,NODYNAMIC,NET35 -FrameworkFolder NET35 -Projects `
 		Insight.Database,`
 		Insight.Database.Configuration,`
 		Insight.Database.Providers.Default,`
@@ -118,7 +121,7 @@ Task Build35 {
 }
 
 Task Build40 {
-    Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NODBASYNC,CODE_ANALYSIS,NET40 -Projects `
+    Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NODBASYNC,CODE_ANALYSIS,NET40 -FrameworkFolder NET40 -Projects `
 		Insight.Database,`
 		Insight.Database.Configuration,`
 		Insight.Database.Json,`
@@ -131,7 +134,7 @@ Task Build40 {
 }
 
 Task Build45 {
-    Do-Build -Framework 4.5 -OutputPath $net45Path -DefineConstants CODE_ANALYSIS
+    Do-Build -Framework 4.5 -OutputPath $net45Path -DefineConstants CODE_ANALYSIS -FrameworkFolder NET45
 }
 
 Task Test35Only { 
