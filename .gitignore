@@ -10,6 +10,7 @@ obj
 StyleCop.Cache
 Output
 TestResult.xml
+testdb.sqlite
 packages
 
 # ReSharper is a .NET coding add-in
