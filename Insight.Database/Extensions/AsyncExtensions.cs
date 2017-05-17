@@ -58,7 +58,7 @@ namespace Insight.Database
 					if (sqlCommand != null)
 						return Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
 					else
-						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), ct);
+						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), cancellationToken);
 #else
 					// DbCommand now supports async execute
 					DbCommand dbCommand = cmd as DbCommand;
@@ -133,7 +133,7 @@ namespace Insight.Database
 				{
 #if NODBASYNC
 					// not supported in .NET 4.0
-					return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), ct);
+					return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), cancellationToken);
 #else
 					// DbCommand now supports async execute
 					DbCommand dbCommand = cmd as DbCommand;
@@ -558,9 +558,7 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static Task<IList<FastExpando>> ToListAsync(this IDataReader reader, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
-			return Task<IList<FastExpando>>.Factory.StartNew(() => reader.ToList(), ct);
+			return Task<IList<FastExpando>>.Factory.StartNew(() => reader.ToList(), cancellationToken);
 		}
 
 		/// <summary>
@@ -573,9 +571,7 @@ namespace Insight.Database
 		/// <returns>A task that returns the list of objects.</returns>
 		public static Task<IList<T>> ToListAsync<T>(this IDataReader reader, IRecordReader<T> recordReader = null, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
-			return Task<IList<T>>.Factory.StartNew(() => reader.ToList(recordReader), ct);
+			return Task<IList<T>>.Factory.StartNew(() => reader.ToList(recordReader), cancellationToken);
 		}
 #else
 		/// <summary>
@@ -912,9 +908,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static Task<T> MergeAsync<T>(this IDataReader reader, T item, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
-			return Task<T>.Factory.StartNew(() => reader.Merge(item), ct);
+			return Task<T>.Factory.StartNew(() => reader.Merge(item), cancellationToken);
 		}
 
 		/// <summary>
@@ -932,9 +926,7 @@ namespace Insight.Database
 		/// </remarks>
 		public static Task<IEnumerable<T>> MergeAsync<T>(this IDataReader reader, IEnumerable<T> items, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var ct = cancellationToken ?? CancellationToken.None;
-
-			return Task<IEnumerable<T>>.Factory.StartNew(() => reader.Merge(items), ct);
+			return Task<IEnumerable<T>>.Factory.StartNew(() => reader.Merge(items), cancellationToken);
 		}
 #else
 		/// <summary>
