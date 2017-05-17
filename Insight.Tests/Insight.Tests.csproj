@@ -45,10 +45,6 @@
     <FrameworkFolder>net45</FrameworkFolder>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Insight.Database.Schema, Version=2.2.10.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Insight.Database.Schema.2.2.10\lib\$(FrameworkFolder)\Insight.Database.Schema.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\$(FrameworkFolder)\Microsoft.SqlServer.Types.dll</HintPath>
       <Private>True</Private>

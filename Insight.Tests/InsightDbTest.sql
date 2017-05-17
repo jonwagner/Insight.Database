@@ -43,6 +43,57 @@ GO
 ----------------------------------------------------------
 -- AUTOPROC All Beer
 ----------------------------------------------------------
+CREATE TYPE [dbo].[BeerTable] AS TABLE(
+	[ID] [int] NULL,
+	[Name] [varchar](256) NULL,
+	[Style] [varchar](256) NULL
+)
+GO
+
+CREATE PROCEDURE [dbo].[InsertBeer]
+(
+	@Name varchar(256) = NULL,
+	@Style varchar(256) = NULL
+)
+AS
+
+DECLARE @T TABLE(
+[ID] int)
+
+INSERT INTO [dbo].[Beer]
+(
+	[Name],
+	[Style]
+)
+OUTPUT
+	Inserted.[ID]
+INTO @T
+VALUES
+(
+	@Name,
+	@Style
+)
+SELECT * FROM @T
+GO
+
+CREATE PROCEDURE [dbo].[InsertBeers] (@Beer [dbo].[BeerTable] READONLY)
+AS
+DECLARE @T TABLE(
+[ID] int)
+
+INSERT INTO [dbo].[Beer]
+(
+	[Name],
+	[Style]
+)
+OUTPUT
+	Inserted.[ID]
+INTO @T
+SELECT
+	[Name],
+	[Style]
+FROM @Beer
+SELECT * FROM @T
 GO
 
 ----------------------------------------------------------

@@ -18,6 +18,12 @@ namespace Insight.Tests
 	[TestFixture]
 	class MiniProfilerTests : BaseTest
 	{
+		[OneTimeSetUp]
+		public static void OneTimeSetup()
+		{
+			TestSetup.CreateTestDatabase();
+		}
+
 		[Test]
 		public void TestProfiledSqlQuery()
 		{

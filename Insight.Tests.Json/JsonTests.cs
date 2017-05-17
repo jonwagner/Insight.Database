@@ -11,7 +11,13 @@ namespace Insight.Tests.Json
 {
 	[TestFixture]
     public class JsonTests : BaseTest
-    {
+	{
+		[OneTimeSetUp]
+		public static void OneTimeSetup()
+		{
+			TestSetup.CreateTestDatabase();
+		}
+
 		public class JsonClass
 		{
 			[Column(SerializationMode = SerializationMode.Json)]

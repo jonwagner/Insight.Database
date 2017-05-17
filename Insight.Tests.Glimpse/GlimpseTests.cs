@@ -18,6 +18,12 @@ namespace Insight.Tests
 	[TestFixture]
 	public class GlimpseTests : BaseTest
 	{
+		[OneTimeSetUp]
+		public static void OneTimeSetup()
+		{
+			TestSetup.CreateTestDatabase();
+		}
+
 		/// <summary>
 		/// Make sure that we can connect to the database
 		/// </summary>
