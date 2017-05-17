@@ -118,17 +118,12 @@ namespace Insight.Database.Providers.DB2
 			return String.Format(CultureInfo.InvariantCulture, "SELECT * FROM {0} FETCH FIRST 1 ROWS ONLY", tableName);
 		}
 
-		/// <summary>
-		/// Determines if the given column in the schema table is an XML column.
-		/// </summary>
-		/// <param name="schemaTable">The schema table to analyze.</param>
-		/// <param name="index">The index of the column.</param>
-		/// <returns>True if the column is an XML column.</returns>
-		public override bool IsXmlColumn(DataTable schemaTable, int index)
+		/// <inheritdoc/>
+		public override bool IsXmlColumn(IDataReader reader, int index)
 		{
-			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
+			if (reader == null) throw new ArgumentNullException("reader");
 
-			return ((DB2Type)schemaTable.Rows[index]["ProviderType"]) == DB2Type.Xml;
+			return ((DB2Type)reader.GetSchemaTable().Rows[index]["ProviderType"]) == DB2Type.Xml;
 		}
 
 		/// <summary>

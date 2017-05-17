@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Insight.Database.Mapping;
 
 namespace Insight.Database.Providers
 {
@@ -71,10 +72,10 @@ namespace Insight.Database.Providers
 		}
 
 		/// <inheritdoc/>
-		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type)
+		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type, SerializationMode serializationMode)
 		{
 			command = GetInnerCommand(command);
-			InsightDbProvider.For(command).FixupParameter(command, parameter, dbType, type);
+			InsightDbProvider.For(command).FixupParameter(command, parameter, dbType, type, serializationMode);
 		}
 
 		/// <inheritdoc/>

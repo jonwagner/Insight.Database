@@ -8,10 +8,8 @@ using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using System.Xml;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
 
@@ -131,12 +129,12 @@ namespace Insight.Database
 		}
 
         /// <inheritdoc/>
-		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type)
+		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type, SerializationMode serializationMode)
 		{
 			if (command == null) throw new ArgumentNullException("command");
 			if (parameter == null) throw new ArgumentNullException("parameter");
 
-			base.FixupParameter(command, parameter, dbType, type);
+			base.FixupParameter(command, parameter, dbType, type, serializationMode);
 
 			// when calling sql text, we have to fill in the udttypename for some parameters
 			if (command.CommandType != CommandType.StoredProcedure && IsSqlUserDefinedType(type))
@@ -234,17 +232,12 @@ namespace Insight.Database
 			return String.Format(CultureInfo.InvariantCulture, "SELECT TOP 0 * FROM {0}", tableName);
 		}
 
-		/// <summary>
-		/// Determines if the given column in the schema table is an XML column.
-		/// </summary>
-		/// <param name="schemaTable">The schema table to analyze.</param>
-		/// <param name="index">The index of the column.</param>
-		/// <returns>True if the column is an XML column.</returns>
-		public override bool IsXmlColumn(DataTable schemaTable, int index)
+		/// <inheritdoc/>
+		public override bool IsXmlColumn(IDataReader reader, int index)
 		{
-			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
+			if (reader == null) throw new ArgumentNullException("reader");
 
-			return ((Type)schemaTable.Rows[index]["ProviderSpecificDataType"]) == typeof(SqlXml);
+			return ((Type)reader.GetSchemaTable().Rows[index]["ProviderSpecificDataType"]) == typeof(SqlXml);
 		}
 
 		/// <summary>

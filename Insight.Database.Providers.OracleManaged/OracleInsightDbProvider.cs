@@ -168,17 +168,12 @@ namespace Insight.Database.Providers.OracleManaged
 			parameter.Value = list.Cast<object>().ToArray();
 		}
 
-		/// <summary>
-		/// Determines if the given column in the schema table is an XML column.
-		/// </summary>
-		/// <param name="schemaTable">The schema table to analyze.</param>
-		/// <param name="index">The index of the column.</param>
-		/// <returns>True if the column is an XML column.</returns>
-		public override bool IsXmlColumn(DataTable schemaTable, int index)
+		/// <inheritdoc/>
+		public override bool IsXmlColumn(IDataReader reader, int index)
 		{
-			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
+			if (reader == null) throw new ArgumentNullException("reader");
 
-			return ((OracleDbType)schemaTable.Rows[index]["ProviderType"]) == OracleDbType.XmlType;
+			return ((OracleDbType)reader.GetSchemaTable().Rows[index]["ProviderType"]) == OracleDbType.XmlType;
 		}
 
 		/// <summary>

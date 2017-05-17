@@ -257,7 +257,7 @@ namespace Insight.Database.CodeGenerator
 				DbType sqlType = LookupDbType(memberType, serializer, dbParameter.DbType);
 
 				// give the provider an opportunity to fix up the template parameter (e.g. set UDT type names)
-				provider.FixupParameter(command, dbParameter, sqlType, memberType);
+				provider.FixupParameter(command, dbParameter, sqlType, memberType, mapping.Member.SerializationMode);
 
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
@@ -396,7 +396,7 @@ namespace Insight.Database.CodeGenerator
 			var s = value as string;
 			if (s != null)
 			{
-				if (parameter.DbType != DbType.Xml && parameter.DbType != DbType.Object)
+				if (parameter.DbType != DbType.String && parameter.DbType != DbType.Xml && parameter.DbType != DbType.Object)
 					parameter.DbType = DbType.String;
 
 				var dbParameter = parameter as IDbDataParameter;

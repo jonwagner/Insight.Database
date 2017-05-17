@@ -17,7 +17,7 @@
     <releaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</releaseNotes>
 	<dependencies>
 		<dependency id="Insight.Database.Core" version="4.1.3"></dependency>
-		<dependency id="Npgsql" version="2.2.5"></dependency>
+		<dependency id="Npgsql" version="3.2"></dependency>
 	</dependencies>
   </metadata>
   <files>

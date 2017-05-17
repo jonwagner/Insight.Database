@@ -7,7 +7,6 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
@@ -242,7 +241,8 @@ namespace Insight.Database.Providers
 		/// <param name="parameter">The parameter to fix up.</param>
 		/// <param name="dbType">The best guess at the DbType of the parameter.</param>
 		/// <param name="type">The type of the object that will be passed in the parameter.</param>
-		public virtual void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type)
+		/// <param name="serializationMode">The serialization mode used to encode the parameter.</param>
+		public virtual void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type, SerializationMode serializationMode)
 		{
 			if (command == null) throw new ArgumentNullException("command");
 			if (parameter == null) throw new ArgumentNullException("parameter");
@@ -303,10 +303,10 @@ namespace Insight.Database.Providers
 		/// <summary>
 		/// Determines if the given column in the schema table is an XML column.
 		/// </summary>
-		/// <param name="schemaTable">The schema table to analyze.</param>
+		/// <param name="reader">The data reader to analyze.</param>
 		/// <param name="index">The index of the column.</param>
 		/// <returns>True if the column is an XML column.</returns>
-		public virtual bool IsXmlColumn(DataTable schemaTable, int index)
+		public virtual bool IsXmlColumn(IDataReader reader, int index)
 		{
 			return false;
 		}

@@ -4,11 +4,8 @@ using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
-using System.IO;
 using System.Linq;
-using System.Text;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using Insight.Database;
 using Npgsql;
 using NpgsqlTypes;
@@ -114,7 +111,32 @@ namespace Insight.Database.Providers.PostgreSQL
 		public override IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
 		{
 			NpgsqlParameter p = (NpgsqlParameter)parameter;
-			return (IDataParameter)p.Clone();
+			var clone = (NpgsqlParameter)p.Clone();
+			clone.NpgsqlDbType = p.NpgsqlDbType;
+			return clone;
+		}
+
+		/// <inheritdoc/>
+		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type, SerializationMode serializationMode)
+		{
+			base.FixupParameter(command, parameter, dbType, type, serializationMode);
+
+			NpgsqlParameter pgparam = (NpgsqlParameter)parameter;
+
+			// when parsing command text, npgsql now needs json to be declared explicitly
+			if (pgparam.NpgsqlDbType == NpgsqlDbType.Text)
+			{
+				switch (serializationMode)
+				{
+					case SerializationMode.Json:
+						pgparam.NpgsqlDbType = NpgsqlDbType.Json;
+						break;
+
+					case SerializationMode.Xml:
+						pgparam.NpgsqlDbType = NpgsqlDbType.Xml;
+						break;
+				}
+			}
 		}
 
 		/// <inheritdoc/>
@@ -124,11 +146,12 @@ namespace Insight.Database.Providers.PostgreSQL
 
 			base.FixupCommand(command);
 
-#if !NET35 
+#if !NET35
 			// automatically encode any json parameters that we find
 			foreach (NpgsqlParameter p in command.Parameters)
 			{
-				if ((p.NpgsqlDbType == NpgsqlDbType.Json || p.NpgsqlDbType == NpgsqlDbType.Jsonb) &&
+				if (p.Direction.HasFlag(ParameterDirection.Input) &&
+					(p.NpgsqlDbType == NpgsqlDbType.Json || p.NpgsqlDbType == NpgsqlDbType.Jsonb) &&
 					!(p.Value is String))
 				{
 					var value = p.Value;
@@ -141,14 +164,17 @@ namespace Insight.Database.Providers.PostgreSQL
 		/// <summary>
 		/// Determines if the given column in the schema table is an XML column.
 		/// </summary>
-		/// <param name="schemaTable">The schema table to analyze.</param>
+		/// <param name="reader">The data reader to analyze.</param>
 		/// <param name="index">The index of the column.</param>
 		/// <returns>True if the column is an XML column.</returns>
-		public override bool IsXmlColumn(DataTable schemaTable, int index)
+		public override bool IsXmlColumn(IDataReader reader, int index)
 		{
-			if (schemaTable == null) throw new ArgumentNullException("schemaTable");
+			if (reader == null) throw new ArgumentNullException("reader");
 
-			return String.Compare(schemaTable.Rows[index]["ProviderType"].ToString(), "xml", StringComparison.OrdinalIgnoreCase) == 0;
+			var pgreader = (NpgsqlDataReader)reader;
+			var column = pgreader.GetColumnSchema()[index];
+
+			return String.Compare(column.DataTypeName, "xml", StringComparison.OrdinalIgnoreCase) == 0;
 		}
 
 		/// <summary>
@@ -175,15 +201,11 @@ namespace Insight.Database.Providers.PostgreSQL
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-			NpgsqlCopyIn bulk = new NpgsqlCopyIn(String.Format(CultureInfo.InvariantCulture, "COPY {0} FROM STDIN WITH CSV", tableName), (NpgsqlConnection)connection);
-			PostgreSQLInsightBulkCopy insightBulkCopy = new PostgreSQLInsightBulkCopy(bulk);
+			var pgconnection = (NpgsqlConnection)connection;
 
-			try
+			using (var writer = pgconnection.BeginTextImport(String.Format(CultureInfo.InvariantCulture, "COPY {0} FROM STDIN WITH CSV", tableName)))
 			{
-				bulk.Start();
-
-				var stream = bulk.CopyStream;
-				StreamWriter writer = new StreamWriter(stream);
+				PostgreSQLInsightBulkCopy insightBulkCopy = new PostgreSQLInsightBulkCopy();
 
 				int row = 0;
 				while (reader.Read())
@@ -212,23 +234,13 @@ namespace Insight.Database.Providers.PostgreSQL
 						e.RowsCopied = row;
 						insightBulkCopy.OnRowsCopied(insightBulkCopy, e);
 						if (e.Abort)
-						{
-							bulk.Cancel("Cancelled");
 							return;
-						}
 					}
 				}
 
 				// must call flush before end
 				// cannot call close on the stream before end
 				writer.Flush();
-				bulk.End();
-			}
-			catch (Exception e)
-			{
-				bulk.Cancel(e.Message);
-
-				throw;
 			}
 		}
 
@@ -253,13 +265,8 @@ namespace Insight.Database.Providers.PostgreSQL
 		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 		sealed class PostgreSQLInsightBulkCopy : InsightBulkCopy
 		{
-			private NpgsqlCopyIn _bulkCopy;
-
-			public PostgreSQLInsightBulkCopy(NpgsqlCopyIn bulkCopy)
+			public PostgreSQLInsightBulkCopy()
 			{
-				if (bulkCopy == null) throw new ArgumentNullException("bulkCopy");
-
-				_bulkCopy = bulkCopy;
 				NotifyAfter = 1000;
 			}
 
@@ -292,7 +299,7 @@ namespace Insight.Database.Providers.PostgreSQL
 
 			public override object InnerBulkCopy
 			{
-				get { return _bulkCopy; }
+				get { throw new NotImplementedException(); }
 			}
 
 			internal void OnRowsCopied(object sender, InsightRowsCopiedEventArgs e)

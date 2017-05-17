@@ -198,7 +198,7 @@ namespace Insight.Database
 		/// <returns>The serializer.</returns>
 		internal static IDbObjectSerializer GetSerializer(IDataReader reader, int column, ClassPropInfo prop)
 		{
-			if (InsightDbProvider.For(reader).IsXmlColumn(reader.GetSchemaTable(), column))
+			if (InsightDbProvider.For(reader).IsXmlColumn(reader, column))
 				return XmlObjectSerializer.Serializer;
 
 			return EvaluateRules(prop);

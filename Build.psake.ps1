@@ -114,7 +114,6 @@ Task Build35 {
 		Insight.Database,`
 		Insight.Database.Configuration,`
 		Insight.Database.Providers.Default,`
-		Insight.Database.Providers.PostgreSQL,`
 		Insight.Tests
 }
 
@@ -128,7 +127,6 @@ Task Build40 {
 		Insight.Database.Providers.Glimpse,`
 		Insight.Database.Providers.Oracle,`
 		Insight.Database.Providers.OracleManaged,`
-		Insight.Database.Providers.PostgreSQL,`
 		Insight.Tests
 }
 

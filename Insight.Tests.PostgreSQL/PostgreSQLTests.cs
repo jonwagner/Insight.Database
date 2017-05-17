@@ -62,10 +62,10 @@ namespace Insight.Tests.PostgreSQL
 		public void TestExecuteWithDateTimeParameters()
 		{
 			var date = DateTime.Parse("1/1/1978");
-			var result = _connection.QuerySql<string>("SELECT @p as p", new { p = date });
+			var result = _connection.QuerySql<DateTime>("SELECT @p as p", new { p = date });
 
 			Assert.AreEqual(1, result.Count);
-			Assert.AreEqual(date, DateTime.Parse(result[0]));
+			Assert.AreEqual(date, result[0]);
 		}
 
 		[Test]
@@ -142,12 +142,12 @@ namespace Insight.Tests.PostgreSQL
 		}
 
 		[Test]
-		public void TestQueryProcedure()
+		public void TestMultipleRecordsets()
 		{
 			try
 			{
 				// NOTE: when returning cursors, you need to open the query in a transaction (eek)
-				using (var connection = _connectionStringBuilder.OpenWithTransaction())
+				using (var connection = new NpgsqlConnectionWithRecordsets(_connectionStringBuilder).OpenWithTransaction())
 				{
 					connection.ExecuteSql("CREATE TABLE PostgreSQLTestTable (p int)");
 					connection.ExecuteSql(@"
@@ -156,20 +156,63 @@ namespace Insight.Tests.PostgreSQL
 						AS $$
 						DECLARE
 							rs refcursor;
+							rs2 refcursor;
 						BEGIN 
 							INSERT INTO PostgreSQLTestTable VALUES (@i);
 							OPEN rs FOR SELECT * FROM PostgreSQLTestTable;
 							RETURN NEXT rs;
+							OPEN rs2 FOR SELECT * FROM PostgreSQLTestTable;
+							RETURN NEXT rs2;
 						END;
 						$$ LANGUAGE plpgsql;");
-					var result = connection.Query<int>("PostgreSQLTestProc", new { i = 5 });
-					Assert.AreEqual(1, result.Count);
-					Assert.AreEqual(5, result[0]);
+					var result = connection.QueryResults<int, int>(@"PostgreSQLTestProc", new { i = 5 });
+					Assert.AreEqual(1, result.Set1.Count);
+					Assert.AreEqual(5, result.Set1[0]);
+					Assert.AreEqual(1, result.Set2.Count);
+					Assert.AreEqual(5, result.Set2[0]);
 				}
 			}
 			finally
 			{
 				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestProc (i int)"); } catch {}
+				try { _connection.ExecuteSql("DROP TABLE PostgreSQLTestTable"); } catch { }
+			}
+		}
+
+		[Test]
+		public void TestMultipleRecordsetsAsync()
+		{
+			try
+			{
+				// NOTE: when returning cursors, you need to open the query in a transaction (eek)
+				using (var connection = new NpgsqlConnectionWithRecordsets(_connectionStringBuilder).OpenWithTransaction())
+				{
+					connection.ExecuteSql("CREATE TABLE PostgreSQLTestTable (p int)");
+					connection.ExecuteSql(@"
+						CREATE OR REPLACE FUNCTION PostgreSQLTestProc (i int) 
+						RETURNS SETOF refcursor
+						AS $$
+						DECLARE
+							rs refcursor;
+							rs2 refcursor;
+						BEGIN 
+							INSERT INTO PostgreSQLTestTable VALUES (@i);
+							OPEN rs FOR SELECT * FROM PostgreSQLTestTable;
+							RETURN NEXT rs;
+							OPEN rs2 FOR SELECT * FROM PostgreSQLTestTable;
+							RETURN NEXT rs2;
+						END;
+						$$ LANGUAGE plpgsql;");
+					var result = connection.QueryResultsAsync<int, int>(@"PostgreSQLTestProc", new { i = 5 }).Result;
+					Assert.AreEqual(1, result.Set1.Count);
+					Assert.AreEqual(5, result.Set1[0]);
+					Assert.AreEqual(1, result.Set2.Count);
+					Assert.AreEqual(5, result.Set2[0]);
+				}
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestProc (i int)"); } catch { }
 				try { _connection.ExecuteSql("DROP TABLE PostgreSQLTestTable"); } catch { }
 			}
 		}
@@ -359,20 +402,20 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData json)");
 				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData json)");
 				_connection.ExecuteSql(@"
-					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) 
+					CREATE OR REPLACE FUNCTION TestStringToJsonProcParameters (Id integer, JsonData json) 
 					RETURNS SETOF PostgreSQLTestType
 					AS $$
 					BEGIN 
 						RETURN QUERY SELECT id as id, JsonData as JsonData;
 					END;
 					$$ LANGUAGE plpgsql;");
-				var result = _connection.Query<Users>("PostgreSQLTestExecute", users).First();
+				var result = _connection.Query<Users>("TestStringToJsonProcParameters", users).First();
 
 				Assert.AreEqual(users.JsonData, result.JsonData);
 			}
 			finally
 			{
-				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) ");
+				Cleanup("DROP FUNCTION TestStringToJsonProcParameters (Id integer, JsonData json) ");
 				Cleanup("DROP TYPE PostgreSQLTestType");
 				Cleanup("DROP TABLE Users");
 			}
@@ -389,14 +432,14 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData jsonb)");
 				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData jsonb)");
 				_connection.ExecuteSql(@"
-					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) 
+					CREATE OR REPLACE FUNCTION TestStringToJsonbProcParameters (Id integer, JsonData jsonb) 
 					RETURNS SETOF PostgreSQLTestType
 					AS $$
 					BEGIN 
 						RETURN QUERY SELECT id as id, JsonData as JsonData;
 					END;
 					$$ LANGUAGE plpgsql;");
-				var result = _connection.Query<Users>("PostgreSQLTestExecute", users).First();
+				var result = _connection.Query<Users>("TestStringToJsonbProcParameters", users).First();
 
 				var deserialized = (TestData)JsonObjectSerializer.Serializer.DeserializeObject(typeof(TestData), result.JsonData);
 				Assert.AreEqual(input.X, deserialized.X);
@@ -404,7 +447,7 @@ namespace Insight.Tests.PostgreSQL
 			}
 			finally
 			{
-				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) ");
+				Cleanup("DROP FUNCTION TestStringToJsonbProcParameters (Id integer, JsonData jsonb) ");
 				Cleanup("DROP TYPE PostgreSQLTestType");
 				Cleanup("DROP TABLE Users");
 			}
@@ -421,7 +464,7 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData json)");
 				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData json)");
 				_connection.ExecuteSql(@"
-					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) 
+					CREATE OR REPLACE FUNCTION TestObjectToJsonProcParameters (Id integer, JsonData json) 
 					RETURNS SETOF PostgreSQLTestType
 					AS $$
 					BEGIN 
@@ -429,13 +472,13 @@ namespace Insight.Tests.PostgreSQL
 					END;
 					$$ LANGUAGE plpgsql;");
 
-				var result = _connection.Query<UsersWithTestData>("PostgreSQLTestExecute", users).First();
+				var result = _connection.Query<UsersWithTestData>("TestObjectToJsonProcParameters", users).First();
 				Assert.AreEqual(input.X, result.JsonData.X);
 				Assert.AreEqual(input.Z, result.JsonData.Z);
 			}
 			finally
 			{
-				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData json) ");
+				Cleanup("DROP FUNCTION TestObjectToJsonProcParameters (Id integer, JsonData json) ");
 				Cleanup("DROP TYPE PostgreSQLTestType");
 				Cleanup("DROP TABLE Users");
 			}
@@ -452,7 +495,7 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData jsonb)");
 				_connection.ExecuteSql("CREATE TYPE PostgreSQLTestType AS (Id integer, JsonData jsonb)");
 				_connection.ExecuteSql(@"
-					CREATE OR REPLACE FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) 
+					CREATE OR REPLACE FUNCTION TestObjectToJsonbProcParameters (Id integer, JsonData jsonb) 
 					RETURNS SETOF PostgreSQLTestType
 					AS $$
 					BEGIN 
@@ -460,13 +503,13 @@ namespace Insight.Tests.PostgreSQL
 					END;
 					$$ LANGUAGE plpgsql;");
 
-				var result = _connection.Query<UsersWithTestData>("PostgreSQLTestExecute", users).First();
+				var result = _connection.Query<UsersWithTestData>("TestObjectToJsonbProcParameters", users).First();
 				Assert.AreEqual(input.X, result.JsonData.X);
 				Assert.AreEqual(input.Z, result.JsonData.Z);
 			}
 			finally
 			{
-				Cleanup("DROP FUNCTION PostgreSQLTestExecute (Id integer, JsonData jsonb) ");
+				Cleanup("DROP FUNCTION TestObjectToJsonbProcParameters (Id integer, JsonData jsonb) ");
 				Cleanup("DROP TYPE PostgreSQLTestType");
 				Cleanup("DROP TABLE Users");
 			}
