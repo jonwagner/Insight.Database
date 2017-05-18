@@ -199,6 +199,7 @@ namespace Insight.Database
 			}
 		}
 
+#if !NETCOREAPP2_0
 		/// <summary>
 		/// Gets the DbProviderFactory that can be used to create this connection.
 		/// </summary>
@@ -218,6 +219,7 @@ namespace Insight.Database
 				return (DbProviderFactory)type.GetField("Instance").GetValue(null);
 			}
 		}
+#endif
 		#endregion
 
 		#region Properties

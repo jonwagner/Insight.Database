@@ -1,0 +1,338 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.30703</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{BDF3AFB9-9689-48DB-AC12-B9087F774452}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>Insight.Database</RootNamespace>
+    <AssemblyName>Insight.Database</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
+    <CodeAnalysisTreatWarningsAsErrors>true</CodeAnalysisTreatWarningsAsErrors>
+    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
+    <RestorePackages>true</RestorePackages>
+    <BuildToolsStyleCopVersion>4.7.44.0</BuildToolsStyleCopVersion>
+    <StyleCopOverrideSettingsFile>Settings.StyleCop</StyleCopOverrideSettingsFile>
+    <BuildToolsFxCopVersion>1.0.0</BuildToolsFxCopVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <StyleCopEnabled>False</StyleCopEnabled>
+    <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <RunCodeAnalysis>False</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>CodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
+    <CodeAnalysisTreatWarningsAsErrors>True</CodeAnalysisTreatWarningsAsErrors>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <RunCodeAnalysisRestore>False</RunCodeAnalysisRestore>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE;CODE_ANALYSIS</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <Prefer32Bit>false</Prefer32Bit>
+    <RunCodeAnalysis>True</RunCodeAnalysis>
+    <CodeAnalysisRuleSet>CodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
+    <StyleCopEnabled>True</StyleCopEnabled>
+    <StyleCopTreatErrorsAsWarnings>False</StyleCopTreatErrorsAsWarnings>
+    <CodeAnalysisTreatWarningsAsErrors>True</CodeAnalysisTreatWarningsAsErrors>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DocumentationFile>bin\Release\Insight.Database.XML</DocumentationFile>
+    <RunCodeAnalysisRestore>True</RunCodeAnalysisRestore>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(TargetFrameworkVersion)'=='v3.5'">
+    <RunCodeAnalysis>false</RunCodeAnalysis>
+    <StyleCopEnabled>false</StyleCopEnabled>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="Microsoft.CSharp" Condition=" '$(TargetFrameworkVersion)' != 'v3.5' " />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.XML" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="CachedDbDataReader.cs" />
+    <Compile Include="CodeGenerator\StaticFieldStorage.cs" />
+    <Compile Include="Compatibility.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Compatibility.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Reliable\ReliableConnectionInsightDbProvider.cs" />
+    <Compile Include="Serialization\BooleanSerializer.cs" />
+    <Compile Include="SqlConstructorAttribute.cs" />
+    <Compile Include="DbDataReaderWrapper.cs" />
+    <Compile Include="Extensions\AsyncExtensions.cs" />
+    <Compile Include="Extensions\AsyncExtensions.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>AsyncExtensions.tt</DependentUpon>
+    </Compile>
+    <Compile Include="CodeGenerator\ClassDeserializerGenerator.cs" />
+    <Compile Include="CodeGenerator\ClassPropInfo.cs" />
+    <Compile Include="CodeGenerator\InterfaceGenerator.cs" />
+    <Compile Include="CodeGenerator\ObjectReader.cs" />
+    <Compile Include="CodeGenerator\SchemaIdentity.cs" />
+    <Compile Include="CodeGenerator\DbParameterGenerator.cs" />
+    <Compile Include="CodeGenerator\DbReaderDeserializer.cs" />
+    <Compile Include="CodeGenerator\ExpandoGenerator.cs" />
+    <Compile Include="CodeGenerator\SchemaMappingType.cs" />
+    <Compile Include="CodeGenerator\TypeConverterGenerator.cs" />
+    <Compile Include="Mapping\BindChildrenAttribute.cs" />
+    <Compile Include="Mapping\ColumnMapping.cs" />
+    <Compile Include="Compatibility.cs" />
+    <Compile Include="Extensions\DBConnectionExtensions.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DBConnectionExtensions.tt</DependentUpon>
+    </Compile>
+    <Compile Include="DbConnectionWrapperProviderFactory.cs" />
+    <Compile Include="Extensions\DbReaderExtensions.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>DbReaderExtensions.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Mapping\BindChildrenFor.cs" />
+    <Compile Include="Mapping\FieldMapping.cs" />
+    <Compile Include="Mapping\DualMappingCollection.cs" />
+    <Compile Include="Mapping\IColumnMapper.cs" />
+    <Compile Include="Mapping\IDualMapper.cs" />
+    <Compile Include="Mapping\IMapper.cs" />
+    <Compile Include="Mapping\IMappingTransform.cs" />
+    <Compile Include="Mapping\IParameterMapper.cs" />
+    <Compile Include="Mapping\MappingCollection.cs" />
+    <Compile Include="MergeOutputAttribute.cs" />
+    <Compile Include="Serialization\DbSerializationRule.cs" />
+    <Compile Include="Serialization\IDbSerializationRule.cs" />
+    <Compile Include="Serialization\ToStringObjectSerializer.cs" />
+    <Compile Include="Serialization\DbObjectSerializer.cs" />
+    <Compile Include="Serialization\IDbObjectSerializer.cs" />
+    <Compile Include="Structure\ChildMapperHelper.cs" />
+    <Compile Include="Structure\ChildRecordReader.cs" />
+    <Compile Include="Structure\ColumnOverride.cs" />
+    <Compile Include="Structure\CustomRecordReader.cs" />
+    <Compile Include="Structure\DerivedResultsReader.cs" />
+    <Compile Include="Structure\Guardian.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Guardian.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\IChildMapper.cs" />
+    <Compile Include="Structure\IChildRecordReader.cs" />
+    <Compile Include="Structure\IDAccessor.cs" />
+    <Compile Include="Structure\IQueryReader.cs" />
+    <Compile Include="Structure\IRecordIdAttribute.cs" />
+    <Compile Include="Structure\IRecordReader.cs" />
+    <Compile Include="Structure\IRecordStructure.cs" />
+    <Compile Include="Structure\ListReader.cs" />
+    <Compile Include="Structure\ListReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ListReader.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\MultiReader.cs" />
+    <Compile Include="Structure\OneToOne.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>OneToOne.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\PostProcessRecordReader.cs" />
+    <Compile Include="Structure\Query.cs" />
+    <Compile Include="InsightBulkCopy.cs" />
+    <Compile Include="Serialization\JsonObjectSerializer.cs" />
+    <Compile Include="Structure\OneToOne.cs" />
+    <Compile Include="Optimistic\OptimisticCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Optimistic\OptimisticConcurrencyException.cs" />
+    <Compile Include="Optimistic\OptimisticConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Providers\DbConnectionWrapperInsightDbProvider.cs" />
+    <Compile Include="Providers\WrappedInsightDbProvider.cs" />
+    <Compile Include="GlobalSuppressions.cs" />
+    <Compile Include="Providers\InsightDbProvider.cs" />
+    <Compile Include="DbCommandWrapper.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Structure\Query.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Query.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\QueryReader.cs" />
+    <Compile Include="Structure\ChildRecordsAttribute.cs" />
+    <Compile Include="Structure\ParentRecordIdAttribute.cs" />
+    <Compile Include="Structure\RecordIdAttribute.cs" />
+    <Compile Include="Structure\RecordReader.cs" />
+    <Compile Include="Structure\RecordReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>RecordReader.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\Results.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>Results.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Serialization\SerializationMode.cs" />
+    <Compile Include="SqlAttribute.cs" />
+    <Compile Include="Extensions\DbConnectionStringBuilderExtensions.cs" />
+    <Compile Include="DbConnectionWrapper.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Helpers.cs" />
+    <Compile Include="Mapping\RegexReplaceTransform.cs" />
+    <Compile Include="Structure\Results.cs" />
+    <Compile Include="Reliable\RetryStrategy.cs" />
+    <Compile Include="Reliable\IRetryStrategy.cs" />
+    <Compile Include="Reliable\ReliableCommand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DynamicConnection.cs" />
+    <Compile Include="Expando\ExpandoExtensions.cs" />
+    <Compile Include="Expando\FastExpando.cs" />
+    <Compile Include="CodeGenerator\IlHelper.cs" />
+    <Compile Include="CodeGenerator\ObjectListDbDataReader.cs" />
+    <Compile Include="CodeGenerator\QueryIdentity.cs" />
+    <Compile Include="CodeGenerator\SchemaMappingIdentity.cs" />
+    <Compile Include="CodeGenerator\TypeHelper.cs" />
+    <Compile Include="Extensions\DBCommandExtensions.cs" />
+    <Compile Include="Extensions\DBConnectionExtensions.cs" />
+    <Compile Include="Mapping\ColumnAttribute.cs" />
+    <Compile Include="Reliable\ReliableConnection.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Reliable\RetryEventArgs.cs" />
+    <Compile Include="Extensions\DBReaderExtensions.cs" />
+    <Compile Include="Parameters.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Structure\Children.cs" />
+    <Compile Include="Structure\Guardian.cs" />
+    <Compile Include="Structure\ChildMapper.cs" />
+    <Compile Include="Serialization\XmlObjectSerializer.cs" />
+    <Compile Include="Structure\ResultsReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>ResultsReader.tt</DependentUpon>
+    </Compile>
+    <Compile Include="Structure\RecordsetAttribute.cs" />
+    <Compile Include="Structure\SingleChildMapper.cs" />
+    <Compile Include="Structure\SingleChildren.cs" />
+    <Compile Include="Structure\SingleReader.cs" />
+    <Compile Include="Structure\SingleReader.generated.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>SingleReader.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\Insight.Database.snk">
+      <Link>Insight.Database.snk</Link>
+    </None>
+    <None Include="CodeAnalysisRules.ruleset" />
+    <None Include="Compatibility.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Compatibility.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Extensions\AsyncExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AsyncExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Extensions\DBConnectionExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DBConnectionExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Extensions\DbReaderExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DbReaderExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Include="GenericTypes.tt" />
+    <None Include="Insight.Database.Core.nuspec">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Insight.Database.nuspec">
+      <SubType>Designer</SubType>
+    </None>
+    <None Include="Structure\Guardian.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Guardian.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\ListReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ListReader.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\OneToOne.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>OneToOne.generated.cs</LastGenOutput>
+    </None>
+    <None Include="packages.config" />
+    <None Include="Structure\Query.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Query.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\RecordReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>RecordReader.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\Results.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Results.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Settings.StyleCop" />
+    <None Include="Structure\ResultsReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ResultsReader.generated.cs</LastGenOutput>
+    </None>
+    <None Include="Structure\SingleReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SingleReader.generated.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <CodeAnalysisDictionary Include="CustomDictionary.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+  <Import Project="..\packages\BuildTools.StyleCop.4.7.49.0\tools\StyleCop.targets" Condition="Exists('..\packages\BuildTools.StyleCop.4.7.49.0\tools\StyleCop.targets')" />
+  <Target Name="___packages_BuildTools_StyleCop_4_7_49_0_tools_StyleCop_targets" Condition="$(StyleCopOutputFile)==''" BeforeTargets="BeforeBuild">
+    <Error Text="BuildTools_StyleCop - the BuildTools_StyleCop package has not been restored.&#xD;&#xA;If you are running this from an IDE, make sure NuGet Package Restore has been enabled, then reload the solution and re-run the build.&#xD;&#xA;If you are running this from the command line, run the build again.&#xD;&#xA;If this is a CI server, you may want to make sure NuGet Package Restore runs before your build with:&#xD;&#xA;	msbuild solution.sln /t:restorepackages" />
+  </Target>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

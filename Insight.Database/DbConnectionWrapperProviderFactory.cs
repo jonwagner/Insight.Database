@@ -94,11 +94,13 @@ namespace Insight.Database
 			return InnerFactory.CreateParameter();
 		}
 
+#if !NETCOREAPP2_0
 		/// <inheritdoc/>
 		public override CodeAccessPermission CreatePermission(PermissionState state)
 		{
 			return InnerFactory.CreatePermission(state);
 		}
-		#endregion
+#endif
+#endregion
 	}
 }
