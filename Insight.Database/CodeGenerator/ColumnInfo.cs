@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Text;
@@ -61,6 +62,28 @@ namespace Insight.Database.CodeGenerator
 		#endregion
 
 		#region Static Methods
+#if NETCOREAPP2_0
+		public static List<ColumnInfo> FromDataReader(IDataReader reader)
+		{
+			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
+			var schema = schemaGenerator.GetColumnSchema();
+
+			return schemaGenerator.GetColumnSchema().Select(column =>
+				new ColumnInfo()
+				{
+					Name = column.ColumnName,
+					Type = column.DataType,
+					IsNullable = column.AllowDBNull ?? false,
+					IsReadOnly = column.IsReadOnly ?? false,
+					IsIdentity = column.IsIdentity ?? false,
+					ColumnType = column.DataType,
+					NumericPrecision = column.NumericPrecision,
+					NumericScale = column.NumericScale,
+					ColumnSize = column.ColumnSize
+				}
+			).ToList();
+		}
+#else
 		/// <summary>
 		/// Gets the list of columns from a data reader.
 		/// </summary>
@@ -120,6 +143,7 @@ namespace Insight.Database.CodeGenerator
 
 			return columns;
 		}
+#endif
 
 		/// <summary>
 		/// Converts a list of columns to a SchemaTable.
@@ -184,7 +208,7 @@ namespace Insight.Database.CodeGenerator
 				throw;
 			}
 		}
-		#endregion
+#endregion
 
 		/// <summary>
 		/// Determines whether two columns are equal.

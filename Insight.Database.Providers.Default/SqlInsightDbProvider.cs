@@ -247,7 +247,13 @@ namespace Insight.Database
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
+#if NETCOREAPP2_0
+			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
+			var schema = schemaGenerator.GetColumnSchema();
+			return schemaGenerator.GetColumnSchema()[index].DataTypeName == "xml";
+#else
 			return ((Type)reader.GetSchemaTable().Rows[index]["ProviderSpecificDataType"]) == typeof(SqlXml);
+#endif
 		}
 
 		/// <summary>
@@ -492,7 +498,7 @@ namespace Insight.Database
 			}
 		}
 
-		#region Bulk Copy Support
+#region Bulk Copy Support
 		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 		class SqlInsightBulkCopy : InsightBulkCopy, IDisposable
 		{
@@ -576,6 +582,6 @@ namespace Insight.Database
 				}
 			}
 		}
-		#endregion
+#endregion
 	}
 }
