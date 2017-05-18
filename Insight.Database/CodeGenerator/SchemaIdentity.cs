@@ -32,56 +32,8 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="reader">The reader to construct from.</param>
 		public SchemaIdentity(IDataReader reader)
 		{
-			int fieldCount = (reader.IsClosed) ? 0 : reader.FieldCount;
-
-			_columns = new ColumnIdentity[fieldCount];
-
-			// if there are no fields, then this is a simple identity
-			if (fieldCount == 0)
-				return;
-
-			// we have to compare nullable, readonly and identity because it affects bulk copy
-			var schemaTable = reader.GetSchemaTable();
-			var isNullableColumn = schemaTable.Columns.IndexOf("AllowDbNull");
-			var isReadOnlyColumn = schemaTable.Columns.IndexOf("IsReadOnly");
-			var isIdentityColumn = schemaTable.Columns.IndexOf("IsIdentity");
-
-			// we know that we are going to store this in a hashtable, so pre-calculate the hashcode
-			unchecked
-			{
-				// base the hashcode on the column names and types
-				_hashCode = 17;
-
-				for (int i = 0; i < fieldCount; i++)
-				{
-					var row = schemaTable.Rows[i];
-
-					var column = new ColumnIdentity()
-					{
-						Name = reader.GetName(i),
-						Type = reader.GetFieldType(i),
-						IsNullable = (isNullableColumn == -1) ? false : row.IsNull(isNullableColumn) ? false : Convert.ToBoolean(row[isNullableColumn], CultureInfo.InvariantCulture),
-						IsReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture),
-						IsIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture),
-					};
-					_columns[i] = column;
-
-					// update the hash code for the name and type
-					_hashCode *= 23;
-					_hashCode += column.Name.GetHashCode();
-					_hashCode *= 23;
-					_hashCode += column.Type.GetHashCode();
-					_hashCode *= 23;
-					if (column.IsNullable)
-						_hashCode++;
-					_hashCode *= 23;
-					if (column.IsReadOnly)
-						_hashCode++;
-					_hashCode *= 23;
-					if (column.IsIdentity)
-						_hashCode++;
-				}
-			}
+			ReadSchema(reader);
+			CalculateHashCode();
 		}
 		#endregion
 
@@ -178,6 +130,68 @@ namespace Insight.Database.CodeGenerator
 					return false;
 
 				return true;
+			}
+		}
+		#endregion
+
+		#region Initialization
+		private void ReadSchema(IDataReader reader)
+		{
+			int fieldCount = (reader.IsClosed) ? 0 : reader.FieldCount;
+
+			_columns = new ColumnIdentity[fieldCount];
+
+			// if there are no fields, then this is a simple identity
+			if (fieldCount == 0)
+				return;
+
+			// we have to compare nullable, readonly and identity because it affects bulk copy
+			var schemaTable = reader.GetSchemaTable();
+			var isNullableColumn = schemaTable.Columns.IndexOf("AllowDbNull");
+			var isReadOnlyColumn = schemaTable.Columns.IndexOf("IsReadOnly");
+			var isIdentityColumn = schemaTable.Columns.IndexOf("IsIdentity");
+
+			for (int i = 0; i < fieldCount; i++)
+			{
+				var row = schemaTable.Rows[i];
+
+				var column = new ColumnIdentity()
+				{
+					Name = reader.GetName(i),
+					Type = reader.GetFieldType(i),
+					IsNullable = (isNullableColumn == -1) ? false : row.IsNull(isNullableColumn) ? false : Convert.ToBoolean(row[isNullableColumn], CultureInfo.InvariantCulture),
+					IsReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture),
+					IsIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture),
+				};
+				_columns[i] = column;
+			}
+		}
+
+		private void CalculateHashCode()
+		{
+			// we know that we are going to store this in a hashtable, so pre-calculate the hashcode
+			unchecked
+			{
+				// base the hashcode on the column names and types
+				_hashCode = 17;
+
+				foreach (var column in _columns)
+				{
+					// update the hash code for the name and type
+					_hashCode *= 23;
+					_hashCode += column.Name.GetHashCode();
+					_hashCode *= 23;
+					_hashCode += column.Type.GetHashCode();
+					_hashCode *= 23;
+					if (column.IsNullable)
+						_hashCode++;
+					_hashCode *= 23;
+					if (column.IsReadOnly)
+						_hashCode++;
+					_hashCode *= 23;
+					if (column.IsIdentity)
+						_hashCode++;
+				}
 			}
 		}
 		#endregion
