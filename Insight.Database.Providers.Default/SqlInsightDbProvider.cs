@@ -12,6 +12,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
+using Insight.Database.Providers.Default;
 
 namespace Insight.Database
 {
@@ -103,14 +104,17 @@ namespace Insight.Database
 
 			SqlCommand sqlCommand = command as SqlCommand;
 
-// TODO: fix this
-			throw new NotImplementedException();
-//			SqlCommandBuilder.DeriveParameters(sqlCommand);
-//			AdjustSqlParameters(sqlCommand);
+#if NETCOREAPP2_0
+			SqlParameterHelper.DeriveParameters(sqlCommand);
+#else
+			SqlCommandBuilder.DeriveParameters(sqlCommand);
+#endif
+
+			AdjustSqlParameters(sqlCommand);
 
 			// remove the @ from any parameters
-//			foreach (var p in command.Parameters.OfType<SqlParameter>())
-//				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty);
+			foreach (var p in command.Parameters.OfType<SqlParameter>())
+				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty);
 		}
 
 		/// <summary>

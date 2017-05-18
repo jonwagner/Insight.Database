@@ -13,4 +13,7 @@
     <Compile Remove="OdbcInsightDbProvider.cs" />
     <Compile Remove="OleDbInsightDbProvider.cs" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) != 'netcoreapp2.0'">
+    <Compile Remove="NetCore\*.cs" />
+  </ItemGroup>
 </Project>

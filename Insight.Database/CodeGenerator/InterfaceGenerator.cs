@@ -14,6 +14,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Mapping;
+using Insight.Database.MissingExtensions;
 using Insight.Database.Structure;
 
 namespace Insight.Database.CodeGenerator

@@ -382,48 +382,51 @@ namespace Insight.Database
 }
 #endif
 
-/// <summary>
-/// Adds missing methods.
-/// </summary>
-static class MissingExtensions
+namespace Insight.Database.MissingExtensions
 {
 	/// <summary>
-	/// Determines if a string is null or all whitespace.
+	/// Adds missing methods.
 	/// </summary>
-	/// <param name="value">The string to test.</param>
-	/// <returns>False if the string contains at least one non-whitespace character.</returns>
-	public static bool IsNullOrWhiteSpace(this string value)
+	public static class MissingExtensions
 	{
-#if NET35
-		if (value != null)
+		/// <summary>
+		/// Determines if a string is null or all whitespace.
+		/// </summary>
+		/// <param name="value">The string to test.</param>
+		/// <returns>False if the string contains at least one non-whitespace character.</returns>
+		public static bool IsNullOrWhiteSpace(this string value)
 		{
-			for (int i = 0; i < value.Length; i++)
+#if NET35
+			if (value != null)
 			{
-				if (!char.IsWhiteSpace(value[i]))
+				for (int i = 0; i < value.Length; i++)
 				{
-					return false;
+					if (!char.IsWhiteSpace(value[i]))
+					{
+						return false;
+					}
 				}
 			}
-		}
-		return true;
+			return true;
 #else
-		return String.IsNullOrWhiteSpace(value);
+			return String.IsNullOrWhiteSpace(value);
 #endif
-	}
+		}
 
-	/// <summary>
-	/// Returns the maximum value in a sequence or the default.
-	/// </summary>
-	/// <typeparam name="T1">The type of the sequence.</typeparam>
-	/// <typeparam name="T2">The type of the value.</typeparam>
-	/// <param name="list">The list to evaluate.</param>
-	/// <param name="selector">A function to select the value.</param>
-	/// <returns>The maximum selected value or the default.</returns>
-	public static T2 MaxOrDefault<T1, T2>(this IEnumerable<T1> list, Func<T1, T2> selector)
-	{
-		if (!list.Any())
-			return default(T2);
+		/// <summary>
+		/// Returns the maximum value in a sequence or the default.
+		/// </summary>
+		/// <typeparam name="T1">The type of the sequence.</typeparam>
+		/// <typeparam name="T2">The type of the value.</typeparam>
+		/// <param name="list">The list to evaluate.</param>
+		/// <param name="selector">A function to select the value.</param>
+		/// <returns>The maximum selected value or the default.</returns>
+		public static T2 MaxOrDefault<T1, T2>(this IEnumerable<T1> list, Func<T1, T2> selector)
+		{
+			if (!list.Any())
+				return default(T2);
 
-		return list.Max(selector);
+			return list.Max(selector);
+		}
 	}
 }
