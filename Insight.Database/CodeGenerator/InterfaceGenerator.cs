@@ -509,7 +509,7 @@ namespace Insight.Database.CodeGenerator
 						if (r.Id == null && TypeIsSingleReader(currentType))
 						{
 							// previous and recordReader are on the stack, add the id and list method
-							StaticFieldStorage.EmitLoad(mIL, listMethod, _moduleBuilder);
+							StaticFieldStorage.EmitLoad(mIL, listMethod);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
 								.Single(
@@ -539,7 +539,7 @@ namespace Insight.Database.CodeGenerator
 									throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find GroupBy {0} on {1}", r.GroupBy, childType.FullName));
 
 								var getMethod = childid.GetType().GetMethod("CreateGetMethod").MakeGenericMethod(childType, parentIdType).Invoke(childid, Parameters.EmptyArray);
-								StaticFieldStorage.EmitLoad(mIL, getMethod, _moduleBuilder);
+								StaticFieldStorage.EmitLoad(mIL, getMethod);
 
 								var groupByMethod = recordReaderType.GetMethod("GroupBy").MakeGenericMethod(parentIdType);
 								mIL.Emit(OpCodes.Call, groupByMethod);
@@ -548,8 +548,8 @@ namespace Insight.Database.CodeGenerator
 							}
 
 							// previous and recordReader are on the stack, add the id and list methods
-							StaticFieldStorage.EmitLoad(mIL, parentIdMethod, _moduleBuilder);
-							StaticFieldStorage.EmitLoad(mIL, listMethod, _moduleBuilder);
+							StaticFieldStorage.EmitLoad(mIL, parentIdMethod);
+							StaticFieldStorage.EmitLoad(mIL, listMethod);
 
 							method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
 								.Single(

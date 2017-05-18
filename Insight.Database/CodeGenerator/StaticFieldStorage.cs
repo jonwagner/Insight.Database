@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -16,30 +17,35 @@ namespace Insight.Database.CodeGenerator
 	/// We store the information in the static fields of a class because it is easy to access them
 	/// in the IL of a DynamicMethod.
 	/// </remarks>
-	class StaticFieldStorage
+	public class StaticFieldStorage
 	{
 		/// <summary>
-		/// The shared module that stores all of the static variables.
+		/// Stores the static objects to return later.
 		/// </summary>
-		private static ModuleBuilder _dynamicModule;
+		static List<object> _values = new List<object>();
 
 		/// <summary>
-		/// The cache of the static fields.
+		/// Returns a value from the static field cache.
 		/// </summary>
-		private static Dictionary<Tuple<ModuleBuilder, object>, FieldInfo> _fields = new Dictionary<Tuple<ModuleBuilder, object>, FieldInfo>();
-
-		/// <summary>
-		/// Initializes static members of the StaticFieldStorage class.
-		/// </summary>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
-		static StaticFieldStorage()
+		/// <param name="index">The index into the cache.</param>
+		/// <returns>The value from the cache.</returns>
+		public static object GetValue(int index)
 		{
-			// create a shared assembly for all of the static fields to live in
-			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			an.Name += ".DynamicAssembly";
+			return _values[index];
+		}
 
-			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-			_dynamicModule = ab.DefineDynamicModule(an.Name);
+		/// <summary>
+		/// Adds a value to the cache.
+		/// </summary>
+		/// <param name="value">The value to add to the cache.</param>
+		/// <returns>The index into the cache.</returns>
+		internal static int CacheValue(object value)
+		{
+			lock (_values)
+			{
+				_values.Add(value);
+				return _values.Count - 1;
+			}
 		}
 
 		/// <summary>
@@ -47,39 +53,11 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="il">The ILGenerator to emit to.</param>
 		/// <param name="value">The value to emit.</param>
-		/// <param name="moduleBuilder">The module to write to or null to use the default module.</param>
-		public static void EmitLoad(ILGenerator il, object value, ModuleBuilder moduleBuilder = null)
+		internal static void EmitLoad(ILGenerator il, object value)
 		{
-			FieldInfo field;
-
-			var key = Tuple.Create(moduleBuilder ?? _dynamicModule, value);
-
-			if (!_fields.TryGetValue(key, out field))
-			{
-				field = CreateField(key.Item1, value);
-				_fields[key] = field;
-			}
-
-			il.Emit(OpCodes.Ldsfld, field);
-		}
-
-		/// <summary>
-		/// Creates a static field that contains the given value.
-		/// </summary>
-		/// <param name="moduleBuilder">The modulebuilder to write to.</param>
-		/// <param name="value">The value to store.</param>
-		/// <returns>A static field containing the value.</returns>
-		private static FieldInfo CreateField(ModuleBuilder moduleBuilder, object value)
-		{
-			// create a type based on DbConnectionWrapper and call the default constructor
-			TypeBuilder tb = moduleBuilder.DefineType(Guid.NewGuid().ToString());
-			tb.DefineField("_storage", value.GetType(), FieldAttributes.Static | FieldAttributes.Public);
-			Type t = tb.CreateType();
-
-			var field = t.GetField("_storage", BindingFlags.Static | BindingFlags.Public);
-			field.SetValue(null, value);
-
-			return field;
+			il.Emit(OpCodes.Ldc_I4, CacheValue(value));
+			il.Emit(OpCodes.Call, typeof(StaticFieldStorage).GetMethod("GetValue"));
+			il.Emit(OpCodes.Castclass, value.GetType());
 		}
 	}
 }
