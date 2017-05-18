@@ -87,7 +87,7 @@ namespace Insight.Database
 
             // check to make sure that the template connection hasn't already been used
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(connection.ConnectionString);
-            if (!builder.IntegratedSecurity && builder.Password.IsNullOrWhiteSpace())
+            if (!builder.IntegratedSecurity && String.IsNullOrWhiteSpace(builder.Password))
                 throw new InvalidOperationException("The database connection has already been opened and the password has been cleared. In order to use password-based credentials with parallel connections, set Persist Security Info=True on your connection string.");
 
             return new SqlConnection(connection.ConnectionString);
@@ -102,12 +102,15 @@ namespace Insight.Database
 			if (command == null) throw new ArgumentNullException("command");
 
 			SqlCommand sqlCommand = command as SqlCommand;
-			SqlCommandBuilder.DeriveParameters(sqlCommand);
-			AdjustSqlParameters(sqlCommand);
+
+// TODO: fix this
+			throw new NotImplementedException();
+//			SqlCommandBuilder.DeriveParameters(sqlCommand);
+//			AdjustSqlParameters(sqlCommand);
 
 			// remove the @ from any parameters
-			foreach (var p in command.Parameters.OfType<SqlParameter>())
-				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty);
+//			foreach (var p in command.Parameters.OfType<SqlParameter>())
+//				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty);
 		}
 
 		/// <summary>
@@ -123,7 +126,8 @@ namespace Insight.Database
 			SqlParameter template = (SqlParameter)parameter;
 			p.SqlDbType = template.SqlDbType;
 			p.TypeName = template.TypeName;
-			p.UdtTypeName = template.UdtTypeName;
+// TODO:
+//			p.UdtTypeName = template.UdtTypeName;
 
 			return p;
 		}
@@ -145,16 +149,22 @@ namespace Insight.Database
 				switch (type.Name)
 				{
 					case "SqlGeometry":
-						p.UdtTypeName = "sys.geometry";
-						break;
+// TODO:
+						throw new NotImplementedException();
+//						p.UdtTypeName = "sys.geometry";
+//						break;
 
 					case "SqlGeography":
-						p.UdtTypeName = "sys.geography";
-						break;
+// TODO:
+						throw new NotImplementedException();
+//						p.UdtTypeName = "sys.geography";
+//						break;
 
 					case "SqlHierarchy":
-						p.UdtTypeName = "sys.hierarchyid";
-						break;
+// TODO:
+						throw new NotImplementedException();
+//						p.UdtTypeName = "sys.hierarchyid";
+//						break;
 				}
 			}
 
@@ -366,7 +376,8 @@ namespace Insight.Database
 			{
 				var typeParameter = parameterNames.FirstOrDefault(n => String.Compare(p.ParameterName, (string)n["ParameterName"], StringComparison.OrdinalIgnoreCase) == 0);
 				if (typeParameter != null)
-					p.UdtTypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
+					throw new NotImplementedException(); // TODO:
+						//					p.UdtTypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
 			}
 		}
 

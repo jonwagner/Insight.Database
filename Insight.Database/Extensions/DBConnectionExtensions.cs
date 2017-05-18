@@ -1434,7 +1434,7 @@ namespace Insight.Database
 		/// <param name="translate">The action to perform to translate a command and reader into results.</param>
 		/// <param name="commandBehavior">The CommandBehavior to use for the query.</param>
 		/// <returns>The result of the action.</returns>
-		internal static T ExecuteAndAutoClose<T>(
+		public static T ExecuteAndAutoClose<T>(
 			this IDbConnection connection,
 			Func<IDbConnection, IDbCommand> getCommand,
 			Func<IDbCommand, IDataReader, T> translate,
@@ -1474,7 +1474,7 @@ namespace Insight.Database
 		/// <param name="action">The action to perform.</param>
 		/// <param name="closeConnection">True to force closing the connection.</param>
 		/// <returns>The result of the operation.</returns>
-		internal static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, bool closeConnection = false)
+		public static T ExecuteAndAutoClose<T>(this IDbConnection connection, Func<IDbConnection, T> action, bool closeConnection = false)
 		{
 			try
 			{

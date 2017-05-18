@@ -20,7 +20,7 @@ namespace Insight.Database.CodeGenerator
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1204:StaticElementsMustAppearBeforeInstanceElements", Justification = "This class only implements certain members")]
-	internal class ObjectListDbDataReader : DbDataReaderWrapper
+	public class ObjectListDbDataReader : DbDataReaderWrapper
 	{
 		#region Private Fields
 		/// <summary>
