@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
-using Microsoft.SqlServer.Types;
 using NUnit.Framework;
 using Insight.Tests.Cases;
 using Insight.Database.Structure;

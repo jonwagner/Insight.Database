@@ -200,7 +200,7 @@ namespace Insight.Tests
 		{
 			for (int i = 0; i < count; i++)
 			{
-				System.Configuration.ConfigurationManager.ConnectionStrings["Test"]
+				new SqlConnectionStringBuilder(ConnectionString)
 					.ReliableDynamic<int>()
 					.ReflectInt32TableAsync(new List<int>() { 5, 7 })
 					.Wait();

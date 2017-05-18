@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Data.SqlClient;
 using System.Data;
-using Microsoft.SqlServer.Types;
 using NUnit.Framework;
 using Insight.Database;
 
@@ -31,7 +30,6 @@ namespace Insight.Tests
 		{
 			public int Int;
 			public int? IntNull { get; set; }
-			public SqlGeometry Geometry;
 		}
 		#endregion
 
@@ -45,7 +43,7 @@ namespace Insight.Tests
 				// build test data
 				InsightTestData[] array = new InsightTestData[i];
 				for (int j = 0; j < i; j++)
-					array[j] = new InsightTestData() { Int = j, Geometry = new SqlGeometry() };
+					array[j] = new InsightTestData() { Int = j };
 
 				// bulk load the data
 				Cleanup();
@@ -65,7 +63,7 @@ namespace Insight.Tests
 				// build test data
 				InsightTestData[] array = new InsightTestData[i];
 				for (int j = 0; j < i; j++)
-					array[j] = new InsightTestData() { Int = j, Geometry = new SqlGeometry() };
+					array[j] = new InsightTestData() { Int = j };
 
 				// bulk load the data
 				Cleanup();
@@ -75,7 +73,36 @@ namespace Insight.Tests
 			}
 		}
 
-        [Test]
+#if !NETCOREAPP2_0
+		#region SqlTypes
+		class InsightTestDataWithSqlTypes : InsightTestData
+		{
+			public Microsoft.SqlServer.Types.SqlGeometry Geometry;
+		}
+
+		[Test]
+		public void TestBulkLoadSqlTypes()
+		{
+			var connection = Connection();
+
+			for (int i = 0; i < 3; i++)
+			{
+				// build test data
+				InsightTestData[] array = new InsightTestData[i];
+				for (int j = 0; j < i; j++)
+					array[j] = new InsightTestData() { Int = j, Geometry = new Microsoft.SqlServer.Types.SqlGeometry() };
+
+				// bulk load the data
+				Cleanup();
+				connection.BulkCopy("BulkCopyData", array);
+
+				VerifyRecordsInserted(connection, i);
+			}
+		}
+		#endregion
+#endif
+
+		[Test]
         public void TestBulkLoadCount()
         {
 			var connection = Connection();
@@ -257,7 +284,7 @@ namespace Insight.Tests
             }
         }
 
-        #region Tests for Issue 162
+#region Tests for Issue 162
         public class BulkCopyDataWithComputedColumn
         {
             public int Int1;
@@ -288,6 +315,6 @@ namespace Insight.Tests
                 Assert.AreEqual(array[0].Int1 + 1, inserted.Computed);
             }
         }
-        #endregion
+#endregion
     }
 }

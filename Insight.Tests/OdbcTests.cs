@@ -9,7 +9,8 @@ using System.Threading.Tasks;
 
 namespace Insight.Tests
 {
-    [TestFixture]
+#if !NETCOREAPP2_0
+	[TestFixture]
     public class OdbcTests
     {
         [OneTimeSetUp]
@@ -30,4 +31,5 @@ namespace Insight.Tests
         }
 #endif
     }
+#endif
 }

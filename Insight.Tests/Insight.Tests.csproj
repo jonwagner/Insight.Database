@@ -1,181 +1,22 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProductVersion>8.0.30703</ProductVersion>
-    <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{DEB0A47D-FC34-4B7F-A2FB-151B3697533E}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Insight.Tests</RootNamespace>
-    <AssemblyName>Insight.Tests</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
-    <RestorePackages>true</RestorePackages>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <UseVSHostingProcess>true</UseVSHostingProcess>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <Prefer32Bit>false</Prefer32Bit>
-    <PlatformTarget>AnyCPU</PlatformTarget>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(TargetFrameworkVersion)' == 'v4.0'">
-    <FrameworkFolder>net40</FrameworkFolder>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(FrameworkFolder)' == ''">
-    <FrameworkFolder>net45</FrameworkFolder>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.SqlServer.Types, Version=14.0.0.0, Culture=neutral, PublicKeyToken=89845dcd8080cc91, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.SqlServer.Types.14.0.314.76\lib\$(FrameworkFolder)\Microsoft.SqlServer.Types.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="nunit.framework, Version=3.6.1.0, Culture=neutral, PublicKeyToken=2638cd05610744eb, processorArchitecture=MSIL">
-      <HintPath>..\packages\NUnit.3.6.1\lib\$(FrameworkFolder)\nunit.framework.dll</HintPath>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Data.Linq" />
-    <Reference Include="System.Runtime.Serialization" />
-    <Reference Include="System.Transactions" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AsyncQueryCoreTests.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>AsyncQueryCoreTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="BulkCopyTests.cs" />
-    <Compile Include="Cases\Issue281Test.cs" />
-    <Compile Include="SqlServerTypes\Loader.cs" />
-    <Compile Include="TableValuedParametersTests.cs" />
-    <Compile Include="ColumnAttributeTests.cs" />
-    <Compile Include="ConstructorTests.cs" />
-    <Compile Include="GroupByTests.cs" />
-    <Compile Include="OdbcTests.cs" />
-    <Compile Include="SerializationTests.cs" />
-    <Compile Include="StructureTests.cs" />
-    <Compile Include="SyncQueryCoreTests.cs" />
-    <Compile Include="SyncInsertTests.cs" />
-    <Compile Include="SyncExecuteTests.cs" />
-    <Compile Include="SyncExecuteScalarTests.cs" />
-    <Compile Include="ConnectionStringSettingsTests.cs" />
-    <Compile Include="JsonTests.cs" />
-    <Compile Include="AsyncQueryReaderTests.cs" />
-    <Compile Include="AsyncInsertTests.cs" />
-    <Compile Include="AsyncQueryCoreTests.cs" />
-    <Compile Include="AsyncExecuteScalarTests.cs" />
-    <Compile Include="AsyncExecuteTests.cs" />
-    <Compile Include="BaseTest.cs" />
-    <Compile Include="Cases\ConnectionStateCase.cs" />
-    <Compile Include="Cases\OutputParameters.cs" />
-    <Compile Include="Cases\Records.cs" />
-    <Compile Include="SyncQueryCoreTests.generated.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>SyncQueryCoreTests.tt</DependentUpon>
-    </Compile>
-    <Compile Include="ObjectReaderTests.cs" />
-    <Compile Include="OpenTests.cs" />
-    <Compile Include="InterfaceTests.cs" />
-    <Compile Include="MappingTests.cs" />
-    <Compile Include="OptimisticTests.cs" />
-    <Compile Include="OutputParameterTests.cs" />
-    <Compile Include="ExpandoTests.cs" />
-    <Compile Include="InsertTests.cs" />
-    <Compile Include="MultipleResultsTests.cs" />
-    <Compile Include="RegressionTests.cs" />
-    <Compile Include="RetryStrategyTests.cs" />
-    <Compile Include="TestDataClasses.cs" />
-    <Compile Include="XmlTests.cs" />
-    <Compile Include="DbReaderTests.cs" />
-    <Compile Include="DynamicParameterTests.cs" />
-    <Compile Include="ListTests.cs" />
-    <Compile Include="SubObjectTests.cs" />
-    <Compile Include="TypeTests.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="AsyncMiscTests.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="DynamicConnectionTest.cs" />
-    <None Include="App.config" />
-    <None Include="SyncQueryCoreTests.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SyncQueryCoreTests.generated.cs</LastGenOutput>
-    </None>
-    <None Include="AsyncQueryCoreTests.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>AsyncQueryCoreTests.generated.cs</LastGenOutput>
-    </None>
-    <None Include="GenericTypes.tt" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj">
-      <Project>{9dc0ac84-b760-42c4-8703-cad48aeef612}</Project>
-      <Name>Insight.Database.Configuration</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj">
-      <Project>{03743f67-e234-42c8-a1e9-38b8ba12efad}</Project>
-      <Name>Insight.Database.Providers.Default</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj">
-      <Project>{BDF3AFB9-9689-48DB-AC12-B9087F774452}</Project>
-      <Name>Insight.Database</Name>
-    </ProjectReference>
+    <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
+    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
+    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="InsightDbTest.sql" />
   </ItemGroup>
   <ItemGroup>
-    <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170517-02" />
+    <PackageReference Include="NUnit" Version="3.6.1" />
+    <PackageReference Include="NUnit.Console" Version="3.6.1" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" />
   </ItemGroup>
-  <ItemGroup>
-    <Content Include="SqlServerTypes\readme.htm" />
-    <Content Include="SqlServerTypes\x64\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerTypes\x64\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerTypes\x86\msvcr120.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
-    <Content Include="SqlServerTypes\x86\SqlServerSpatial140.dll">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+  <ItemGroup Condition="$(TargetFramework) != 'netcoreapp2.0'">
+    <PackageReference Include="Microsoft.SqlServer.Types" Version="14.0.314.76" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

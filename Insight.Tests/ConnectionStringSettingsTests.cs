@@ -10,6 +10,7 @@ using System.Configuration;
 
 namespace Insight.Tests
 {
+#if !NETCOREAPP2_0
 	/// <summary>
 	/// Tests the behavior of the ConnectionStringSettings extensions.
 	/// </summary>
@@ -32,4 +33,5 @@ namespace Insight.Tests
 			Assert.Throws<ArgumentNullException>(() => settings.Open());
 		}
 	}
+#endif
 }

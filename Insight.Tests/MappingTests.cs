@@ -7,7 +7,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
-using Microsoft.SqlServer.Types;
 using NUnit.Framework;
 using Insight.Database.Mapping;
 
@@ -604,10 +603,11 @@ namespace Insight.Tests
 			Assert.AreEqual(parentTestData.ParentX, data);
 		}
 
-		#region Geography Tests
+#if !NETCOREAPP2_0
+#region Geography Tests
 		class TestGeography
 		{
-			public SqlGeography Geo;
+			public Microsoft.SqlServer.Types.SqlGeography Geo;
 		}
 
 		[Test]
@@ -633,5 +633,6 @@ namespace Insight.Tests
 			Assert.That(results[0].STEquals(point).IsTrue);
 		}
 		#endregion
+#endif
 	}
 }

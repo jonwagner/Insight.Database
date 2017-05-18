@@ -18,7 +18,9 @@ namespace Insight.Tests
 		/// <summary>
 		/// The connection string for our database.
 		/// </summary>
-		public static readonly string ConnectionString = ConfigurationManager.ConnectionStrings["Test"].ConnectionString;
+		// TODO:
+		//		public static readonly string ConnectionString = "Data Source = .; Initial Catalog = InsightDbTests; Asynchronous Processing = true; Integrated Security = true";
+		public static readonly string ConnectionString = "Data Source = .; Initial Catalog = InsightDbTests; Integrated Security = true";
 
 		public IDbConnection Connection()
 		{
@@ -37,7 +39,10 @@ namespace Insight.Tests
 		[OneTimeSetUp]
 		public static void SetUpFixture()
 		{
+#if !NETCOREAPP2_0
 			SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
+#endif
+
 			CreateTestDatabase();
 		}
 

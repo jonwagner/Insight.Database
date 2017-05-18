@@ -295,7 +295,7 @@ namespace Insight.Tests
 		{
 			for (int i = 0; i < count; i++)
 			{
-				System.Configuration.ConfigurationManager.ConnectionStrings["Test"]
+				Connection()
 					.As <ITest1>()
 					.ExecuteSomething();
 			}
