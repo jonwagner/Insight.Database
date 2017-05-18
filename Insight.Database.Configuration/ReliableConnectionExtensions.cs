@@ -13,6 +13,7 @@ namespace Insight.Database.Reliable
 	/// </summary>
 	public static class ReliableConnectionExtensions
 	{
+#if !NETCOREAPP2_0
 		#region ConnectionStringSettings Extensions
 		/// <summary>
 		/// Creates and returns a new SqlConnection.
@@ -64,6 +65,8 @@ namespace Insight.Database.Reliable
 			return settings.ReliableConnection().Dynamic<T>();
 		}
 #endif
-		#endregion
+#endregion
+#endif
+
 	}
 }
