@@ -28,14 +28,14 @@ namespace Insight.Database.CodeGenerator
 		private static ConcurrentDictionary<Tuple<SchemaIdentity, Type>, ObjectReader> _readerDataCache = new ConcurrentDictionary<Tuple<SchemaIdentity, Type>, ObjectReader>();
 
 		/// <summary>
-		/// Gets an array containing the types of the members of the given type.
-		/// </summary>
-		private Type[] _memberTypes;
-
-		/// <summary>
 		/// Gets an array of methods that can be called to access private members of the given type.
 		/// </summary>
 		private Func<object, object>[] _accessors;
+
+		/// <summary>
+		/// The columns in the virtual table.
+		/// </summary>
+		private List<ColumnInfo> _columns;
 		#endregion
 
 		#region Constructors
@@ -50,118 +50,35 @@ namespace Insight.Database.CodeGenerator
 		private ObjectReader(IDbCommand command, Type type, IDataReader reader)
 		{
 			var provider = InsightDbProvider.For(command);
+			_columns = new List<ColumnInfo>();
 
-            // create a mapping, and only keep mappings that match our modified schema
-            var mappings = ColumnMapping.MapColumns(type, reader).ToList();
+			// create a mapping, and only keep mappings that match our modified schema
+			var sourceMappings = ColumnMapping.MapColumns(type, reader).ToList();
+			var sourceColumns = ColumnInfo.FromDataReader(reader);
 
-            // copy the schema and fix it
-            SchemaTable = reader.GetSchemaTable().Copy();
-			FixupSchemaNumericScale();
-			FixupSchemaRemoveReadOnlyColumns(mappings);
-
-		    IsAtomicType = TypeHelper.IsAtomicType(type);
+			IsAtomicType = TypeHelper.IsAtomicType(type);
 			if (!IsAtomicType)
 			{
-				int columnCount = SchemaTable.Rows.Count;
-				_accessors = new Func<object, object>[columnCount];
-				_memberTypes = new Type[columnCount];
+				int columnCount = sourceMappings.Count;
+
+				var accessors = new List<Func<object, object>>();
 
 				for (int i = 0; i < columnCount; i++)
 				{
-                    var mapping = mappings[i];
-					if (mapping == null)
+					var mapping = sourceMappings[i];
+					var column = sourceColumns[i];
+					if (column.IsReadOnly && !column.IsIdentity)
 						continue;
 
-					ClassPropInfo propInfo = mapping.Member;
-
-					// create a new anonymous method that takes an object and returns the value
-					var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
-					var il = dm.GetILGenerator();
-
-					// convert the object reference to the desired type
-					il.Emit(OpCodes.Ldarg_0);
-					if (type.IsValueType)
-					{
-						// access the field/property of a value type
-						var valueHolder = il.DeclareLocal(type);
-						il.Emit(OpCodes.Unbox_Any, type);
-						il.Emit(OpCodes.Stloc, valueHolder);
-						il.Emit(OpCodes.Ldloca_S, valueHolder);
-					}
-					else
-						il.Emit(OpCodes.Isinst, type);					// cast object -> type
-
-					// get the value from the object
-					var readyToSetLabel = il.DefineLabel();
-					ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
-					if (mapping.Member.MemberType.IsValueType)
-						il.Emit(OpCodes.Unbox_Any, mapping.Member.MemberType);
-
-					// if the type is nullable, handle nulls
-					Type sourceType = propInfo.MemberType;
-					Type targetType = (Type)SchemaTable.Rows[i]["DataType"];
-					Type underlyingType = Nullable.GetUnderlyingType(sourceType);
-					if (underlyingType != null)
-					{
-						// check for not null
-						Label notNullLabel = il.DefineLabel();
-
-						var nullableHolder = il.DeclareLocal(propInfo.MemberType);
-						il.Emit(OpCodes.Stloc, nullableHolder);
-						il.Emit(OpCodes.Ldloca_S, nullableHolder);
-						il.Emit(OpCodes.Call, sourceType.GetProperty("HasValue").GetGetMethod());
-						il.Emit(OpCodes.Brtrue_S, notNullLabel);
-
-						// it's null, just return null
-						il.Emit(OpCodes.Ldnull);
-						il.Emit(OpCodes.Ret);
-
-						il.MarkLabel(notNullLabel);
-
-						// it's not null, so unbox to the underlyingtype
-						il.Emit(OpCodes.Ldloca, nullableHolder);
-						il.Emit(OpCodes.Call, sourceType.GetProperty("Value").GetGetMethod());
-
-						// at this point we have de-nulled value, so use those converters
-						sourceType = underlyingType;
-					}
-
-					// if the serializer isn't the default ToStringSerializer, and it can serialize the type properly, then use it
-					// otherwise we'll use coersion or conversion
-					var targetDbType = DbParameterGenerator.LookupDbType(targetType);
-					bool canSerialize = sourceType != typeof(string) &&
-						mapping.Serializer.GetType() != typeof(ToStringObjectSerializer) &&
-						mapping.Serializer.CanSerialize(sourceType, targetDbType);
-
-					if (sourceType != targetType && canSerialize)
-					{
-						if (sourceType.IsValueType)
-							il.Emit(OpCodes.Box, sourceType);
-						il.EmitLoadType(sourceType);
-						StaticFieldStorage.EmitLoad(il, mapping.Serializer);
-						il.Emit(OpCodes.Call, typeof(ObjectReader).GetMethod("SerializeObject", BindingFlags.NonPublic | BindingFlags.Static));
-					}
-					else
-					{
-						// attempt to convert the value
-						// either way, we are putting it in an object variable, so box it
-						if (TypeConverterGenerator.EmitConversionOrCoersion(il, sourceType, targetType))
-							il.Emit(OpCodes.Box, targetType);
-						else
-							il.Emit(OpCodes.Box, sourceType);
-					}
-
-					il.MarkLabel(readyToSetLabel);
-					il.Emit(OpCodes.Ret);
-
-					_memberTypes[i] = propInfo.MemberType;
-					_accessors[i] = (Func<object, object>)dm.CreateDelegate(typeof(Func<object, object>));
+					_columns.Add(column);
+					accessors.Add(GenerateAccessor(type, mapping, column));
 				}
+
+				_accessors = accessors.ToArray();
 			}
 			else
 			{
-				// we are working off a single-column atomic type
-				_memberTypes = new Type[1] { type };
+				_columns.Add(sourceColumns.First());
 				_accessors = new Func<object, object>[] { o => o };
 			}
 		}
@@ -171,7 +88,12 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Gets a DataTable containing the expected schema for the type.
 		/// </summary>
-		public DataTable SchemaTable { get; private set; }
+		public DataTable SchemaTable { get { return ColumnInfo.ToSchemaTable(_columns); } }
+
+		/// <summary>
+		/// Gets the number of fields in the table.
+		/// </summary>
+		public int FieldCount { get { return _columns.Count; } }
 
 		/// <summary>
 		/// Gets a value indicating whether the given type is a value type.
@@ -202,8 +124,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The name of the column, or null if there is no mapping.</returns>
 		public string GetName(int ordinal)
 		{
-			var row = (DataRow)SchemaTable.Rows[ordinal];
-			return (string)row["ColumnName"];
+			return _columns[ordinal].Name;
 		}
 
 		/// <summary>
@@ -213,11 +134,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The matching ordinal.</returns>
 		public int GetOrdinal(string name)
 		{
-			for (int i = 0; i < SchemaTable.Rows.Count; i++)
-				if (String.Compare(name, GetName(i), StringComparison.OrdinalIgnoreCase) == 0)
-					return i;
-
-			return -1;
+			return _columns.FindIndex(c => String.Compare(name, c.Name, StringComparison.OrdinalIgnoreCase) == 0);
 		}
 
 		/// <summary>
@@ -227,7 +144,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The type of the column, or null if there is no mapping.</returns>
 		public Type GetType(int ordinal)
 		{
-			return _memberTypes[ordinal];
+			return _columns[ordinal].ColumnType;
 		}
 
 		/// <summary>
@@ -256,60 +173,100 @@ namespace Insight.Database.CodeGenerator
 		}
 
 		/// <summary>
-		/// SQL Server tells us the precision of the columns
-		/// but the TDS parser doesn't like the ones set on money, smallmoney and date
-		/// so we have to override them
+		/// Generates an accessor for a property in the object.
 		/// </summary>
-		private void FixupSchemaNumericScale()
+		/// <param name="type">The type of object being read.</param>
+		/// <param name="mapping">The column mapping.</param>
+		/// <param name="columnInfo">The column information.</param>
+		/// <returns>An accessor function or null if there is no mapping.</returns>
+		private static Func<object, object> GenerateAccessor(Type type, FieldMapping mapping, ColumnInfo columnInfo)
 		{
-			if (SchemaTable.Columns.Contains("DataTypeName"))
+			if (mapping == null)
+				return null;
+
+			ClassPropInfo propInfo = mapping.Member;
+
+			// create a new anonymous method that takes an object and returns the value
+			var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
+			var il = dm.GetILGenerator();
+
+			// convert the object reference to the desired type
+			il.Emit(OpCodes.Ldarg_0);
+			if (type.IsValueType)
 			{
-				SchemaTable.Columns["NumericScale"].ReadOnly = false;
-				foreach (DataRow row in SchemaTable.Rows)
-				{
-					string dataType = row["DataTypeName"].ToString();
-					if (String.Equals(dataType, "money", StringComparison.OrdinalIgnoreCase))
-						row["NumericScale"] = 4;
-					else if (String.Equals(dataType, "smallmoney", StringComparison.OrdinalIgnoreCase))
-						row["NumericScale"] = 4;
-					else if (String.Equals(dataType, "date", StringComparison.OrdinalIgnoreCase))
-						row["NumericScale"] = 0;
-				}
+				// access the field/property of a value type
+				var valueHolder = il.DeclareLocal(type);
+				il.Emit(OpCodes.Unbox_Any, type);
+				il.Emit(OpCodes.Stloc, valueHolder);
+				il.Emit(OpCodes.Ldloca_S, valueHolder);
 			}
-		}
+			else
+				il.Emit(OpCodes.Isinst, type);                  // cast object -> type
 
-		/// <summary>
-		/// Fix the schema by removing any readonly columns and adjusting the column ordinal.
-		/// </summary>
-        /// <param name="mappings">A list of field mappings to adjust with the schema.</param>
-		private void FixupSchemaRemoveReadOnlyColumns(List<FieldMapping> mappings)
-		{
-			const string ColumnOrdinal = "ColumnOrdinal";
+			// get the value from the object
+			var readyToSetLabel = il.DefineLabel();
+			ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
+			if (mapping.Member.MemberType.IsValueType)
+				il.Emit(OpCodes.Unbox_Any, mapping.Member.MemberType);
 
-			var isReadOnlyColumn = SchemaTable.Columns.IndexOf("IsReadOnly");
-			var isIdentityColumn = SchemaTable.Columns.IndexOf("IsIdentity");
-
-			// remove any mappings for readonly columns, except identities, which we may want to insert
-			if (isReadOnlyColumn != -1)
+			// if the type is nullable, handle nulls
+			Type sourceType = propInfo.MemberType;
+			Type targetType = columnInfo.ColumnType;
+			Type underlyingType = Nullable.GetUnderlyingType(sourceType);
+			if (underlyingType != null)
 			{
-				SchemaTable.Columns[ColumnOrdinal].ReadOnly = false;
+				// check for not null
+				Label notNullLabel = il.DefineLabel();
 
-				for (int i = 0; i < SchemaTable.Rows.Count; i++)
-				{
-					var row = SchemaTable.Rows[i];
-					row[ColumnOrdinal] = i;
+				var nullableHolder = il.DeclareLocal(propInfo.MemberType);
+				il.Emit(OpCodes.Stloc, nullableHolder);
+				il.Emit(OpCodes.Ldloca_S, nullableHolder);
+				il.Emit(OpCodes.Call, sourceType.GetProperty("HasValue").GetGetMethod());
+				il.Emit(OpCodes.Brtrue_S, notNullLabel);
 
-					bool isReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture);
-					bool isIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture);
+				// it's null, just return null
+				il.Emit(OpCodes.Ldnull);
+				il.Emit(OpCodes.Ret);
 
-					if (isReadOnly && !isIdentity)
-					{
-						SchemaTable.Rows.Remove(row);
-                        mappings.RemoveAt(i);
-						i--;
-					}
-				}
+				il.MarkLabel(notNullLabel);
+
+				// it's not null, so unbox to the underlyingtype
+				il.Emit(OpCodes.Ldloca, nullableHolder);
+				il.Emit(OpCodes.Call, sourceType.GetProperty("Value").GetGetMethod());
+
+				// at this point we have de-nulled value, so use those converters
+				sourceType = underlyingType;
 			}
+
+			// if the serializer isn't the default ToStringSerializer, and it can serialize the type properly, then use it
+			// otherwise we'll use coersion or conversion
+			var targetDbType = DbParameterGenerator.LookupDbType(targetType);
+			bool canSerialize = sourceType != typeof(string) &&
+				mapping.Serializer.GetType() != typeof(ToStringObjectSerializer) &&
+				mapping.Serializer.CanSerialize(sourceType, targetDbType);
+
+			if (sourceType != targetType && canSerialize)
+			{
+				if (sourceType.IsValueType)
+					il.Emit(OpCodes.Box, sourceType);
+				il.EmitLoadType(sourceType);
+				StaticFieldStorage.EmitLoad(il, mapping.Serializer);
+				il.Emit(OpCodes.Call, typeof(ObjectReader).GetMethod("SerializeObject", BindingFlags.NonPublic | BindingFlags.Static));
+			}
+			else
+			{
+				// attempt to convert the value
+				// either way, we are putting it in an object variable, so box it
+				if (TypeConverterGenerator.EmitConversionOrCoersion(il, sourceType, targetType))
+					il.Emit(OpCodes.Box, targetType);
+				else
+					il.Emit(OpCodes.Box, sourceType);
+			}
+
+			il.MarkLabel(readyToSetLabel);
+			il.Emit(OpCodes.Ret);
+
+			return (Func<object, object>)dm.CreateDelegate(typeof(Func<object, object>));
 		}
 	}
 }

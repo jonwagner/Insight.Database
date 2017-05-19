@@ -17,7 +17,7 @@ namespace Insight.Database.CodeGenerator
 	/// We store the information in the static fields of a class because it is easy to access them
 	/// in the IL of a DynamicMethod.
 	/// </remarks>
-	public class StaticFieldStorage
+	public static class StaticFieldStorage
 	{
 		/// <summary>
 		/// Stores the static objects to return later.

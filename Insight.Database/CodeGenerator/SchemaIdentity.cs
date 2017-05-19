@@ -22,7 +22,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// The list of columns in the schema as a Tuple of string + Type + IsNullable + IsReadOnly + IsIdentity.
 		/// </summary>
-		private ColumnIdentity[] _columns;
+		private List<ColumnInfo> _columns;
 		#endregion
 
 		#region Constructors
@@ -67,8 +67,8 @@ namespace Insight.Database.CodeGenerator
 			if (other == null)
 				return false;
 
-			int columnCount = _columns.Length;
-			if (columnCount != other._columns.Length)
+			int columnCount = _columns.Count;
+			if (columnCount != other._columns.Count)
 				return false;
 
 			for (int i = 0; i < columnCount; i++)
@@ -77,96 +77,21 @@ namespace Insight.Database.CodeGenerator
 
 			return true;
 		}
-
-		/// <summary>
-		/// Represents a column identity.
-		/// </summary>
-		class ColumnIdentity : IEquatable<ColumnIdentity>
-		{
-			/// <summary>
-			/// Gets or sets the name of the column.
-			/// </summary>
-			public string Name { get; set; }
-
-			/// <summary>
-			/// Gets or sets the type of the column.
-			/// </summary>
-			public Type Type { get; set; }
-			
-			/// <summary>
-			/// Gets or sets a value indicating whether the column is nullable.
-			/// </summary>
-			public bool IsNullable { get; set; }
-	
-			/// <summary>
-			/// Gets or sets a value indicating whether the column is the row identity.
-			/// </summary>
-			public bool IsIdentity { get; set; }
-
-			/// <summary>
-			/// Gets or sets a value indicating whether the column is readonly.
-			/// </summary>
-			public bool IsReadOnly { get; set; }
-
-			/// <summary>
-			/// Determines whether two columns are equal.
-			/// </summary>
-			/// <param name="other">The other column.</param>
-			/// <returns>True if they are equal.</returns>
-			public bool Equals(ColumnIdentity other)
-			{
-				if (other == null)
-					return false;
-
-				if (Name != other.Name)
-					return false;
-				if (Type != other.Type)
-					return false;
-				if (IsNullable != other.IsNullable)
-					return false;
-				if (IsIdentity != other.IsIdentity)
-					return false;
-				if (IsReadOnly != other.IsReadOnly)
-					return false;
-
-				return true;
-			}
-		}
 		#endregion
 
 		#region Initialization
+		/// <summary>
+		/// Reads the schema from a data reader.
+		/// </summary>
+		/// <param name="reader">The reader to process.</param>
 		private void ReadSchema(IDataReader reader)
 		{
-			int fieldCount = (reader.IsClosed) ? 0 : reader.FieldCount;
-
-			_columns = new ColumnIdentity[fieldCount];
-
-			// if there are no fields, then this is a simple identity
-			if (fieldCount == 0)
-				return;
-
-			// we have to compare nullable, readonly and identity because it affects bulk copy
-			var schemaTable = reader.GetSchemaTable();
-			var isNullableColumn = schemaTable.Columns.IndexOf("AllowDbNull");
-			var isReadOnlyColumn = schemaTable.Columns.IndexOf("IsReadOnly");
-			var isIdentityColumn = schemaTable.Columns.IndexOf("IsIdentity");
-
-			for (int i = 0; i < fieldCount; i++)
-			{
-				var row = schemaTable.Rows[i];
-
-				var column = new ColumnIdentity()
-				{
-					Name = reader.GetName(i),
-					Type = reader.GetFieldType(i),
-					IsNullable = (isNullableColumn == -1) ? false : row.IsNull(isNullableColumn) ? false : Convert.ToBoolean(row[isNullableColumn], CultureInfo.InvariantCulture),
-					IsReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture),
-					IsIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture),
-				};
-				_columns[i] = column;
-			}
+			_columns = ColumnInfo.FromDataReader(reader);
 		}
 
+		/// <summary>
+		/// Calculates the hash code for the identity.
+		/// </summary>
 		private void CalculateHashCode()
 		{
 			// we know that we are going to store this in a hashtable, so pre-calculate the hashcode

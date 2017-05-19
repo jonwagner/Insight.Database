@@ -190,7 +190,7 @@ namespace Insight.Database.CodeGenerator
 		#region Stub Methods
 		public override int FieldCount
 		{
-			get { return _objectReader.SchemaTable.Rows.Count; }
+			get { return _objectReader.FieldCount; }
 		}
 
 		public override string GetName(int ordinal)
