@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,7 +16,11 @@ namespace Insight.Database
 	/// </summary>
 	/// <remarks>Disposing this reader does not dispose the inner reader.</remarks>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
-	public class CachedDbDataReader : DbDataReaderWrapper
+#if NETCOREAPP2_0
+	public class CachedDbDataReader : DbDataReaderWrapper, IDbColumnSchemaGenerator
+#else
+		public class CachedDbDataReader : DbDataReaderWrapper
+#endif
 	{
 		/// <summary>
 		/// The inner reader.
@@ -162,5 +168,12 @@ namespace Insight.Database
 				_inner.GetValues(_cache);
 			}
 		}
+
+#if NETCOREAPP2_0
+		ReadOnlyCollection<DbColumn> IDbColumnSchemaGenerator.GetColumnSchema()
+		{
+			return ((IDbColumnSchemaGenerator)_inner).GetColumnSchema();
+		}
+#endif
 	}
 }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Data.Common;
 using System.Diagnostics.CodeAnalysis;
@@ -130,7 +131,7 @@ namespace Insight.Database
 			return new Guid(value.ToString());
 #else
 			return Guid.Parse(value.ToString());
-#endif		
+#endif
 		}
 
 		/// <inheritdoc/>
@@ -176,5 +177,13 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
-		public override string GetDataTypeName(int ordinal)		{			var type = GetFieldType(ordinal);			if (type == null)				return "unmapped";			else				return type.Name;		}	}
+		public override string GetDataTypeName(int ordinal)
+		{
+			var type = GetFieldType(ordinal);
+			if (type == null)
+				return "unmapped";
+			else
+				return type.Name;
+		}
+	}
 }
