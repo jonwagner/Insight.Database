@@ -2,15 +2,4 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
-  <ItemGroup>
-    <Compile Update="Optimistic\OptimisticCommand.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Optimistic\OptimisticConnection.cs">
-      <SubType>Component</SubType>
-    </Compile>
-    <Compile Update="Reliable\ReliableConnection.cs">
-      <SubType>Component</SubType>
-    </Compile>
-  </ItemGroup>
 </Project>

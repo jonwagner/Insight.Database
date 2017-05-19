@@ -13,6 +13,7 @@ namespace Insight.Database
 	/// Translates database exceptions to OptimisticConcurrencyExceptions.
 	/// </summary>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
+	[System.ComponentModel.DesignerCategory("Code")]
 	class OptimisticCommand : DbCommandWrapper
 	{
 		#region Constructors

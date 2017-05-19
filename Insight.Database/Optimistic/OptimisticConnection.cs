@@ -11,6 +11,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Wraps a DbConnection and translates OptimisticConcurrencyExceptions.
 	/// </summary>
+	[System.ComponentModel.DesignerCategory("Code")]
 	public class OptimisticConnection : DbConnectionWrapper
 	{
 		/// <summary>
