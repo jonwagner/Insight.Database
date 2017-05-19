@@ -15,7 +15,7 @@ namespace Insight.Database
 	/// </summary>
 	public static class ConnectionStringSettingsExtensions
 	{
-#if !NETCOREAPP2_0
+#if !NO_CONNECTION_SETTINGS
 #region Connection and Open Members
 		/// <summary>
 		/// Creates and returns a new DbConnection for the connection string.

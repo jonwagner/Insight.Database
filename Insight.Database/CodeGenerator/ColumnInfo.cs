@@ -62,7 +62,7 @@ namespace Insight.Database.CodeGenerator
 		#endregion
 
 		#region Static Methods
-#if NETCOREAPP2_0
+#if HAS_COLUMN_SCHEMA
 		public static List<ColumnInfo> FromDataReader(IDataReader reader)
 		{
 			var schemaGenerator = (IDbColumnSchemaGenerator)reader;

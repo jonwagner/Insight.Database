@@ -13,7 +13,7 @@ namespace Insight.Database.Reliable
 	/// </summary>
 	public static class ReliableConnectionExtensions
 	{
-#if !NETCOREAPP2_0
+#if !NO_CONNECTION_SETTINGS
 		#region ConnectionStringSettings Extensions
 		/// <summary>
 		/// Creates and returns a new SqlConnection.

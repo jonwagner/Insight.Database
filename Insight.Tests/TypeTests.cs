@@ -8,7 +8,7 @@ using System.Dynamic;
 using System.Linq;
 using System.Text;
 using Insight.Database;
-#if !NETCOREAPP2_0
+#if !NO_SQL_TYPES
 using Microsoft.SqlServer.Types;
 #endif
 using NUnit.Framework;
@@ -209,7 +209,7 @@ namespace Insight.Tests
 			// class types
 			Data<string>.Test("foo", _connection, "varchar(128)");
 			Data<byte[]>.Test(new byte[] { 1, 2, 3, 4 }, _connection, "varbinary(MAX)");
-#if !NETCOREAPP2_0
+#if !NO_LINQ_BINARY
 			Data<System.Data.Linq.Binary>.Test(new System.Data.Linq.Binary(new byte[] { 1, 2, 3, 4 }), _connection, "varbinary(MAX)");
 #endif
 
@@ -1003,7 +1003,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
-#if !NETCOREAPP2_0
+#if !NO_SQL_TYPES
 		#region SqlGeometry Tests
 		public interface ITestGeometry
 		{

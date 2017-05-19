@@ -603,7 +603,7 @@ namespace Insight.Tests
 			Assert.AreEqual(parentTestData.ParentX, data);
 		}
 
-#if !NETCOREAPP2_0
+#if !NO_SQL_TYPES
 #region Geography Tests
 		class TestGeography
 		{

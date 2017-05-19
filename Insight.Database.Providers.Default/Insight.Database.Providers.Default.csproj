@@ -2,6 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.0</TargetFramework>
   </PropertyGroup>
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
+    <DefineConstants>$(DefineConstants);NO_SCHEMA_TABLE;HAS_COLUMN_SCHEMA;NO_UDT;NO_DERIVE_PARAMETERS;NO_DB_PROVIDER;NO_SQL_TYPES;NO_CONNECTION_SETTINGS;NO_ODBC;NO_OLEDB;NO_LINQ_BINARY</DefineConstants>
+  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="4.4.0-preview2-25317-01" />
     <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />

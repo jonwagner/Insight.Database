@@ -111,8 +111,7 @@ namespace Insight.Database.Providers.Default
 										reader.GetString(columnMap.TypeName);
 			}
 
-#if !NETCOREAPP2_0
-			NETCORE || COREONDESK // COREONDESK = Bypass when compiling core-like on 4.x platform, e.g. for testing
+#if !NO_UDT
 			if (parameter.SqlDbType == SqlDbType.Udt)
 			{
 				parameter.UdtTypeName = reader.GetString(columnMap.TypeCatalogName) + "." +

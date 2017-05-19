@@ -94,7 +94,7 @@ namespace Insight.Database
 			return InnerFactory.CreateParameter();
 		}
 
-#if !NETCOREAPP2_0
+#if !NO_DB_PROVIDER
 		/// <inheritdoc/>
 		public override CodeAccessPermission CreatePermission(PermissionState state)
 		{

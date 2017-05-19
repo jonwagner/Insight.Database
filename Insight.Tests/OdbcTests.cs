@@ -9,7 +9,7 @@ using System.Threading.Tasks;
 
 namespace Insight.Tests
 {
-#if !NETCOREAPP2_0
+#if !NO_ODBC
 	[TestFixture]
     public class OdbcTests
     {

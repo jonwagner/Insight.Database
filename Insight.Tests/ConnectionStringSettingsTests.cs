@@ -10,7 +10,7 @@ using System.Configuration;
 
 namespace Insight.Tests
 {
-#if !NETCOREAPP2_0
+#if !NO_CONNECTION_SETTINGS
 	/// <summary>
 	/// Tests the behavior of the ConnectionStringSettings extensions.
 	/// </summary>

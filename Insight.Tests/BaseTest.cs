@@ -39,7 +39,7 @@ namespace Insight.Tests
 		[OneTimeSetUp]
 		public static void SetUpFixture()
 		{
-#if !NETCOREAPP2_0
+#if !NO_SQL_TYPES
 			SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
 #endif
 

@@ -200,7 +200,7 @@ namespace Insight.Database
 			}
 		}
 
-#if !NETCOREAPP2_0
+#if !NO_DB_PROVIDER
 		/// <summary>
 		/// Gets the DbProviderFactory that can be used to create this connection.
 		/// </summary>

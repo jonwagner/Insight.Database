@@ -73,7 +73,7 @@ namespace Insight.Tests
 			}
 		}
 
-#if !NETCOREAPP2_0
+#if !NO_SQL_TYPES
 		#region SqlTypes
 		class InsightTestDataWithSqlTypes : InsightTestData
 		{

@@ -104,7 +104,7 @@ namespace Insight.Database
 
 			SqlCommand sqlCommand = command as SqlCommand;
 
-#if NETCOREAPP2_0
+#if NO_DERIVE_PARAMETERS
 			SqlParameterHelper.DeriveParameters(sqlCommand);
 #else
 			SqlCommandBuilder.DeriveParameters(sqlCommand);
@@ -251,12 +251,14 @@ namespace Insight.Database
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-#if NETCOREAPP2_0
+#if HAS_COLUMN_SCHEMA
 			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
 			var schema = schemaGenerator.GetColumnSchema();
 			return schemaGenerator.GetColumnSchema()[index].DataTypeName == "xml";
-#else
+#elif !NO_SCHEMA_TABLE
 			return ((Type)reader.GetSchemaTable().Rows[index]["ProviderSpecificDataType"]) == typeof(SqlXml);
+#else
+			throw new NotImplementedException();
 #endif
 		}
 
