@@ -34,8 +34,11 @@ namespace Insight.Tests
 			TestConvertToTypeWhileReading<bool>("bit");
 			TestConvertToTypeWhileReading<char>("char(1)");
 			TestConvertToTypeWhileReading<DateTime>("date");
+#if !NETCOREAPP2_0
+			// TODO: test this with release version of sql client 4.4
 			TestConvertToTypeWhileReading<DateTimeOffset>("datetimeoffset");
 			TestConvertToTypeWhileReading<TimeSpan>("time");
+#endif
 		}
 
 		private void TestConvertToTypeWhileReading<T>(string sqlType, T value = default(T)) where T : struct
@@ -68,9 +71,9 @@ namespace Insight.Tests
 				Connection().ExecuteSql(String.Format("DROP TYPE {0}", tableName));
 			}
 		}
-		#endregion
+#endregion
 
-		#region Using Implicit/Explicit Operators For Conversions
+#region Using Implicit/Explicit Operators For Conversions
 		struct Money
 		{
 			private decimal _d;
@@ -102,9 +105,9 @@ namespace Insight.Tests
 				Connection().ExecuteSql("DROP TYPE ObjectReader_ImplicitTable");
 			}
 		}
-		#endregion
+#endregion
 
-		#region Using IConvertible For Conversions
+#region Using IConvertible For Conversions
 		struct ConvertibleMoney : IConvertible
 		{
 			private decimal _d;
@@ -219,9 +222,9 @@ namespace Insight.Tests
 				Connection().ExecuteSql("DROP TYPE ObjectReader_IConvertibleTable");
 			}
 		}
-		#endregion
+#endregion
 
-		#region Reading Special Types
+#region Reading Special Types
 		/// <summary>
 		/// Tests the conversion of types when reading a value from an object (say, as a string)
 		/// and sending it to a TVP column of a different type (say, a guid).
@@ -260,9 +263,9 @@ namespace Insight.Tests
 				Connection().ExecuteSql(String.Format("DROP TYPE {0}", tableName));
 			}
 		}		
-		#endregion
+#endregion
 
-		#region Missing Table Tests
+#region Missing Table Tests
 		[Test]
 		public void ProcWithMissingTableParameterShouldThrow()
 		{
@@ -313,9 +316,9 @@ namespace Insight.Tests
 			}
 		}
 #endif
-		#endregion
+#endregion
 
-		#region Table Schema Tests
+#region Table Schema Tests
 		[Test]
 		public void TestTablesInSchemasWithDots()
 		{
@@ -334,9 +337,9 @@ namespace Insight.Tests
 				try { Connection().ExecuteSql("DROP SCHEMA [vk.common]"); } catch { }
 			}
 		}
-		#endregion
+#endregion
 
-		#region Retry Tests
+#region Retry Tests
 		public class TestIssue215 : BaseTest
 		{
 			class TestData
@@ -396,6 +399,6 @@ namespace Insight.Tests
 				}
 			}
 		}
-		#endregion
+#endregion
 	}
 }
