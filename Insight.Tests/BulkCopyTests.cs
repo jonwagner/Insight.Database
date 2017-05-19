@@ -94,7 +94,7 @@ namespace Insight.Tests
 
 				// bulk load the data
 				Cleanup();
-				connection.BulkCopy("BulkCopyData", array);
+				connection.BulkCopy("BulkCopyWithUdt", array);
 
 				VerifyRecordsInserted(connection, i);
 			}

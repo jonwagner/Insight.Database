@@ -116,6 +116,12 @@ GO
 ----------------------------------------------------------
 CREATE TABLE BulkCopyData (
 	[Int] [int],
+	[Computed] AS [Int] + 1
+)
+GO
+
+CREATE TABLE BulkCopyWithUdt (
+	[Int] [int],
 	[Computed] AS [Int] + 1,
 	[Geometry] [geometry]
 )
