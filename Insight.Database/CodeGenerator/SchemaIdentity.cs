@@ -107,7 +107,7 @@ namespace Insight.Database.CodeGenerator
 					_hashCode *= 23;
 					_hashCode += column.Name.GetHashCode();
 					_hashCode *= 23;
-					_hashCode += column.Type.GetHashCode();
+					_hashCode += column.DataType.GetHashCode();
 					_hashCode *= 23;
 					if (column.IsNullable)
 						_hashCode++;

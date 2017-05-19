@@ -144,7 +144,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The type of the column, or null if there is no mapping.</returns>
 		public Type GetType(int ordinal)
 		{
-			return _columns[ordinal].ColumnType;
+			return _columns[ordinal].DataType;
 		}
 
 		/// <summary>
@@ -211,7 +211,7 @@ namespace Insight.Database.CodeGenerator
 
 			// if the type is nullable, handle nulls
 			Type sourceType = propInfo.MemberType;
-			Type targetType = columnInfo.ColumnType;
+			Type targetType = columnInfo.DataType;
 			Type underlyingType = Nullable.GetUnderlyingType(sourceType);
 			if (underlyingType != null)
 			{

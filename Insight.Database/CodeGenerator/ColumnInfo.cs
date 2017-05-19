@@ -23,7 +23,12 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Gets or sets the type of the column.
 		/// </summary>
-		public Type Type { get; set; }
+		public Type DataType { get; set; }
+
+		/// <summary>
+		/// Gets or sets the name of the type of the column.
+		/// </summary>
+		public string DataTypeName { get; set; }
 
 		/// <summary>
 		/// Gets or sets a value indicating whether the column is nullable.
@@ -39,11 +44,6 @@ namespace Insight.Database.CodeGenerator
 		/// Gets or sets a value indicating whether the column is readonly.
 		/// </summary>
 		public bool IsReadOnly { get; set; }
-
-		/// <summary>
-		/// Gets or sets the type of data in the column.
-		/// </summary>
-		public Type ColumnType { get; set; }
 
 		/// <summary>
 		/// Gets or sets the size of the column.
@@ -72,11 +72,11 @@ namespace Insight.Database.CodeGenerator
 				new ColumnInfo()
 				{
 					Name = column.ColumnName,
-					Type = column.DataType,
+					DataType = column.DataType,
+					DataTypeName = column.DataTypeName,
 					IsNullable = column.AllowDBNull ?? false,
 					IsReadOnly = column.IsReadOnly ?? false,
 					IsIdentity = column.IsIdentity ?? false,
-					ColumnType = column.DataType,
 					NumericPrecision = column.NumericPrecision,
 					NumericScale = column.NumericScale,
 					ColumnSize = column.ColumnSize
@@ -121,7 +121,7 @@ namespace Insight.Database.CodeGenerator
 					IsNullable = (isNullableColumn == -1) ? false : row.IsNull(isNullableColumn) ? false : Convert.ToBoolean(row[isNullableColumn], CultureInfo.InvariantCulture),
 					IsReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture),
 					IsIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture),
-					ColumnType = (Type)row[dataTypeColumn],
+					DataType = (Type)row[dataTypeColumn],
 					NumericPrecision = row[precisionColumn],
 					NumericScale = row[scaleColumn],
 					ColumnSize = row[columnSizeColumn]
@@ -166,6 +166,7 @@ namespace Insight.Database.CodeGenerator
 				table.Columns.Add("ColumnOrdinal", typeof(int));
 				table.Columns.Add("ColumnSize", typeof(int));
 				table.Columns.Add("DataType", typeof(Type));
+				table.Columns.Add("DataTypeName", typeof(string));
 				table.Columns.Add("IsUnique", typeof(bool));
 				table.Columns.Add("IsKey", typeof(bool));
 				table.Columns.Add("IsAliased", typeof(bool));
@@ -191,7 +192,8 @@ namespace Insight.Database.CodeGenerator
 					row["ColumnName"] = column.Name;
 					row["ColumnSize"] = column.ColumnSize;
 					row["ColumnOrdinal"] = i;
-					row["DataType"] = column.ColumnType;
+					row["DataType"] = column.DataType;
+					row["DataTypeName"] = column.DataTypeName;
 					row["IsIdentity"] = column.IsIdentity;
 					row["IsReadOnly"] = column.IsReadOnly;
 					row["NumericPrecision"] = column.NumericPrecision;
@@ -222,7 +224,7 @@ namespace Insight.Database.CodeGenerator
 
 			if (Name != other.Name)
 				return false;
-			if (Type != other.Type)
+			if (DataType != other.DataType)
 				return false;
 			if (IsNullable != other.IsNullable)
 				return false;
