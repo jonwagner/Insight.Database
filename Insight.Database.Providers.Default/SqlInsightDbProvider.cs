@@ -12,7 +12,6 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.Providers;
-using Insight.Database.Providers.Default;
 
 namespace Insight.Database
 {
@@ -105,7 +104,7 @@ namespace Insight.Database
 			SqlCommand sqlCommand = command as SqlCommand;
 
 #if NO_DERIVE_PARAMETERS
-			SqlParameterHelper.DeriveParameters(sqlCommand);
+			Insight.Database.Providers.Default.SqlParameterHelper.DeriveParameters(sqlCommand);
 #else
 			SqlCommandBuilder.DeriveParameters(sqlCommand);
 #endif
@@ -130,8 +129,9 @@ namespace Insight.Database
 			SqlParameter template = (SqlParameter)parameter;
 			p.SqlDbType = template.SqlDbType;
 			p.TypeName = template.TypeName;
-// TODO:
-//			p.UdtTypeName = template.UdtTypeName;
+#if !NO_UDT
+			p.UdtTypeName = template.UdtTypeName;
+#endif
 
 			return p;
 		}
@@ -150,26 +150,22 @@ namespace Insight.Database
 				SqlParameter p = (SqlParameter)parameter;
 				p.SqlDbType = SqlDbType.Udt;
 
+#if !NO_SQL_TYPES
 				switch (type.Name)
 				{
 					case "SqlGeometry":
-// TODO:
-						throw new NotImplementedException();
-//						p.UdtTypeName = "sys.geometry";
-//						break;
+						p.UdtTypeName = "sys.geometry";
+						break;
 
 					case "SqlGeography":
-// TODO:
-						throw new NotImplementedException();
-//						p.UdtTypeName = "sys.geography";
-//						break;
+						p.UdtTypeName = "sys.geography";
+						break;
 
 					case "SqlHierarchy":
-// TODO:
-						throw new NotImplementedException();
-//						p.UdtTypeName = "sys.hierarchyid";
-//						break;
+						p.UdtTypeName = "sys.hierarchyid";
+						break;
 				}
+#endif
 			}
 
 			// older versions of SQL Server (CE and 2005) don't support DateTime2
@@ -383,14 +379,15 @@ namespace Insight.Database
 					p.TypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
 			}
 
+#if !NO_SQL_TYPES
 			// in SQL2008, some UDTs will not have the proper type names, so we set them with good data
 			foreach (var p in parameters.Where(p => p.SqlDbType == SqlDbType.Udt))
 			{
 				var typeParameter = parameterNames.FirstOrDefault(n => String.Compare(p.ParameterName, (string)n["ParameterName"], StringComparison.OrdinalIgnoreCase) == 0);
 				if (typeParameter != null)
-					throw new NotImplementedException(); // TODO:
-						//					p.UdtTypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
+					p.UdtTypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
 			}
+#endif
 		}
 
 		/// <summary>

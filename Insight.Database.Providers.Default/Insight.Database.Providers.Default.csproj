@@ -1,22 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <TargetFrameworks>net451;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
-    <DefineConstants>$(DefineConstants);NO_SCHEMA_TABLE;HAS_COLUMN_SCHEMA;NO_UDT;NO_DERIVE_PARAMETERS;NO_DB_PROVIDER;NO_SQL_TYPES;NO_CONNECTION_SETTINGS;NO_ODBC;NO_OLEDB;NO_LINQ_BINARY</DefineConstants>
-  </PropertyGroup>
+  <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="4.4.0-preview2-25317-01" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" />
     <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
-    <Compile Remove="OdbcInsightDbProvider.cs" />
-    <Compile Remove="OleDbInsightDbProvider.cs" />
+  <ItemGroup>
+    <Compile Remove="OdbcInsightDbProvider.cs" Condition="$(HasOleDb) != 'true'" />
+    <Compile Remove="OleDbInsightDbProvider.cs" Condition="$(HasOdbc) != 'true'" />
   </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) != 'netcoreapp2.0'">
-    <Compile Remove="NetCore\*.cs" />
+  <ItemGroup Condition="$(HasSqlDeriveParameters) == 'true'">
+    <Compile Remove="DeriveParameters\*.cs" />
   </ItemGroup>
 </Project>

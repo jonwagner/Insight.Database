@@ -9,6 +9,9 @@ using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
 using Insight.Database.Mapping;
+#if !NO_SQL_TYPES
+using Microsoft.SqlServer.Types;
+#endif
 
 #pragma warning disable 0649
 

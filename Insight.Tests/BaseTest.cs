@@ -40,7 +40,7 @@ namespace Insight.Tests
 		public static void SetUpFixture()
 		{
 #if !NO_SQL_TYPES
-			SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory);
+			SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory + @"..\..\..");
 #endif
 
 			CreateTestDatabase();

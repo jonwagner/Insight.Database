@@ -6,6 +6,9 @@ using System.Data.SqlClient;
 using System.Data;
 using NUnit.Framework;
 using Insight.Database;
+#if !NO_SQL_TYPES
+using Microsoft.SqlServer.Types;
+#endif
 
 namespace Insight.Tests
 {
@@ -19,9 +22,9 @@ namespace Insight.Tests
 			Cleanup();
 		}
 
-		private void Cleanup()
+		private void Cleanup(string tableName = "BulkCopyData")
 		{
-			Connection().ExecuteSql("DELETE FROM [BulkCopyData]");
+			Connection().ExecuteSql(String.Format("DELETE FROM [{0}]", tableName));
 		}
 		#endregion
 
@@ -88,15 +91,15 @@ namespace Insight.Tests
 			for (int i = 0; i < 3; i++)
 			{
 				// build test data
-				InsightTestData[] array = new InsightTestData[i];
+				InsightTestData[] array = new InsightTestDataWithSqlTypes[i];
 				for (int j = 0; j < i; j++)
-					array[j] = new InsightTestData() { Int = j, Geometry = new Microsoft.SqlServer.Types.SqlGeometry() };
+					array[j] = new InsightTestDataWithSqlTypes() { Int = j, Geometry = new Microsoft.SqlServer.Types.SqlGeometry() };
 
 				// bulk load the data
-				Cleanup();
+				Cleanup("BulkCopyWithUdt");
 				connection.BulkCopy("BulkCopyWithUdt", array);
 
-				VerifyRecordsInserted(connection, i);
+				VerifyRecordsInserted(connection, array.Length, tableName: "BulkCopyWithUdt");
 			}
 		}
 		#endregion
@@ -202,10 +205,10 @@ namespace Insight.Tests
 			}
 		}
 
-		private void VerifyRecordsInserted(IDbConnection connection, int count, IDbTransaction transaction = null)
+		private void VerifyRecordsInserted(IDbConnection connection, int count, IDbTransaction transaction = null, string tableName = "BulkCopyData")
 		{
 			// run the query
-			var items = connection.QuerySql<InsightTestData>("SELECT * FROM BulkCopyData ORDER BY Int", transaction: transaction);
+			var items = connection.QuerySql<InsightTestData>(String.Format("SELECT * FROM {0} ORDER BY Int", tableName), transaction: transaction);
 			Assert.IsNotNull(items);
 			Assert.AreEqual(count, items.Count);
 			for (int j = 0; j < count; j++)

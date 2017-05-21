@@ -1,0 +1,24 @@
+﻿<Project>
+  <PropertyGroup>
+    <HasConnectionSettings>true</HasConnectionSettings>
+    <HasDynamic>true</HasDynamic>
+    <HasLinq>true</HasLinq>
+    <HasOleDb>true</HasOleDb>
+    <HasObdc>true</HasObdc>
+    <HasSqlDeriveParameters>true</HasSqlDeriveParameters>
+    <HasSqlTypes>true</HasSqlTypes>
+	<SqlClientVersion>4.1.0</SqlClientVersion>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
+    <DefineConstants>$(DefineConstants);NO_SCHEMA_TABLE;HAS_COLUMN_SCHEMA;NO_UDT;NO_DERIVE_PARAMETERS;NO_DB_PROVIDER;NO_SQL_TYPES;NO_CONNECTION_SETTINGS;NO_ODBC;NO_OLEDB;NO_LINQ_BINARY</DefineConstants>
+    <HasConnectionSettings>false</HasConnectionSettings>
+    <HasDynamic>false</HasDynamic>
+    <HasOleDb>false</HasOleDb>
+    <HasObdc>false</HasObdc>
+    <HasLinq>false</HasLinq>
+    <HasSqlDeriveParameters>false</HasSqlDeriveParameters>
+    <HasSqlTypes>false</HasSqlTypes>
+	<SqlClientVersion>4.4.0-preview1-25305-02</SqlClientVersion>
+  </PropertyGroup>
+</Project>
