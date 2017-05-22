@@ -1,5 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <description>
+      A PostgreSQL provider for Insight.Database so Insight.Database can do its magic on PostgreSQL.
+      Automatically installs Npgsql PostgreSQL driver.
+    </description>
+    <PackageTags>Insight orm sql postgre postgresql managed micro-orm</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup>
     <TargetFrameworks>net45;net451</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />

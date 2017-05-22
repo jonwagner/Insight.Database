@@ -1,5 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <description>
+      A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.
+    </description>
+    <PackageTags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</PackageTags>
+  </PropertyGroup>  
+  
+  <PropertyGroup>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
     <SignAssembly>False</SignAssembly>
   </PropertyGroup>

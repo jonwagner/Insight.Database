@@ -1,5 +1,14 @@
 ﻿<Project>
   <PropertyGroup>
+    <version>6.0.0-alpha1</version>
+    <authors>Jon Wagner</authors>
+    <PackageProjectUrl>http://github.com/jonwagner/Insight.Database</PackageProjectUrl>
+    <PackageLicenseUrl>https://github.com/jonwagner/Insight.Database/blob/master/License.txt</PackageLicenseUrl>
+	<PackageIconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</PackageIconUrl>
+    <PackageReleaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</PackageReleaseNotes>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <HasAppDomains>true</HasAppDomains>
     <HasConnectionSettings>true</HasConnectionSettings>
     <HasClassicReflection>true</HasClassicReflection>

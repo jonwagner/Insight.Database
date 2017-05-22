@@ -1,5 +1,11 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <description>
+      An Insight.Database provider for the Glimpse profiling framework so the two can play together nicely.
+    </description>
+    <PackageTags>Insight orm sql micro-orm profiler glimpse</PackageTags>
+  </PropertyGroup>
+  <PropertyGroup>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />

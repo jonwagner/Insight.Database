@@ -1,5 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <description>
+      A DB2 ODP.NET provider for Insight.Database so Insight.Database can do its magic on DB2.
+    </description>
+    <PackageTags>Insight orm sql DB2 micro-orm</PackageTags>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <TargetFrameworks>net40;net451</TargetFrameworks>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>

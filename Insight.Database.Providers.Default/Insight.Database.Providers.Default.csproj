@@ -1,5 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
+    <Description>The SQLServer, ODBC, and OLEDB providers for Insight.Database. These are automatically included in the Insight.Database package.</Description>
+    <PackageTags>Insight orm sql micro-orm sqlserver odbc oledb</PackageTags>
+  </PropertyGroup>
+  
+  <PropertyGroup>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
