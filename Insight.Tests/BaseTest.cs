@@ -18,8 +18,6 @@ namespace Insight.Tests
 		/// <summary>
 		/// The connection string for our database.
 		/// </summary>
-		// TODO:
-		//		public static readonly string ConnectionString = "Data Source = .; Initial Catalog = InsightDbTests; Asynchronous Processing = true; Integrated Security = true";
 		public static readonly string ConnectionString = "Data Source = .; Initial Catalog = InsightDbTests; Integrated Security = true";
 
 		public IDbConnection Connection()
