@@ -13,7 +13,7 @@
     <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != ''" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />

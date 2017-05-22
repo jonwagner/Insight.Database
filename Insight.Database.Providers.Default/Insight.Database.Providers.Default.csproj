@@ -13,7 +13,7 @@
     <PackageReference Include="System.Diagnostics.Tools" Version="$(SystemDiagnosticsToolsVersion)" Condition="$(SystemDiagnosticsToolsVersion) != ''" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Data" Condition="$(SqlClientVersion) == ''" />

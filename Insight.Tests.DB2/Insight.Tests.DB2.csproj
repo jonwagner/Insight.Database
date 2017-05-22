@@ -6,8 +6,7 @@
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
     <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
-    <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj" />
   </ItemGroup>
   <ItemGroup>

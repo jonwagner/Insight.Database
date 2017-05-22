@@ -13,6 +13,6 @@
     <PackageReference Include="Glimpse.Ado" Version="1.7.3.0" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
 </Project>

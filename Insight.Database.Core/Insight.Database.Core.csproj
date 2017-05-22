@@ -1,0 +1,157 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <description>
+      A lightweight, fast, convenient micro-ORM that allows you to get objects in and out of your database with the most control and least overhead.
+    </description>
+    <PackageTags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</PackageTags>
+  </PropertyGroup>  
+  
+  <PropertyGroup>
+    <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
+    <SignAssembly>False</SignAssembly>
+  </PropertyGroup>
+  <Import Project="..\SharedConfiguration.csproj" />
+  
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Json" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Xml" Version="4.3.0" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <Compile Remove="CodeAnalysisRules.cs" />
+    <Compile Remove="CustomDictionary.cs" />
+    <Compile Remove="Settings.cs" />
+    <Compile Remove="StyleCop.cs" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Remove="CodeAnalysisRules.ruleset" />
+    <None Remove="CustomDictionary.xml" />
+    <None Remove="GenericTypes.tt" />
+    <None Remove="Settings.StyleCop" />
+    <None Remove="StyleCop.Cache" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <None Update="Compatibility.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Compatibility.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Extensions\AsyncExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AsyncExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Extensions\DBConnectionExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DBConnectionExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Extensions\DbReaderExtensions.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>DbReaderExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\Guardian.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Guardian.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\ListReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ListReader.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\OneToOne.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>OneToOne.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\Query.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Query.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\RecordReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>RecordReader.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\Results.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>Results.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\ResultsReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>ResultsReader.generated.cs</LastGenOutput>
+    </None>
+    <None Update="Structure\SingleReader.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SingleReader.generated.cs</LastGenOutput>
+    </None>
+  </ItemGroup>  
+  <ItemGroup>
+    <Compile Update="Compatibility.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Compatibility.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Extensions\AsyncExtensions.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AsyncExtensions.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Extensions\DBConnectionExtensions.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DBConnectionExtensions.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Extensions\DbReaderExtensions.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>DbReaderExtensions.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\Guardian.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Guardian.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\ListReader.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ListReader.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\OneToOne.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>OneToOne.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\Query.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Query.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\RecordReader.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>RecordReader.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\Results.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Results.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\ResultsReader.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>ResultsReader.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Structure\SingleReader.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SingleReader.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>  
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+</Project>

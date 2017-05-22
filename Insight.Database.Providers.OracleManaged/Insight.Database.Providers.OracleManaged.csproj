@@ -14,6 +14,6 @@
     <PackageReference Include="Oracle.ManagedDataAccess" Version="12.1.24160719" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
 </Project>

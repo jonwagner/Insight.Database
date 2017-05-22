@@ -15,6 +15,6 @@
     <PackageReference Include="MySql.Data" Version="6.9.9" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
 </Project>

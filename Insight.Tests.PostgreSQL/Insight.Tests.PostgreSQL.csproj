@@ -5,8 +5,7 @@
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
     <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
-    <ProjectReference Include="..\Insight.Database.Json\Insight.Database.Json.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.PostgreSQL\Insight.Database.Providers.PostgreSQL.csproj" />
   </ItemGroup>
   <ItemGroup>

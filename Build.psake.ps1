@@ -50,7 +50,7 @@ Task PackageOnly {
     Wipe-Folder $outputDir
 	Get-ChildItem $baseDir\Insight.Database*\**\**\*.nupkg | Remove-Item
 	Get-ChildItem $baseDir\Insight.Database*\*.csproj | %{ dotnet pack $_ -c $configuration }
-	Get-ChildItem $baseDir\Insight.Database*\**\**\*.$version.nupkg | Copy-Item -Destination $outputDir
+	Get-ChildItem $baseDir\Insight.Database*\**\**\*.nupkg | Copy-Item -Destination $outputDir
 }
 
 Task Package -depends Clean, Build, Test, PackageOnly {
