@@ -22,7 +22,9 @@ namespace Insight.Database.Reliable
 		public static ReliableConnection<SqlConnection> ReliableConnection(this SqlConnectionStringBuilder builder)
 		{
 			if (builder == null)
+			{
 				throw new ArgumentNullException("builder", "SqlConnectionStringBuilder cannot be null");
+			}
 
 			return new ReliableConnection<SqlConnection>(builder.ConnectionString);
 		}

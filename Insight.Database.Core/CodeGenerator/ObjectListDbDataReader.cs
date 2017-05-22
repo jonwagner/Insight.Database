@@ -10,13 +10,15 @@ using System.Reflection;
 using System.Reflection.Emit;
 using System.Text;
 
+#pragma warning disable 1591
+
 namespace Insight.Database.CodeGenerator
 {
 	/// <summary>
 	/// Reads an object list as a data reader.
 	/// Not intended to be used directly from object code.
 	/// </summary>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class only implements certain members")]
+	[SuppressMessage("StyleCop.Analyzers", "CS1591:ElementsMustBeDocumented", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "This class only implements certain members")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1204:StaticElementsMustAppearBeforeInstanceElements", Justification = "This class only implements certain members")]
@@ -185,43 +187,51 @@ namespace Insight.Database.CodeGenerator
 		{
 			return false;
 		}
-		#endregion
+        #endregion
 
-		#region Stub Methods
-		public override int FieldCount
+        #region Stub Methods
+        /// <inheritdoc/>
+        public override int FieldCount
 		{
 			get { return _objectReader.FieldCount; }
 		}
 
-		public override string GetName(int ordinal)
+        /// <inheritdoc/>
+        public override string GetName(int ordinal)
 		{
 			return _objectReader.GetName(ordinal);
 		}
 
-		public override int GetOrdinal(string name)
+        /// <inheritdoc/>
+        public override int GetOrdinal(string name)
 		{
 			return _objectReader.GetOrdinal(name);
 		}
 
-		public override void Close()
+        /// <inheritdoc/>
+        public override void Close()
 		{
 		}
 
-		public override int Depth
+        /// <inheritdoc/>
+        public override int Depth
 		{
 			get { return 0; }
 		}
 
-		public override IEnumerator GetEnumerator()
+        /// <inheritdoc/>
+        public override IEnumerator GetEnumerator()
 		{
 			return _enumerable.GetEnumerator();
 		}
 
-		public override Type GetFieldType(int ordinal)
+        /// <inheritdoc/>
+        public override Type GetFieldType(int ordinal)
 		{
 			return _objectReader.GetType(ordinal);
 		}
 
+		/// <inheritdoc/>
 		public override int GetValues(object[] values)
 		{
 			if (values == null) throw new ArgumentNullException("values");
@@ -234,19 +244,19 @@ namespace Insight.Database.CodeGenerator
 			return length;
 		}
 
-		public override bool HasRows
+        /// <inheritdoc/>
+        public override bool HasRows
 		{
 			get { return _enumerable.GetEnumerator().MoveNext(); }
 		}
 
-		public override bool IsClosed
+        /// <inheritdoc/>
+        public override bool IsClosed
 		{
 			get { return false; }
 		}
 
-        /// <summary>
-        /// Obtains the number of rows read by the current DbDataReader.
-        /// </summary>
+        /// <inheritdoc/>
 		public override int RecordsAffected
 		{
             get { return _readRowCount; }

@@ -16,7 +16,7 @@ namespace Insight.Database.Reliable
 		/// Executes a function and retries the action if a transient error is detected.
 		/// </summary>
 		/// <typeparam name="TResult">The type of the result of the function.</typeparam>
-		/// <param name="commandContext">The IDbCommand that is expected to be executed within the function, 
+		/// <param name="commandContext">The IDbCommand that is expected to be executed within the function,
 		/// or null if the operation is being performed directly on a connection.</param>
 		/// <param name="func">The function to execute.</param>
 		/// <returns>The result of the function.</returns>
@@ -26,7 +26,7 @@ namespace Insight.Database.Reliable
 		/// Asynchronously executes a function and retries the action if a transient error is detected.
 		/// </summary>
 		/// <typeparam name="TResult">The type of the result of the function.</typeparam>
-		/// <param name="commandContext">The IDbCommand that is expected to be executed within the function, 
+		/// <param name="commandContext">The IDbCommand that is expected to be executed within the function,
 		/// or null if the operation is being performed directly on a connection.</param>
 		/// <param name="func">The function to execute.</param>
 		/// <returns>The result of the function.</returns>

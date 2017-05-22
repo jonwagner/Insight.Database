@@ -47,7 +47,7 @@ namespace Insight.Database.Structure
 		{
 			return new ChildRecordReader<T, TId, T>(this, records => records.GroupBy(grouping, r => r));
 		}
-		
+
 		/// <summary>
 		/// Returns a child record reader that reads this type of record and groups by the first column in the recordset.
 		/// </summary>
@@ -112,16 +112,18 @@ namespace Insight.Database.Structure
 			{
 				List<Type> guardianTypes = new List<Type>();
 
-				// if a selector was specified, use it, else use the parent's ID accessor to define external columns to use as the key
-				if (typeof(TId) != typeof(object))
-				{
-					if (typeof(TId).Name.StartsWith("Tuple`", StringComparison.OrdinalIgnoreCase))
-						guardianTypes.AddRange(typeof(TId).GetGenericArguments());
-					else
-						guardianTypes.Add(typeof(TId));
-				}
-				else
-					guardianTypes.AddRange(ChildMapperHelper.GetIDAccessor(parentType).MemberTypes);
+                // if a selector was specified, use it, else use the parent's ID accessor to define external columns to use as the key
+                if (typeof(TId) != typeof(object))
+                {
+                    if (typeof(TId).Name.StartsWith("Tuple`", StringComparison.OrdinalIgnoreCase))
+                        guardianTypes.AddRange(typeof(TId).GetGenericArguments());
+                    else
+                        guardianTypes.Add(typeof(TId));
+                }
+                else
+                {
+                    guardianTypes.AddRange(ChildMapperHelper.GetIDAccessor(parentType).MemberTypes);
+                }
 
 				guardianTypes.Insert(0, typeof(T));
 				var guardianType = GetGuardianType(guardianTypes.Count).MakeGenericType(guardianTypes.ToArray());
@@ -140,7 +142,7 @@ namespace Insight.Database.Structure
 
 #if NET35
 		// NET35 doesn't have generic type variance, so we have to put in a converter
-		internal IRecordReader<TBase> GetAdaptedReader<TDerived, TBase>() where TDerived : Guardian<T>, new()
+		IRecordReader<TBase> GetAdaptedReader<TDerived, TBase>() where TDerived : Guardian<T>, new()
 		{
 			return new RecordReaderAdapter<TDerived, TBase>(GetGuardianReader<TDerived>());
 		}

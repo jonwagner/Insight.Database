@@ -15,7 +15,16 @@
   <PropertyGroup Condition="$(Configuration) == 'Release'">
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+    <DocumentationFile>bin\Release\$(TargetFramework)\Insight.Database.Core.xml</DocumentationFile>
   </PropertyGroup>
+  <ItemGroup Condition="$(Configuration) == 'Release'">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+  </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
     <PackageReference Include="System.Data.Common" Version="4.3.0" />

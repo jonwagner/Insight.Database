@@ -248,14 +248,14 @@ namespace Insight.Database.Structure
             if (parentType == null)
                 return null;
 
-            // Determine the PK of the parent so we can try to translate it to the child            
+            // Determine the PK of the parent so we can try to translate it to the child
             var parentIDAccessor = FindIDAccessor<RecordIdAttribute>(parentType, null, DefaultIDField);
             if (parentIDAccessor == null)
                 return null;
 
             var parentIDNames = parentIDAccessor.MemberNames.ToList();
 
-            // If the parent's PK is just ID, we can't say 
+            // If the parent's PK is just ID, we can't say
             // InvoiceLine.ID => Invoice.ID, but InvoiceLine.Invoice_ID => Invoice.ID makes sense
             if (parentIDNames.Count() == 1 && parentIDNames.First().IsIEqualTo(DefaultIDField))
             {
@@ -266,11 +266,13 @@ namespace Insight.Database.Structure
                 {
                     // Now try InvoiceLine.InvoiceID => Invoice.ID
                     parentIDNames[0] = parentType.Name + DefaultIDField;
-                    idAccessor = FindIDAccessorByNameList(type, parentIDNames, false);    
+                    idAccessor = FindIDAccessorByNameList(type, parentIDNames, false);
                 }
             }
             else
-                idAccessor = FindIDAccessorByNameList(type, parentIDNames, false);
+            {
+				idAccessor = FindIDAccessorByNameList(type, parentIDNames, false);
+			}
 
             return idAccessor;
         }

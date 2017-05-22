@@ -53,7 +53,7 @@ namespace Insight.Database.Reliable
 				});
 		}
 
-		/// <inheritdoc/>	
+		/// <inheritdoc/>
 		protected override DbDataReader ExecuteDbDataReader(CommandBehavior behavior)
 		{
 			return ExecuteWithRetry(

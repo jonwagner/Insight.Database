@@ -13,7 +13,8 @@ namespace Insight.Database
 	/// <summary>
 	/// Implements a fast Expando object that does not support INotifyPropertyChanged.
 	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"), SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "This is an interface imlpementation")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
+	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1201:ElementsMustAppearInTheCorrectOrder", Justification = "This is an interface imlpementation")]
 	public sealed class FastExpando : DynamicObject, IDictionary<string, object>
 	{
 		#region Private Fields

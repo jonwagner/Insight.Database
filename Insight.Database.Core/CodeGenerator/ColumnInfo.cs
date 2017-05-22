@@ -63,6 +63,7 @@ namespace Insight.Database.CodeGenerator
 
 		#region Static Methods
 #if !NO_COLUMN_SCHEMA
+		/// <inheritdoc/>
 		public static List<ColumnInfo> FromDataReader(IDataReader reader)
 		{
 			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
@@ -80,8 +81,7 @@ namespace Insight.Database.CodeGenerator
 					NumericPrecision = column.NumericPrecision,
 					NumericScale = column.NumericScale,
 					ColumnSize = column.ColumnSize
-				}
-			).ToList();
+				}).ToList();
 		}
 #else
 		/// <summary>

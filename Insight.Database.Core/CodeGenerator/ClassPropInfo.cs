@@ -142,7 +142,7 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Gets the custom serializer defined for the field.
 		/// </summary>
-		public Type Serializer { get; private set; }		
+		public Type Serializer { get; private set; }
 
 		/// <summary>
 		/// Gets or sets the type that this is bound to.
@@ -233,17 +233,21 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="il">The IL generator to use.</param>
 		public void EmitGetValue(ILGenerator il)
 		{
-			if (FieldInfo != null)
-				il.Emit(OpCodes.Ldfld, FieldInfo);
-			else if (GetMethodInfo != null)
-			{
-				if (Type.IsValueType)
-					il.Emit(OpCodes.Call, GetMethodInfo);
-				else
-					il.Emit(OpCodes.Callvirt, GetMethodInfo);
-			}
-			else
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a GetProperty method for {1} on class {0}.", Type.FullName, Name));
+            if (FieldInfo != null)
+            {
+                il.Emit(OpCodes.Ldfld, FieldInfo);
+            }
+            else if (GetMethodInfo != null)
+            {
+                if (Type.IsValueType)
+                    il.Emit(OpCodes.Call, GetMethodInfo);
+                else
+                    il.Emit(OpCodes.Callvirt, GetMethodInfo);
+            }
+            else
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a GetProperty method for {1} on class {0}.", Type.FullName, Name));
+            }
 		}
 
 		/// <summary>
@@ -252,17 +256,21 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="il">The IL generator to use.</param>
 		public void EmitSetValue(ILGenerator il)
 		{
-			if (FieldInfo != null)
-				il.Emit(OpCodes.Stfld, FieldInfo);
-			else if (SetMethodInfo != null)
-			{
-				if (Type.IsValueType)
-					il.Emit(OpCodes.Call, SetMethodInfo);
-				else
-					il.Emit(OpCodes.Callvirt, SetMethodInfo);
-			}
-			else
-				throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.FullName, Name));
+            if (FieldInfo != null)
+            {
+                il.Emit(OpCodes.Stfld, FieldInfo);
+            }
+            else if (SetMethodInfo != null)
+            {
+                if (Type.IsValueType)
+                    il.Emit(OpCodes.Call, SetMethodInfo);
+                else
+                    il.Emit(OpCodes.Callvirt, SetMethodInfo);
+            }
+            else
+            {
+                throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a SetProperty method for {1} on class {0}.", Type.FullName, Name));
+            }
 		}
 		#endregion
 
@@ -289,7 +297,7 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Callvirt, GetMethodInfo);
 
 			if (typeof(TValue) == typeof(object) && MemberType.IsValueType)
-				il.Emit(OpCodes.Box, MemberType);				
+				il.Emit(OpCodes.Box, MemberType);
 
 			il.Emit(OpCodes.Ret);
 

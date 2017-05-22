@@ -104,7 +104,9 @@ namespace Insight.Database
 		/// <param name="args">The arguments to the method.</param>
 		/// <param name="returnType">The default type of object to return if no type parameter is specified.</param>
 		/// <returns>The results of the stored procedure call.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Security", "CA2100:Review SQL queries for security vulnerabilities", Justification = "A use case of the library is to execute SQL.")]
 		protected internal object DoInvokeMember(InvokeMemberBinder binder, object[] args, Type returnType)
 		{
 			if (binder == null) throw new ArgumentNullException("binder");
@@ -165,7 +167,7 @@ namespace Insight.Database
 						returns = (IQueryReader)args[i + unnamedParameterCount];
 						specialParameters++;
 						break;
-					
+
 					case "outputParameters":
 						outputParameters = args[i + unnamedParameterCount];
 						specialParameters++;

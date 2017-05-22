@@ -22,7 +22,7 @@ namespace Insight.Database
 		/// <returns>A closed SqlConnection.</returns>
 		public static SqlConnection Connection(this SqlConnectionStringBuilder builder)
 		{
-			if (builder == null) throw new ArgumentNullException("builder");
+			if (builder == null) { throw new ArgumentNullException("builder"); }
 
 			SqlConnection disposable = null;
 			try
@@ -36,7 +36,9 @@ namespace Insight.Database
 			finally
 			{
 				if (disposable != null)
+				{
 					disposable.Dispose();
+				}
 			}
 		}
 

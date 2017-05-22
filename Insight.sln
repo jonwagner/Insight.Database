@@ -12,9 +12,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Build.ps1 = Build.ps1
 		Build.psake.ps1 = Build.psake.ps1
 		Building.txt = Building.txt
+		CodeAnalysisRules.ruleset = CodeAnalysisRules.ruleset
 		Insight.Database.snk = Insight.Database.snk
 		License.txt = License.txt
-		Settings.StyleCop = Settings.StyleCop
 		SharedConfiguration.csproj = SharedConfiguration.csproj
 		Vagrantfile = Vagrantfile
 	EndProjectSection

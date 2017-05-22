@@ -22,7 +22,8 @@ namespace Insight.Database.CodeGenerator
 	/// <summary>
 	/// Implements a given interface by binding to the extension methods on DbConnection.
 	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Organization is by functionality.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+	[SuppressMessage("Microsoft.StyleCop.CSharp.OrderingRules", "SA1202:ElementsMustBeOrderedByAccess", Justification = "Organization is by functionality.")]
 	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	class InterfaceGenerator
 	{
@@ -62,7 +63,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			// make a new assembly for the generated types
 			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
-			an.Name += ".DynamicAssembly";
+			an.Name = "Insight.Database.DynamicAssembly";
 
 #if NO_APP_DOMAINS
 			AssemblyBuilder ab = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
@@ -429,14 +430,15 @@ namespace Insight.Database.CodeGenerator
 			mIL.Emit(OpCodes.Ret);
 		}
 
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
 		private static void GenerateReturnsStructure(MethodInfo interfaceMethod, ILGenerator mIL)
 		{
 			// if we are returning a task, unwrap the task result
 			var returnType = interfaceMethod.ReturnType;
 			if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
 				returnType = returnType.GetGenericArguments()[0];
-			
+
 			// if there are returns attributes specified, then build the structure for the coder
 			var returnsAttributes = interfaceMethod.GetCustomAttributes(true).OfType<RecordsetAttribute>().ToDictionary(r => r.Index);
 

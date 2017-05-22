@@ -99,7 +99,8 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="allowBindChild">True if the columns should be allowed to bind to children.</param>
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		/// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject, bool isRootObject, bool allowBindChild)
 		{
 			// if there are no columns detected for the class, then the deserializer is null
@@ -155,7 +156,7 @@ namespace Insight.Database.CodeGenerator
                 // before we call it, put the current index into the index local variable
                 il.Emit(OpCodes.Dup);
                 il.Emit(OpCodes.Stloc, localIndex);
-                
+
                 // now call it
                 il.Emit(OpCodes.Callvirt, _iDataReaderGetItem);
 
@@ -352,9 +353,11 @@ namespace Insight.Database.CodeGenerator
 
 			if (!allowBindChild)
 			{
-				for (int i = 0; i < mapping.Count; i++)
-					if (mapping[i] != null && mapping[i].IsDeep)
-						mapping[i] = null;
+                for (int i = 0; i < mapping.Count; i++)
+                {
+                    if (mapping[i] != null && mapping[i].IsDeep)
+                        mapping[i] = null;
+                }
 			}
 
 			return mapping;
@@ -519,7 +522,7 @@ namespace Insight.Database.CodeGenerator
 			///////////////////////////////////////////////////
 			for (int i = 0; i < deserializers.Length; i++)
 			{
-				il.Emit(OpCodes.Dup);                                       // duplicate the array 
+				il.Emit(OpCodes.Dup);                                       // duplicate the array
 				il.Emit(OpCodes.Ldc_I4, i);                                 // the index to store to
 
 				// call the deserializer for the subobject
@@ -617,7 +620,7 @@ namespace Insight.Database.CodeGenerator
 					string columnName;
 					if (!splitColumns.TryGetValue(types[t], out columnName))
 						continue;
-						
+
 					for (; columnIndex < reader.FieldCount; columnIndex++)
 					{
 						if (String.Compare(columnName, reader.GetName(columnIndex), StringComparison.OrdinalIgnoreCase) == 0)

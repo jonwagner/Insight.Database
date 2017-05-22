@@ -14,11 +14,6 @@ namespace Insight.Database
 	public class OptimisticConcurrencyException : Exception
 	{
 		/// <summary>
-		/// The exception message.
-		/// </summary>
-		private const string ExceptionMessage = "One or more records were changed.";
-
-		/// <summary>
 		/// Initializes a new instance of the OptimisticConcurrencyException class.
 		/// </summary>
 		public OptimisticConcurrencyException()
@@ -29,7 +24,7 @@ namespace Insight.Database
 		/// Initializes a new instance of the OptimisticConcurrencyException class.
 		/// </summary>
 		/// <param name="innerException">The exception causing the issue.</param>
-		public OptimisticConcurrencyException(Exception innerException) : base(ExceptionMessage, innerException)
+		public OptimisticConcurrencyException(Exception innerException) : base("One or more records were changed.", innerException)
 		{
 		}
 

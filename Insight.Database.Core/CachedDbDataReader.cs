@@ -15,11 +15,13 @@ namespace Insight.Database
 	/// This allows you to convert a sequential read into a random read over a single record.
 	/// </summary>
 	/// <remarks>Disposing this reader does not dispose the inner reader.</remarks>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", Justification = "The reader is owned by other code.")]
 #if NO_COLUMN_SCHEMA
 	public class CachedDbDataReader : DbDataReaderWrapper
 #else
-	public class CachedDbDataReader : DbDataReaderWrapper, IDbColumnSchemaGenerator
+    public class CachedDbDataReader : DbDataReaderWrapper, IDbColumnSchemaGenerator
 #endif
 	{
 		/// <summary>
@@ -148,8 +150,16 @@ namespace Insight.Database
 			return _inner.Read();
 		}
 
-		/// <inheritdoc/>
-		protected override void Dispose(bool disposing)
+#if !NO_COLUMN_SCHEMA
+        /// <inheritdoc/>
+        ReadOnlyCollection<DbColumn> IDbColumnSchemaGenerator.GetColumnSchema()
+        {
+            return ((IDbColumnSchemaGenerator)_inner).GetColumnSchema();
+        }
+#endif
+
+        /// <inheritdoc/>
+        protected override void Dispose(bool disposing)
 		{
 			// we don't own the stream, so do nothing
 			_inner = null;
@@ -168,12 +178,5 @@ namespace Insight.Database
 				_inner.GetValues(_cache);
 			}
 		}
-
-#if !NO_COLUMN_SCHEMA
-		ReadOnlyCollection<DbColumn> IDbColumnSchemaGenerator.GetColumnSchema()
-		{
-			return ((IDbColumnSchemaGenerator)_inner).GetColumnSchema();
-		}
-#endif
 	}
 }

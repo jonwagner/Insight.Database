@@ -122,16 +122,18 @@ namespace Insight.Database.CodeGenerator
 			if (type == null || type == typeof(void))
 				return;
 
-			// for generics and values, init a local object with a blank object
-			if (type.IsGenericParameter || type.IsValueType)
-			{
-				var returnValue = mIL.DeclareLocal(type);
-				mIL.Emit(returnValue.LocalIndex < 256 ? OpCodes.Ldloca_S : OpCodes.Ldloca, returnValue);
-				mIL.Emit(OpCodes.Initobj, type);
-				mIL.Emit(OpCodes.Ldloc, returnValue);
-			}
-			else
-				mIL.Emit(OpCodes.Ldnull);
+            // for generics and values, init a local object with a blank object
+            if (type.IsGenericParameter || type.IsValueType)
+            {
+                var returnValue = mIL.DeclareLocal(type);
+                mIL.Emit(returnValue.LocalIndex < 256 ? OpCodes.Ldloca_S : OpCodes.Ldloca, returnValue);
+                mIL.Emit(OpCodes.Initobj, type);
+                mIL.Emit(OpCodes.Ldloc, returnValue);
+            }
+            else
+            {
+                mIL.Emit(OpCodes.Ldnull);
+            }
 		}
 
 		/// <summary>

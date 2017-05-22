@@ -134,7 +134,7 @@ namespace Insight.Database.Providers
 
 			// call the server to get the parameters
 			command.Connection.ExecuteAndAutoClose(
-				_ => 
+				_ =>
 				{
 					if (command.CommandType == System.Data.CommandType.Text)
 						DeriveParametersFromSqlText(command);
@@ -393,8 +393,9 @@ namespace Insight.Database.Providers
 		/// Initializes static members of the InsightDbProvider class.
 		/// </summary>
 		/// <returns>The set of providers.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
-		static Dictionary<Type, InsightDbProvider> LoadProviders()
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2001:AvoidCallingProblematicMethods", MessageId = "System.Reflection.Assembly.LoadFrom")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
+		private static Dictionary<Type, InsightDbProvider> LoadProviders()
 		{
 			var providerMap = new Dictionary<Type, InsightDbProvider>();
 
@@ -423,7 +424,7 @@ namespace Insight.Database.Providers
 		/// </summary>
 		/// <param name="providerMap">The provider map.</param>
 		/// <param name="provider">The provider to register.</param>
-		static void RegisterProvider(Dictionary<Type, InsightDbProvider> providerMap, InsightDbProvider provider)
+		private static void RegisterProvider(Dictionary<Type, InsightDbProvider> providerMap, InsightDbProvider provider)
 		{
 			var supportedTypes = provider.SupportedTypes;
 			if (supportedTypes == null)

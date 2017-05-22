@@ -44,13 +44,15 @@ namespace Insight.Database
 		{
 			foreach (FastExpando obj in list)
 			{
-				if (obj == null)
-					yield return null;
-				else
-				{
-					obj.Mutate(map);
-					yield return obj;
-				}
+                if (obj == null)
+                {
+                    yield return null;
+                }
+                else
+                {
+                    obj.Mutate(map);
+                    yield return obj;
+                }
 			}
 		}
 

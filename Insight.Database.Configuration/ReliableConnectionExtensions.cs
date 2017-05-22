@@ -15,6 +15,7 @@ namespace Insight.Database.Reliable
 	{
 #if !NO_CONNECTION_SETTINGS
 		#region ConnectionStringSettings Extensions
+
 		/// <summary>
 		/// Creates and returns a new SqlConnection.
 		/// </summary>
@@ -23,7 +24,9 @@ namespace Insight.Database.Reliable
 		public static ReliableConnection ReliableConnection(this ConnectionStringSettings settings)
 		{
 			if (settings == null)
+			{
 				throw new ArgumentNullException("settings", "ConnectionStringSettings cannot be null");
+			}
 
 			return new ReliableConnection(settings.Connection());
 		}
@@ -36,7 +39,9 @@ namespace Insight.Database.Reliable
 		public static ReliableConnection ReliableOpen(this ConnectionStringSettings settings)
 		{
 			if (settings == null)
+			{
 				throw new ArgumentNullException("settings", "ConnectionStringSettings cannot be null");
+			}
 
 			ReliableConnection connection = settings.ReliableConnection();
 			connection.Open();

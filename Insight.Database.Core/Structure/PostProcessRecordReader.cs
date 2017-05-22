@@ -17,12 +17,12 @@ namespace Insight.Database
 		/// <summary>
 		/// The base reader to read the record.
 		/// </summary>
-		IRecordReader<T> _baseReader;
+		private IRecordReader<T> _baseReader;
 
 		/// <summary>
 		/// The code to execute after reading the record.
 		/// </summary>
-		Func<IDataReader, T, T> _postRead;
+		private Func<IDataReader, T, T> _postRead;
 
 		/// <summary>
 		/// Initializes a new instance of the PostProcessRecordReader class.

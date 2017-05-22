@@ -15,7 +15,7 @@ namespace Insight.Database
 		/// Use the default serializer.
 		/// </summary>
 		Default,
-		
+
 		/// <summary>
 		/// Serialize the object as XML, using the DataContractSerializer.
 		/// </summary>

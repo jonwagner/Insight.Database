@@ -22,7 +22,8 @@ namespace Insight.Database.CodeGenerator
 	/// <summary>
 	/// A code generator to create methods to serialize an object into sql parameters.
 	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	static class DbParameterGenerator
 	{
 		#region Private Members
@@ -64,7 +65,7 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(DateTimeOffset), DbType.DateTimeOffset },
 			{ typeof(TimeSpan), DbType.Time },
 			{ typeof(byte[]), DbType.Binary },
-			{ typeof(byte?), DbType.Byte }, 
+			{ typeof(byte?), DbType.Byte },
 			{ typeof(sbyte?), DbType.SByte },
 			{ typeof(short?), DbType.Int16 },
 			{ typeof(ushort?), DbType.UInt16 },
@@ -75,8 +76,8 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(float?), DbType.Single },
 			{ typeof(double?), DbType.Double },
 			{ typeof(decimal?), DbType.Decimal },
-			{ typeof(bool?), DbType.Boolean }, 
-			{ typeof(char?), DbType.StringFixedLength }, 
+			{ typeof(bool?), DbType.Boolean },
+			{ typeof(char?), DbType.StringFixedLength },
 			{ typeof(Guid?), DbType.Guid },
 			{ typeof(DateTime?), DbType.DateTime },
 			{ typeof(DateTimeOffset?), DbType.DateTimeOffset },
@@ -188,8 +189,9 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="command">The command to analyze.</param>
 		/// <param name="type">The type of object to parameterize.</param>
 		/// <returns>A method that serializes parameters to values.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-		static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+		private static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
 			var provider = InsightDbProvider.For(command);
 			var parameters = provider.DeriveParameters(command);
@@ -230,7 +232,7 @@ namespace Insight.Database.CodeGenerator
 			{
 				var mapping = mappings[i];
 				var dbParameter = parameters[i];
-				
+
 				// if there is no mapping for the parameter
 				if (mapping == null)
 				{
@@ -425,7 +427,7 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="command">The command to parse.</param>
 		/// <returns>An action that fills in the command parameters from a dynamic object.</returns>
-		static Action<IDbCommand, object> CreateDynamicInputParameterGenerator(IDbCommand command)
+		private static Action<IDbCommand, object> CreateDynamicInputParameterGenerator(IDbCommand command)
 		{
 			var provider = InsightDbProvider.For(command);
 			var parameters = provider.DeriveParameters(command);
@@ -651,14 +653,16 @@ namespace Insight.Database.CodeGenerator
 				IEnumerable list = (IEnumerable)value;
 
 				Type listType = list.GetType();
-				if (listType.IsArray)
-					listType = listType.GetElementType();
-				else
-				{
-					listType = listType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-					if (listType.IsGenericType)
-						listType = listType.GetGenericArguments()[0];
-				}
+                if (listType.IsArray)
+                {
+                    listType = listType.GetElementType();
+                }
+                else
+                {
+                    listType = listType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                    if (listType.IsGenericType)
+                        listType = listType.GetGenericArguments()[0];
+                }
 
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;
 

@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.MissingExtensions;
 
+#pragma warning disable 1591
+
 namespace Insight.Database.Providers.Default
 {
 	/// <summary>

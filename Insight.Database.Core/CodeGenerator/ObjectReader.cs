@@ -192,16 +192,18 @@ namespace Insight.Database.CodeGenerator
 
 			// convert the object reference to the desired type
 			il.Emit(OpCodes.Ldarg_0);
-			if (type.IsValueType)
-			{
-				// access the field/property of a value type
-				var valueHolder = il.DeclareLocal(type);
-				il.Emit(OpCodes.Unbox_Any, type);
-				il.Emit(OpCodes.Stloc, valueHolder);
-				il.Emit(OpCodes.Ldloca_S, valueHolder);
-			}
-			else
-				il.Emit(OpCodes.Isinst, type);                  // cast object -> type
+            if (type.IsValueType)
+            {
+                // access the field/property of a value type
+                var valueHolder = il.DeclareLocal(type);
+                il.Emit(OpCodes.Unbox_Any, type);
+                il.Emit(OpCodes.Stloc, valueHolder);
+                il.Emit(OpCodes.Ldloca_S, valueHolder);
+            }
+            else
+            {
+                il.Emit(OpCodes.Isinst, type);                  // cast object -> type
+            }
 
 			// get the value from the object
 			var readyToSetLabel = il.DefineLabel();

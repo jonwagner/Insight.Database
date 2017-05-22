@@ -171,7 +171,7 @@ namespace Insight.Database
 			// look for a match in our list
 			var match = ColumnOverrides.SingleOrDefault(
 				t =>
-					(t.TargetType == null || t.TargetType == type) && 
+					(t.TargetType == null || t.TargetType == type) &&
 					String.Compare(t.ColumnName, columnName, StringComparison.OrdinalIgnoreCase) == 0);
 
 			// if we've entered an override and the type has a matching member, then use that
@@ -188,13 +188,15 @@ namespace Insight.Database
 		/// <returns>A function that can read a single record.</returns>
 		public override Func<IDataReader, T> GetRecordReader(IDataReader reader)
 		{
-			if (Callback != null)
-			{
-				var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, this);
-				return r => mapper(r, HandleCallback);
-			}
-			else
-				return DbReaderDeserializer.GetDeserializer<T>(reader, this);
+            if (Callback != null)
+            {
+                var mapper = DbReaderDeserializer.GetDeserializerWithCallback<T>(reader, this);
+                return r => mapper(r, HandleCallback);
+            }
+            else
+            {
+                return DbReaderDeserializer.GetDeserializer<T>(reader, this);
+            }
 		}
 
 		/// <summary>

@@ -17,6 +17,7 @@ namespace Insight.Database
 	{
 #if !NO_CONNECTION_SETTINGS
 #region Connection and Open Members
+
 		/// <summary>
 		/// Creates and returns a new DbConnection for the connection string.
 		/// </summary>
@@ -25,7 +26,9 @@ namespace Insight.Database
 		public static DbConnection Connection(this ConnectionStringSettings settings)
 		{
 			if (settings == null)
+			{
 				throw new ArgumentNullException("settings");
+			}
 
 			DbConnection disposable = null;
 			try
@@ -35,9 +38,13 @@ namespace Insight.Database
 				// if there is a provider on the connection string, use that to create the connection
 				// otherwise use a sql connection
 				if (String.IsNullOrEmpty(settings.ProviderName))
+				{
 					connection = new System.Data.SqlClient.SqlConnection();
+				}
 				else
+				{
 					connection = DbProviderFactories.GetFactory(settings.ProviderName).CreateConnection();
+				}
 
 				disposable = connection;
 				connection.ConnectionString = settings.ConnectionString;
@@ -48,7 +55,9 @@ namespace Insight.Database
 			finally
 			{
 				if (disposable != null)
+				{
 					disposable.Dispose();
+				}
 			}
 		}
 

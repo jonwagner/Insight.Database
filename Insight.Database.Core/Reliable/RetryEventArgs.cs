@@ -6,10 +6,11 @@ using System.Text;
 
 namespace Insight.Database.Reliable
 {
-	/// <summary>
-	/// Represents an event that occurs when a database connection is about to be retried.
-	/// </summary>
-	public sealed class RetryEventArgs : EventArgs
+    /// <summary>
+    /// Represents an event that occurs when a database connection is about to be retried.
+    /// </summary>
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1001:TypesThatOwnDisposableFieldsShouldBeDisposable", Justification = "The command is owned by other code.")]
+    public sealed class RetryEventArgs : EventArgs
 	{
 		/// <summary>
 		/// Gets or sets the IDbCommand that is executing.

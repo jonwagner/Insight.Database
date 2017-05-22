@@ -20,7 +20,8 @@ namespace Insight.Database
 	/// Specifies the options for bulk copy. Not all values are supported by all providers.
 	/// </summary>
 	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue"), Flags]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1008:EnumsShouldHaveZeroValue")]
+    [Flags]
 	public enum InsightBulkCopyOptions
 	{
 		/// <summary>
@@ -124,7 +125,7 @@ namespace Insight.Database
 		/// </summary>
 		public virtual long RowsCopied { get; set; }
 	}
-	
+
 	/// <summary>
 	/// Abstracts the provider-specific dependencies for defining column mappings.
 	/// </summary>

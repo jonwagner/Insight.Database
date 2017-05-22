@@ -282,9 +282,11 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if all of the specified columns are null.</returns>
 		public static bool IsAllDbNull(IDataRecord record, int startColumn, int count)
 		{
-			for (int i = startColumn; i < startColumn + count; i++)
-				if (!record.IsDBNull(i))
-					return false;
+            for (int i = startColumn; i < startColumn + count; i++)
+            {
+                if (!record.IsDBNull(i))
+                    return false;
+            }
 
 			return true;
 		}
@@ -509,16 +511,16 @@ namespace Insight.Database.CodeGenerator
 				MemberTypes.Method,
 				BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
 				new MemberFilter(
-				(_m, filter) =>
-				{
-					MethodInfo m = _m as MethodInfo;
-					if (m.Name != methodName) return false;
-					if (m.ReturnType != targetType) return false;
-					ParameterInfo[] pi = m.GetParameters();
-					if (pi.Length != 1) return false;
-					if (pi[0].ParameterType != sourceType) return false;
-					return true;
-				}),
+					(_m, filter) =>
+					{
+						MethodInfo m = _m as MethodInfo;
+						if (m.Name != methodName) return false;
+						if (m.ReturnType != targetType) return false;
+						ParameterInfo[] pi = m.GetParameters();
+						if (pi.Length != 1) return false;
+						if (pi[0].ParameterType != sourceType) return false;
+						return true;
+					}),
 				null);
 
 			return (MethodInfo)members.FirstOrDefault();

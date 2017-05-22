@@ -73,21 +73,23 @@ namespace Insight.Database
 			if (result == null)
 				return result;
 
-			if (result is DynamicObject)
-			{
-				// handle dynamic objects by assigning their properties right into the dictionary
-				IDictionary<string, object> dictionary = result as IDictionary<string, object>;
-				if (dictionary == null)
-					throw new InvalidOperationException("Dynamic object must support IDictionary<string, object>.");
+            if (result is DynamicObject)
+            {
+                // handle dynamic objects by assigning their properties right into the dictionary
+                IDictionary<string, object> dictionary = result as IDictionary<string, object>;
+                if (dictionary == null)
+                    throw new InvalidOperationException("Dynamic object must support IDictionary<string, object>.");
 
-				foreach (IDataParameter p in command.Parameters)
-				{
-					if (p.Direction.HasFlag(ParameterDirection.Output))
-						dictionary[p.ParameterName] = p.Value;
-				}
-			}
-			else
-				DbParameterGenerator.GetOutputParameterConverter(command, result.GetType())(command, result);
+                foreach (IDataParameter p in command.Parameters)
+                {
+                    if (p.Direction.HasFlag(ParameterDirection.Output))
+                        dictionary[p.ParameterName] = p.Value;
+                }
+            }
+            else
+            {
+                DbParameterGenerator.GetOutputParameterConverter(command, result.GetType())(command, result);
+            }
 
 			return result;
 		}

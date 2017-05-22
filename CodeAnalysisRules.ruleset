@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<RuleSet Name="Insight.Database rules" ToolsVersion="12.0">
+  <IncludeAll Action="Warning" />
+  <Rules AnalyzerId="Microsoft.Analyzers.ManagedCodeAnalysis" RuleNamespace="Microsoft.Rules.Managed">
+    <Rule Id="CA1004" Action="None" />
+    <Rule Id="CA1026" Action="None" />
+  </Rules>
+  <Rules AnalyzerId="StyleCop.Analyzers" RuleNamespace="StyleCop.Analyzers">
+    <Rule Id="SA1004" Action="None" />
+    <Rule Id="SA1025" Action="None" />
+    <Rule Id="SA1027" Action="None" />
+    <Rule Id="SA1107" Action="None" />
+    <Rule Id="SA1101" Action="None" />
+    <Rule Id="SA1118" Action="None" />
+    <Rule Id="SA1119" Action="None" />
+    <Rule Id="SA1121" Action="None" />
+    <Rule Id="SA1124" Action="None" />
+    <Rule Id="SA1127" Action="None" />
+    <Rule Id="SA1128" Action="None" />
+    <Rule Id="SA1200" Action="None" />
+    <Rule Id="SA1309" Action="None" />
+    <Rule Id="SA1313" Action="None" />
+    <Rule Id="SA1400" Action="None" />
+    <Rule Id="SA1402" Action="None" />
+    <Rule Id="SA1404" Action="None" />
+    <Rule Id="SA1501" Action="None" />
+    <Rule Id="SA1502" Action="None" />
+    <Rule Id="SA1503" Action="None" />
+    <Rule Id="SA1514" Action="None" />
+    <Rule Id="SA1615" Action="None" />
+    <Rule Id="SA1617" Action="None" />
+    <Rule Id="SA1633" Action="None" />
+    <Rule Id="SA1642" Action="None" />
+    <Rule Id="SA1648" Action="None" />
+    <Rule Id="SA1649" Action="None" />
+  </Rules>
+</RuleSet>

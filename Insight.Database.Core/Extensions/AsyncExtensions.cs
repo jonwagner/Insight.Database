@@ -18,7 +18,8 @@ namespace Insight.Database
 	/// <summary>
 	/// Extension methods to support asynchronous database operations.
 	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "Documenting the internal properties reduces readability without adding additional information.")]
 	public static partial class DBConnectionExtensions
 	{
 		#region Execute Members
@@ -413,7 +414,7 @@ namespace Insight.Database
 				commandBehavior,
 				commandTimeout,
 				transaction,
-				cancellationToken, 
+				cancellationToken,
 				outputParameters);
 		}
 		#endregion
@@ -598,7 +599,7 @@ namespace Insight.Database
 			return reader.ToListAsync(recordReader, cancellationToken, firstRecordOnly: false);
 		}
 #endif
-		
+
 		/// <summary>
 		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
 		/// </summary>
@@ -1284,9 +1285,9 @@ namespace Insight.Database
 					{
 						if (!t.IsFaulted && !t.IsCanceled && command != null)
 						{
-							// make sure we go to the end so we can get the outputs
-							if (reader != null && !reader.IsClosed)
-								while (reader.NextResult());
+                            // make sure we go to the end so we can get the outputs
+                            if (reader != null && !reader.IsClosed)
+                                while (reader.NextResult()) { }
 
 							command.OutputParameters(parameters, outputParameters);
 						}

@@ -9,7 +9,8 @@ namespace Insight.Database
 	/// <summary>
 	/// Defines an override to the standard mapping of database fields to object fields.
 	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments"), AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments")]
+	[AttributeUsage(AttributeTargets.Field | AttributeTargets.Property | AttributeTargets.Parameter, AllowMultiple = false, Inherited = true)]
 	public sealed class ColumnAttribute : Attribute
 	{
 		#region Constructors
@@ -54,7 +55,7 @@ namespace Insight.Database
         internal CustomAttributeBuilder GetCustomAttributeBuilder()
         {
             var properties = new[]
-                { 
+                {
                     typeof(ColumnAttribute).GetProperty("ColumnName"),
                     typeof(ColumnAttribute).GetProperty("SerializationMode"),
                     typeof(ColumnAttribute).GetProperty("Serializer")
@@ -71,7 +72,7 @@ namespace Insight.Database
                 typeof(ColumnAttribute).GetConstructor(Type.EmptyTypes),
                 Parameters.EmptyArray,
                 properties,
-                values);                     
+                values);
         }
 	}
 }

@@ -89,4 +89,8 @@
     <DefineConstants Condition="$(HasSqlTypes) != 'true'">$(DefineConstants);NO_SQL_TYPES</DefineConstants>
     <DefineConstants Condition="$(HasUdt) != 'true'">$(DefineConstants);NO_UDT</DefineConstants>
   </PropertyGroup>
+
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>..\CodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
 </Project>

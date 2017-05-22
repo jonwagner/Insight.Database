@@ -14,7 +14,7 @@ namespace Insight.Database.Providers
 	/// Implements the Insight provider for wrapped connections.
 	/// </summary>
 	/// <remarks>
-	/// For connections that wrap commands in other commands, 
+	/// For connections that wrap commands in other commands,
 	/// this class unwraps the command when Insight needs to access advanced features.
 	/// </remarks>
 	public abstract class WrappedInsightDbProvider : InsightDbProvider

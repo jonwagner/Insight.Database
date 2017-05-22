@@ -9,7 +9,8 @@ namespace Insight.Database
 	/// <summary>
 	/// Specifes when the fields of child objects can be bound on a class or on the parameters of an interface method.
 	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments"), AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1019:DefineAccessorsForAttributeArguments")]
+	[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
 	public sealed class BindChildrenAttribute : Attribute
 	{
 		/// <summary>

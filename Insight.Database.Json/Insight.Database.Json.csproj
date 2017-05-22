@@ -15,8 +15,13 @@
   <PropertyGroup Condition="$(Configuration) == 'Release'">
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+    <DocumentationFile>bin\Release\$(TargetFramework)\Insight.Database.Json.xml</DocumentationFile>
   </PropertyGroup>
-
+  <ItemGroup Condition="$(Configuration) == 'Release'">
+    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0" />
+    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0" />
+  </ItemGroup>
+  
   <ItemGroup>
     <PackageReference Include="Newtonsoft.Json" Version="10.0.2" />
   </ItemGroup>

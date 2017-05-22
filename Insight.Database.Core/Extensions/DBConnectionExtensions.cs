@@ -137,7 +137,7 @@ namespace Insight.Database
 		/// <typeparam name="T">The interface to implement.</typeparam>
 		/// <param name="connection">The connection to open.</param>
 		/// <returns>A wrapper for the database connection.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
 		public static T OpenWithTransactionAs<T>(this T connection) where T : class, IDbConnection, IDbTransaction
 		{
 			// connection is already a T, so pass it in unwrapped
@@ -164,7 +164,7 @@ namespace Insight.Database
 		/// <param name="connection">The connection to open.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
 		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this IDbConnection connection, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return DbConnectionWrapper.Wrap(connection)
@@ -196,7 +196,7 @@ namespace Insight.Database
 		/// <param name="connection">The connection to open.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
 		public static Task<T> OpenWithTransactionAsAsync<T>(this T connection, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
 		{
 			// connection is already a T, so just pass it in
@@ -451,7 +451,7 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior of the command when executed.</param>
 		/// <param name="commandTimeout">The timeout of the command.</param>
 		/// <param name="transaction">The transaction to participate in it.</param>
-		/// <returns>A data reader with the results.</returns>		
+		/// <returns>A data reader with the results.</returns>
 		public static IDataReader GetReaderSql(
 			this IDbConnection connection,
 			string sql,
@@ -1218,7 +1218,7 @@ namespace Insight.Database
 		public static object As(this IDbConnection connection, Type type)
 		{
             if (connection == null) throw new ArgumentNullException("connection");
-            
+
             // if the connection already supports T, then return it, otherwise we need a wrapper
 			return InterfaceGenerator.GetImplementorOf(type, () => connection, singleThreaded: true);
 		}
@@ -1233,7 +1233,7 @@ namespace Insight.Database
 		public static T AsParallel<T>(this IDbConnection connection) where T : class
 		{
             if (connection == null) throw new ArgumentNullException("connection");
-            
+
             return (T)connection.AsParallel(typeof(T));
 		}
 
@@ -1366,47 +1366,7 @@ namespace Insight.Database
 		}
 		#endregion
 
-		#region Unwrap Methods
-		/// <summary>
-		/// Unwraps an IDbTransaction to determine its inner DbTransaction to use with advanced features.
-		/// </summary>
-		/// <param name="transaction">The transaction to unwrap.</param>
-		/// <returns>The inner DbTransaction.</returns>
-		internal static DbTransaction UnwrapDbTransaction(this IDbTransaction transaction)
-		{
-			if (transaction == null)
-				return null;
-
-			// if we have a DbTransaction, use it
-			DbTransaction dbTransaction = transaction as DbTransaction;
-			if (dbTransaction != null)
-				return dbTransaction;
-
-			// if we have a wrapped transaction, unwrap it
-			DbConnectionWrapper wrapper = transaction as DbConnectionWrapper;
-			if (wrapper != null)
-				return wrapper.InnerTransaction.UnwrapDbTransaction();
-
-			// there is no inner transaction
-			return null;
-		}
-		#endregion
-
 		#region Helper Methods
-		/// <summary>
-		/// Detect if a connection needs to be automatically opened and closed.
-		/// </summary>
-		/// <param name="connection">The connection to test.</param>
-		/// <param name="closeConnection">The closeConnection parameter to modify.</param>
-		internal static void DetectAutoOpen(this IDbConnection connection, ref bool closeConnection)
-		{
-			if (connection.State != ConnectionState.Open)
-			{
-				connection.Open();
-				closeConnection = true;
-			}
-		}
-
 		/// <summary>
 		/// Executes an action on a connection, then automatically closes the connection if necessary.
 		/// </summary>
@@ -1416,7 +1376,7 @@ namespace Insight.Database
 		/// <param name="translate">The action to perform to translate a command and reader into results.</param>
 		/// <param name="closeConnection">True to force a close of the connection upon completion.</param>
 		/// <returns>The result of the action.</returns>
-		internal static T ExecuteAndAutoClose<T>(
+		public static T ExecuteAndAutoClose<T>(
 			this IDbConnection connection,
 			Func<IDbConnection, IDbCommand> getCommand,
 			Func<IDbCommand, IDataReader, T> translate,
@@ -1489,11 +1449,25 @@ namespace Insight.Database
 			}
 		}
 
-		/// <summary>
-		/// Will automatically close the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently closed.
-		/// </summary>
-		/// <param name="connection">The connection in context.</param>
-		internal static void EnsureIsClosed(this IDbConnection connection)
+        /// <summary>
+        /// Detect if a connection needs to be automatically opened and closed.
+        /// </summary>
+        /// <param name="connection">The connection to test.</param>
+        /// <param name="closeConnection">The closeConnection parameter to modify.</param>
+        internal static void DetectAutoOpen(this IDbConnection connection, ref bool closeConnection)
+        {
+            if (connection.State != ConnectionState.Open)
+            {
+                connection.Open();
+                closeConnection = true;
+            }
+        }
+
+        /// <summary>
+        /// Will automatically close the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently closed.
+        /// </summary>
+        /// <param name="connection">The connection in context.</param>
+        internal static void EnsureIsClosed(this IDbConnection connection)
 		{
 			if (connection == null || connection.State == ConnectionState.Closed)
 			{
@@ -1535,16 +1509,42 @@ namespace Insight.Database
 		}
 #endif
 
-		/// <summary>
-		/// Gets a reader that can read the list of objects into the given table. Used for bulk copy.
-		/// </summary>
-		/// <typeparam name="T">The type of object in the list.</typeparam>
-		/// <param name="connection">The connection to use.</param>
-		/// <param name="tableName">The name of the table.</param>
-		/// <param name="transaction">The currently open transaction.</param>
-		/// <param name="list">The list of objects.</param>
-		/// <returns>A reader that can be streamed into the table.</returns>
-		private static IDataReader GetObjectReader<T>(IDbConnection connection, string tableName, IDbTransaction transaction, IEnumerable<T> list)
+        #region Unwrap Methods
+        /// <summary>
+        /// Unwraps an IDbTransaction to determine its inner DbTransaction to use with advanced features.
+        /// </summary>
+        /// <param name="transaction">The transaction to unwrap.</param>
+        /// <returns>The inner DbTransaction.</returns>
+        internal static DbTransaction UnwrapDbTransaction(this IDbTransaction transaction)
+        {
+            if (transaction == null)
+                return null;
+
+            // if we have a DbTransaction, use it
+            DbTransaction dbTransaction = transaction as DbTransaction;
+            if (dbTransaction != null)
+                return dbTransaction;
+
+            // if we have a wrapped transaction, unwrap it
+            DbConnectionWrapper wrapper = transaction as DbConnectionWrapper;
+            if (wrapper != null)
+                return wrapper.InnerTransaction.UnwrapDbTransaction();
+
+            // there is no inner transaction
+            return null;
+        }
+        #endregion
+
+        /// <summary>
+        /// Gets a reader that can read the list of objects into the given table. Used for bulk copy.
+        /// </summary>
+        /// <typeparam name="T">The type of object in the list.</typeparam>
+        /// <param name="connection">The connection to use.</param>
+        /// <param name="tableName">The name of the table.</param>
+        /// <param name="transaction">The currently open transaction.</param>
+        /// <param name="list">The list of objects.</param>
+        /// <returns>A reader that can be streamed into the table.</returns>
+        private static IDataReader GetObjectReader<T>(IDbConnection connection, string tableName, IDbTransaction transaction, IEnumerable<T> list)
 		{
 			return connection.ExecuteAndAutoClose(
 				c =>
@@ -1580,7 +1580,7 @@ namespace Insight.Database
 		/// <returns>The result of the command, converted to the given type.</returns>
 		private static T ConvertScalar<T>(IDbCommand cmd, object parameters, object outputParameters, object result)
 		{
-			if ((result == null || result == DBNull.Value) && 
+			if ((result == null || result == DBNull.Value) &&
 				typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
 				throw new InvalidOperationException("Recordset returned no rows, but ExecuteScalar is trying to return a non-nullable type.");
 

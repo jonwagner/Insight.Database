@@ -9,7 +9,8 @@ namespace Insight.Database
 	/// <summary>
 	/// Specifies under which circumstances database objects should be bound to child objects.
 	/// </summary>
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1714:FlagsEnumsShouldHavePluralNames"), Flags]
+	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1714:FlagsEnumsShouldHavePluralNames")]
+	[Flags]
 	public enum BindChildrenFor
 	{
 		/// <summary>

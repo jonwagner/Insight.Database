@@ -72,9 +72,11 @@ namespace Insight.Database.CodeGenerator
 			if (columnCount != other._columns.Count)
 				return false;
 
-			for (int i = 0; i < columnCount; i++)
-				if (!_columns[i].Equals(other._columns[i]))
-					return false;
+            for (int i = 0; i < columnCount; i++)
+            {
+                if (!_columns[i].Equals(other._columns[i]))
+                    return false;
+            }
 
 			return true;
 		}
