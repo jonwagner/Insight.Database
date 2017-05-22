@@ -27,29 +27,29 @@ function Wipe-Folder {
 }
 
 Task Clean {
-	Get-ChildItem $baseDir\Insight*\*.csproj | %{ dotnet clean $_ -c $configuration  }
+	Get-ChildItem $baseDir\Insight*\*.csproj | %{ exec { dotnet clean $_ -c $configuration } }
 }
 
 Task Restore {
-	Get-ChildItem $baseDir\Insight*\*.csproj | %{ dotnet restore $_ }
+	Get-ChildItem $baseDir\Insight*\*.csproj | %{ exec { dotnet restore $_ } }
 }
 
 Task Build -depends Restore {
-	Get-ChildItem $baseDir\Insight*\*.csproj | %{ dotnet build $_ -c $configuration }
+	Get-ChildItem $baseDir\Insight*\*.csproj | %{ exec { dotnet build $_ -c $configuration } }
 }
 
 Task Test {
-	Get-ChildItem $baseDir\Insight.Tests*\*.csproj | %{ dotnet test $_ -c $configuration }
+	Get-ChildItem $baseDir\Insight.Tests*\*.csproj | %{ exec { dotnet test $_ -c $configuration } }
 }
 
 Task TestOnly {
-	Get-ChildItem $baseDir\Insight.Tests*\*.csproj | %{ dotnet test $_ -c $configuration --no-build }
+	Get-ChildItem $baseDir\Insight.Tests*\*.csproj | %{ exec { dotnet test $_ -c $configuration --no-build } }
 }
 
 Task PackageOnly {
     Wipe-Folder $outputDir
 	Get-ChildItem $baseDir\Insight.Database*\**\**\*.nupkg | Remove-Item
-	Get-ChildItem $baseDir\Insight.Database*\*.csproj | %{ dotnet pack $_ -c $configuration }
+	Get-ChildItem $baseDir\Insight.Database*\*.csproj | %{ exec { dotnet pack $_ -c $configuration } }
 	Get-ChildItem $baseDir\Insight.Database*\**\**\*.nupkg | Copy-Item -Destination $outputDir
 }
 
