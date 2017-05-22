@@ -1,0 +1,16 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net40;net45;net451</TargetFrameworks>
+    <OutputType>exe</OutputType>
+  </PropertyGroup>
+  <Import Project="..\SharedConfiguration.csproj" />
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
+    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
+  </ItemGroup>
+</Project>
