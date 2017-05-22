@@ -208,7 +208,7 @@ namespace Insight.Database
 		{
 			get
 			{
-#if !NODBASYNC
+#if !NO_DBASYNC
 				// get the provider for the connection
 				var innerProviderFactory = DbProviderFactories.GetFactory(InnerConnection);
 #else
@@ -288,7 +288,7 @@ namespace Insight.Database
 		}
 		#endregion
 
-#if NODBASYNC
+#if NO_DBASYNC
 		/// <summary>
 		/// Opens a connection asynchronously.
 		/// </summary>

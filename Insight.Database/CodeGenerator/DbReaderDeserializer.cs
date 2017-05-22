@@ -55,7 +55,7 @@ namespace Insight.Database.CodeGenerator
 			_simpleDeserializers.TryAdd(typeof(object), GetDynamicDeserializer<FastExpando, FastExpando>());
 			_simpleDeserializers.TryAdd(typeof(FastExpando), GetDynamicDeserializer<FastExpando, FastExpando>());
 			_simpleDeserializers.TryAdd(typeof(ExpandoObject), GetDynamicDeserializer<ExpandoObject, ExpandoObject>());
-#if NODYNAMIC
+#if NO_DYNAMIC
 			_simpleDeserializers.TryAdd(typeof(dynamic), GetDynamicDeserializer<dynamic, FastExpando>());
 #endif
 			_simpleDeserializers.TryAdd(typeof(XmlDocument), GetXmlDocumentDeserializer());

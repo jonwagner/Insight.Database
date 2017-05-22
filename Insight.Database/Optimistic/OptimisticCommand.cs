@@ -47,7 +47,7 @@ namespace Insight.Database
 		}
 		#endregion
 
-#if !NODBASYNC
+#if !NO_DBASYNC
 		/// <inheritdoc/>
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
 		{
@@ -99,7 +99,7 @@ namespace Insight.Database
 			}
 		}
 
-#if !NODBASYNC
+#if !NO_DBASYNC
 		/// <summary>
 		/// Asynchronously performs an action and translate exceptions.
 		/// </summary>

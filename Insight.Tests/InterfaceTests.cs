@@ -872,7 +872,7 @@ namespace Insight.Tests
 	#endregion
 
 	#region Multi-Threaded Interface Tests
-#if !NODBASYNC
+#if !NO_DBASYNC
 	interface IMultiThreaded
 	{
 		[Sql("SELECT ParentX=@p")]

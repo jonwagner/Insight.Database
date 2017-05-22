@@ -79,7 +79,7 @@ namespace Insight.Database.Reliable
 		#endregion
 
 		#region Async Methods
-#if NODBASYNC
+#if NO_DBASYNC
 		/// <summary>
 		/// Executes the command asynchronously with retry.
 		/// </summary>
@@ -110,7 +110,7 @@ namespace Insight.Database.Reliable
 		}
 #endif
 
-#if !NODBASYNC
+#if !NO_DBASYNC
         /// <inheritdoc/>
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{

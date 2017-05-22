@@ -19,7 +19,7 @@ namespace Insight.Tests
             OdbcInsightDbProvider.RegisterProvider();
         }
 
-#if !NODYNAMIC
+#if !NO_DYNAMIC
         [Test]
         public void NamedParametersAreConvertedToPositionalParameters()
         {

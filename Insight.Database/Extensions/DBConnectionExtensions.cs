@@ -53,7 +53,7 @@ namespace Insight.Database
 		/// <returns>The opened connection.</returns>
 		public static Task<T> OpenConnectionAsync<T>(this T connection, CancellationToken cancellationToken = default(CancellationToken)) where T : IDbConnection
 		{
-#if NODBASYNC
+#if NO_DBASYNC
 			connection.Open();
 			return Helpers.FromResult(connection);
 #else
@@ -768,7 +768,7 @@ namespace Insight.Database
 		#endregion
 
 		#region ForEach Methods
-#if !NODYNAMIC
+#if !NO_DYNAMIC
 		/// <summary>
 		/// Executes a query and performs an action for each item in the result.
 		/// </summary>
@@ -882,7 +882,7 @@ namespace Insight.Database
 		#endregion
 
 		#region Dynamic Invocation Helper
-#if !NODYNAMIC
+#if !NO_DYNAMIC
 		/// <summary>
 		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
 		/// </summary>
@@ -1517,7 +1517,7 @@ namespace Insight.Database
 			connection.Open();
 		}
 
-#if !NODBASYNC
+#if !NO_DBASYNC
 		/// <summary>
 		/// Will automatically open the connection of the <see cref="IDbConnection"/> instance in context, if it is not currently open.
 		/// </summary>

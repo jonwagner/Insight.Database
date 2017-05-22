@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net45;net451;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
@@ -9,24 +9,21 @@
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" Conditio="$(HasDynamic) == 'true'" />
+    <Reference Include="Microsoft.CSharp" Condition="$(HasDynamic) == 'true'" />
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings) == 'true'" />
     <Reference Include="System.Data.Linq" Condition="$(HasLinq) == 'true'" />
     <Reference Include="System.Transactions" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.3.0-preview-20170517-02" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />
     <PackageReference Include="NUnit" Version="3.6.1" />
     <PackageReference Include="NUnit.Console" Version="3.6.1" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" />
   </ItemGroup>
   <ItemGroup Condition="$(HasSqlTypes) == 'true'">
-    <PackageReference Include="Microsoft.SqlServer.Types" Version="14.0.314.76" />
+    <PackageReference Include="Microsoft.SqlServer.Types" Version="$(SqlTypesVersion)" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="InsightDbTest.sql" />
-  </ItemGroup>
-  <ItemGroup>
-    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 </Project>

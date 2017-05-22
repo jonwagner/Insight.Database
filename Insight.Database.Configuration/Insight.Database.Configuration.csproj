@@ -1,15 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net451;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net35;net40;net45;net451;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != ''" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
+    <Reference Include="System.Data" Condition="$(SqlClientVersion) == ''" />
   </ItemGroup>
 </Project>

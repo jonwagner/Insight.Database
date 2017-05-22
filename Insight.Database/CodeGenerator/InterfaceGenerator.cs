@@ -64,13 +64,16 @@ namespace Insight.Database.CodeGenerator
 			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
 			an.Name += ".DynamicAssembly";
 
+#if NO_APP_DOMAINS
+			AssemblyBuilder ab = AssemblyBuilder.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
+#else
 			AssemblyBuilder ab = AppDomain.CurrentDomain.DefineDynamicAssembly(an, AssemblyBuilderAccess.Run);
-			
+#endif
 			_moduleBuilder = ab.DefineDynamicModule(an.Name);
 		}
-		#endregion
+#endregion
 
-		#region Class Implementors
+#region Class Implementors
 		/// <summary>
 		/// Gets an implementor of an interface that can handle multiple concurrent calls.
 		/// </summary>
@@ -147,7 +150,7 @@ namespace Insight.Database.CodeGenerator
 			catch (TypeLoadException e)
 			{
 				// inaccessible interface
-#if NODBASYNC
+#if NO_DBASYNC
 				if (e.Message.Contains("inaccessible") || e.Message.Contains("Access is denied"))
 #else
 				if (e.HResult == -2146233054)
@@ -237,9 +240,9 @@ namespace Insight.Database.CodeGenerator
 
 			return getConnection;
 		}
-		#endregion
+#endregion
 
-		#region Internal Members
+#region Internal Members
 		/// <summary>
 		/// Finds all of the methods on a given interface.
 		/// </summary>
@@ -851,6 +854,6 @@ namespace Insight.Database.CodeGenerator
 			il.Emit(OpCodes.Ldarg, (int)interfaceParameter.Position + 1);
 			return true;
 		}
-		#endregion
+#endregion
 	}
 }

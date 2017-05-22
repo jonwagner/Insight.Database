@@ -16,10 +16,10 @@ namespace Insight.Database
 	/// </summary>
 	/// <remarks>Disposing this reader does not dispose the inner reader.</remarks>
 	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1710:IdentifiersShouldHaveCorrectSuffix"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1010:CollectionsShouldImplementGenericInterface")]
-#if HAS_COLUMN_SCHEMA
-	public class CachedDbDataReader : DbDataReaderWrapper, IDbColumnSchemaGenerator
-#else
+#if NO_COLUMN_SCHEMA
 	public class CachedDbDataReader : DbDataReaderWrapper
+#else
+	public class CachedDbDataReader : DbDataReaderWrapper, IDbColumnSchemaGenerator
 #endif
 	{
 		/// <summary>
@@ -169,7 +169,7 @@ namespace Insight.Database
 			}
 		}
 
-#if HAS_COLUMN_SCHEMA
+#if !NO_COLUMN_SCHEMA
 		ReadOnlyCollection<DbColumn> IDbColumnSchemaGenerator.GetColumnSchema()
 		{
 			return ((IDbColumnSchemaGenerator)_inner).GetColumnSchema();

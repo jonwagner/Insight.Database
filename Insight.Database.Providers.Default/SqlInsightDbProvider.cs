@@ -11,6 +11,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
+using Insight.Database.MissingExtensions;
 using Insight.Database.Providers;
 
 namespace Insight.Database
@@ -87,7 +88,7 @@ namespace Insight.Database
 
             // check to make sure that the template connection hasn't already been used
             SqlConnectionStringBuilder builder = new SqlConnectionStringBuilder(connection.ConnectionString);
-            if (!builder.IntegratedSecurity && String.IsNullOrWhiteSpace(builder.Password))
+            if (!builder.IntegratedSecurity && builder.Password.IsNullOrWhiteSpace())
                 throw new InvalidOperationException("The database connection has already been opened and the password has been cleared. In order to use password-based credentials with parallel connections, set Persist Security Info=True on your connection string.");
 
             return new SqlConnection(connection.ConnectionString);
@@ -247,7 +248,7 @@ namespace Insight.Database
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-#if HAS_COLUMN_SCHEMA
+#if !NO_COLUMN_SCHEMA
 			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
 			var schema = schemaGenerator.GetColumnSchema();
 			return schemaGenerator.GetColumnSchema()[index].DataTypeName == "xml";
@@ -277,7 +278,7 @@ namespace Insight.Database
 			}
 		}
 
-#if !NODBASYNC
+#if !NO_DBASYNC
 		/// <summary>
 		/// Asynchronously bulk copies a set of objects to the server.
 		/// </summary>
@@ -474,7 +475,7 @@ namespace Insight.Database
 			{
 				bulk = new SqlBulkCopy((SqlConnection)connection, sqlOptions, (SqlTransaction)transaction);
 				bulk.DestinationTableName = tableName;
-#if !NODBASYNC
+#if !NO_DBASYNC
 				bulk.EnableStreaming = true;
 #endif
 

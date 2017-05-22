@@ -43,7 +43,7 @@ namespace Insight.Database.Reliable
 			return connection;
 		}
 
-#if !NODYNAMIC
+#if !NO_DYNAMIC
 		/// <summary>
 		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
 		/// </summary>

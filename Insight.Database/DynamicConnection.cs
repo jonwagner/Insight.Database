@@ -29,7 +29,7 @@ namespace Insight.Database
 		/// <summary>
 		/// Caches for MethodInfo for query methods.
 		/// </summary>
-#if NODYNAMIC
+#if NO_DYNAMIC
 		private static ConcurrentDictionary<Type, object> _queryAsyncMethods = new ConcurrentDictionary<Type, object>();
 		private static ConcurrentDictionary<Type, object> _queryMethods = new ConcurrentDictionary<Type, object>();
 #else
@@ -82,7 +82,7 @@ namespace Insight.Database
 		#endregion
 
 		#region DynamicObject Members
-#if !NODYNAMIC
+#if !NO_DYNAMIC
 		/// <summary>
 		/// Provides the implementation for operations that invoke a member. Classes derived from the DynamicObject class can override this method to specify dynamic behavior for operations such as calling a method.
 		/// </summary>
@@ -463,7 +463,7 @@ namespace Insight.Database
 		{
 		}
 
-#if !NODYNAMIC
+#if !NO_DYNAMIC
 		/// <summary>
 		/// Provides the implementation for operations that invoke a member. Classes derived from the DynamicObject class can override this method to specify dynamic behavior for operations such as calling a method.
 		/// </summary>

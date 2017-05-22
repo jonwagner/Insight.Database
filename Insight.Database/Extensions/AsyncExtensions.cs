@@ -52,7 +52,7 @@ namespace Insight.Database
 				false,
 				(cmd, r) =>
 				{
-#if NODBASYNC
+#if NO_DBASYNC
 					// Only SqlCommand supports execute async
 					var sqlCommand = cmd as System.Data.SqlClient.SqlCommand;
 					if (sqlCommand != null)
@@ -131,7 +131,7 @@ namespace Insight.Database
 				false,
 				(cmd, r) =>
 				{
-#if NODBASYNC
+#if NO_DBASYNC
 					// not supported in .NET 4.0
 					return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), cancellationToken);
 #else
@@ -549,7 +549,7 @@ namespace Insight.Database
 		#endregion
 
 		#region Translation Methods
-#if NODBASYNC
+#if NO_DBASYNC
 		/// <summary>
 		/// Chain an asynchronous data reader task with a translation to a list of objects as FastExpandos.
 		/// </summary>
@@ -892,7 +892,7 @@ namespace Insight.Database
 		#endregion
 
 		#region Merge Methods
-#if NODBASYNC
+#if NO_DBASYNC
 		/// <summary>
 		/// Merges the results of a recordset into an existing object.
 		/// </summary>
@@ -1011,7 +1011,7 @@ namespace Insight.Database
 		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
 		public static Task<IDataReader> GetReaderAsync(this IDbCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken)
 		{
-#if NODBASYNC
+#if NO_DBASYNC
 			// Only SqlCommand supports async
 			var sqlCommand = command as System.Data.SqlClient.SqlCommand;
 			if (sqlCommand != null)
@@ -1118,7 +1118,7 @@ namespace Insight.Database
 		#endregion
 
 		#region Helper Methods
-#if NODBASYNC
+#if NO_DBASYNC
 		/// <summary>
 		/// Chain an asynchronous data reader task with a translation to a list of objects.
 		/// </summary>
@@ -1357,7 +1357,7 @@ namespace Insight.Database
 			if (connection.State == ConnectionState.Open)
 				return Helpers.FalseTask;
 
-#if !NODBASYNC
+#if !NO_DBASYNC
 			// open the connection and plan to close it
 			DbConnection dbConnection = connection as DbConnection;
 			if (dbConnection != null)

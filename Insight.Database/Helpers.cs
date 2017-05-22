@@ -10,9 +10,9 @@ namespace Insight.Database
 	/// <summary>
 	/// Internal helpers.
 	/// </summary>
-	static class Helpers
+	public static class Helpers
 	{
-#if NODBASYNC
+#if NO_DBASYNC
 		/// <summary>
 		/// Represents a completed false task.
 		/// </summary>
@@ -47,7 +47,7 @@ namespace Insight.Database
 #endif
 
 #if NET35
-		internal static bool HasFlag(this Enum e, Enum flag)
+		public static bool HasFlag(this Enum e, Enum flag)
 		{
 			ulong f = Convert.ToUInt64(flag);
 			return ((Convert.ToUInt64(e) & f) == f);

@@ -55,7 +55,7 @@ namespace Insight.Database.Providers.PostgreSQL
             InnerConnection.ExecuteSql(_switchSchemaSql);
         }
 
-#if !NODBASYNC
+#if !NO_DBASYNC
         /// <inheritdoc/>
         public override Task OpenAsync(System.Threading.CancellationToken cancellationToken)
         {

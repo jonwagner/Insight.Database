@@ -78,7 +78,7 @@ namespace Insight.Database.Reliable
 			}
 		}
 
-#if !NODBASYNC
+#if !NO_DBASYNC
 		/// <summary>
 		/// Asynchronously opens a ReliableConnection.
 		/// </summary>

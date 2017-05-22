@@ -67,7 +67,7 @@ namespace Insight.Database.Structure
 				child.Read(results, reader);
 		}
 
-#if NODBASYNC
+#if NO_DBASYNC
 		/// <summary>
 		/// Reads all of the children from the stream asynchronously.
 		/// </summary>

@@ -24,7 +24,7 @@ namespace System.Threading.Tasks
 
 namespace Insight.Database
 {
-	class ConcurrentDictionary<TKey, TValue>
+	public class ConcurrentDictionary<TKey, TValue>
 	{
 		private object _lock = new object();
 		private Dictionary<TKey, TValue> _dictionary = new Dictionary<TKey, TValue>();

@@ -52,7 +52,7 @@ namespace Insight.Tests
 		}
 		#endregion
 
-#if !NODYNAMIC
+#if !NO_DYNAMIC
 		[Test]
 		public void TestFastExpandoResult()
 		{

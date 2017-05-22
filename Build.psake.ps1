@@ -113,7 +113,7 @@ function Do-Build {
 }
 
 Task Build35 {
-    Do-Build -Framework 3.5 -OutputPath $net35Path -DefineConstants NODBASYNC,NODYNAMIC,NET35 -FrameworkFolder NET35 -Projects `
+    Do-Build -Framework 3.5 -OutputPath $net35Path -DefineConstants NO_DBASYNC,NO_DYNAMIC,NET35 -FrameworkFolder NET35 -Projects `
 		Insight.Database,`
 		Insight.Database.Configuration,`
 		Insight.Database.Providers.Default,`
@@ -121,7 +121,7 @@ Task Build35 {
 }
 
 Task Build40 {
-    Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NODBASYNC,CODE_ANALYSIS,NET40 -FrameworkFolder NET40 -Projects `
+    Do-Build -Framework 4.0 -OutputPath $net40Path -DefineConstants NO_DBASYNC,CODE_ANALYSIS,NET40 -FrameworkFolder NET40 -Projects `
 		Insight.Database,`
 		Insight.Database.Configuration,`
 		Insight.Database.Json,`

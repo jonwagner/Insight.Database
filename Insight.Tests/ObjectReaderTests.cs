@@ -290,7 +290,7 @@ namespace Insight.Tests
 			}
 		}
 
-#if !NODYNAMIC
+#if !NO_DYNAMIC
 		[Test]
 		public void DynamicProcWithMissingTableParameterShouldThrow()
 		{
