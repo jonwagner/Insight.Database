@@ -2,6 +2,7 @@
   <PropertyGroup>
     <HasAppDomains>true</HasAppDomains>
     <HasConnectionSettings>true</HasConnectionSettings>
+    <HasClassicReflection>true</HasClassicReflection>
     <HasColumnSchema>false</HasColumnSchema>
     <HasDbAsync>true</HasDbAsync>
     <HasDbProvider>true</HasDbProvider>
@@ -44,8 +45,9 @@
     <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
+  <PropertyGroup Condition="$(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
     <HasAppDomains>false</HasAppDomains>
+    <HasClassicReflection>false</HasClassicReflection>
     <HasColumnSchema>true</HasColumnSchema>
     <HasConnectionSettings>false</HasConnectionSettings>
     <HasDbProvider>false</HasDbProvider>
@@ -66,6 +68,7 @@
     <DefineConstants Condition="$(HasAppDomains) != 'true'">$(DefineConstants);NO_APP_DOMAINS</DefineConstants>
     <DefineConstants Condition="$(HasConnectionSettings) != 'true'">$(DefineConstants);NO_CONNECTION_SETTINGS</DefineConstants>
     <DefineConstants Condition="$(HasColumnSchema) != 'true'">$(DefineConstants);NO_COLUMN_SCHEMA</DefineConstants>
+    <DefineConstants Condition="$(HasClassicReflection) != 'true'">$(DefineConstants);NO_CLASSIC_REFLECTION</DefineConstants>
     <DefineConstants Condition="$(HasDbAsync) != 'true'">$(DefineConstants);NO_DBASYNC</DefineConstants>
     <DefineConstants Condition="$(HasDbProvider) != 'true'">$(DefineConstants);NO_DB_PROVIDER</DefineConstants>
     <DefineConstants Condition="$(HasDeriveParameters) != 'true'">$(DefineConstants);NO_DERIVE_PARAMETERS</DefineConstants>
