@@ -5,10 +5,18 @@
     </description>
     <PackageTags>Insight orm sql micro-orm sqlserver db2 glimpse miniprofiler mysql oracle postgres sybase sybasease sqlite sqllite</PackageTags>
   </PropertyGroup>
+  
   <PropertyGroup>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
+
   <Import Project="..\SharedConfiguration.csproj" />
+
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  
   <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != ''" />
   </ItemGroup>

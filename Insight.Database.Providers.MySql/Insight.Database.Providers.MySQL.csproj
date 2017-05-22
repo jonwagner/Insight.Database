@@ -10,7 +10,14 @@
   <PropertyGroup>
     <TargetFrameworks>net40;net45;net451</TargetFrameworks>
   </PropertyGroup>
+ 
   <Import Project="..\SharedConfiguration.csproj" />
+
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="6.9.9" />
   </ItemGroup>

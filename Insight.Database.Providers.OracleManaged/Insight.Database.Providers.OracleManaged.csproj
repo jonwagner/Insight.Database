@@ -6,10 +6,18 @@
     </description>
     <PackageTags>Insight orm sql oracle managed micro-orm</PackageTags>
   </PropertyGroup>
+
   <PropertyGroup>
     <TargetFrameworks>net40;net45;net451</TargetFrameworks>
   </PropertyGroup>
+
   <Import Project="..\SharedConfiguration.csproj" />
+
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess" Version="12.1.24160719" />
   </ItemGroup>

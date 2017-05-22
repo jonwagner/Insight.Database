@@ -8,7 +8,9 @@
   <PropertyGroup>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
+ 
   <Import Project="..\SharedConfiguration.csproj" />
+
   <ItemGroup>
     <PackageReference Include="Glimpse.Ado" Version="1.7.3.0" />
   </ItemGroup>

@@ -8,10 +8,15 @@
   
   <PropertyGroup>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
-    <SignAssembly>False</SignAssembly>
   </PropertyGroup>
+
   <Import Project="..\SharedConfiguration.csproj" />
-  
+
+  <PropertyGroup Condition="$(Configuration) == 'Release'">
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+
   <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
