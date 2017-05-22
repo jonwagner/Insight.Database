@@ -4,9 +4,9 @@
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
+    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
     <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" Condition="$(HasDynamic) == 'true'" />
