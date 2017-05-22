@@ -26,4 +26,29 @@
   <ItemGroup>
     <EmbeddedResource Include="InsightDbTest.sql" />
   </ItemGroup>
+  <ItemGroup>
+    <None Update="AsyncQueryCoreTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>AsyncQueryCoreTests.generated.cs</LastGenOutput>
+    </None>
+    <None Update="SyncQueryCoreTests.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>SyncQueryCoreTests.generated.cs</LastGenOutput>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Update="AsyncQueryCoreTests.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>AsyncQueryCoreTests.tt</DependentUpon>
+    </Compile>
+    <Compile Update="SyncQueryCoreTests.generated.cs">
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+      <DependentUpon>SyncQueryCoreTests.tt</DependentUpon>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
 </Project>
