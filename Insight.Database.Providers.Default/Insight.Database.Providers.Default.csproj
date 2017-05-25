@@ -5,24 +5,11 @@
   </PropertyGroup>
   
   <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
-
-  <PropertyGroup Condition="$(Configuration) == 'Release'">
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
-    <DocumentationFile>bin\Release\$(TargetFramework)\Insight.Database.Providers.Default.xml</DocumentationFile>
-  </PropertyGroup>
-  <ItemGroup Condition="$(Configuration) == 'Release'">
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != ''" />

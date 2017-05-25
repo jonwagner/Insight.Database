@@ -7,24 +7,11 @@
   </PropertyGroup>  
   
   <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
-
-  <PropertyGroup Condition="$(Configuration) == 'Release'">
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
-    <DocumentationFile>bin\Release\$(TargetFramework)\Insight.Database.Core.xml</DocumentationFile>
-  </PropertyGroup>
-  <ItemGroup Condition="$(Configuration) == 'Release'">
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0">
-      <PrivateAssets>all</PrivateAssets>
-    </PackageReference>
-  </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
@@ -36,14 +23,6 @@
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Json" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Xml" Version="4.3.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <None Remove="CodeAnalysisRules.ruleset" />
-    <None Remove="CustomDictionary.xml" />
-    <None Remove="GenericTypes.tt" />
-    <None Remove="Settings.StyleCop" />
-    <None Remove="StyleCop.Cache" />
   </ItemGroup>
   
   <ItemGroup>
@@ -62,6 +41,10 @@
     <None Update="Extensions\DbReaderExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>DbReaderExtensions.generated.cs</LastGenOutput>
+    </None>
+    <None Update="GenericTypes.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>GenericTypes.cs</LastGenOutput>
     </None>
     <None Update="Structure\Guardian.tt">
       <Generator>TextTemplatingFileGenerator</Generator>

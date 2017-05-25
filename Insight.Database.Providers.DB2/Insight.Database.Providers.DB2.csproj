@@ -7,21 +7,12 @@
   </PropertyGroup>
   
   <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
     <TargetFrameworks>net40;net451</TargetFrameworks>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
-
-  <PropertyGroup Condition="$(Configuration) == 'Release'">
-    <SignAssembly>True</SignAssembly>
-    <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
-    <DocumentationFile>bin\Release\$(TargetFramework)\Insight.Database.Providers.DB2.xml</DocumentationFile>
-  </PropertyGroup>
-  <ItemGroup Condition="$(Configuration) == 'Release'">
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0" />
-  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="IBM.Data.DB2" Version="10.0.5.5" />

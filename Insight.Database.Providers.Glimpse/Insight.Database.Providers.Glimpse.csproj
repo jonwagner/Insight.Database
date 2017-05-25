@@ -5,20 +5,18 @@
     </description>
     <PackageTags>Insight orm sql micro-orm profiler glimpse</PackageTags>
   </PropertyGroup>
+
   <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
     <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
  
   <Import Project="..\SharedConfiguration.csproj" />
 
-  <PropertyGroup Condition="$(Configuration) == 'Release'">
-    <DocumentationFile>bin\Release\$(TargetFramework)\Insight.Database.Providers.Glimpse.xml</DocumentationFile>
+  <PropertyGroup>
+    <SignAssembly>False</SignAssembly> <!-- Glimpse is not signed -->
   </PropertyGroup>
-  <ItemGroup Condition="$(Configuration) == 'Release'">
-    <PackageReference Include="StyleCop.Analyzers" Version="1.0.0" />
-    <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0" />
-  </ItemGroup>
-
+  
   <ItemGroup>
     <PackageReference Include="Glimpse.Ado" Version="1.7.3.0" />
   </ItemGroup>
