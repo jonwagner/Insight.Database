@@ -103,10 +103,11 @@
   <PropertyGroup Condition="$(ProjectType) == 'LibraryPackage' and $(Configuration) == 'Release'">
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>..\Insight.Database.snk</AssemblyOriginatorKeyFile>
-    <DocumentationFile>bin\Release\$(TargetFramework)\Insight.Database.Configuration.xml</DocumentationFile>
+    <DocumentationFile>bin\$(Configuration)\$(TargetFramework)\$(AssemblyName).xml</DocumentationFile>
     <CodeAnalysisRuleSet>..\CodeAnalysisRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
-  <ItemGroup Condition="$(Configuration) == 'Release'">
+
+  <ItemGroup Condition="$(ProjectType) == 'LibraryPackage' and $(Configuration) == 'Release'">
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
