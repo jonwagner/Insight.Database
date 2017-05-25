@@ -91,10 +91,12 @@ namespace Insight.Database.Providers.Default
 			if (charLengthObj is int)
 			{
 				int charLength = (int)charLengthObj;
+
 				// Sql sometimes returns zero rather than -1, so fix it (it failed output parameters unit tests)
 				if (charLength == 0 && (parameter.SqlDbType == SqlDbType.NVarChar || parameter.SqlDbType == SqlDbType.VarBinary
 										|| parameter.SqlDbType == SqlDbType.VarChar))
 					charLength = -1;
+
 				parameter.Size = charLength;
 			}
 
@@ -134,6 +136,7 @@ namespace Insight.Database.Providers.Default
 				if (value is int)
 					parameter.Scale = (byte)(((int)value) & 0xff);
 			}
+
 			return parameter;
 		}
 

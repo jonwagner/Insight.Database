@@ -205,17 +205,36 @@ namespace Insight.Database.Providers
 			p.DbType = parameter.DbType;
 			p.Direction = parameter.Direction;
 
-			IDbDataParameter dp = p as IDbDataParameter;
-			if (dp != null)
+#if !NO_DBPARAMETER
+			// NOTE: some builds of .NET Core have a bug where IDbDataParameter is implemented incorrectly.
+			// Use DbParameter first to get more direct access to the properties.
+			DbParameter dbp = p as DbParameter;
+			if (dbp != null)
 			{
-				IDbDataParameter dbParameter = parameter as IDbDataParameter;
-				dp.Scale = dbParameter.Scale;
-				dp.Precision = dbParameter.Precision;
+				DbParameter dbParameter = parameter as DbParameter;
+				dbp.Scale = dbParameter.Scale;
+				dbp.Precision = dbParameter.Precision;
 
 				if (dbParameter.Direction != ParameterDirection.Input && TypeHelper.IsDbTypeAString(dbParameter.DbType))
-					dp.Size = -1;
+					dbp.Size = -1;
 				else
-					dp.Size = dbParameter.Size;
+					dbp.Size = dbParameter.Size;
+			}
+			else
+#endif
+			{
+				IDbDataParameter dp = p as IDbDataParameter;
+				if (dp != null)
+				{
+					IDbDataParameter dbParameter = parameter as IDbDataParameter;
+					dp.Scale = dbParameter.Scale;
+					dp.Precision = dbParameter.Precision;
+
+					if (dbParameter.Direction != ParameterDirection.Input && TypeHelper.IsDbTypeAString(dbParameter.DbType))
+						dp.Size = -1;
+					else
+						dp.Size = dbParameter.Size;
+				}
 			}
 
 			return p;
@@ -351,7 +370,7 @@ namespace Insight.Database.Providers
 		{
 			return false;
 		}
-		#endregion
+#endregion
 
 		/// <summary>
 		/// Copies the list of parameters into the given command.
@@ -388,7 +407,7 @@ namespace Insight.Database.Providers
 			return new NotImplementedException(String.Format(CultureInfo.InvariantCulture, "{0}. Have you loaded the provider that supports {1}?", message, databaseObject.GetType().Name));
 		}
 
-		#region Registration
+#region Registration
 		/// <summary>
 		/// Initializes static members of the InsightDbProvider class.
 		/// </summary>
@@ -436,6 +455,6 @@ namespace Insight.Database.Providers
 					providerMap[type] = provider;
 			}
 		}
-		#endregion
+#endregion
 	}
 }

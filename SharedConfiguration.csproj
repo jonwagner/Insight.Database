@@ -15,6 +15,7 @@
     <HasClassicReflection>true</HasClassicReflection>
     <HasColumnSchema>false</HasColumnSchema>
     <HasDbAsync>true</HasDbAsync>
+    <HasDbParameter>true</HasDbParameter>
     <HasDbProvider>true</HasDbProvider>
     <HasDeriveParameters>true</HasDeriveParameters>
     <HasDynamic>true</HasDynamic>
@@ -37,15 +38,18 @@
     <FrameworkPathOverride>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
     <HasDbAsync>false</HasDbAsync>
     <HasDynamic>false</HasDynamic>
+    <HasDbParameter>false</HasDbParameter>
     <SqlTypesVersion>10.50.1600.1</SqlTypesVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'net40'">
     <HasDbAsync>false</HasDbAsync>
+    <HasDbParameter>false</HasDbParameter>
     <SqlTypesVersion>13.0.4001</SqlTypesVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'net45'">
+    <HasDbParameter>false</HasDbParameter>
     <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
   </PropertyGroup>
 
@@ -84,6 +88,7 @@
     <DefineConstants Condition="$(HasColumnSchema) != 'true'">$(DefineConstants);NO_COLUMN_SCHEMA</DefineConstants>
     <DefineConstants Condition="$(HasClassicReflection) != 'true'">$(DefineConstants);NO_CLASSIC_REFLECTION</DefineConstants>
     <DefineConstants Condition="$(HasDbAsync) != 'true'">$(DefineConstants);NO_DBASYNC</DefineConstants>
+    <DefineConstants Condition="$(HasDbParameter) != 'true'">$(DefineConstants);NO_DBPARAMETER</DefineConstants>
     <DefineConstants Condition="$(HasDbProvider) != 'true'">$(DefineConstants);NO_DB_PROVIDER</DefineConstants>
     <DefineConstants Condition="$(HasDeriveParameters) != 'true'">$(DefineConstants);NO_DERIVE_PARAMETERS</DefineConstants>
     <DefineConstants Condition="$(HasDynamic) != 'true'">$(DefineConstants);NO_DYNAMIC</DefineConstants>
