@@ -11,6 +11,7 @@ properties {
     $baseDir = $psake.build_script_dir
     $outputDir = "$baseDir\Build\Output"
     $configuration = 'Release'
+	$nunit = "$($env:USERPROFILE)\.nuget\packages\nunit.consolerunner\3.6.1\tools\nunit3-console.exe"
 }
 
 Task default -depends Build
@@ -38,8 +39,16 @@ Task Build -depends Restore {
 	Get-ChildItem $baseDir\Insight*\*.csproj | %{ exec { dotnet build $_ -c $configuration } }
 }
 
-Task Test {
-	Get-ChildItem $baseDir\Insight.Tests*\*.csproj | %{ exec { dotnet test $_ -c $configuration } }
+Task Test -depends Build, TestOnly {
+}
+
+Task Test40 {
+	Get-ChildItem $baseDir\Insight.Tests*\*.csproj | %{ 
+		$testdll = $($_.Directory.ToString() + "\bin\Release\net40\" + $_.Name.Replace(".csproj", ".dll"))
+		if (Test-Path ($testdll)) {
+			exec { & $nunit $testdll }
+		}
+	}
 }
 
 Task TestOnly {
@@ -53,5 +62,5 @@ Task PackageOnly {
 	Get-ChildItem $baseDir\Insight.Database*\**\**\*.nupkg | Copy-Item -Destination $outputDir
 }
 
-Task Package -depends Clean, Build, Test, PackageOnly {
+Task Package -depends Clean, Build, Test, Test40, PackageOnly {
 }
