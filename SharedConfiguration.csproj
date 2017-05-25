@@ -9,6 +9,7 @@
   </PropertyGroup>
   
   <PropertyGroup>
+    <HasAmbientTransactions>true</HasAmbientTransactions>
     <HasAppDomains>true</HasAppDomains>
     <HasConnectionSettings>true</HasConnectionSettings>
     <HasClassicReflection>true</HasClassicReflection>
@@ -72,8 +73,12 @@
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
   </PropertyGroup>
-
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
+    <HasAmbientTransactions>false</HasAmbientTransactions>
+  </PropertyGroup>
+  
   <PropertyGroup>
+    <DefineConstants Condition="$(HasAmbientTransactions) != 'true'">$(DefineConstants);NO_AMBIENT_TRANSACTIONS</DefineConstants>
     <DefineConstants Condition="$(HasAppDomains) != 'true'">$(DefineConstants);NO_APP_DOMAINS</DefineConstants>
     <DefineConstants Condition="$(HasConnectionSettings) != 'true'">$(DefineConstants);NO_CONNECTION_SETTINGS</DefineConstants>
     <DefineConstants Condition="$(HasColumnSchema) != 'true'">$(DefineConstants);NO_COLUMN_SCHEMA</DefineConstants>
