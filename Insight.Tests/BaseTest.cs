@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -61,7 +60,7 @@ namespace Insight.Tests
 
 			using (var connection = new SqlConnection(BaseTest.ConnectionString).OpenConnection())
 			{
-				using (var stream = Assembly.GetExecutingAssembly().GetManifestResourceStream("Insight.Tests.InsightDbTest.sql"))
+				using (var stream = typeof(TestSetup).GetTypeInfo().Assembly.GetManifestResourceStream("Insight.Tests.InsightDbTest.sql"))
 				using (var reader = new StreamReader(stream))
 				{
 					foreach (var script in reader.ReadToEnd().Split(new String[] { "\r\nGO\r\n" }, StringSplitOptions.None))

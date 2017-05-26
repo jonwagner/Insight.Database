@@ -61,8 +61,8 @@ namespace Insight.Database.CodeGenerator
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Performance", "CA1810:InitializeReferenceTypeStaticFieldsInline")]
 		static InterfaceGenerator()
 		{
-			// make a new assembly for the generated types
-			AssemblyName an = Assembly.GetExecutingAssembly().GetName();
+            // make a new assembly for the generated types
+            AssemblyName an = typeof(InterfaceGenerator).GetTypeInfo().Assembly.GetName();
 			an.Name = "Insight.Database.DynamicAssembly";
 
 #if NO_APP_DOMAINS
@@ -84,7 +84,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An implmementor of the given interface.</returns>
 		public static object GetImplementorOf(Type type, Func<IDbConnection> connectionProvider, bool singleThreaded)
 		{
-			if (!type.IsInterface && !type.IsAbstract)
+			if (!type.GetTypeInfo().IsInterface && !type.GetTypeInfo().IsAbstract)
 				throw new ArgumentException("type must be an interface or abstract class", "type");
 
 			var constructors = singleThreaded ? _singleThreadedConstructors : _constructors;
@@ -107,7 +107,7 @@ namespace Insight.Database.CodeGenerator
 			// create the type
 			string typeName = type.FullName + Guid.NewGuid().ToString();
 			TypeBuilder tb;
-			if (type.IsInterface)
+			if (type.GetTypeInfo().IsInterface)
 			{
 				if (singleThreaded)
 					tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { type });
@@ -146,7 +146,9 @@ namespace Insight.Database.CodeGenerator
 
 				// return the create method
 				var createMethod = t.GetMethod("Create", _ifuncDbConnectionParameterTypes);
-				return (Func<Func<IDbConnection>, object>)Delegate.CreateDelegate(typeof(Func<Func<IDbConnection>, object>), createMethod);
+                var delegateType = typeof(Func<Func<IDbConnection>, object>);
+
+                return (Func<Func<IDbConnection>, object>)createMethod.CreateDelegate(delegateType);
 			}
 			catch (TypeLoadException e)
 			{
@@ -251,7 +253,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>All of the methods defined on the interface.</returns>
 		private static IEnumerable<MethodInfo> DiscoverMethods(Type type)
 		{
-			if (type.IsInterface)
+			if (type.GetTypeInfo().IsInterface)
 			{
 				return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
 					.Union(type.GetInterfaces().Where(i => !i.FullName.StartsWith("System", StringComparison.OrdinalIgnoreCase)).SelectMany(i => DiscoverMethods(i)));
@@ -327,7 +329,7 @@ namespace Insight.Database.CodeGenerator
 						{
 							// one parameter that is a non-atomic object, just pass it and let the insight framework handle it
 							mIL.Emit(OpCodes.Ldarg_1);
-							if (parameters[0].ParameterType.IsValueType)
+							if (parameters[0].ParameterType.GetTypeInfo().IsValueType)
 								mIL.Emit(OpCodes.Box, parameters[0].ParameterType);
 						}
 						else
@@ -436,7 +438,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			// if we are returning a task, unwrap the task result
 			var returnType = interfaceMethod.ReturnType;
-			if (returnType.IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
+			if (returnType.GetTypeInfo().IsGenericType && returnType.GetGenericTypeDefinition() == typeof(Task<>))
 				returnType = returnType.GetGenericArguments()[0];
 
 			// if there are returns attributes specified, then build the structure for the coder
@@ -595,7 +597,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if the type is a single reader.</returns>
 		private static bool TypeIsSingleReader(Type type)
 		{
-			if (!type.IsGenericType)
+			if (!type.GetTypeInfo().IsGenericType)
 				return false;
 
 			var generic = type.GetGenericTypeDefinition();
@@ -639,7 +641,7 @@ namespace Insight.Database.CodeGenerator
 				// methods that start with insert/upsert map to insert
 				if (type != null && !TypeHelper.IsAtomicType(type) && IsMethodAnUpsert(method))
 				{
-					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
 						return _insertListMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
 
@@ -687,7 +689,7 @@ namespace Insight.Database.CodeGenerator
 				// methods that start with insert/upsert map to insert
 				if (type != null && !TypeHelper.IsAtomicType(type) && IsMethodAnUpsert(method))
 				{
-					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					var enumerable = type.GetInterfaces().Union(new[] { type }).FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 					if (enumerable != null)
 						return _insertListAsyncMethod.MakeGenericMethod(enumerable.GetGenericArguments()[0]);
 
@@ -699,7 +701,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// if the returntype is Task<T>, look a little deeper
-			if (method.ReturnType.IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
+			if (method.ReturnType.GetTypeInfo().IsGenericType && method.ReturnType.GetGenericTypeDefinition() == typeof(Task<>))
 			{
 				// get the inside of the task
 				var taskResultType = method.ReturnType.GetGenericArguments()[0];
@@ -795,7 +797,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>True if it is a list type.</returns>
 		private static bool IsGenericListType(Type type)
 		{
-			if (!type.IsGenericType)
+			if (!type.GetTypeInfo().IsGenericType)
 				return false;
 
 			var generic = type.GetGenericTypeDefinition();

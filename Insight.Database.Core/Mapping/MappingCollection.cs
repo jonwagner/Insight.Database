@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -282,7 +283,7 @@ namespace Insight.Database.Mapping
 		/// <inheritdoc/>
 		internal override bool CanBindChild(Type type)
 		{
-			for (; type != null; type = type.BaseType)
+			for (; type != null; type = type.GetTypeInfo().BaseType)
 			{
 				// attributes on the type override any other configuration
 				var bindAttribute = type.GetCustomAttributes(typeof(BindChildrenAttribute), true).OfType<BindChildrenAttribute>().FirstOrDefault();

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
@@ -144,7 +145,7 @@ namespace Insight.Database.Structure
 		/// <returns>True if it is a list type.</returns>
 		private static bool IsGenericListType(Type type, Type childType)
 		{
-			if (!type.IsGenericType)
+			if (!type.GetTypeInfo().IsGenericType)
 				return false;
 
 			var genericParameters = type.GetGenericArguments();

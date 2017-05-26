@@ -91,17 +91,19 @@ namespace Insight.Database
 			return InnerConnection.BeginTransaction(isolationLevel);
 		}
 
-		/// <inheritdoc/>
-		protected override bool CanRaiseEvents
+#if !NO_FULL_SYSTEM_DATA_IMPLEMENTATION
+        /// <inheritdoc/>
+        protected override bool CanRaiseEvents
 		{
 			get
 			{
 				return false;
 			}
 		}
+#endif
 
-		/// <inheritdoc/>
-		public override void ChangeDatabase(string databaseName)
+        /// <inheritdoc/>
+        public override void ChangeDatabase(string databaseName)
 		{
 			InnerConnection.ChangeDatabase(databaseName);
 		}
@@ -109,7 +111,8 @@ namespace Insight.Database
 		/// <inheritdoc/>
 		public override void Close()
 		{
-			InnerConnection.Close();
+			if (InnerConnection != null)
+				InnerConnection.Close();
 		}
 
 		/// <inheritdoc/>
@@ -156,8 +159,9 @@ namespace Insight.Database
 			get { return InnerConnection.State; }
 		}
 
-		/// <inheritdoc/>
-		public override DataTable GetSchema()
+#if !NO_FULL_SYSTEM_DATA_IMPLEMENTATION
+        /// <inheritdoc/>
+        public override DataTable GetSchema()
 		{
 			return InnerConnection.GetSchema();
 		}
@@ -173,9 +177,10 @@ namespace Insight.Database
 		{
 			return InnerConnection.GetSchema(collectionName, restrictionValues);
 		}
+#endif
 
-		/// <inheritdoc/>
-		protected override void Dispose(bool disposing)
+        /// <inheritdoc/>
+        protected override void Dispose(bool disposing)
 		{
 			try
 			{

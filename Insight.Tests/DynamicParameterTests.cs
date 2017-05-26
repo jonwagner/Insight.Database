@@ -187,7 +187,7 @@ namespace Insight.Tests
 			using (var c = Connection())
 			{
 				c.Open();
-				var parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+				var parameters = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
 
 				parameters.Add("data", new List<TestData>() { new TestData() { X = 1, Z = 2 } });
 
@@ -204,7 +204,7 @@ namespace Insight.Tests
 			using (var c = Connection())
 			{
 				c.Open();
-				var parameters = new Dictionary<string, object>(StringComparer.InvariantCultureIgnoreCase);
+				var parameters = new Dictionary<string, object>(StringComparer.CurrentCultureIgnoreCase);
 
 				parameters.Add("data", new List<TestData>() { new TestData() { X = 1, Z = 2 } });
 

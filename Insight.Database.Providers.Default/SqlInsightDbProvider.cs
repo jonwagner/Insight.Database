@@ -8,6 +8,7 @@ using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
+using System.Reflection;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
@@ -104,7 +105,7 @@ namespace Insight.Database
 
 			SqlCommand sqlCommand = command as SqlCommand;
 
-#if NO_DERIVE_PARAMETERS
+#if NO_COMMAND_BUILDER
 			Insight.Database.Providers.Default.SqlParameterHelper.DeriveParameters(sqlCommand);
 #else
 			SqlCommandBuilder.DeriveParameters(sqlCommand);
@@ -274,7 +275,11 @@ namespace Insight.Database
 
 			using (bcp)
 			{
+#if NETSTANDARD1_5
+				bcp.BulkCopy.WriteToServer((DbDataReader)reader);
+#else
 				bcp.BulkCopy.WriteToServer(reader);
+#endif
 			}
 		}
 
@@ -295,16 +300,20 @@ namespace Insight.Database
 		{
 			using (var bcp = PrepareBulkCopy(connection, tableName, reader, configure, options, transaction))
 			{
+#if NETSTANDARD1_5
+				await bcp.BulkCopy.WriteToServerAsync((DbDataReader)reader).ConfigureAwait(false);
+#else
 				await bcp.BulkCopy.WriteToServerAsync(reader).ConfigureAwait(false);
+#endif
 			}
 		}
 #endif
 
-		/// <summary>
-		/// Determines if a database exception is a transient exception and if the operation could be retried.
-		/// </summary>
-		/// <param name="exception">The exception to test.</param>
-		/// <returns>True if the exception is transient.</returns>
+				/// <summary>
+				/// Determines if a database exception is a transient exception and if the operation could be retried.
+				/// </summary>
+				/// <param name="exception">The exception to test.</param>
+				/// <returns>True if the exception is transient.</returns>
 		public override bool IsTransientException(Exception exception)
 		{
 			// we are only going to try to handle sql server exceptions
@@ -424,7 +433,7 @@ namespace Insight.Database
 			if (String.IsNullOrEmpty(p.TypeName))
 			{
 				p.SqlDbType = SqlDbType.Structured;
-				p.TypeName = String.Format(CultureInfo.InstalledUICulture, "[{0}Table]", listType.Name);
+				p.TypeName = String.Format(CultureInfo.InvariantCulture, "[{0}Table]", listType.Name);
 			}
 
 			return p.TypeName;
@@ -437,7 +446,12 @@ namespace Insight.Database
 		/// <returns>True if it is a Sql UDT.</returns>
 		private static bool IsSqlUserDefinedType(Type type)
 		{
-			return type.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
+#if NETSTANDARD1_5
+			var typeInfo = type.GetTypeInfo();
+#else
+			var typeInfo = type;
+#endif
+			return typeInfo.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
 		}
 		
 		/// <summary>
@@ -480,8 +494,11 @@ namespace Insight.Database
 #endif
 
 				// map the columns by name, in case we skipped a readonly column
-				foreach (DataRow row in reader.GetSchemaTable().Rows)
-					bulk.ColumnMappings.Add((string)row["ColumnName"], (string)row["ColumnName"]);
+				for (int i = 0; i < reader.FieldCount; i++)
+				{
+					string fieldName = reader.GetName(i);
+					bulk.ColumnMappings.Add(fieldName, fieldName);
+				}
 
 				insightBulk = new SqlInsightBulkCopy(bulk);
 				bulk = null;

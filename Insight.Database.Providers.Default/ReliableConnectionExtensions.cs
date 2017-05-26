@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+#if !NO_CONNECTION_SETTINGS
 using System.Configuration;
+#endif
 using System.Data.SqlClient;
 using System.Linq;
 using System.Text;

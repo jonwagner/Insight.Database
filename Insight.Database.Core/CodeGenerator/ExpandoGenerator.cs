@@ -74,7 +74,7 @@ namespace Insight.Database.CodeGenerator
 				accessor.EmitGetValue(il);
 
 				// value types need to be boxed
-				if (accessor.MemberType.IsValueType)
+				if (accessor.MemberType.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Box, accessor.MemberType);
 
 				// call expando.setvalue

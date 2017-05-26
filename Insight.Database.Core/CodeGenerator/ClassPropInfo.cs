@@ -44,10 +44,11 @@ namespace Insight.Database.CodeGenerator
 		/// <summary>
 		/// Initializes a new instance of the ClassPropInfo class.
 		/// </summary>
+		/// <param name="declaringType">The type containing the member.</param>
 		/// <param name="memberInfo">The member to represent.</param>
-		private ClassPropInfo(MemberInfo memberInfo)
+		private ClassPropInfo(Type declaringType, MemberInfo memberInfo)
 		{
-			Type = memberInfo.ReflectedType;
+			Type = declaringType;
 			Name = memberInfo.Name;
 			MemberInfo = memberInfo;
 
@@ -191,8 +192,8 @@ namespace Insight.Database.CodeGenerator
 
 					// if there is a base type, get those members first
 					// derived classes won't have access to the private members of the base class
-					if (type.BaseType != null)
-						members.AddRange(GetMembersForType(type.BaseType));
+					if (type.GetTypeInfo().BaseType != null)
+						members.AddRange(GetMembersForType(type.GetTypeInfo().BaseType));
 
 					// if this is a structured type get the get properties for the types that we pass in
 					// exception are the Xml/XDocument classes that we already have special handlers for
@@ -201,8 +202,8 @@ namespace Insight.Database.CodeGenerator
 						&& t != typeof(XDocument))
 					{
 						// get fields and properties. Prioritize explicitly mapped members first, then properties over fields.
-                        foreach (var p in t.GetProperties(DefaultBindingFlags).Select(m => new ClassPropInfo(m))
-                            .Union(t.GetFields(DefaultBindingFlags).Select(m => new ClassPropInfo(m)))
+                        foreach (var p in t.GetProperties(DefaultBindingFlags).Select(m => new ClassPropInfo(t, m))
+                            .Union(t.GetFields(DefaultBindingFlags).Select(m => new ClassPropInfo(t, m)))
                             .OrderBy(m => !m.ColumnNameIsOverridden)
                             .ThenBy(m => (m.FieldInfo == null) ? 0 : 1))
                         {
@@ -216,7 +217,7 @@ namespace Insight.Database.CodeGenerator
                             {
 								// we are overriding the column name at this level, so clone the property and rename it
 								members.Remove(match);
-								members.Add(new ClassPropInfo(p.MemberInfo));
+								members.Add(new ClassPropInfo(t, p.MemberInfo));
                             }
                         }
                     }
@@ -239,7 +240,7 @@ namespace Insight.Database.CodeGenerator
             }
             else if (GetMethodInfo != null)
             {
-                if (Type.IsValueType)
+                if (Type.GetTypeInfo().IsValueType)
                     il.Emit(OpCodes.Call, GetMethodInfo);
                 else
                     il.Emit(OpCodes.Callvirt, GetMethodInfo);
@@ -262,7 +263,7 @@ namespace Insight.Database.CodeGenerator
             }
             else if (SetMethodInfo != null)
             {
-                if (Type.IsValueType)
+                if (Type.GetTypeInfo().IsValueType)
                     il.Emit(OpCodes.Call, SetMethodInfo);
                 else
                     il.Emit(OpCodes.Callvirt, SetMethodInfo);
@@ -296,7 +297,7 @@ namespace Insight.Database.CodeGenerator
 			else
 				il.Emit(OpCodes.Callvirt, GetMethodInfo);
 
-			if (typeof(TValue) == typeof(object) && MemberType.IsValueType)
+			if (typeof(TValue) == typeof(object) && MemberType.GetTypeInfo().IsValueType)
 				il.Emit(OpCodes.Box, MemberType);
 
 			il.Emit(OpCodes.Ret);
@@ -452,7 +453,7 @@ namespace Insight.Database.CodeGenerator
 				var member = memberNames[i];
 
 				// if the value on the stack can be null, do a null check here
-				if (pi != null && !pi.MemberType.IsValueType)
+				if (pi != null && !pi.MemberType.GetTypeInfo().IsValueType)
 				{
 					il.Emit(OpCodes.Dup);
 					il.Emit(OpCodes.Brfalse, nullLabel);
@@ -485,7 +486,7 @@ namespace Insight.Database.CodeGenerator
 			}
 
 			// if this is a value type, then box the value so the compiler can check the type and we can call methods on it
-			if (memberType.IsValueType)
+			if (memberType.GetTypeInfo().IsValueType)
 				il.Emit(OpCodes.Box, memberType);
 		}
 

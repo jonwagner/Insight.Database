@@ -1,4 +1,5 @@
-﻿using Insight.Database;
+﻿#if !NO_ODBC
+using Insight.Database;
 using NUnit.Framework;
 using System;
 using System.Collections.Generic;
@@ -9,7 +10,6 @@ using System.Threading.Tasks;
 
 namespace Insight.Tests
 {
-#if !NO_ODBC
 	[TestFixture]
     public class OdbcTests
     {
@@ -31,5 +31,5 @@ namespace Insight.Tests
         }
 #endif
     }
-#endif
 }
+#endif

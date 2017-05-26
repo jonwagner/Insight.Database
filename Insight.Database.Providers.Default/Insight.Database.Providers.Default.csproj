@@ -6,7 +6,7 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net35;net40;net45;net451;netstandard1.5;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
@@ -24,8 +24,5 @@
   <ItemGroup>
     <Compile Remove="OdbcInsightDbProvider.cs" Condition="$(HasOleDb) != 'true'" />
     <Compile Remove="OleDbInsightDbProvider.cs" Condition="$(HasOdbc) != 'true'" />
-  </ItemGroup>
-  <ItemGroup Condition="$(HasSqlDeriveParameters) == 'true'">
-    <Compile Remove="DeriveParameters\*.cs" />
   </ItemGroup>
 </Project>

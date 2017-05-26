@@ -2,7 +2,6 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlTypes;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
@@ -82,18 +81,20 @@ namespace Insight.Database.CodeGenerator
 				_accessors = new Func<object, object>[] { o => o };
 			}
 		}
-		#endregion
+        #endregion
 
-		#region Properties
-		/// <summary>
-		/// Gets a DataTable containing the expected schema for the type.
-		/// </summary>
-		public DataTable SchemaTable { get { return ColumnInfo.ToSchemaTable(_columns); } }
+        #region Properties
+#if !NO_SCHEMA_TABLE
+        /// <summary>
+        /// Gets a DataTable containing the expected schema for the type.
+        /// </summary>
+        public DataTable SchemaTable { get { return ColumnInfo.ToSchemaTable(_columns); } }
+#endif
 
-		/// <summary>
-		/// Gets the number of fields in the table.
-		/// </summary>
-		public int FieldCount { get { return _columns.Count; } }
+        /// <summary>
+        /// Gets the number of fields in the table.
+        /// </summary>
+        public int FieldCount { get { return _columns.Count; } }
 
 		/// <summary>
 		/// Gets a value indicating whether the given type is a value type.
@@ -192,7 +193,7 @@ namespace Insight.Database.CodeGenerator
 
 			// convert the object reference to the desired type
 			il.Emit(OpCodes.Ldarg_0);
-            if (type.IsValueType)
+            if (type.GetTypeInfo().IsValueType)
             {
                 // access the field/property of a value type
                 var valueHolder = il.DeclareLocal(type);
@@ -208,7 +209,7 @@ namespace Insight.Database.CodeGenerator
 			// get the value from the object
 			var readyToSetLabel = il.DefineLabel();
 			ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
-			if (mapping.Member.MemberType.IsValueType)
+			if (mapping.Member.MemberType.GetTypeInfo().IsValueType)
 				il.Emit(OpCodes.Unbox_Any, mapping.Member.MemberType);
 
 			// if the type is nullable, handle nulls
@@ -249,7 +250,7 @@ namespace Insight.Database.CodeGenerator
 
 			if (sourceType != targetType && canSerialize)
 			{
-				if (sourceType.IsValueType)
+				if (sourceType.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Box, sourceType);
 				il.EmitLoadType(sourceType);
 				StaticFieldStorage.EmitLoad(il, mapping.Serializer);

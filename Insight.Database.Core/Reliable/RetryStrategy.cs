@@ -254,7 +254,7 @@ namespace Insight.Database.Reliable
 							{
 								timer.Dispose();
 							}
-						});
+						}, null, Timeout.Infinite, Timeout.Infinite);
 
 						// start the timer
 						timer.Change(delay, NoRepeat);

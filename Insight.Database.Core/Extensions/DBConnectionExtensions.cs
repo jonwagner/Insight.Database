@@ -1581,7 +1581,7 @@ namespace Insight.Database
 		private static T ConvertScalar<T>(IDbCommand cmd, object parameters, object outputParameters, object result)
 		{
 			if ((result == null || result == DBNull.Value) &&
-				typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
+				typeof(T).GetTypeInfo().IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
 				throw new InvalidOperationException("Recordset returned no rows, but ExecuteScalar is trying to return a non-nullable type.");
 
 			cmd.OutputParameters(parameters, outputParameters);

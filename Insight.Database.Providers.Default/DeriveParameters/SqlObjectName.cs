@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if NO_COMMAND_BUILDER
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -106,3 +107,4 @@ namespace Insight.Database.Providers.Default
 
 	}
 }
+#endif

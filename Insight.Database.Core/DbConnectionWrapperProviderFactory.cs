@@ -5,7 +5,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Reflection;
 using System.Security;
+#if !NO_DB_PROVIDER
 using System.Security.Permissions;
+#endif
 using System.Text;
 using System.Threading.Tasks;
 
@@ -45,27 +47,31 @@ namespace Insight.Database
             InnerFactory = (T)field.GetValue(null);
         }
 
-		#region Implementation
-		/// <inheritdoc/>
-		public override bool CanCreateDataSourceEnumerator
+        #region Implementation
+#if !NO_FULL_SYSTEM_DATA_IMPLEMENTATION
+        /// <inheritdoc/>
+        public override bool CanCreateDataSourceEnumerator
 		{
 			get { return InnerFactory.CanCreateDataSourceEnumerator; }
 		}
+#endif
 
-		/// <inheritdoc/>
-		public override DbCommand CreateCommand()
+        /// <inheritdoc/>
+        public override DbCommand CreateCommand()
 		{
 			return InnerFactory.CreateCommand();
 		}
 
-		/// <inheritdoc/>
-		public override DbCommandBuilder CreateCommandBuilder()
+#if !NO_COMMAND_BUILDER
+        /// <inheritdoc/>
+        public override DbCommandBuilder CreateCommandBuilder()
 		{
 			return InnerFactory.CreateCommandBuilder();
 		}
+#endif
 
-		/// <inheritdoc/>
-		public override DbConnection CreateConnection()
+        /// <inheritdoc/>
+        public override DbConnection CreateConnection()
 		{
 			return new DbConnectionWrapper(InnerFactory.CreateConnection());
 		}
@@ -76,8 +82,9 @@ namespace Insight.Database
 			return InnerFactory.CreateConnectionStringBuilder();
 		}
 
-		/// <inheritdoc/>
-		public override DbDataAdapter CreateDataAdapter()
+#if !NO_FULL_SYSTEM_DATA_IMPLEMENTATION
+        /// <inheritdoc/>
+        public override DbDataAdapter CreateDataAdapter()
 		{
 			return InnerFactory.CreateDataAdapter();
 		}
@@ -87,9 +94,10 @@ namespace Insight.Database
 		{
 			return InnerFactory.CreateDataSourceEnumerator();
 		}
+#endif
 
-		/// <inheritdoc/>
-		public override DbParameter CreateParameter()
+        /// <inheritdoc/>
+        public override DbParameter CreateParameter()
 		{
 			return InnerFactory.CreateParameter();
 		}

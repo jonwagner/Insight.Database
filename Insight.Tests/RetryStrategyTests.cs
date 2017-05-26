@@ -60,7 +60,7 @@ namespace Insight.Tests
 		{
 			RetryStrategy s = new RetryStrategy();
 
-			Assert.Throws<AggregateException>(() => s.ExecuteWithRetryAsync<int>(null, () => { throw new ApplicationException(); }).Wait());
+			Assert.Throws<AggregateException>(() => s.ExecuteWithRetryAsync<int>(null, () => { throw new Exception(); }).Wait());
 		}
 
 		class TestRetryStrategy : RetryStrategy
@@ -76,9 +76,9 @@ namespace Insight.Tests
 		{
 			RetryStrategy s = new RetryStrategy();
 
-			s.Retrying += (sender, re) => { throw new ApplicationException(); };
+			s.Retrying += (sender, re) => { throw new Exception(); };
 
-			Assert.Throws<AggregateException>(() => s.ExecuteWithRetryAsync<int>(null, () => Task<int>.Factory.StartNew(() => { throw new ApplicationException(); })).Wait());
+			Assert.Throws<AggregateException>(() => s.ExecuteWithRetryAsync<int>(null, () => Task<int>.Factory.StartNew(() => { throw new Exception(); })).Wait());
 		}
 		#endregion
 

@@ -79,7 +79,7 @@ namespace Insight.Database.Providers
 			InsightDbProvider provider;
 
 			// walk the base classes to see if we know anything about what class it is derived from
-			for (Type type = databaseObject.GetType(); type != null; type = type.BaseType)
+			for (Type type = databaseObject.GetType(); type != null; type = type.GetTypeInfo().BaseType)
 			{
 				if (_providerMap.Value.TryGetValue(type, out provider) && provider != null)
 					return provider;
@@ -424,13 +424,11 @@ namespace Insight.Database.Providers
 
 			// look for any provider assemblies in the search path and load them automatically
 			var paths = new List<string>();
-			string relativeSearchPath = AppDomain.CurrentDomain.RelativeSearchPath ?? String.Empty;
-			paths.AddRange(relativeSearchPath.Split(';').Select(p => Path.Combine(AppDomain.CurrentDomain.BaseDirectory, p)));
 
-			foreach (string assemblyFile in paths.Distinct()
-				.SelectMany(path => Directory.GetFiles(path, "Insight.Database.Providers.*.dll").Distinct()))
+            foreach (string assemblyFile in ApplicationHelpers.GetAssemblySearchPaths().Distinct()
+                .SelectMany(path => Directory.GetFiles(path, "Insight.Database.Providers.*.dll").Distinct()))
 			{
-				var assembly = Assembly.LoadFrom(assemblyFile);
+                var assembly = ApplicationHelpers.LoadAssembly(assemblyFile);
 				foreach (var type in assembly.GetTypes().Where(t => t.IsSubclassOf(typeof(InsightDbProvider))))
 					RegisterProvider(providerMap, (InsightDbProvider)System.Activator.CreateInstance(type));
 			}

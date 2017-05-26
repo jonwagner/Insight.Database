@@ -199,7 +199,7 @@ namespace Insight.Database.CodeGenerator
 			// special case if the parameters object is an IEnumerable or Array
 			// look for the parameter that is a Structured object and pass the array to the TVP
 			// note that string supports ienumerable, so exclude atomic types
-			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+			var enumerable = type.GetInterfaces().FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
 			if (enumerable != null && type != typeof(string) && parameters.OfType<IDataParameter>().Where(p => p.Direction.HasFlag(ParameterDirection.Input)).Count() == 1)
 			{
 				return (IDbCommand cmd, object o) =>
@@ -294,7 +294,7 @@ namespace Insight.Database.CodeGenerator
 				}
 
 				// if it's class type, boxed value type (in an object), or nullable, then we have to check for null
-				if (!memberType.IsValueType || Nullable.GetUnderlyingType(memberType) != null)
+				if (!memberType.GetTypeInfo().IsValueType || Nullable.GetUnderlyingType(memberType) != null)
 				{
 					Label notNull = il.DefineLabel();
 
@@ -549,7 +549,7 @@ namespace Insight.Database.CodeGenerator
                 {
                     ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
 
-                    if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.IsValueType)
+                    if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.GetTypeInfo().IsValueType)
                     {
                         il.Emit(OpCodes.Dup);
                         var label = il.DefineLabel();
@@ -601,7 +601,7 @@ namespace Insight.Database.CodeGenerator
 				type = nullUnderlyingType;
 
 			// if it's an enum, get the underlying type
-			if (type.IsEnum)
+			if (type.GetTypeInfo().IsEnum)
 				type = Enum.GetUnderlyingType(type);
 
 			// look up the type
@@ -659,14 +659,14 @@ namespace Insight.Database.CodeGenerator
                 }
                 else
                 {
-                    listType = listType.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-                    if (listType.IsGenericType)
+                    listType = listType.GetInterfaces().FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+                    if (listType.GetTypeInfo().IsGenericType)
                         listType = listType.GetGenericArguments()[0];
                 }
 
 				listType = Nullable.GetUnderlyingType(listType) ?? listType;
 
-				if (command.CommandType == CommandType.Text && (listType.IsValueType || listType == typeof(string)))
+				if (command.CommandType == CommandType.Text && (listType.GetTypeInfo().IsValueType || listType == typeof(string)))
 					ConvertListParameterByValue(parameter, list, command);
 				else
 					ConvertListParameterByClass(parameter, list, command, listType);

@@ -1,10 +1,10 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net40;net45;net451;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>net40;net45;net451;netcoreapp1.0;netcoreapp2.0</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
-    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
   </ItemGroup>
@@ -12,7 +12,7 @@
     <Reference Include="Microsoft.CSharp" Condition="$(HasDynamic) == 'true'" />
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings) == 'true'" />
     <Reference Include="System.Data.Linq" Condition="$(HasLinq) == 'true'" />
-    <Reference Include="System.Transactions" />
+    <Reference Include="System.Transactions" Condition="$(HasAmbientTransactions) == 'true'" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />
@@ -23,6 +23,9 @@
   <ItemGroup Condition="$(HasSqlTypes) == 'true'">
     <PackageReference Include="Microsoft.SqlServer.Types" Version="$(SqlTypesVersion)" />
   </ItemGroup>
+  <ItemGroup Condition="$(HasSqlTypes) != 'true'">
+    <Compile Remove="SqlServerTypes\Loader.cs" />
+  </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="InsightDbTest.sql" />
   </ItemGroup>
@@ -30,6 +33,9 @@
     <None Update="AsyncQueryCoreTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>AsyncQueryCoreTests.generated.cs</LastGenOutput>
+    </None>
+    <None Update="GenericTypes.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
     </None>
     <None Update="SyncQueryCoreTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -50,5 +56,6 @@
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
   </ItemGroup>
 </Project>

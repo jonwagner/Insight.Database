@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NO_CONNECTION_SETTINGS
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Dynamic;
@@ -10,7 +11,6 @@ using System.Configuration;
 
 namespace Insight.Tests
 {
-#if !NO_CONNECTION_SETTINGS
 	/// <summary>
 	/// Tests the behavior of the ConnectionStringSettings extensions.
 	/// </summary>
@@ -33,5 +33,5 @@ namespace Insight.Tests
 			Assert.Throws<ArgumentNullException>(() => settings.Open());
 		}
 	}
-#endif
 }
+#endif

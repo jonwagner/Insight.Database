@@ -144,12 +144,13 @@ namespace Insight.Database.CodeGenerator
 		}
 #endif
 
-		/// <summary>
-		/// Converts a list of columns to a SchemaTable.
-		/// </summary>
-		/// <param name="columns">The columns to convert.</param>
-		/// <returns>A schema table.</returns>
-		public static DataTable ToSchemaTable(List<ColumnInfo> columns)
+#if !NO_SCHEMA_TABLE
+        /// <summary>
+        /// Converts a list of columns to a SchemaTable.
+        /// </summary>
+        /// <param name="columns">The columns to convert.</param>
+        /// <returns>A schema table.</returns>
+        public static DataTable ToSchemaTable(List<ColumnInfo> columns)
 		{
 			var table = new DataTable("SchemaTable");
 			try
@@ -209,14 +210,15 @@ namespace Insight.Database.CodeGenerator
 				throw;
 			}
 		}
+#endif
 #endregion
 
-		/// <summary>
-		/// Determines whether two columns are equal.
-		/// </summary>
-		/// <param name="other">The other column.</param>
-		/// <returns>True if they are equal.</returns>
-		public bool Equals(ColumnInfo other)
+        /// <summary>
+        /// Determines whether two columns are equal.
+        /// </summary>
+        /// <param name="other">The other column.</param>
+        /// <returns>True if they are equal.</returns>
+        public bool Equals(ColumnInfo other)
 		{
 			if (other == null)
 				return false;

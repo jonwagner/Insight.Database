@@ -50,7 +50,7 @@ namespace Insight.Database
 			{
 				new DataContractJsonSerializer(type).WriteObject(stream, value);
 
-				return Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Length);
+                return Encoding.UTF8.GetString(stream.GetBuffer(), 0, (int)stream.Length);
 			}
 #endif
 		}

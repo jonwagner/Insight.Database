@@ -14,17 +14,19 @@
     <HasConnectionSettings>true</HasConnectionSettings>
     <HasClassicReflection>true</HasClassicReflection>
     <HasColumnSchema>false</HasColumnSchema>
+    <HasCommandBuilder>true</HasCommandBuilder>
     <HasDbAsync>true</HasDbAsync>
     <HasDbParameter>true</HasDbParameter>
     <HasDbProvider>true</HasDbProvider>
-    <HasDeriveParameters>true</HasDeriveParameters>
     <HasDynamic>true</HasDynamic>
+    <HasFullSystemDataImplementation>true</HasFullSystemDataImplementation>
     <HasLinq>true</HasLinq>
     <HasOleDb>true</HasOleDb>
     <HasObdc>true</HasObdc>
     <HasSchemaTable>true</HasSchemaTable>
     <HasSqlDeriveParameters>true</HasSqlDeriveParameters>
     <HasSqlTypes>true</HasSqlTypes>
+    <HasTypeInfo>true</HasTypeInfo>
     <HasUdt>true</HasUdt>
   </PropertyGroup>
   <PropertyGroup>
@@ -39,12 +41,14 @@
     <HasDbAsync>false</HasDbAsync>
     <HasDynamic>false</HasDynamic>
     <HasDbParameter>false</HasDbParameter>
+    <HasTypeInfo>false</HasTypeInfo>
     <SqlTypesVersion>10.50.1600.1</SqlTypesVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'net40'">
     <HasDbAsync>false</HasDbAsync>
     <HasDbParameter>false</HasDbParameter>
+    <HasTypeInfo>false</HasTypeInfo>
     <SqlTypesVersion>13.0.4001</SqlTypesVersion>
   </PropertyGroup>
 
@@ -59,18 +63,37 @@
     <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
+  <PropertyGroup Condition="$(TargetFramework) == 'netstandard1.5' or $(TargetFramework) == 'netcoreapp1.0'">
+    <HasAmbientTransactions>false</HasAmbientTransactions>
     <HasAppDomains>false</HasAppDomains>
     <HasClassicReflection>false</HasClassicReflection>
     <HasColumnSchema>true</HasColumnSchema>
+    <HasCommandBuilder>false</HasCommandBuilder>
     <HasConnectionSettings>false</HasConnectionSettings>
     <HasDbProvider>false</HasDbProvider>
-    <HasDeriveParameters>false</HasDeriveParameters>
+    <HasFullSystemDataImplementation>false</HasFullSystemDataImplementation>
     <HasOleDb>false</HasOleDb>
     <HasObdc>false</HasObdc>
     <HasLinq>false</HasLinq>
     <HasSchemaTable>false</HasSchemaTable>
-    <HasSqlDeriveParameters>false</HasSqlDeriveParameters>
+    <HasSqlTypes>false</HasSqlTypes>
+    <HasUdt>false</HasUdt>
+    <SqlClientVersion>4.3.0</SqlClientVersion>
+    <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
+    <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
+  </PropertyGroup>
+  
+  <PropertyGroup Condition="$(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
+    <HasAppDomains>false</HasAppDomains>
+    <HasClassicReflection>false</HasClassicReflection>
+    <HasColumnSchema>true</HasColumnSchema>
+    <HasCommandBuilder>false</HasCommandBuilder>
+    <HasConnectionSettings>false</HasConnectionSettings>
+    <HasDbProvider>false</HasDbProvider>
+    <HasOleDb>false</HasOleDb>
+    <HasObdc>false</HasObdc>
+    <HasLinq>false</HasLinq>
+    <HasSchemaTable>false</HasSchemaTable>
     <HasSqlTypes>false</HasSqlTypes>
     <HasUdt>false</HasUdt>
 	<SqlClientVersion>4.4.0-preview1-25305-02</SqlClientVersion>
@@ -86,17 +109,19 @@
     <DefineConstants Condition="$(HasAppDomains) != 'true'">$(DefineConstants);NO_APP_DOMAINS</DefineConstants>
     <DefineConstants Condition="$(HasConnectionSettings) != 'true'">$(DefineConstants);NO_CONNECTION_SETTINGS</DefineConstants>
     <DefineConstants Condition="$(HasColumnSchema) != 'true'">$(DefineConstants);NO_COLUMN_SCHEMA</DefineConstants>
+    <DefineConstants Condition="$(HasCommandBuilder) != 'true'">$(DefineConstants);NO_COMMAND_BUILDER</DefineConstants>
     <DefineConstants Condition="$(HasClassicReflection) != 'true'">$(DefineConstants);NO_CLASSIC_REFLECTION</DefineConstants>
     <DefineConstants Condition="$(HasDbAsync) != 'true'">$(DefineConstants);NO_DBASYNC</DefineConstants>
     <DefineConstants Condition="$(HasDbParameter) != 'true'">$(DefineConstants);NO_DBPARAMETER</DefineConstants>
     <DefineConstants Condition="$(HasDbProvider) != 'true'">$(DefineConstants);NO_DB_PROVIDER</DefineConstants>
-    <DefineConstants Condition="$(HasDeriveParameters) != 'true'">$(DefineConstants);NO_DERIVE_PARAMETERS</DefineConstants>
     <DefineConstants Condition="$(HasDynamic) != 'true'">$(DefineConstants);NO_DYNAMIC</DefineConstants>
+    <DefineConstants Condition="$(HasFullSystemDataImplementation) != 'true'">$(DefineConstants);NO_FULL_SYSTEM_DATA_IMPLEMENTATION</DefineConstants>
     <DefineConstants Condition="$(HasLinq) != 'true'">$(DefineConstants);NO_LINQ_BINARY</DefineConstants>
     <DefineConstants Condition="$(HasOleDb) != 'true'">$(DefineConstants);NO_ODBC</DefineConstants>
     <DefineConstants Condition="$(HasObdc) != 'true'">$(DefineConstants);NO_OLEDB</DefineConstants>
     <DefineConstants Condition="$(HasSchemaTable) != 'true'">$(DefineConstants);NO_SCHEMA_TABLE</DefineConstants>
     <DefineConstants Condition="$(HasSqlTypes) != 'true'">$(DefineConstants);NO_SQL_TYPES</DefineConstants>
+    <DefineConstants Condition="$(HasTypeInfo) != 'true'">$(DefineConstants);NO_TYPE_INFO</DefineConstants>
     <DefineConstants Condition="$(HasUdt) != 'true'">$(DefineConstants);NO_UDT</DefineConstants>
   </PropertyGroup>
 

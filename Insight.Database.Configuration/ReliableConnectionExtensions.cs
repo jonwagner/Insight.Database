@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NO_CONNECTION_SETTINGS
+using System;
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data.SqlClient;
@@ -13,9 +14,7 @@ namespace Insight.Database.Reliable
 	/// </summary>
 	public static class ReliableConnectionExtensions
 	{
-#if !NO_CONNECTION_SETTINGS
 		#region ConnectionStringSettings Extensions
-
 		/// <summary>
 		/// Creates and returns a new SqlConnection.
 		/// </summary>
@@ -47,8 +46,10 @@ namespace Insight.Database.Reliable
 			connection.Open();
 			return connection;
 		}
+		#endregion
 
 #if !NO_DYNAMIC
+		#region Dynamic Methods
 		/// <summary>
 		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
 		/// </summary>
@@ -69,9 +70,9 @@ namespace Insight.Database.Reliable
 		{
 			return settings.ReliableConnection().Dynamic<T>();
 		}
-#endif
-#endregion
+		#endregion
 #endif
 
 	}
 }
+#endif

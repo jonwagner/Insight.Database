@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
@@ -824,7 +825,7 @@ namespace Insight.Tests
             var i1 = Connection().As<ITest1>();
             var i2 = Connection().As<ITestInsertUpdate>();
 
-			Assert.AreEqual(i1.GetType().Assembly, i2.GetType().Assembly);
+			Assert.AreEqual(i1.GetType().GetTypeInfo().Assembly, i2.GetType().GetTypeInfo().Assembly);
         }
 		#endregion
 

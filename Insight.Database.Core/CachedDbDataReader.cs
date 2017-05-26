@@ -119,23 +119,25 @@ namespace Insight.Database
 			return length;
 		}
 
-		/// <inheritdoc/>
-		public override void Close()
+#if !NO_FULL_SYSTEM_DATA_IMPLEMENTATION
+        /// <inheritdoc/>
+        public override void Close()
 		{
 			if (_inner != null)
 				_inner.Close();
 		}
 
-		/// <inheritdoc/>
-		public override IEnumerator GetEnumerator()
+        /// <inheritdoc/>
+        public override DataTable GetSchemaTable()
+        {
+            return _inner.GetSchemaTable();
+        }
+#endif
+
+        /// <inheritdoc/>
+        public override IEnumerator GetEnumerator()
 		{
 			throw new NotImplementedException();
-		}
-
-		/// <inheritdoc/>
-		public override DataTable GetSchemaTable()
-		{
-			return _inner.GetSchemaTable();
 		}
 
 		/// <inheritdoc/>

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using Insight.Database;
 using NUnit.Framework;
@@ -91,7 +92,7 @@ namespace Insight.Tests
 				{
 					// special case for formatting enums in our proc definition
 					string stringValue = value.ToString();
-					if (typeof(T).IsEnum)
+					if (typeof(T).GetTypeInfo().IsEnum)
 						stringValue = Enum.Format(typeof(T), value, "D");
 
 					// generate the test proc name

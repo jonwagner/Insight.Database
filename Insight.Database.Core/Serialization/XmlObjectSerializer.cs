@@ -77,7 +77,7 @@ namespace Insight.Database
 			StringReader reader = new StringReader((string)encoded);
 			try
 			{
-				using (XmlTextReader xr = new XmlTextReader(reader))
+				using (XmlReader xr = XmlReader.Create(reader))
 				{
 					reader = null;
 					return serializer.ReadObject(xr);

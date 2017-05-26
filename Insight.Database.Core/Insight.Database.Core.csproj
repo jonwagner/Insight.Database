@@ -8,10 +8,28 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>net35;net40;net45;net451;netstandard2.0</TargetFrameworks>
+    <TargetFrameworks>net35;net40;net45;net451;netstandard1.5;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
+
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.5' or $(TargetFramework) == 'netcoreapp1.0'">
+    <PackageReference Include="System.ComponentModel.Primitives" Version="4.3.0" />
+    <PackageReference Include="System.ComponentModel.TypeConverter" Version="4.3.0" />
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+    <PackageReference Include="System.Diagnostics.Tools" Version="4.3.0" />
+    <PackageReference Include="System.Dynamic.Runtime" Version="4.3.0" />
+    <PackageReference Include="System.Reflection" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.ILGeneration" Version="4.3.0" />
+    <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Loader" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Formatters" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Json" Version="4.3.0" />
+    <PackageReference Include="System.Runtime.Serialization.Xml" Version="4.3.0" />
+    <PackageReference Include="System.Threading.Thread" Version="4.3.0" />
+    <PackageReference Include="System.Xml.XmlDocument" Version="4.3.0" />
+  </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
@@ -23,6 +41,11 @@
     <PackageReference Include="System.Reflection.Emit.Lightweight" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Json" Version="4.3.0" />
     <PackageReference Include="System.Runtime.Serialization.Xml" Version="4.3.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="CustomDictionary.xml" />
+    <None Remove="GenericTypes.tt" />
   </ItemGroup>
   
   <ItemGroup>
@@ -41,10 +64,6 @@
     <None Update="Extensions\DbReaderExtensions.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>DbReaderExtensions.generated.cs</LastGenOutput>
-    </None>
-    <None Update="GenericTypes.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>GenericTypes.cs</LastGenOutput>
     </None>
     <None Update="Structure\Guardian.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
@@ -78,6 +97,9 @@
       <Generator>TextTemplatingFileGenerator</Generator>
       <LastGenOutput>SingleReader.generated.cs</LastGenOutput>
     </None>
+  </ItemGroup>  
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>  
   <ItemGroup>
     <Compile Update="Compatibility.generated.cs">
@@ -140,8 +162,5 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>SingleReader.tt</DependentUpon>
     </Compile>
-  </ItemGroup>  
-  <ItemGroup>
-    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
   </ItemGroup>
 </Project>

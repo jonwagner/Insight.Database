@@ -66,7 +66,7 @@ namespace Insight.Database.CodeGenerator
 
 			if (type == typeof(string))	return true;
 			if (type.IsArray) return true;
-			if (type.IsEnum) return true;
+			if (type.GetTypeInfo().IsEnum) return true;
 
 			// anything marked as a user-defined type is atomic for our purposes
 			if (IsSqlUserDefinedType(type))
@@ -77,7 +77,7 @@ namespace Insight.Database.CodeGenerator
 				return true;
 
 			// treat all references as non-atomic
-			if (!type.IsValueType)
+			if (!type.GetTypeInfo().IsValueType)
 				return false;
 
 			// these are structures, but we want to treat them as atomic
@@ -88,7 +88,7 @@ namespace Insight.Database.CodeGenerator
 			if (type == typeof(TimeSpan)) return true;
 
 			// all of the primitive types, array, etc. are atomic
-			return type.IsPrimitive;
+			return type.GetTypeInfo().IsPrimitive;
 		}
 
 		/// <summary>
@@ -123,7 +123,7 @@ namespace Insight.Database.CodeGenerator
 				return;
 
             // for generics and values, init a local object with a blank object
-            if (type.IsGenericParameter || type.IsValueType)
+            if (type.IsGenericParameter || type.GetTypeInfo().IsValueType)
             {
                 var returnValue = mIL.DeclareLocal(type);
                 mIL.Emit(returnValue.LocalIndex < 256 ? OpCodes.Ldloca_S : OpCodes.Ldloca, returnValue);
@@ -164,8 +164,8 @@ namespace Insight.Database.CodeGenerator
 					var oldType = oldTypes[i];
 					var newType = newTypes[i];
 
-					newType.SetGenericParameterAttributes(oldType.GenericParameterAttributes);
-					newType.SetInterfaceConstraints(oldType.GetGenericParameterConstraints());
+					newType.SetGenericParameterAttributes(oldType.GetTypeInfo().GenericParameterAttributes);
+					newType.SetInterfaceConstraints(oldType.GetTypeInfo().GetGenericParameterConstraints());
 				}
 			}
 		}

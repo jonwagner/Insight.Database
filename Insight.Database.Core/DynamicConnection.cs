@@ -182,7 +182,7 @@ namespace Insight.Database
 				// this is so you can send an entire object to an insert method
 				if (unnamedParameterCount == 1 &&
 					(callInfo.ArgumentNames.Count == specialParameters) &&
-					!args[0].GetType().IsValueType && args[0].GetType() != typeof(String))
+					!args[0].GetType().GetTypeInfo().IsValueType && args[0].GetType() != typeof(String))
 				{
 					cmd = _connection.CreateCommand(procName, args[0], CommandType.StoredProcedure, timeout, transaction);
 				}
@@ -293,11 +293,14 @@ namespace Insight.Database
 		/// <returns>The result of the invocation.</returns>
 		private static object CallQuery(IDbCommand command, IQueryReader queryReader, object outputParameters)
 		{
-			var method = _queryMethods.GetOrAdd(
-				queryReader.ReturnType,
-				t => (Func<IDbCommand, IQueryReader, CommandBehavior, object, object>)Delegate.CreateDelegate(
-					typeof(Func<IDbCommand, IQueryReader, CommandBehavior, object, object>),
-					typeof(DBCommandExtensions).GetMethod("QueryCoreUntyped", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t)));
+            var method = _queryMethods.GetOrAdd(
+                queryReader.ReturnType,
+                t =>
+                {
+                    var delegateType = typeof(Func<IDbCommand, IQueryReader, CommandBehavior, object, object>);
+                    var implementationMethod = typeof(DBCommandExtensions).GetMethod("QueryCoreUntyped", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
+                    return (Func<IDbCommand, IQueryReader, CommandBehavior, object, object>)implementationMethod.CreateDelegate(delegateType);
+                });
 			return method(command, queryReader, CommandBehavior.Default, outputParameters);
 		}
 
@@ -312,9 +315,12 @@ namespace Insight.Database
 		{
 			var method = _queryAsyncMethods.GetOrAdd(
 				queryReader.ReturnType,
-				t => (Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>)Delegate.CreateDelegate(
-					typeof(Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>),
-					typeof(DBConnectionExtensions).GetMethod("QueryCoreAsyncUntyped", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t)));
+				t =>
+                {
+                    var delegateType = typeof(Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>);
+                    var implementationMethod = typeof(DBConnectionExtensions).GetMethod("QueryCoreAsyncUntyped", BindingFlags.NonPublic | BindingFlags.Static).MakeGenericMethod(t);
+                    return (Func<IDbCommand, IQueryReader, CommandBehavior, CancellationToken, object, object>)implementationMethod.CreateDelegate(delegateType);
+                });
 			return method(command, queryReader, CommandBehavior.Default, cancellationToken, null);
 		}
 		#endregion

@@ -527,6 +527,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestThatClassesCanBeDeserializedByConstructor()
 		{
+			TestConstructorConversion<double>(5, "real");
+
 			TestConstructorConversion<string>("s", "varchar(500)");
 			TestConstructorConversion<byte>(5, "tinyint");
 			TestConstructorConversion<short>(5, "smallint");

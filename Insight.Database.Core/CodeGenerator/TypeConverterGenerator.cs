@@ -132,7 +132,7 @@ namespace Insight.Database.CodeGenerator
                 il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("DeserializeObject", BindingFlags.NonPublic | BindingFlags.Static));
                 il.Emit(OpCodes.Unbox_Any, targetType);
             }
-            else if (underlyingTargetType.IsEnum && sourceType == typeof(string))
+            else if (underlyingTargetType.GetTypeInfo().IsEnum && sourceType == typeof(string))
             {
                 var localString = il.DeclareLocal(typeof(string));
 
@@ -215,7 +215,7 @@ namespace Insight.Database.CodeGenerator
 					value = value.ToString() + " - " + Type.GetTypeCode(value.GetType());
 			}
 
-			return new DataException(string.Format(CultureInfo.InvariantCulture, "Error parsing column {0} ({1}={2})", index, name, value), ex);
+			return new Exception(string.Format(CultureInfo.InvariantCulture, "Error parsing column {0} ({1}={2})", index, name, value), ex);
 		}
 
 		/// <summary>
@@ -400,7 +400,7 @@ namespace Insight.Database.CodeGenerator
 				return true;
 
 			Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
-			Type rawTargetType = underlyingTargetType.IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
+			Type rawTargetType = underlyingTargetType.GetTypeInfo().IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
 
 			return TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType);
 		}
@@ -450,7 +450,7 @@ namespace Insight.Database.CodeGenerator
 			// support converting any value to type of object
 			if (targetType == typeof(object))
 			{
-				if (sourceType.IsValueType)
+				if (sourceType.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Box, sourceType);
 				return true;
 			}
@@ -487,7 +487,7 @@ namespace Insight.Database.CodeGenerator
 			// if the target type is an enum or nullable, try converting to one of those
 			if (Nullable.GetUnderlyingType(targetType) != null)
 				return FindConversionMethod(sourceType, Nullable.GetUnderlyingType(targetType));
-			if (targetType.IsEnum)
+			if (targetType.GetTypeInfo().IsEnum)
 				return FindConversionMethod(sourceType, Enum.GetUnderlyingType(targetType));
 
 			// handle converting sql datetime to timespan
@@ -507,7 +507,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>A conversion method or null if none could be found.</returns>
 		private static MethodInfo FindConversionMethod(string methodName, Type searchType, Type sourceType, Type targetType)
 		{
-			var members = searchType.FindMembers(
+			var members = searchType.GetTypeInfo().FindMembers(
 				MemberTypes.Method,
 				BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic,
 				new MemberFilter(
@@ -554,8 +554,8 @@ namespace Insight.Database.CodeGenerator
 				return true;
 			}
 
-			if (!sourceType.IsPrimitive) return false;
-			if (!targetType.IsPrimitive) return false;
+			if (!sourceType.GetTypeInfo().IsPrimitive) return false;
+			if (!targetType.GetTypeInfo().IsPrimitive) return false;
 
 			// if the enum is based on a different type of integer than returned, then do the conversion
 			if (targetType == typeof(Int32) && sourceType != typeof(Int32)) il.Emit(OpCodes.Conv_I4);

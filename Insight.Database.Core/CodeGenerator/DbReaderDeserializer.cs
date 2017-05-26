@@ -183,7 +183,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The deserializer to use.</returns>
 		private static Func<IDataReader, T> GetValueDeserializer<T>()
 		{
-            if (typeof(T).IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
+            if (typeof(T).GetTypeInfo().IsValueType && Nullable.GetUnderlyingType(typeof(T)) == null)
             {
                 return r => (T)r.GetValue(0);
             }
@@ -282,7 +282,7 @@ namespace Insight.Database.CodeGenerator
 			// is null, so return a default
 			il.MarkLabel(isNull);
 			il.Emit(OpCodes.Pop);
-			if (type.IsValueType)
+			if (type.GetTypeInfo().IsValueType)
 			{
 				// return default(T)
 				il.Emit(OpCodes.Ldloca, result);

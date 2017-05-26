@@ -86,14 +86,16 @@ namespace Insight.Database.CodeGenerator
 		#endregion
 
 		#region Implemented Methods
-		/// <summary>
-		/// Returns the schema table for the data.
-		/// </summary>
-		/// <returns>The schema table for the data.</returns>
-		public override DataTable GetSchemaTable()
+#if !NO_SCHEMA_TABLE
+        /// <summary>
+        /// Returns the schema table for the data.
+        /// </summary>
+        /// <returns>The schema table for the data.</returns>
+        public override DataTable GetSchemaTable()
 		{
 			return _objectReader.SchemaTable;
 		}
+#endif
 
 		/// <summary>
 		/// Read the next item from the reader.
@@ -208,10 +210,12 @@ namespace Insight.Database.CodeGenerator
 			return _objectReader.GetOrdinal(name);
 		}
 
+#if !NO_FULL_SYSTEM_DATA_IMPLEMENTATION
         /// <inheritdoc/>
         public override void Close()
 		{
 		}
+#endif
 
         /// <inheritdoc/>
         public override int Depth

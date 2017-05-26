@@ -34,8 +34,10 @@ namespace Insight.Tests
 			TestConvertToTypeWhileReading<bool>("bit");
 			TestConvertToTypeWhileReading<char>("char(1)");
 			TestConvertToTypeWhileReading<DateTime>("date");
+#if !NETCOREAPP1_0 && !NETCOREAPP2_0
 			TestConvertToTypeWhileReading<DateTimeOffset>("datetimeoffset");
 			TestConvertToTypeWhileReading<TimeSpan>("time");
+#endif
 		}
 
 		private void TestConvertToTypeWhileReading<T>(string sqlType, T value = default(T)) where T : struct

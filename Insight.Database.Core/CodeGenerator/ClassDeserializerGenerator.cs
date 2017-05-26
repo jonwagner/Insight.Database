@@ -110,7 +110,7 @@ namespace Insight.Database.CodeGenerator
 			var mappings = MapColumns(type, reader, startColumn, columnCount, structure, allowBindChild && isRootObject);
 
 			// need to know the constructor for the object (except for structs)
-			bool isStruct = type.IsValueType;
+			bool isStruct = type.GetTypeInfo().IsValueType;
 			ConstructorInfo constructor = createNewObject ? SelectConstructor(type) : null;
 
 			// the method can either be:
@@ -281,7 +281,7 @@ namespace Insight.Database.CodeGenerator
 
 					// if the mapping parent is nullable, check to see if it is null.
 					// if so, pop the parent off the stack and move to the next field
-					if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.IsValueType)
+					if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.GetTypeInfo().IsValueType)
 					{
 						var notNullLabel = il.DefineLabel();
 						il.Emit(OpCodes.Dup);
@@ -330,7 +330,7 @@ namespace Insight.Database.CodeGenerator
             if (constructor == null)
                 constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
 
-            if (constructor == null && !type.IsValueType)
+            if (constructor == null && !type.GetTypeInfo().IsValueType)
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}, and there was more than one constructor, but no DbConstructorAttribute was specified.", type.FullName));
 
             return constructor;
@@ -376,7 +376,7 @@ namespace Insight.Database.CodeGenerator
 		private static Delegate CreateGraphDeserializer(Type[] subTypes, IDataReader reader, IRecordStructure structure, bool allowBindChild)
 		{
 			Type type = subTypes[0];
-			bool isStruct = type.IsValueType;
+			bool isStruct = type.GetTypeInfo().IsValueType;
 
 			// go through each of the subtypes
 			var deserializers = CreateDeserializersForSubObjects(subTypes, reader, structure, allowBindChild);

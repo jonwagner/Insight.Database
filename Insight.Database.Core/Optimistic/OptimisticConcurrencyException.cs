@@ -45,13 +45,15 @@ namespace Insight.Database
 		{
 		}
 
-		/// <summary>
-		/// Initializes a new instance of the OptimisticConcurrencyException class.
-		/// </summary>
-		/// <param name="serializationInfo">The serialization info.</param>
-		/// <param name="context">The serialization context.</param>
-		protected OptimisticConcurrencyException(SerializationInfo serializationInfo, StreamingContext context) : base(serializationInfo, context)
+#if !NETSTANDARD1_5
+        /// <summary>
+        /// Initializes a new instance of the OptimisticConcurrencyException class.
+        /// </summary>
+        /// <param name="serializationInfo">The serialization info.</param>
+        /// <param name="context">The serialization context.</param>
+        protected OptimisticConcurrencyException(SerializationInfo serializationInfo, StreamingContext context) : base(serializationInfo, context)
 		{
 		}
-	}
+#endif
+    }
 }

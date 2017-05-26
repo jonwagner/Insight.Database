@@ -6,7 +6,9 @@ using System.Linq;
 using System.Text;
 using Insight.Database;
 using NUnit.Framework;
+#if !NO_CONNECTION_SETTINGS
 using System.Configuration;
+#endif
 
 namespace Insight.Tests
 {
