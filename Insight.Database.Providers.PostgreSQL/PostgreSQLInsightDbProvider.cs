@@ -95,7 +95,11 @@ namespace Insight.Database.Providers.PostgreSQL
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
+#if NETSTANDARD2_0
+			Insight.Database.Providers.PostgreSQL.Compatibility.NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
+#else
 			NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
+#endif
 
 			// remove the @ from any parameters
 			foreach (var p in command.Parameters.OfType<NpgsqlParameter>())
@@ -261,7 +265,7 @@ namespace Insight.Database.Providers.PostgreSQL
 			return false;
 		}
 
-		#region Bulk Copy Support
+#region Bulk Copy Support
 		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 		sealed class PostgreSQLInsightBulkCopy : InsightBulkCopy
 		{
@@ -308,6 +312,6 @@ namespace Insight.Database.Providers.PostgreSQL
 					RowsCopied(sender, e);
 			}
 		}
-		#endregion
+#endregion
 	}
 }
