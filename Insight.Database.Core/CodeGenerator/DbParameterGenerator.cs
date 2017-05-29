@@ -269,6 +269,8 @@ namespace Insight.Database.CodeGenerator
 				// Get the value from the object onto the stack
 				///////////////////////////////////////////////////////////////
 				il.Emit(OpCodes.Ldarg_1);
+				if (type.GetTypeInfo().IsValueType)
+					il.Emit(OpCodes.Unbox_Any, type);
 
 				///////////////////////////////////////////////////////////////
 				// Special case support for enumerables. If the type is -1 (our workaround, then call the list parameter method)

@@ -465,8 +465,21 @@ namespace Insight.Database.CodeGenerator
 					returnsAttributes.TryGetValue(i, out r);
 					var types = (r != null) ? r.Types : new Type[] { returnTypeArgs[i] };
 
-					// grab the records field for the appropriate OneToOne mapping
-					mIL.Emit(OpCodes.Ldsfld, Query.GetOneToOneType(types).GetField("Records", BindingFlags.Public | BindingFlags.Static));
+#if !NO_VALUE_TUPLES
+					// if the return type is a named tuple, emit column mappings
+					var elementNames = interfaceMethod.ReturnTypeCustomAttributes.GetCustomAttributes(true).OfType<System.Runtime.CompilerServices.TupleElementNamesAttribute>().FirstOrDefault();
+					if (elementNames != null)
+					{
+						var overrides = elementNames.TransformNames.Select((n, index) => new ColumnOverride(n, String.Format("Item{0}", index + 1)));
+						var oneToOne = System.Activator.CreateInstance(Query.GetOneToOneType(types), new object[] { null, overrides, null });
+						StaticFieldStorage.EmitLoad(mIL, oneToOne);
+					}
+					else
+#endif
+					{
+						// grab the records field for the appropriate OneToOne mapping
+						mIL.Emit(OpCodes.Ldsfld, Query.GetOneToOneType(types).GetField("Records", BindingFlags.Public | BindingFlags.Static));
+					}
 
 					// keep track of the type that we are returning
 					if (r == null || !r.IsChild)

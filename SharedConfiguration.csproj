@@ -28,6 +28,7 @@
     <HasSqlTypes>true</HasSqlTypes>
     <HasTypeInfo>true</HasTypeInfo>
     <HasUdt>true</HasUdt>
+    <HasValueTuples>true</HasValueTuples>
   </PropertyGroup>
   <PropertyGroup>
 	<SqlClientVersion></SqlClientVersion>
@@ -42,6 +43,7 @@
     <HasDynamic>false</HasDynamic>
     <HasDbParameter>false</HasDbParameter>
     <HasTypeInfo>false</HasTypeInfo>
+    <HasValueTuples>false</HasValueTuples>
     <SqlTypesVersion>10.50.1600.1</SqlTypesVersion>
   </PropertyGroup>
 
@@ -50,6 +52,7 @@
     <HasDbParameter>false</HasDbParameter>
     <HasTypeInfo>false</HasTypeInfo>
     <SqlTypesVersion>13.0.4001</SqlTypesVersion>
+    <HasValueTuples>false</HasValueTuples>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'net45'">
@@ -123,6 +126,7 @@
     <DefineConstants Condition="$(HasSqlTypes) != 'true'">$(DefineConstants);NO_SQL_TYPES</DefineConstants>
     <DefineConstants Condition="$(HasTypeInfo) != 'true'">$(DefineConstants);NO_TYPE_INFO</DefineConstants>
     <DefineConstants Condition="$(HasUdt) != 'true'">$(DefineConstants);NO_UDT</DefineConstants>
+    <DefineConstants Condition="$(HasValueTuples) != 'true'">$(DefineConstants);NO_VALUE_TUPLES</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(ProjectType) == 'LibraryPackage' and $(Configuration) == 'Release'">
