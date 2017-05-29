@@ -1559,7 +1559,7 @@ namespace Insight.Database
 							// select a 0 row result set so we can determine the schema of the table
 							using (var sqlReader = connection.GetReaderSql(
 								InsightDbProvider.For(connection).GetTableSchemaSql(connection, tableName),
-								commandBehavior: CommandBehavior.SchemaOnly,
+								commandBehavior: CommandBehavior.SchemaOnly | CommandBehavior.KeyInfo,
 								transaction: transaction))
 								return ObjectReader.GetObjectReader(connection.CreateCommand(), sqlReader, typeof(T));
 						});

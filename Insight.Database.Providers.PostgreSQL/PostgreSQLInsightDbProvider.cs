@@ -95,7 +95,7 @@ namespace Insight.Database.Providers.PostgreSQL
 		{
 			if (command == null) throw new ArgumentNullException("command");
 
-#if NETSTANDARD2_0
+#if NETSTANDARD1_5 || NETSTANDARD2_0
 			Insight.Database.Providers.PostgreSQL.Compatibility.NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
 #else
 			NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
@@ -256,11 +256,14 @@ namespace Insight.Database.Providers.PostgreSQL
 		public override bool IsTransientException(Exception exception)
 		{
 			NpgsqlException mex = (NpgsqlException)exception;
+
+#if !NETSTANDARD1_5
 			switch (mex.ErrorCode)
 			{
 				case -2147467259:			// socket exception - could not connect to host
 					return true;
 			}
+#endif
 
 			return false;
 		}

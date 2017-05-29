@@ -23,7 +23,7 @@
 
 // This file has been adapted from its original at https://raw.githubusercontent.com/npgsql/npgsql/dev/src/Npgsql/NpgsqlCommandBuilder.cs
 
-#if NETSTANDARD2_0
+#if NETSTANDARD1_5 || NETSTANDARD2_0
 
 using System;
 using System.Data;
@@ -33,6 +33,7 @@ using System.Linq;
 using System.Reflection;
 using Npgsql;
 using NpgsqlTypes;
+using System.Collections.Generic;
 
 namespace Insight.Database.Providers.PostgreSQL.Compatibility
 {
@@ -84,6 +85,54 @@ WHERE pg_proc.oid = :proname::regproc
 GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_proc.proargmodes, pg_proc.pronargs;
 ";
 
+		private static Dictionary<uint, NpgsqlDbType> _oidToNpgsqlDbType = new Dictionary<uint, NpgsqlDbType>()
+		{
+			{ 16, NpgsqlDbType.Boolean },
+			{ 17, NpgsqlDbType.Bytea },
+			{ 18, NpgsqlDbType.Char },
+			{ 19, NpgsqlDbType.Name },
+			{ 20, NpgsqlDbType.Bigint },
+			{ 21, NpgsqlDbType.Smallint },
+			{ 22, NpgsqlDbType.Int2Vector },
+			{ 23, NpgsqlDbType.Integer },
+			{ 25, NpgsqlDbType.Text },
+			{ 26, NpgsqlDbType.Oid },
+			{ 30, NpgsqlDbType.Oidvector },
+			{ 114, NpgsqlDbType.Json },
+			{ 142, NpgsqlDbType.Xml },
+			{ 600, NpgsqlDbType.Point },
+			{ 601, NpgsqlDbType.LSeg },
+			{ 602, NpgsqlDbType.Path },
+			{ 603, NpgsqlDbType.Box },
+			{ 604, NpgsqlDbType.Polygon },
+			{ 628, NpgsqlDbType.Line },
+			{ 700, NpgsqlDbType.Double },
+			{ 701, NpgsqlDbType.Double },
+			{ 704, NpgsqlDbType.Interval },
+			{ 718, NpgsqlDbType.Circle },
+			{ 790, NpgsqlDbType.Money },
+			{ 829, NpgsqlDbType.MacAddr },
+			{ 869, NpgsqlDbType.Inet },
+			{ 650, NpgsqlDbType.Cidr },
+			{ 774, NpgsqlDbType.MacAddr },
+			{ 1005, NpgsqlDbType.Int2Vector },
+			{ 1043, NpgsqlDbType.Varchar },
+			{ 1082, NpgsqlDbType.Date },
+			{ 1083, NpgsqlDbType.Time },
+			{ 1114, NpgsqlDbType.Timestamp },
+			{ 1184, NpgsqlDbType.TimestampTZ },
+			{ 1186, NpgsqlDbType.Interval },
+			{ 1266, NpgsqlDbType.TimeTZ },
+			{ 1560, NpgsqlDbType.Bit },
+			{ 1562, NpgsqlDbType.Varbit },
+			{ 1700, NpgsqlDbType.Numeric },
+			{ 1790, NpgsqlDbType.Refcursor },
+			{ 2590, NpgsqlDbType.Uuid },
+			{ 3614, NpgsqlDbType.TsVector },
+			{ 3615, NpgsqlDbType.TsQuery },
+			{ 3802, NpgsqlDbType.Jsonb }
+		};
+
 		private static void DoDeriveParameters(NpgsqlCommand command)
 		{
 			// See http://www.postgresql.org/docs/current/static/catalog-pg-proc.html
@@ -123,11 +172,10 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
 				{
 					var param = new NpgsqlParameter();
 
-					// TODO: Fix enums, composite types
-//					var npgsqlDbType = c.Connection.Connector.TypeHandlerRegistry[types[i]].PostgresType.NpgsqlDbType;
-//					if (!npgsqlDbType.HasValue)
-//					throw new InvalidOperationException($"Invalid parameter type: {types[i]}");
-//					param.NpgsqlDbType = npgsqlDbType.Value;
+
+					// convert the oid to a NpgSqlDbType so Insight knows what to do with it.
+					if (_oidToNpgsqlDbType.TryGetValue(types[i], out var npgsqlDbType))
+						param.NpgsqlDbType = npgsqlDbType;
 
 					if (names != null && i < names.Length)
 						param.ParameterName = ":" + names[i];
