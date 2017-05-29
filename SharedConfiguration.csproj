@@ -22,7 +22,7 @@
     <HasFullSystemDataImplementation>true</HasFullSystemDataImplementation>
     <HasLinq>true</HasLinq>
     <HasOleDb>true</HasOleDb>
-    <HasObdc>true</HasObdc>
+    <HasOdbc>true</HasOdbc>
     <HasSchemaTable>true</HasSchemaTable>
     <HasSqlDeriveParameters>true</HasSqlDeriveParameters>
     <HasSqlTypes>true</HasSqlTypes>
@@ -93,8 +93,8 @@
     <HasCommandBuilder>false</HasCommandBuilder>
     <HasConnectionSettings>false</HasConnectionSettings>
     <HasDbProvider>false</HasDbProvider>
+    <HasOdbc>false</HasOdbc>
     <HasOleDb>false</HasOleDb>
-    <HasObdc>false</HasObdc>
     <HasLinq>false</HasLinq>
     <HasSchemaTable>false</HasSchemaTable>
     <HasSqlTypes>false</HasSqlTypes>
@@ -120,8 +120,8 @@
     <DefineConstants Condition="$(HasDynamic) != 'true'">$(DefineConstants);NO_DYNAMIC</DefineConstants>
     <DefineConstants Condition="$(HasFullSystemDataImplementation) != 'true'">$(DefineConstants);NO_FULL_SYSTEM_DATA_IMPLEMENTATION</DefineConstants>
     <DefineConstants Condition="$(HasLinq) != 'true'">$(DefineConstants);NO_LINQ_BINARY</DefineConstants>
-    <DefineConstants Condition="$(HasOleDb) != 'true'">$(DefineConstants);NO_ODBC</DefineConstants>
-    <DefineConstants Condition="$(HasObdc) != 'true'">$(DefineConstants);NO_OLEDB</DefineConstants>
+    <DefineConstants Condition="$(HasObdc) != 'true'">$(DefineConstants);NO_ODBC</DefineConstants>
+    <DefineConstants Condition="$(HasOleDb) != 'true'">$(DefineConstants);NO_OLEDB</DefineConstants>
     <DefineConstants Condition="$(HasSchemaTable) != 'true'">$(DefineConstants);NO_SCHEMA_TABLE</DefineConstants>
     <DefineConstants Condition="$(HasSqlTypes) != 'true'">$(DefineConstants);NO_SQL_TYPES</DefineConstants>
     <DefineConstants Condition="$(HasTypeInfo) != 'true'">$(DefineConstants);NO_TYPE_INFO</DefineConstants>
