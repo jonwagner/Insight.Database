@@ -8,15 +8,32 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>net40;net451</TargetFrameworks>
+    <TargetFrameworks>net451;netstandard1.6;netstandard2.0</TargetFrameworks>
+    <Platform>x64</Platform>
+    <RuntimeIdentifiers>win7</RuntimeIdentifiers>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
 
-  <ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'net451'">
     <PackageReference Include="IBM.Data.DB2" Version="10.0.5.5" />
   </ItemGroup>
+ 
+  <ItemGroup Condition="$(TargetFramework) != 'net451'">
+    <PackageReference Include="IBM.Data.DB2.Core" Version="1.0.0.100" />
+<!--    
+    Need to figure out how to include this package conditionally on the target runtime identifier
+    <PackageReference Include="IBM.Data.DB2.Core-lnx" Version="1.0.0.100" Condition="$(TargetRuntime) == 'unix'" />
+  -->
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) != 'net451'">
+    <PackageReference Include="System.Data.Common" Version="4.3.0" />
+  </ItemGroup>
+  <PropertyGroup Condition="$(TargetFramework) != 'net451'">
+    <DefineConstants>$(DefineConstants);USE_CORE;NO_BULK_COPY;NO_DERIVE_PARAMETERS;NO_SCHEMA_TABLE</DefineConstants>
+  </PropertyGroup>  
+  
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>

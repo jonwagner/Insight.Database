@@ -7,7 +7,11 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if USE_CORE
+using IBM.Data.DB2.Core;
+#else
 using IBM.Data.DB2;
+#endif
 
 namespace Insight.Database.Providers.DB2
 {
@@ -61,6 +65,7 @@ namespace Insight.Database.Providers.DB2
 			return new DB2Connection();
 		}
 
+#if !NO_DERIVE_PARAMETERS
 		/// <summary>
 		/// Derives the parameter list from a stored procedure command.
 		/// </summary>
@@ -69,6 +74,7 @@ namespace Insight.Database.Providers.DB2
 		{
 			DB2CommandBuilder.DeriveParameters(command as DB2Command);
 		}
+#endif
 
 		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
@@ -123,9 +129,18 @@ namespace Insight.Database.Providers.DB2
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
+#if !NO_COLUMN_SCHEMA
+			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
+			var schema = schemaGenerator.GetColumnSchema();
+			return schemaGenerator.GetColumnSchema()[index].DataTypeName == "xml";
+#elif !NO_SCHEMA_TABLE
 			return ((DB2Type)reader.GetSchemaTable().Rows[index]["ProviderType"]) == DB2Type.Xml;
+#else
+			throw new NotImplementedException();
+#endif
 		}
 
+#if !NO_BULK_COPY
 		/// <summary>
 		/// Bulk copies a set of objects to the server.
 		/// </summary>
@@ -163,6 +178,7 @@ namespace Insight.Database.Providers.DB2
 				bulk.WriteToServer(reader);
 			}
 		}
+#endif
 
 		/// <summary>
 		/// Determines if a database exception is a transient exception and if the operation could be retried.
@@ -187,6 +203,7 @@ namespace Insight.Database.Providers.DB2
 				});
 		}
 
+#if !NO_BULK_COPY
 		#region Bulk Copy Support
 		[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 		class DB2InsightBulkCopy : InsightBulkCopy, IDisposable
@@ -267,5 +284,6 @@ namespace Insight.Database.Providers.DB2
 			}
 		}
 		#endregion
-    }
+#endif
+	}
 }

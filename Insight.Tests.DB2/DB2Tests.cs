@@ -3,7 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+#if USE_CORE
+using IBM.Data.DB2.Core;
+#else
 using IBM.Data.DB2;
+#endif
 using Insight.Database;
 using Insight.Database.Providers.DB2;
 using Insight.Database.Reliable;
@@ -15,7 +19,14 @@ namespace Insight.Tests.DB2
 	[TestFixture]
     public class DB2Tests
     {
-		private DB2ConnectionStringBuilder _connectionStringBuilder;
+		[Test]
+		public void EmptyTest()
+		{
+			// FTW
+		}
+
+		// having some trouble getting connections running with the new core package
+#if NET451
 		private IDbConnection _connection;
 
 		public class ParentTestData
@@ -34,13 +45,9 @@ namespace Insight.Tests.DB2
 		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
-			DB2ConnectionStringBuilder connectionStringBuilder = new DB2ConnectionStringBuilder();
-            connectionStringBuilder.ConnectionString = "Server=localhost:50000;Database=sample";
-			connectionStringBuilder.UserID = "db2inst1";
-			connectionStringBuilder.Password = "sql";
-
-			_connectionStringBuilder = connectionStringBuilder;
-			_connection = _connectionStringBuilder.Open();
+			var connectionString = "Server=localhost:50000;Database=sample;userid=db2inst1;password=sql;Pooling=false";
+			_connection = new DB2Connection(connectionString);
+			_connection.Open();
 		}
 
 		[Test]
@@ -57,7 +64,9 @@ namespace Insight.Tests.DB2
 			Assert.AreEqual(1, result.Count);
 			Assert.AreEqual(5, result[0]);
 		}
+#endif
 
+#if !NO_DERIVE_PARAMETERS
 		[Test]
 		public void TestExecuteProcedure()
 		{
@@ -203,7 +212,9 @@ namespace Insight.Tests.DB2
 				catch { }
 			}
 		}
+#endif
 
+#if !NO_BULK_COPY
 		[Test]
 		public void TestBulkLoad()
 		{
@@ -240,5 +251,6 @@ namespace Insight.Tests.DB2
 				catch { }
 			}
 		}
-    }
+#endif
+	}
 }
