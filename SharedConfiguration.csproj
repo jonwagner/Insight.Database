@@ -54,13 +54,13 @@
 
   <PropertyGroup Condition="$(TargetFramework) == 'net45'">
     <HasDbParameter>false</HasDbParameter>
-    <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
+    <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'net451'">
     <SqlClientVersion>4.1.0</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
-    <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
+    <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'netstandard1.5' or $(TargetFramework) == 'netcoreapp1.0'">
@@ -80,7 +80,7 @@
     <HasUdt>false</HasUdt>
     <SqlClientVersion>4.3.0</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
-    <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
+    <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
   
   <PropertyGroup Condition="$(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
@@ -98,7 +98,7 @@
     <HasUdt>false</HasUdt>
 	<SqlClientVersion>4.4.0-preview1-25305-02</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
-    <TestSDKVersion>15.3.0-preview-20170517-02</TestSDKVersion>
+    <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
   <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
     <HasAmbientTransactions>false</HasAmbientTransactions>
