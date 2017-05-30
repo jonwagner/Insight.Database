@@ -104,10 +104,7 @@ namespace Insight.Database.CodeGenerator
 			TypeBuilder tb;
 			if (type.IsInterface)
 			{
-				if (singleThreaded)
-					tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { type });
-				else
-					tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, typeof(object), new Type[] { type });
+				tb = _moduleBuilder.DefineType(typeName, TypeAttributes.Class, typeof(DbConnectionWrapper), new Type[] { type });
 			}
 			else
 			{
@@ -152,11 +149,12 @@ namespace Insight.Database.CodeGenerator
 				if (e.HResult == -2146233054)
 #endif
 				{
-					var template = "{0} is inaccessible to Insight.Database. Make sure that the interface is public, or add " +
+					var template = "{1} {0} is inaccessible to Insight.Database. Make sure that the interface is public, or add " +
 						"[assembly:InternalsVisibleTo(\"Insight.Database.DynamicAssembly\")] " +
 						"to your assembly (System.Runtime.CompilerServices).  If the interface is nested, then it must be public to the world, " +
-						"or public to the assembly while using the InternalsVisibleTo attribute.";
-					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, template, type.FullName));
+						"or public to the assembly while using the InternalsVisibleTo attribute. " +
+						"Interfaces intended to be used AsParallel should not derive from IDbConnection or IDbTransaction.";
+					throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, template, type.FullName, e.Message));
 				}
 
 				throw;
