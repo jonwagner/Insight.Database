@@ -66,22 +66,47 @@ namespace Insight.Database.CodeGenerator
 		/// <inheritdoc/>
 		public static List<ColumnInfo> FromDataReader(IDataReader reader)
 		{
-			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
-			var schema = schemaGenerator.GetColumnSchema();
+			var schemaGenerator = reader as IDbColumnSchemaGenerator;
+			if (schemaGenerator != null)
+			{
+				var schema = schemaGenerator.GetColumnSchema();
 
-			return schemaGenerator.GetColumnSchema().Select(column =>
-				new ColumnInfo()
+				return schemaGenerator.GetColumnSchema().Select(column =>
+					new ColumnInfo()
+					{
+						Name = column.ColumnName,
+						DataType = column.DataType,
+						DataTypeName = column.DataTypeName,
+						IsNullable = column.AllowDBNull ?? false,
+						IsReadOnly = column.IsReadOnly ?? false,
+						IsIdentity = column.IsIdentity ?? false,
+						NumericPrecision = column.NumericPrecision,
+						NumericScale = column.NumericScale,
+						ColumnSize = column.ColumnSize
+					}).ToList();
+			}
+			else
+			{
+				// if the provider doesn't implement IDbColumnSchemaGenerator, then this should be enough to read a schema
+				var columns = new List<ColumnInfo>();
+				for (int i = 0; i < reader.FieldCount; i++)
 				{
-					Name = column.ColumnName,
-					DataType = column.DataType,
-					DataTypeName = column.DataTypeName,
-					IsNullable = column.AllowDBNull ?? false,
-					IsReadOnly = column.IsReadOnly ?? false,
-					IsIdentity = column.IsIdentity ?? false,
-					NumericPrecision = column.NumericPrecision,
-					NumericScale = column.NumericScale,
-					ColumnSize = column.ColumnSize
-				}).ToList();
+					columns.Add(new ColumnInfo()
+					{
+						Name = reader.GetName(i),
+						DataType = reader.GetFieldType(i),
+						DataTypeName = reader.GetDataTypeName(i),
+						IsNullable = true,
+						IsReadOnly = false,
+						IsIdentity = false,
+						NumericPrecision = null,
+						NumericScale = null,
+						ColumnSize = null
+					});
+				}		
+						
+				return columns;
+			}
 		}
 #else
 		/// <summary>

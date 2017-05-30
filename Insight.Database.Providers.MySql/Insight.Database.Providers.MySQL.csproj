@@ -9,13 +9,16 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>net40;net45;net451</TargetFrameworks>
+    <TargetFrameworks>net40;net45;net451;netstandard1.6;netstandard2.0</TargetFrameworks>
   </PropertyGroup>
  
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="6.9.9" />
+    <PackageReference Include="MySql.Data" Version="6.9.9" Condition="$(TargetFrameworkIdentifier) == '.NETFramework'" />
+    <PackageReference Include="MySql.Data" Version="7.0.7-m61" Condition="$(TargetFrameworkIdentifier) != '.NETFramework'" />
+    <!-- MySql 7 has a dependency on System.Data.SqlClient. We need to make sure we get the same version of the sql client. -->
+    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != '' and $(TargetFrameworkIdentifier) != '.NETFramework'" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />

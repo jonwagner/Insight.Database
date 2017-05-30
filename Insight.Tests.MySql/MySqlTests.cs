@@ -18,7 +18,6 @@ namespace Insight.Tests.MySql
 	[TestFixture]
 	public class MySqlTests
 	{
-		private MySqlConnectionStringBuilder _connectionStringBuilder;
 		private IDbConnection _connection;
 
 		public class ParentTestData
@@ -37,9 +36,8 @@ namespace Insight.Tests.MySql
 		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
-			_connectionStringBuilder = new MySqlConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Server = localhost; Database = test; User Id = root";
-			_connection = _connectionStringBuilder.Open();
+			_connection = new MySqlConnection("Server = localhost; Database = test; User Id = root");
+			_connection.Open();
 		}
 
 		[Test]
