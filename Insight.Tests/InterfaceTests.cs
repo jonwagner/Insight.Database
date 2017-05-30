@@ -1160,23 +1160,4 @@ namespace Insight.Tests
         }
     }
 	#endregion
-
-	#region Issue 322 Tests
-	public interface IRepository322 : IDbConnection, IDbTransaction
-	{
-		[Sql("SELECT 1")]
-		Task<int> SomeQueryAsync();
-	}
-
-	[TestFixture]
-	public class TestIssue322 : BaseTest
-	{
-		[Test]
-		public void TestParallelInterfacesCanDeriveFromDbClasses()
-		{
-			var repo = System.Configuration.ConfigurationManager.ConnectionStrings["Test"].AsParallel<IRepository322>();
-			var i = repo.SomeQueryAsync().Result;
-		}
-	}
-	#endregion
 }
