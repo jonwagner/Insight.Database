@@ -20,7 +20,6 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="System.Data" Condition="$(SqlClientVersion) == ''" />
-    <Reference Include="System.Data.Odbc" Condition="$(HasOdbc) == 'true'" />
   </ItemGroup>
   <ItemGroup>
     <Compile Remove="OdbcInsightDbProvider.cs" Condition="$(HasOdbc) != 'true'" />
