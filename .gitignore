@@ -18,3 +18,5 @@ _ReSharper*/
 *.[Rr]e[Ss]harper
 
 .vagrant
+.vscode
+.vs
