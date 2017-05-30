@@ -545,11 +545,6 @@ namespace Insight.Database
 				set { BulkCopy.BulkCopyTimeout = value; }
 			}
 
-			public override InsightBulkCopyMappingCollection ColumnMappings
-			{
-				get { throw new NotImplementedException(); }
-			}
-
 			public override int NotifyAfter
 			{
 				get { return BulkCopy.NotifyAfter; }

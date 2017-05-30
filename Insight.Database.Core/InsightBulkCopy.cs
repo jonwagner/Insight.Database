@@ -88,11 +88,6 @@ namespace Insight.Database
 		public abstract int BulkCopyTimeout { get; set; }
 
 		/// <summary>
-		/// Gets a collection of column mappings that can be overridden.
-		/// </summary>
-		public abstract InsightBulkCopyMappingCollection ColumnMappings { get; }
-
-		/// <summary>
 		/// Gets or sets the destination table name.
 		/// </summary>
 		public abstract string DestinationTableName { get; set; }
@@ -124,41 +119,5 @@ namespace Insight.Database
 		/// Gets or sets the number of rows copied so far.
 		/// </summary>
 		public virtual long RowsCopied { get; set; }
-	}
-
-	/// <summary>
-	/// Abstracts the provider-specific dependencies for defining column mappings.
-	/// </summary>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.MaintainabilityRules", "SA1402:FileMayOnlyContainASingleClass", Justification = "These are related generic classes.")]
-	[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1711:IdentifiersShouldNotHaveIncorrectSuffix")]
-	public abstract class InsightBulkCopyMappingCollection
-	{
-		/// <summary>
-		/// Adds a column mapping.
-		/// </summary>
-		/// <param name="sourceColumnIndex">The source column.</param>
-		/// <param name="destinationColumnIndex">The destination column.</param>
-		public abstract void Add(int sourceColumnIndex, int destinationColumnIndex);
-
-		/// <summary>
-		/// Adds a column mapping.
-		/// </summary>
-		/// <param name="sourceColumn">The source column.</param>
-		/// <param name="destinationColumnIndex">The destination column.</param>
-		public abstract void Add(string sourceColumn, int destinationColumnIndex);
-
-		/// <summary>
-		/// Adds a column mapping.
-		/// </summary>
-		/// <param name="sourceColumnIndex">The source column.</param>
-		/// <param name="destinationColumn">The destination column.</param>
-		public abstract void Add(int sourceColumnIndex, string destinationColumn);
-
-		/// <summary>
-		/// Adds a column mapping.
-		/// </summary>
-		/// <param name="sourceColumn">The source column.</param>
-		/// <param name="destinationColumn">The destination column.</param>
-		public abstract void Add(string sourceColumn, string destinationColumn);
 	}
 }

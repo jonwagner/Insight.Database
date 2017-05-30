@@ -291,11 +291,6 @@ namespace Insight.Database.Providers.PostgreSQL
 				set { throw new NotImplementedException(); }
 			}
 
-			public override InsightBulkCopyMappingCollection ColumnMappings
-			{
-				get { throw new NotImplementedException(); }
-			}
-
 			public override int NotifyAfter { get; set; }
 
 			public override string DestinationTableName

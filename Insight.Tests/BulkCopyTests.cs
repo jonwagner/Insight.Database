@@ -287,8 +287,36 @@ namespace Insight.Tests
             }
         }
 
-#region Tests for Issue 162
-        public class BulkCopyDataWithComputedColumn
+		#region BulkCopyWithColumnMapping
+		class InsightTestDataWithColumnMapping
+		{
+			[Column("Int")]
+			public int Foo;
+			[Column("IntNull")]
+			public int? FooNull { get; set; }
+		}
+
+		[Test]
+		public void TestBulkWithColumnMapping()
+		{
+			var connection = Connection();
+
+			// build test data
+			var data = new InsightTestDataWithColumnMapping() { Foo = 1 };
+			var array = new InsightTestDataWithColumnMapping[1] { data };
+
+			// bulk load the data
+			Cleanup();
+			var count = connection.BulkCopy("BulkCopyData", array);
+
+			Assert.AreEqual(1, count);
+			var result = connection.QuerySql<InsightTestDataWithColumnMapping>("SELECT * FROM BulkCopyData").First();
+			Assert.AreEqual(1, result.Foo);
+		}
+		#endregion
+
+		#region Tests for Issue 162
+		public class BulkCopyDataWithComputedColumn
         {
             public int Int1;
             public int Computed;
