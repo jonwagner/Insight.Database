@@ -45,7 +45,9 @@ namespace Insight.Tests.DB2
 		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
-			var connectionString = "Server=localhost:50000;Database=sample;userid=db2inst1;password=sql;Pooling=false";
+			var connectionString = String.Format("Server={0}:50000;database=sample;userid=db2inst1;password={1};Pooling=false",
+				BaseTest.TestHost ?? "localhost",
+				BaseTest.Password ?? "sql");
 			_connection = new DB2Connection(connectionString);
 			_connection.Open();
 		}

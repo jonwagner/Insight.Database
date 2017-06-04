@@ -86,7 +86,7 @@ Vagrant.configure(2) do |config|
 
 			# turn on remote access
 			source /opt/sap/SYBASE.sh
-			echo 'sp_configure "allow remote access", 1' | isql64 -Usa -P'password'
+			echo 'sp_configure "allow remote access", 1' | isql64 -Usa -P'Insight!!!Test'
 
 			# set for start at boot
 			sudo cp $VAGRANTHOME/sybase.init /etc/init.d/sybase 
@@ -124,9 +124,9 @@ Vagrant.configure(2) do |config|
 
 		# install DB2 and set up the sample database
 		sudo apt-get -y install db2exc
-		echo "dasusr1:sql" | sudo chpasswd
-		echo "db2inst1:sql" | sudo chpasswd
-		echo "db2fenc1:sql" | sudo chpasswd
+		echo "dasusr1:Insight!!!Test" | sudo chpasswd
+		echo "db2inst1:Insight!!!Test" | sudo chpasswd
+		echo "db2fenc1:Insight!!!Test" | sudo chpasswd
 		export DB2HOME=/opt/ibm/db2/V9.7
 		sudo -u db2inst1 $DB2HOME/bin/db2 deactivate database sample || true
 		sudo -u db2inst1 $DB2HOME/bin/db2sampl -force
@@ -146,6 +146,7 @@ Vagrant.configure(2) do |config|
 		sudo -E cp $VAGRANTHOME/postgresql.conf $PGHOME/postgresql.conf
 		sudo -E cp $VAGRANTHOME/pg_hba.conf $PGHOME/pg_hba.conf
 		sudo service postgresql restart
+		echo "postgres:Insight!!!Test" | sudo chpasswd
 
 		# clean out the space
 		sudo $VAGRANTHOME/cleandisk.sh

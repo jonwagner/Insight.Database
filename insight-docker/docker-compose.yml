@@ -1,0 +1,44 @@
+version: '3'
+services:
+  sqlserver:
+    image: microsoft/mssql-server-linux
+    ports:
+    - "1433:1433"
+    environment:
+    - ACCEPT_EULA=y
+    - SA_PASSWORD=Insight!!!Test
+
+  mysql:
+    image: mysql/mysql-server:latest
+    ports:
+    - "3306:3306"
+    environment:
+    - MYSQL_ALLOW_EMPTY_PASSWORD=yes
+    - MYSQL_ROOT_HOST=%
+    - MYSQL_DATABASE=test
+ 
+  postgres:
+    image: postgres:latest
+    ports:
+    - "5432:5432"
+    environment:
+    - POSTGRES_PASSWORD=Insight!!!Test
+    - POSTGRES_USER=postgres
+
+  db2:
+    build:
+      context: .
+      dockerfile: Dockerfile.db2
+    ports:
+    - "50000:50000"
+    environment:
+    - LICENSE=accept
+    - DB2INST1_PASSWORD=Insight!!!Test
+    command: db2start
+
+  oracle:
+    image: sath89/oracle-12c
+    ports:
+    - "1521:1521"
+    environment:
+    - WEB_CONSOLE=false

@@ -36,7 +36,7 @@ namespace Insight.Tests.MySql
 		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
-			_connection = new MySqlConnection("Server = localhost; Database = test; User Id = root");
+			_connection = new MySqlConnection(String.Format("Server = {0}; Database = test; User Id = root", BaseTest.TestHost ?? "localhost"));
 			_connection.Open();
 		}
 

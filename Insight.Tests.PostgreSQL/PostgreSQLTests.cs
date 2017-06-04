@@ -38,7 +38,10 @@ namespace Insight.Tests.PostgreSQL
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new NpgsqlConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Host = localhost; User Id = postgres; Password = Password1";
+			_connectionStringBuilder.ConnectionString = String.Format("Host={0}; User Id = postgres; Password={1}",
+				BaseTest.TestHost ?? "localhost",
+				BaseTest.Password ?? "Password1"
+				);
 			_connection = _connectionStringBuilder.Open();
 		}
 

@@ -228,11 +228,6 @@ namespace Insight.Database.Providers.DB2
 				set { _bulkCopy.BulkCopyTimeout = value; }
 			}
 
-			public override InsightBulkCopyMappingCollection ColumnMappings
-			{
-				get { throw new NotImplementedException(); }
-			}
-
 			public override int NotifyAfter
 			{
 				get { return _bulkCopy.NotifyAfter; }

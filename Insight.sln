@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.26510.0
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests", "Insight.Tests\Insight.Tests.csproj", "{DEB0A47D-FC34-4B7F-A2FB-151B3697533E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests", "Insight.Tests\Insight.Tests.csproj", "{DEB0A47D-FC34-4B7F-A2FB-151B3697533E}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CEDD5EAD-7CF5-45EE-8676-EFEC0CBAB552}"
 	ProjectSection(SolutionItems) = preProject
@@ -19,39 +19,39 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Vagrantfile = Vagrantfile
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.MiniProfiler", "Insight.Database.Providers.MiniProfiler\Insight.Database.Providers.MiniProfiler.csproj", "{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.MiniProfiler", "Insight.Database.Providers.MiniProfiler\Insight.Database.Providers.MiniProfiler.csproj", "{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.OracleManaged", "Insight.Database.Providers.OracleManaged\Insight.Database.Providers.OracleManaged.csproj", "{943C7B30-FF23-45DC-9E62-5B6765D5BCF2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.OracleManaged", "Insight.Database.Providers.OracleManaged\Insight.Database.Providers.OracleManaged.csproj", "{943C7B30-FF23-45DC-9E62-5B6765D5BCF2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.OracleManaged", "Insight.Tests.OracleManaged\Insight.Tests.OracleManaged.csproj", "{CC0ED003-AED2-41E9-9E85-F4D12A8A49F9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.OracleManaged", "Insight.Tests.OracleManaged\Insight.Tests.OracleManaged.csproj", "{CC0ED003-AED2-41E9-9E85-F4D12A8A49F9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.MySql", "Insight.Database.Providers.MySql\Insight.Database.Providers.MySql.csproj", "{4C56215E-8A87-4C3C-82B2-30B514F109E5}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.MySql", "Insight.Database.Providers.MySql\Insight.Database.Providers.MySql.csproj", "{4C56215E-8A87-4C3C-82B2-30B514F109E5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.MySql", "Insight.Tests.MySql\Insight.Tests.MySql.csproj", "{1086C0C2-F450-4E18-8A12-9CD2B92C646D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.MySql", "Insight.Tests.MySql\Insight.Tests.MySql.csproj", "{1086C0C2-F450-4E18-8A12-9CD2B92C646D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.PostgreSQL", "Insight.Database.Providers.PostgreSQL\Insight.Database.Providers.PostgreSQL.csproj", "{6598555D-5974-4ACA-86D2-A136C0AF3797}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.PostgreSQL", "Insight.Database.Providers.PostgreSQL\Insight.Database.Providers.PostgreSQL.csproj", "{6598555D-5974-4ACA-86D2-A136C0AF3797}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.PostgreSQL", "Insight.Tests.PostgreSQL\Insight.Tests.PostgreSQL.csproj", "{E33BF471-D602-4366-B4CA-17A16E91F49E}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.PostgreSQL", "Insight.Tests.PostgreSQL\Insight.Tests.PostgreSQL.csproj", "{E33BF471-D602-4366-B4CA-17A16E91F49E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.DB2", "Insight.Tests.DB2\Insight.Tests.DB2.csproj", "{E88BF946-1D51-4586-8E55-36350A091E8A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.DB2", "Insight.Tests.DB2\Insight.Tests.DB2.csproj", "{E88BF946-1D51-4586-8E55-36350A091E8A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.DB2", "Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj", "{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.DB2", "Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj", "{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.Glimpse", "Insight.Database.Providers.Glimpse\Insight.Database.Providers.Glimpse.csproj", "{35D1B878-0D4B-4F85-ACE8-176A58216293}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.Glimpse", "Insight.Database.Providers.Glimpse\Insight.Database.Providers.Glimpse.csproj", "{35D1B878-0D4B-4F85-ACE8-176A58216293}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.Glimpse", "Insight.Tests.Glimpse\Insight.Tests.Glimpse.csproj", "{816401C6-6434-498E-B74F-D6784F75F3AF}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.Glimpse", "Insight.Tests.Glimpse\Insight.Tests.Glimpse.csproj", "{816401C6-6434-498E-B74F-D6784F75F3AF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.MiniProfiler", "Insight.Tests.MiniProfiler\Insight.Tests.MiniProfiler.csproj", "{BD181CF5-582E-4312-9117-EDBB0E1348F4}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.MiniProfiler", "Insight.Tests.MiniProfiler\Insight.Tests.MiniProfiler.csproj", "{BD181CF5-582E-4312-9117-EDBB0E1348F4}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Json", "Insight.Database.Json\Insight.Database.Json.csproj", "{A54BAC21-88C8-4605-9505-8CA7FC807648}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Json", "Insight.Database.Json\Insight.Database.Json.csproj", "{A54BAC21-88C8-4605-9505-8CA7FC807648}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.Json", "Insight.Tests.Json\Insight.Tests.Json.csproj", "{1B01D722-DDD2-4FAB-A4DD-819FF646CF10}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.Json", "Insight.Tests.Json\Insight.Tests.Json.csproj", "{1B01D722-DDD2-4FAB-A4DD-819FF646CF10}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Tests.SQLite", "Insight.Tests.SQLite\Insight.Tests.SQLite.csproj", "{E60C0B3E-588D-4376-A67F-7D15E53417FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.SQLite", "Insight.Tests.SQLite\Insight.Tests.SQLite.csproj", "{E60C0B3E-588D-4376-A67F-7D15E53417FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Providers.Default", "Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj", "{03743F67-E234-42C8-A1E9-38B8BA12EFAD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.Default", "Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj", "{03743F67-E234-42C8-A1E9-38B8BA12EFAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Insight.Database.Configuration", "Insight.Database.Configuration\Insight.Database.Configuration.csproj", "{9DC0AC84-B760-42C4-8703-CAD48AEEF612}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Configuration", "Insight.Database.Configuration\Insight.Database.Configuration.csproj", "{9DC0AC84-B760-42C4-8703-CAD48AEEF612}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vagrant", "Vagrant", "{1F526CFD-E8A0-4108-8DCE-A2E6A2D96022}"
 	ProjectSection(SolutionItems) = preProject
@@ -74,6 +74,13 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Core", "Insight.Database.Core\Insight.Database.Core.csproj", "{BD5F9E22-0D6E-4323-A41A-0E9532702C98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database", "Insight.Database\Insight.Database.csproj", "{F058BD64-332F-44F5-A16A-DAB4A30045DA}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "insight-docker", "insight-docker", "{11F6B06C-2E77-4B6E-B53F-3DB8326A69EA}"
+	ProjectSection(SolutionItems) = preProject
+		insight-docker\docker-compose.yml = insight-docker\docker-compose.yml
+		insight-docker\docker-env.bat = insight-docker\docker-env.bat
+		insight-docker\Dockerfile.db2 = insight-docker\Dockerfile.db2
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -307,5 +314,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{1F526CFD-E8A0-4108-8DCE-A2E6A2D96022} = {CEDD5EAD-7CF5-45EE-8676-EFEC0CBAB552}
+		{11F6B06C-2E77-4B6E-B53F-3DB8326A69EA} = {CEDD5EAD-7CF5-45EE-8676-EFEC0CBAB552}
 	EndGlobalSection
 EndGlobal

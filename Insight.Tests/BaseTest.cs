@@ -9,6 +9,7 @@ using System.Reflection;
 using System.Data.SqlClient;
 using System.Data;
 using System.IO;
+using System.Text.RegularExpressions;
 
 namespace Insight.Tests
 {
@@ -18,6 +19,22 @@ namespace Insight.Tests
 		/// The connection string for our database.
 		/// </summary>
 		public static readonly string ConnectionString = "Data Source = .; Initial Catalog = InsightDbTests; Integrated Security = true";
+		public static readonly string TestHost;
+		public static readonly string Password;
+
+		static BaseTest()
+		{
+			var testHost = Environment.GetEnvironmentVariable("INSIGHT_TEST_HOST");
+			if (testHost != null)
+				TestHost = Regex.Match(testHost, @"\d+\.\d+\.\d+\.\d+").Value;
+
+			Password = Environment.GetEnvironmentVariable("INSIGHT_TEST_PASSWORD");
+
+			ConnectionString = String.Format("Data Source = {0}; Initial Catalog = InsightDbTests; Integrated Security = {1}; {2}",
+				TestHost ?? ".",
+				(Password != null) ? "false" : "true",
+				(Password != null) ? String.Format("User ID=sa; Password={0}", Password) : "");
+		}
 
 		public IDbConnection Connection()
 		{
