@@ -26,6 +26,14 @@ namespace Insight.Database.CodeGenerator
 	{
 		#region Private Fields
 		/// <summary>
+		/// The name of the column that we automatically fill with the current rownumber.
+		/// </summary>
+		/// <remarks>
+		/// If we insert a TVP into the database, the writes may occur in a random order. Adding a rownumber allows us to get matching IDs back.
+		/// </remarks>
+		private const string _rownumber_columnname = "_insight_rownumber";
+
+		/// <summary>
 		/// The list of objects to enumerate through.
 		/// </summary>
 		private IEnumerable _enumerable;
@@ -69,6 +77,11 @@ namespace Insight.Database.CodeGenerator
         /// Number of rows read.
         /// </summary>
 	    private int _readRowCount;
+
+		/// <summary>
+		/// The column number of the rownumber column, if it exists.
+		/// </summary>
+		private int _rownumber_ordinal;
 		#endregion
 
         #region Constructors
@@ -82,6 +95,8 @@ namespace Insight.Database.CodeGenerator
 			_objectReader = objectReader;
 			_enumerable = list;
 			_enumerator = list.GetEnumerator();
+
+			_rownumber_ordinal = objectReader.GetOrdinal(_rownumber_columnname);
 		}
 		#endregion
 
@@ -128,6 +143,9 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The value of the column.</returns>
 		public override object GetValue(int ordinal)
 		{
+			if (ordinal == _rownumber_ordinal)
+				return _readRowCount;
+			
 			// if we have switched columns, get the value
 			// do this only once per ordinal, because the object may be doing calculatey things
 			if (ordinal != _currentOrdinal)

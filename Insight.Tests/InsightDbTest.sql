@@ -434,3 +434,34 @@ CREATE FUNCTION [ReflectTableFunction2](@p [BeerTable] READONLY, @q int)
 RETURNS TABLE AS
 	RETURN SELECT ID FROM @p
 GO
+
+-----------------------------------------------------------------------------------
+-- test tables for identity insert in ObjectReaderTests
+-----------------------------------------------------------------------------------
+CREATE TABLE RowNumbers (
+	[ID] [int] IDENTITY,
+	[Stuff] [varchar](MAX) NULL
+)
+GO
+
+CREATE TYPE [dbo].[RowNumberTable] AS TABLE(
+	[ID] [int] NULL,
+	[Stuff] [varchar](MAX) NULL,
+	[_insight_rownumber] [int] NULL
+)
+GO
+
+CREATE PROC [dbo].[AutoFillRowNumbers] (@rows [RowNumberTable] READONLY)
+AS
+	SELECT _insight_rownumber FROM @rows
+GO
+
+CREATE PROC [dbo].[InsertWithRowNumbers] (@rows [RowNumberTable] READONLY)
+AS
+	TRUNCATE TABLE RowNumbers
+
+	INSERT INTO RowNumbers (Stuff)
+		OUTPUT inserted.ID
+		SELECT Stuff FROM @rows
+		ORDER BY [_insight_rownumber] -- retain the order as passed from insight
+GO

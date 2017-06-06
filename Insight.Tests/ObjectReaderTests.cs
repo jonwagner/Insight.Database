@@ -398,6 +398,41 @@ namespace Insight.Tests
 				}
 			}
 		}
-#endregion
+		#endregion
+
+		#region Automatic _insight_rownumber Column
+		class AutoRowNumbers
+		{
+			public int ID;
+			public string Stuff;
+		}
+
+		[Test]
+		public void ObjectReaderShouldAutomaticallyFillInRowNumberColumn()
+		{
+			var data = new AutoRowNumbers[]
+			{
+				new AutoRowNumbers(),
+				new AutoRowNumbers(),
+				new AutoRowNumbers()
+			};
+
+			var result = Connection().Query<int>("[AutoFillRowNumbers]", data);
+			Assert.AreEqual(new int[] { 1, 2, 3 }, result);
+		}
+
+
+		[Test]
+		public void InsertManyShouldReturnIDsInTheRightOrder()
+		{
+			var data = new List<AutoRowNumbers>();
+			for (int i = 0; i < 20000; i++)
+				data.Add(new AutoRowNumbers());
+
+			var result = Connection().InsertList("[InsertWithRowNumbers]", data);
+			for (int i = 0; i < 20000; i++)
+				Assert.AreEqual(i + 1, data[i].ID);
+		}
+		#endregion
 	}
 }
