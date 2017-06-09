@@ -32,31 +32,23 @@
   </ItemGroup>
   <ItemGroup>
     <None Remove="SqlServerTypes\readme.htm" />
+    <None Remove="TestResult.xml" />
+    <None Remove="InsightDbTest.sql" />
+    <None Remove="SqlServerTypes\x64\msvcr120.dll" />
+    <None Remove="SqlServerTypes\x64\SqlServerSpatial140.dll" />
+    <None Remove="SqlServerTypes\x86\msvcr120.dll" />
+    <None Remove="SqlServerTypes\x86\SqlServerSpatial140.dll" />
   </ItemGroup>
   <ItemGroup>
     <None Update="AsyncQueryCoreTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>AsyncQueryCoreTests.generated.cs</LastGenOutput>
     </None>
     <None Update="GenericTypes.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
     <None Update="SyncQueryCoreTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
-      <LastGenOutput>SyncQueryCoreTests.generated.cs</LastGenOutput>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Update="AsyncQueryCoreTests.generated.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>AsyncQueryCoreTests.tt</DependentUpon>
-    </Compile>
-    <Compile Update="SyncQueryCoreTests.generated.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>SyncQueryCoreTests.tt</DependentUpon>
-    </Compile>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />

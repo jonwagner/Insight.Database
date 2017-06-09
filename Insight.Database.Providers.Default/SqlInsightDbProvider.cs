@@ -14,6 +14,7 @@ using System.Threading.Tasks;
 using Insight.Database.CodeGenerator;
 using Insight.Database.MissingExtensions;
 using Insight.Database.Providers;
+using Insight.Database.Providers.Default;
 
 namespace Insight.Database
 {
@@ -206,6 +207,7 @@ namespace Insight.Database
 			// see if we already have a reader for the given type and table type name
 			// we can't use the schema cache because we don't have a schema yet
 			var key = Tuple.Create<string, string, Type>(command.Connection.ConnectionString, tableTypeName, listType);
+
 			ObjectReader objectReader = (ObjectReader)_tvpReaders.GetOrAdd(
 				key,
 				k => command.Connection.ExecuteAndAutoClose(
@@ -217,8 +219,14 @@ namespace Insight.Database
 					},
 					CommandBehavior.Default));
 
+			if (!list.GetEnumerator().MoveNext())
+			{
+				parameter.Value = new ObjectListDbDataReader(objectReader, list);
+				return;
+			}
+
 			// create the structured parameter
-			parameter.Value = new ObjectListDbDataReader(objectReader, list);
+			parameter.Value = new SqlDataRecordAdapter(objectReader, list);
 		}
 
 		/// <summary>

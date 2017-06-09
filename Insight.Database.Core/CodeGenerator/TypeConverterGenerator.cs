@@ -402,7 +402,10 @@ namespace Insight.Database.CodeGenerator
 			Type underlyingTargetType = Nullable.GetUnderlyingType(targetType) ?? targetType;
 			Type rawTargetType = underlyingTargetType.GetTypeInfo().IsEnum ? Enum.GetUnderlyingType(underlyingTargetType) : underlyingTargetType;
 
-			return TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType);
+			if (TypeConverterGenerator.EmitCoersion(il, sourceType, rawTargetType))
+				return true;
+
+			return TypeConverterGenerator.EmitIConvertibleConversion(il, sourceType, targetType);
 		}
 
 		/// <summary>
@@ -570,6 +573,28 @@ namespace Insight.Database.CodeGenerator
 			else if (targetType == typeof(bool) && sourceType != typeof(bool)) il.Emit(OpCodes.Conv_U1);
 			else if (targetType == typeof(double) && sourceType != typeof(double)) il.Emit(OpCodes.Conv_R8);
 			else if (targetType == typeof(float) && sourceType != typeof(float)) il.Emit(OpCodes.Conv_R4);
+
+			return true;
+		}
+
+		/// <summary>
+		/// Emits a conversion using Convert.ChangeType if the source type supports IConvertible.
+		/// </summary>
+		/// <param name="il">The ILGenerator to use.</param>
+		/// <param name="sourceType">The source type of the data.</param>
+		/// <param name="targetType">The target type of the data.</param>
+		/// <returns>True if a conversion was emitted, false otherwise.</returns>
+		private static bool EmitIConvertibleConversion(ILGenerator il, Type sourceType, Type targetType)
+		{
+			if (!sourceType.GetInterfaces().Contains(typeof(IConvertible)))
+				return false;
+
+			if (sourceType.GetTypeInfo().IsValueType)
+				il.Emit(OpCodes.Box, sourceType);
+
+			IlHelper.EmitLoadType(il, targetType);
+			il.Emit(OpCodes.Call, typeof(Convert).GetMethod("ChangeType", new Type[] { typeof(object), typeof(Type) }));
+			il.Emit(OpCodes.Unbox_Any, targetType);
 
 			return true;
 		}

@@ -666,9 +666,9 @@ namespace Insight.Database.CodeGenerator
                         listType = listType.GetGenericArguments()[0];
                 }
 
-				listType = Nullable.GetUnderlyingType(listType) ?? listType;
+				var underlyingType = Nullable.GetUnderlyingType(listType) ?? listType;
 
-				if (command.CommandType == CommandType.Text && (listType.GetTypeInfo().IsValueType || listType == typeof(string)))
+				if (command.CommandType == CommandType.Text && (underlyingType.GetTypeInfo().IsValueType || underlyingType == typeof(string)))
 					ConvertListParameterByValue(parameter, list, command);
 				else
 					ConvertListParameterByClass(parameter, list, command, listType);

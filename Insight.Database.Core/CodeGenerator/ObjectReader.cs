@@ -11,6 +11,7 @@ using System.Threading.Tasks;
 using Insight.Database.Mapping;
 using Insight.Database.Providers;
 using Insight.Database.Structure;
+using System.Collections.ObjectModel;
 
 namespace Insight.Database.CodeGenerator
 {
@@ -49,7 +50,9 @@ namespace Insight.Database.CodeGenerator
 		private ObjectReader(IDbCommand command, Type type, IDataReader reader)
 		{
 			var provider = InsightDbProvider.For(command);
+
 			_columns = new List<ColumnInfo>();
+			var accessors = new List<Func<object, object>>();
 
 			// create a mapping, and only keep mappings that match our modified schema
 			var sourceMappings = ColumnMapping.MapColumns(type, reader).ToList();
@@ -60,8 +63,6 @@ namespace Insight.Database.CodeGenerator
 			{
 				int columnCount = sourceMappings.Count;
 
-				var accessors = new List<Func<object, object>>();
-
 				for (int i = 0; i < columnCount; i++)
 				{
 					var mapping = sourceMappings[i];
@@ -70,20 +71,26 @@ namespace Insight.Database.CodeGenerator
 						continue;
 
 					_columns.Add(column);
-					accessors.Add(GenerateAccessor(type, mapping, column));
-				}
 
-				_accessors = accessors.ToArray();
+					if (mapping == null)
+						accessors.Add(null);
+					else
+						accessors.Add(GenerateAccessor(type, mapping, column));
+				}
 			}
 			else
 			{
-				_columns.Add(sourceColumns.First());
-				_accessors = new Func<object, object>[] { o => o };
-			}
-		}
-        #endregion
+				var column = sourceColumns.First();
 
-        #region Properties
+				_columns.Add(column);
+				accessors.Add(GenerateAccessor(type, null, column));
+			}
+
+			_accessors = accessors.ToArray();
+		}
+		#endregion
+
+		#region Properties
 #if !NO_SCHEMA_TABLE
         /// <summary>
         /// Gets a DataTable containing the expected schema for the type.
@@ -91,10 +98,15 @@ namespace Insight.Database.CodeGenerator
         public DataTable SchemaTable { get { return ColumnInfo.ToSchemaTable(_columns); } }
 #endif
 
-        /// <summary>
-        /// Gets the number of fields in the table.
-        /// </summary>
-        public int FieldCount { get { return _columns.Count; } }
+		/// <summary>
+		/// Gets information about the columns returned by the reader.
+		/// </summary>
+		public ReadOnlyCollection<ColumnInfo> Columns { get { return _columns.AsReadOnly(); } }
+
+		/// <summary>
+		/// Gets the number of fields in the table.
+		/// </summary>
+		public int FieldCount { get { return _columns.Count; } }
 
 		/// <summary>
 		/// Gets a value indicating whether the given type is a value type.
@@ -182,89 +194,114 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>An accessor function or null if there is no mapping.</returns>
 		private static Func<object, object> GenerateAccessor(Type type, FieldMapping mapping, ColumnInfo columnInfo)
 		{
-			if (mapping == null)
-				return null;
-
-			ClassPropInfo propInfo = mapping.Member;
-
 			// create a new anonymous method that takes an object and returns the value
 			var dm = new DynamicMethod(string.Format(CultureInfo.InvariantCulture, "GetValue-{0}-{1}", type.FullName, Guid.NewGuid()), typeof(object), new[] { typeof(object) }, true);
 			var il = dm.GetILGenerator();
 
 			// convert the object reference to the desired type
 			il.Emit(OpCodes.Ldarg_0);
-            if (type.GetTypeInfo().IsValueType)
-            {
-                // access the field/property of a value type
-                var valueHolder = il.DeclareLocal(type);
-                il.Emit(OpCodes.Unbox_Any, type);
-                il.Emit(OpCodes.Stloc, valueHolder);
-                il.Emit(OpCodes.Ldloca_S, valueHolder);
-            }
-            else
-            {
-                il.Emit(OpCodes.Isinst, type);                  // cast object -> type
-            }
+
+			var readyToSetLabel = il.DefineLabel();
 
 			// get the value from the object
-			var readyToSetLabel = il.DefineLabel();
-			ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
-			if (mapping.Member.MemberType.GetTypeInfo().IsValueType)
-				il.Emit(OpCodes.Unbox_Any, mapping.Member.MemberType);
-
-			// if the type is nullable, handle nulls
-			Type sourceType = propInfo.MemberType;
-			Type targetType = columnInfo.DataType;
-			Type underlyingType = Nullable.GetUnderlyingType(sourceType);
-			if (underlyingType != null)
+			Type sourceType;
+			if (mapping != null)
 			{
-				// check for not null
-				Label notNullLabel = il.DefineLabel();
+				if (type.GetTypeInfo().IsValueType)
+				{
+					// access the field/property of a value type
+					var valueHolder = il.DeclareLocal(type);
+					il.Emit(OpCodes.Unbox_Any, type);
+					il.Emit(OpCodes.Stloc, valueHolder);
+					il.Emit(OpCodes.Ldloca_S, valueHolder);
+				}
+				else
+				{
+					il.Emit(OpCodes.Isinst, type);                  // cast object -> type
+				}
 
-				var nullableHolder = il.DeclareLocal(propInfo.MemberType);
-				il.Emit(OpCodes.Stloc, nullableHolder);
-				il.Emit(OpCodes.Ldloca_S, nullableHolder);
-				il.Emit(OpCodes.Call, sourceType.GetProperty("HasValue").GetGetMethod());
-				il.Emit(OpCodes.Brtrue_S, notNullLabel);
+				ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
+				if (mapping.Member.MemberType.GetTypeInfo().IsValueType)
+					il.Emit(OpCodes.Unbox_Any, mapping.Member.MemberType);
 
-				// it's null, just return null
-				il.Emit(OpCodes.Ldnull);
-				il.Emit(OpCodes.Ret);
+				ClassPropInfo propInfo = mapping.Member;
+				sourceType = propInfo.MemberType;
 
+				// if the type is nullable, handle nulls
+				Type underlyingType = Nullable.GetUnderlyingType(sourceType);
+				if (underlyingType != null)
+				{
+					// check for not null
+					Label notNullLabel = il.DefineLabel();
+
+					var nullableHolder = il.DeclareLocal(propInfo.MemberType);
+					il.Emit(OpCodes.Stloc, nullableHolder);
+					il.Emit(OpCodes.Ldloca_S, nullableHolder);
+					il.Emit(OpCodes.Call, sourceType.GetProperty("HasValue").GetGetMethod());
+					il.Emit(OpCodes.Brtrue_S, notNullLabel);
+
+					// it's null, just return null
+					il.Emit(OpCodes.Ldnull);
+					il.Emit(OpCodes.Ret);
+
+					il.MarkLabel(notNullLabel);
+
+					// it's not null, so unbox to the underlyingtype
+					il.Emit(OpCodes.Ldloca, nullableHolder);
+					il.Emit(OpCodes.Call, sourceType.GetProperty("Value").GetGetMethod());
+
+					// at this point we have de-nulled value, so use those converters
+					sourceType = underlyingType;
+				}
+			}
+			else
+			{
+				// there is no mapping, so we're going to convert the object itself to the target type
+				sourceType = type;
+
+				// if the value is null then exit immediately
+				var notNullLabel = il.DefineLabel();
+				il.Emit(OpCodes.Dup);
+				il.Emit(OpCodes.Brfalse, readyToSetLabel);
 				il.MarkLabel(notNullLabel);
 
-				// it's not null, so unbox to the underlyingtype
-				il.Emit(OpCodes.Ldloca, nullableHolder);
-				il.Emit(OpCodes.Call, sourceType.GetProperty("Value").GetGetMethod());
-
-				// at this point we have de-nulled value, so use those converters
-				sourceType = underlyingType;
+				// we get it as an object. unbox it so we can apply conversion operations
+				if (sourceType.GetTypeInfo().IsValueType)
+					il.Emit(OpCodes.Unbox_Any, sourceType);
 			}
 
 			// if the serializer isn't the default ToStringSerializer, and it can serialize the type properly, then use it
 			// otherwise we'll use coersion or conversion
+			Type targetType = columnInfo.DataType;
 			var targetDbType = DbParameterGenerator.LookupDbType(targetType);
 			bool canSerialize = sourceType != typeof(string) &&
+				mapping != null &&
 				mapping.Serializer.GetType() != typeof(ToStringObjectSerializer) &&
 				mapping.Serializer.CanSerialize(sourceType, targetDbType);
 
-			if (sourceType != targetType && canSerialize)
+			// attempt to convert the value
+			var currentType = sourceType;
+			if (currentType != targetType)
 			{
-				if (sourceType.GetTypeInfo().IsValueType)
-					il.Emit(OpCodes.Box, sourceType);
-				il.EmitLoadType(sourceType);
-				StaticFieldStorage.EmitLoad(il, mapping.Serializer);
-				il.Emit(OpCodes.Call, typeof(ObjectReader).GetMethod("SerializeObject", BindingFlags.NonPublic | BindingFlags.Static));
+				if (canSerialize)
+				{
+					if (sourceType.GetTypeInfo().IsValueType)
+						il.Emit(OpCodes.Box, sourceType);
+					il.EmitLoadType(sourceType);
+					StaticFieldStorage.EmitLoad(il, mapping.Serializer);
+					il.Emit(OpCodes.Call, typeof(ObjectReader).GetMethod("SerializeObject", BindingFlags.NonPublic | BindingFlags.Static));
+
+					currentType = typeof(Object);
+				}
+				else if (TypeConverterGenerator.EmitConversionOrCoersion(il, sourceType, targetType))
+				{
+					currentType = targetType;
+				}
 			}
-			else
-			{
-				// attempt to convert the value
-				// either way, we are putting it in an object variable, so box it
-				if (TypeConverterGenerator.EmitConversionOrCoersion(il, sourceType, targetType))
-					il.Emit(OpCodes.Box, targetType);
-				else
-					il.Emit(OpCodes.Box, sourceType);
-			}
+
+			// either way, we are putting it in an object variable, so box it
+			if (currentType.GetTypeInfo().IsValueType)
+				il.Emit(OpCodes.Box, currentType);
 
 			il.MarkLabel(readyToSetLabel);
 			il.Emit(OpCodes.Ret);

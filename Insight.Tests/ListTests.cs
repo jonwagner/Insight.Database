@@ -6,6 +6,7 @@ using NUnit.Framework;
 using Insight.Database;
 using System.Data;
 using System.Dynamic;
+using System.Data.SqlClient;
 
 namespace Insight.Tests
 {
@@ -70,7 +71,7 @@ namespace Insight.Tests
 			}
 
 			// make sure that we cannot send up a null item in the list
-			Assert.Throws<InvalidOperationException>(() => Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new InsightTestData[] { new InsightTestData(), null, new InsightTestData() } }));
+			Assert.Throws<SqlException>(() => Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new InsightTestData[] { new InsightTestData(), null, new InsightTestData() } }));
 		}
 
 		/// <summary>
@@ -79,7 +80,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestEnumerableClassListParameters()
 		{
-			for (int i = 0; i < 3; i++)
+			for (int i = 1; i < 3; i++)
 			{
 				// build test data
 				InsightTestData[] array = new InsightTestData[i];
@@ -95,7 +96,7 @@ namespace Insight.Tests
 			}
 
 			// make sure that we cannot send up a null item in the list
-			Assert.Throws<InvalidOperationException>(() => Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new List<InsightTestData>() { new InsightTestData(), null, new InsightTestData() } }));
+			Assert.Throws<SqlException>(() => Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new List<InsightTestData>() { new InsightTestData(), null, new InsightTestData() } }));
 		}
 
 		/// <summary>
@@ -164,6 +165,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestEnumerableValueParametersToStoredProc()
 		{
+			Assert.AreEqual(3, Connection().Query<InsightTestData>("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
+
 			for (int i = 0; i < 3; i++)
 			{
 				// build test data

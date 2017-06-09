@@ -33,16 +33,14 @@ namespace Insight.Tests
 			TestConvertToTypeWhileReading<decimal>("decimal(18,5)");
 			TestConvertToTypeWhileReading<bool>("bit");
 			TestConvertToTypeWhileReading<char>("char(1)");
-			TestConvertToTypeWhileReading<DateTime>("date");
-#if !NETCOREAPP1_0 && !NETCOREAPP2_0
+			TestConvertToTypeWhileReading<DateTime>("date", DateTime.Now);
 			TestConvertToTypeWhileReading<DateTimeOffset>("datetimeoffset");
 			TestConvertToTypeWhileReading<TimeSpan>("time");
-#endif
 		}
 
 		private void TestConvertToTypeWhileReading<T>(string sqlType, T value = default(T)) where T : struct
 		{
-			List<string> list = new List<string>() { default(T).ToString() };
+			List<T> list = new List<T>() { value };
 
 			string tableName = String.Format("ObjectReaderTable_{0}", typeof(T).Name);
 			string procName = String.Format("ObjectReaderProc_{0}", typeof(T).Name);
@@ -235,7 +233,7 @@ namespace Insight.Tests
 			TestReadingClassType<string>("varchar(MAX)", "", "string");
 
 			// type mismatches should throw
-			Assert.Throws<InvalidOperationException>(() => TestReadingClassType<string>("varbinary(MAX)", "", "bytearray"));
+			Assert.Throws<InvalidCastException>(() => TestReadingClassType<string>("varbinary(MAX)", "", "bytearray"));
 		}
 
 		private void TestReadingClassType<T>(string sqlType, T value, string tableBaseName) where T : class
@@ -400,38 +398,25 @@ namespace Insight.Tests
 		}
 		#endregion
 
-		#region Automatic _insight_rownumber Column
-		class AutoRowNumbers
+		#region TVP with Identity
+		class TVPWithIdentityData
 		{
 			public int ID;
 			public string Stuff;
 		}
 
 		[Test]
-		public void ObjectReaderShouldAutomaticallyFillInRowNumberColumn()
+		public void CanInsertDataIntoTVPWithIdentityColumn()
 		{
-			var data = new AutoRowNumbers[]
+			var data = new TVPWithIdentityData[]
 			{
-				new AutoRowNumbers(),
-				new AutoRowNumbers(),
-				new AutoRowNumbers()
+				new TVPWithIdentityData(),
+				new TVPWithIdentityData(),
+				new TVPWithIdentityData()
 			};
 
-			var result = Connection().Query<int>("[AutoFillRowNumbers]", data);
+			var result = Connection().Query<int>("[CallTVPWithIdentityColumn]", data);
 			Assert.AreEqual(new int[] { 1, 2, 3 }, result);
-		}
-
-
-		[Test]
-		public void InsertManyShouldReturnIDsInTheRightOrder()
-		{
-			var data = new List<AutoRowNumbers>();
-			for (int i = 0; i < 20000; i++)
-				data.Add(new AutoRowNumbers());
-
-			var result = Connection().InsertList("[InsertWithRowNumbers]", data);
-			for (int i = 0; i < 20000; i++)
-				Assert.AreEqual(i + 1, data[i].ID);
 		}
 		#endregion
 	}

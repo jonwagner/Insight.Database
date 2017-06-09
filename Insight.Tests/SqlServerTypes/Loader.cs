@@ -32,7 +32,7 @@ namespace SqlServerTypes
         private static void LoadNativeAssembly(string nativeBinaryPath, string assemblyName)
         {
             var path = Path.Combine(nativeBinaryPath, assemblyName);
-            LoadLibrary(path);
+            var ptr = LoadLibrary(path);
 #if !DEBUG
 			if (ptr == IntPtr.Zero)
             {

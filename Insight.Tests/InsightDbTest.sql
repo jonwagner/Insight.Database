@@ -438,30 +438,13 @@ GO
 -----------------------------------------------------------------------------------
 -- test tables for identity insert in ObjectReaderTests
 -----------------------------------------------------------------------------------
-CREATE TABLE RowNumbers (
-	[ID] [int] IDENTITY,
+CREATE TYPE [dbo].[TVPWithIdentityColumn] AS TABLE(
+	[ID] [int] NOT NULL IDENTITY,
 	[Stuff] [varchar](MAX) NULL
 )
 GO
 
-CREATE TYPE [dbo].[RowNumberTable] AS TABLE(
-	[ID] [int] NULL,
-	[Stuff] [varchar](MAX) NULL,
-	[_insight_rownumber] [int] NULL
-)
-GO
-
-CREATE PROC [dbo].[AutoFillRowNumbers] (@rows [RowNumberTable] READONLY)
+CREATE PROC [dbo].[CallTVPWithIdentityColumn] (@rows [TVPWithIdentityColumn] READONLY)
 AS
-	SELECT _insight_rownumber FROM @rows
-GO
-
-CREATE PROC [dbo].[InsertWithRowNumbers] (@rows [RowNumberTable] READONLY)
-AS
-	TRUNCATE TABLE RowNumbers
-
-	INSERT INTO RowNumbers (Stuff)
-		OUTPUT inserted.ID
-		SELECT Stuff FROM @rows
-		ORDER BY [_insight_rownumber] -- retain the order as passed from insight
+	SELECT ID FROM @rows
 GO

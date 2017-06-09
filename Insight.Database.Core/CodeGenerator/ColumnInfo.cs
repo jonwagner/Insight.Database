@@ -12,53 +12,53 @@ namespace Insight.Database.CodeGenerator
 	/// <summary>
 	/// Represents a column identity.
 	/// </summary>
-	class ColumnInfo : IEquatable<ColumnInfo>
+	public class ColumnInfo : IEquatable<ColumnInfo>
 	{
 		#region Properties
 		/// <summary>
-		/// Gets or sets the name of the column.
+		/// Gets the name of the column.
 		/// </summary>
-		public string Name { get; set; }
+		public string Name { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the type of the column.
+		/// Gets the type of the column.
 		/// </summary>
-		public Type DataType { get; set; }
+		public Type DataType { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the name of the type of the column.
+		/// Gets the name of the type of the column.
 		/// </summary>
-		public string DataTypeName { get; set; }
+		public string DataTypeName { get; private set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the column is nullable.
+		/// Gets a value indicating whether the column is nullable.
 		/// </summary>
-		public bool IsNullable { get; set; }
+		public bool IsNullable { get; private set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the column is the row identity.
+		/// Gets a value indicating whether the column is the row identity.
 		/// </summary>
-		public bool IsIdentity { get; set; }
+		public bool IsIdentity { get; private set; }
 
 		/// <summary>
-		/// Gets or sets a value indicating whether the column is readonly.
+		/// Gets  a value indicating whether the column is readonly.
 		/// </summary>
-		public bool IsReadOnly { get; set; }
+		public bool IsReadOnly { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the size of the column.
+		/// Gets the size of the column.
 		/// </summary>
-		public object ColumnSize { get; set; }
+		public long? ColumnSize { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the precision of the column.
+		/// Gets the precision of the column.
 		/// </summary>
-		public object NumericPrecision { get; set; }
+		public int? NumericPrecision { get; private set; }
 
 		/// <summary>
-		/// Gets or sets the scale of the column.
+		/// Gets the scale of the column.
 		/// </summary>
-		public object NumericScale { get; set; }
+		public int? NumericScale { get; private set; }
 		#endregion
 
 		#region Static Methods
@@ -146,9 +146,9 @@ namespace Insight.Database.CodeGenerator
 					IsReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture),
 					IsIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture),
 					DataType = (Type)row[dataTypeColumn],
-					NumericPrecision = row[precisionColumn],
-					NumericScale = row[scaleColumn],
-					ColumnSize = row[columnSizeColumn]
+					NumericPrecision = (precisionColumn == -1) ? (int?)null : row.IsNull(precisionColumn) ? (int?)null : Convert.ToInt32(row[precisionColumn]),
+					NumericScale = (scaleColumn == -1) ? (int?)null : row.IsNull(scaleColumn) ? (int?)null : Convert.ToInt32(row[scaleColumn]),
+					ColumnSize = (columnSizeColumn == -1) ? (int?)null : row.IsNull(columnSizeColumn) ? (int?)null : Convert.ToInt32(row[columnSizeColumn])
 				};
 
 				if (dataTypeNameColumn != -1)
