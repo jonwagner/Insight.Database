@@ -99,7 +99,7 @@
     <HasSchemaTable>false</HasSchemaTable>
     <HasSqlTypes>false</HasSqlTypes>
     <HasUdt>false</HasUdt>
-	<SqlClientVersion>4.4.0-preview1-25305-02</SqlClientVersion>
+	<SqlClientVersion>4.4.0-preview2-25405-01</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
@@ -137,7 +137,13 @@
   </PropertyGroup>
 
   <ItemGroup Condition="$(ProjectType) == 'LibraryPackage' and $(Configuration) == 'Release'">
+    <PackageReference Include="Desktop.Analyzers" Version="1.1.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
     <PackageReference Include="StyleCop.Analyzers" Version="1.0.0">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.Security.Cryptography.Hashing.Algorithms.Analyzers" Version="1.1.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0">
