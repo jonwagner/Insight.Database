@@ -1,11 +1,12 @@
-﻿Framework '4.5.2'
-$psake.use_exit_on_error = $true
+﻿$psake.use_exit_on_error = $true
 
 #########################################
 # to build a new version
 # 1. git tag 1.0.x
 # 2. build package
 #########################################
+
+exec { & $env:VS150COMNTOOLS\vsmsbuildcmd.bat }
 
 properties {
     $baseDir = $psake.build_script_dir
@@ -28,15 +29,15 @@ function Wipe-Folder {
 }
 
 Task Clean {
-	Get-ChildItem $baseDir\Insight*\*.csproj | %{ exec { dotnet clean $_ -c $configuration } }
+	exec { dotnet clean -c $configuration Insight.sln }
 }
 
 Task Restore {
-	Get-ChildItem $baseDir\Insight*\*.csproj | %{ exec { dotnet restore $_ } }
+	exec { dotnet restore Insight.sln }
 }
 
 Task Build -depends Restore {
-	Get-ChildItem $baseDir\Insight*\*.csproj | %{ exec { dotnet build $_ -c $configuration } }
+	exec { dotnet build -c $configuration Insight.sln }
 }
 
 Task Test -depends Build, TestOnly {
