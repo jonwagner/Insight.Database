@@ -20,10 +20,6 @@
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
     <PackageReference Include="IBM.Data.DB2.Core" Version="1.1.1.101" />
-<!--    
-    Need to figure out how to include this package conditionally on the target runtime identifier
-    <PackageReference Include="IBM.Data.DB2.Core-lnx" Version="1.0.0.100" Condition="$(TargetRuntime) == 'unix'" />
-  -->
   </ItemGroup>
   
   <ItemGroup>
