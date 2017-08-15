@@ -82,7 +82,22 @@ namespace Insight.Database.Providers.MySql
 		public override IDataParameter CloneParameter(IDbCommand command, IDataParameter parameter)
 		{
 			MySqlParameter p = (MySqlParameter)parameter;
+
+#if MYSQL_8
+			return new MySqlParameter(
+				p.ParameterName,
+				p.MySqlDbType,
+				p.Size,
+				p.Direction,
+				p.IsNullable,
+				p.Precision,
+				p.Scale,
+				p.SourceColumn,
+				p.Value
+			);
+#else
 			return (IDataParameter)p.Clone();
+#endif
 		}
 
 		/// <summary>

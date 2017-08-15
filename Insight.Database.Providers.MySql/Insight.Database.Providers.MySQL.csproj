@@ -14,9 +14,13 @@
  
   <Import Project="..\SharedConfiguration.csproj" />
 
+  <PropertyGroup>
+    <DefineConstants Condition="$(TargetFramework) == 'netstandard1.6' or $(TargetFramework) == 'netstandard2.0'">$(DefineConstants);MYSQL_8</DefineConstants>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="6.9.9" Condition="$(TargetFrameworkIdentifier) == '.NETFramework'" />
-    <PackageReference Include="MySql.Data" Version="7.0.7-m61" Condition="$(TargetFrameworkIdentifier) != '.NETFramework'" />
+    <PackageReference Include="MySql.Data" Version="8.0.8-dmr" Condition="$(TargetFrameworkIdentifier) != '.NETFramework'" />
     <!-- MySql 7 has a dependency on System.Data.SqlClient. We need to make sure we get the same version of the sql client. -->
     <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != '' and $(TargetFrameworkIdentifier) != '.NETFramework'" />
   </ItemGroup>
