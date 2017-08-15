@@ -9,7 +9,8 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>netstandard2.0;netstandard1.6;net451;net45;net40</TargetFrameworks>
+    <TargetFrameworks>net451;net45;net40</TargetFrameworks>
+    <!--<TargetFrameworks>netstandard2.0;netstandard1.6;net451;net45;net40</TargetFrameworks>-->
   </PropertyGroup>
  
   <Import Project="..\SharedConfiguration.csproj" />
@@ -21,7 +22,7 @@
   <ItemGroup>
     <PackageReference Include="MySql.Data" Version="6.9.9" Condition="$(TargetFrameworkIdentifier) == '.NETFramework'" />
     <PackageReference Include="MySql.Data" Version="8.0.8-dmr" Condition="$(TargetFrameworkIdentifier) != '.NETFramework'" />
-    <!-- MySql 7 has a dependency on System.Data.SqlClient. We need to make sure we get the same version of the sql client. -->
+    <!-- MySql 8 has a dependency on System.Data.SqlClient. We need to make sure we get the same version of the sql client. -->
     <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != '' and $(TargetFrameworkIdentifier) != '.NETFramework'" />
   </ItemGroup>
   <ItemGroup>
