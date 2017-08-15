@@ -194,8 +194,10 @@ namespace Insight.Database
 			if (command == null) throw new ArgumentNullException("command");
 			if (list == null) throw new ArgumentNullException("list");
 
+			var isEmpty = !list.GetEnumerator().MoveNext();
+
 			// if the list is empty, then we can optimize by omitting the table
-			if (command.CommandType == CommandType.StoredProcedure && !list.GetEnumerator().MoveNext())
+			if (isEmpty && command.CommandType == CommandType.StoredProcedure)
 			{
 				parameter.Value = null;
 				return;
@@ -219,14 +221,8 @@ namespace Insight.Database
 					},
 					CommandBehavior.Default));
 
-			if (!list.GetEnumerator().MoveNext())
-			{
-				parameter.Value = new ObjectListDbDataReader(objectReader, list);
-				return;
-			}
-
-			// create the structured parameter
-			parameter.Value = new SqlDataRecordAdapter(objectReader, list);
+			if (!isEmpty)
+				parameter.Value = new SqlDataRecordAdapter(objectReader, list);
 		}
 
 		/// <summary>
