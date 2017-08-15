@@ -1,27 +1,32 @@
 ﻿#if NETSTANDARD1_6 || NETSTANDARD2_0
 using System;
-using System.ComponentModel;
-using System.Data.Common;
-using System.Data;
-using System.Text;
-using MySql.Data.Common;
 using System.Collections;
-using MySql.Data.Types;
-using System.Globalization;
 using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Data.Common;
+using System.Globalization;
+using System.Text;
 using Insight.Database;
+using MySql.Data.Common;
+using MySql.Data.Types;
 
 namespace MySql.Data.MySqlClient
 {
-	public static class MySqlCommandBuilder
+	/// <summary>
+	/// Stub implementation of MySqlCommandBuilder.
+	/// </summary>
+	static class MySqlCommandBuilder
 	{
+		/// <inheritdoc/>
 		public static void DeriveParameters(MySqlCommand command)
 		{
 			if (command.CommandType != CommandType.StoredProcedure)
 				throw new InvalidOperationException(Resources.CanNotDeriveParametersForTextCommands);
 
-			foreach (dynamic row in command.Connection.QuerySql("SELECT * FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_SCHEMA = @dbname AND SPECIFIC_NAME = @procname",
-														   new { dbname = command.Connection.Database, procname = command.CommandText }))
+			foreach (dynamic row in command.Connection.QuerySql(
+				"SELECT * FROM INFORMATION_SCHEMA.PARAMETERS WHERE SPECIFIC_SCHEMA = @dbname AND SPECIFIC_NAME = @procname",
+				new { dbname = command.Connection.Database, procname = command.CommandText }))
 			{
 				var p = new MySqlParameter();
 				p.ParameterName = row.PARAMETER_NAME.ToString();
@@ -61,20 +66,7 @@ namespace MySql.Data.MySqlClient
 */
 		}
 
-		private static ParameterDirection GetDirection(dynamic parameter)
-		{
-			string mode = parameter.PARAMETER_MODE.ToString();
-			int ordinal = Convert.ToInt32(parameter.ORDINAL_POSITION);
-
-			if (0 == ordinal)
-				return ParameterDirection.ReturnValue;
-			else if (mode == "IN")
-				return ParameterDirection.Input;
-			else if (mode == "OUT")
-				return ParameterDirection.Output;
-			return ParameterDirection.InputOutput;
-		}
-
+		/// <inheritdoc/>
 		public static MySqlDbType NameToType(string typeName, bool unsigned, MySqlConnection connection)
 		{
 			switch (StringUtility.ToUpperInvariant(typeName))
@@ -139,9 +131,23 @@ namespace MySql.Data.MySqlClient
 				case "VARBINARY":
 					return MySqlDbType.VarBinary;
 			}
+
 			throw new Exception("Unhandled type encountered");
 		}
 
+		private static ParameterDirection GetDirection(dynamic parameter)
+		{
+			string mode = parameter.PARAMETER_MODE.ToString();
+			int ordinal = Convert.ToInt32(parameter.ORDINAL_POSITION);
+
+			if (ordinal == 0)
+				return ParameterDirection.ReturnValue;
+			else if (mode == "IN")
+				return ParameterDirection.Input;
+			else if (mode == "OUT")
+				return ParameterDirection.Output;
+			return ParameterDirection.InputOutput;
+		}
 	}
 }
 #endif

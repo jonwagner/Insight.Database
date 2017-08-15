@@ -1,11 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 
 namespace Insight.Database
 {
+	/// <summary>
+	/// Provides stub methods for reflection in some framework versions.
+	/// </summary>
+	[SuppressMessage("Microsoft.StyleCop.CSharp.LayoutRules", "SA1516:ElementsMustBeSeparatedByBlankLine", Justification = "This class is an implementation wrapper.")]
+	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 	static class TypeExtensions
 	{
 #if NO_TYPE_INFO
@@ -76,8 +82,10 @@ namespace Insight.Database
 				return false;
 
 			for (int i = 0; i < passedTypes.Length; i++)
+			{
 				if (!CanConvert(passedTypes[i], methodParameters[i].ParameterType))
 					return false;
+			}
 
 			return true;
         }

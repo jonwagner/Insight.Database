@@ -335,11 +335,11 @@ namespace Insight.Database
 				case 10053:		// A transport-level error has occurred when receiving results from the server. An established connection was aborted by the software in your host machine.
 				case 10054:		// A transport-level error has occurred when sending the request to the server. (provider: TCP Provider, error: 0 – An existing connection was forcibly closed by the remote host.)
 				case 10060:		// A network-related or instance-specific error occurred while establishing a connection to SQL Server. The server was not found or was not accessible. Verify that the instance name is correct and that SQL Server is configured to allow remote connections. (provider: TCP Provider, error: 0 – A connection attempt failed because the connected party did not properly respond after a period of time, or established connection failed because connected host has failed to respond.)
-				case 10928:		// The %s minimum guarantee is %d, maximum limit is %d and the current usage for the database is %d. 
+				case 10928:		// The %s minimum guarantee is %d, maximum limit is %d and the current usage for the database is %d.
                                 // However, the server is currently too busy to support requests greater than %d for this database.
-                case 10929:     // Resource ID: %d. The %s minimum guarantee is %d, maximum limit is %d and the current usage for the database is %d. 
+                case 10929:     // Resource ID: %d. The %s minimum guarantee is %d, maximum limit is %d and the current usage for the database is %d.
 			                    // However, the server is currently too busy to support requests greater than %d for this database.
-				case 11001:		// A network-related or instance-specific error occurred while establishing a connection to SQL Server. 
+				case 11001:		// A network-related or instance-specific error occurred while establishing a connection to SQL Server.
 				case 40143:		// The service has encountered an error processing your request. Please try again.
 				case 40197:		// The service has encountered an error processing your request. Please try again.
 				case 40501:		// The service is currently busy. Retry the request after 10 seconds. Code: (reason code to be decoded).
@@ -360,7 +360,8 @@ namespace Insight.Database
 		/// so we are going to check to make sure that we got all of the parameters.
 		/// </remarks>
 		/// <param name="command">The command to analyze.</param>
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling"), System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static void AdjustSqlParameters(SqlCommand command)
 		{
 			var parameters = command.Parameters.OfType<SqlParameter>();
@@ -382,11 +383,14 @@ namespace Insight.Database
 				.Select(n => (string)n["ParameterName"])
 				.FirstOrDefault((string parameterName) => !parameters.Any(p => String.Compare(p.ParameterName, parameterName, StringComparison.OrdinalIgnoreCase) == 0));
 			if (missingParameter != null)
-				throw new InvalidOperationException(String.Format(
-					CultureInfo.InvariantCulture,
-					"{0} is missing parameter {1}. Check to see if the parameter is using a type that the current user does not have EXECUTE access to.",
-					command.CommandText,
-					missingParameter));
+			{
+				throw new InvalidOperationException(
+					String.Format(
+						CultureInfo.InvariantCulture,
+						"{0} is missing parameter {1}. Check to see if the parameter is using a type that the current user does not have EXECUTE access to.",
+						command.CommandText,
+						missingParameter));
+			}
 
 			// DeriveParameters will also mess up table type names that have dots in them, so we escape them ourselves
 			// SQL will return them to us unescaped
@@ -461,7 +465,7 @@ namespace Insight.Database
 #endif
 			return typeInfo.GetCustomAttributes(true).Any(a => a.GetType().Name == "SqlUserDefinedTypeAttribute");
 		}
-		
+
 		/// <summary>
 		/// Prepares the bulk copy operation.
 		/// </summary>

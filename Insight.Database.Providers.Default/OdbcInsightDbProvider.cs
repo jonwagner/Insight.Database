@@ -63,7 +63,7 @@ namespace Insight.Database
 		{
 			OdbcCommandBuilder.DeriveParameters(command as OdbcCommand);
 		}
-	
+
 		/// <summary>
 		/// Clones a parameter so that it can be used with another command.
 		/// </summary>

@@ -1,6 +1,7 @@
 ﻿#if NO_COMMAND_BUILDER
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,12 +16,9 @@ namespace Insight.Database.Providers.Default
 	/// Handles more complex cases like [My.db].dbo.proc.
 	/// But does nto attempt to do a full validation of legal sql
 	/// </summary>
+	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 	public class SqlObjectName
 	{
-		public string Database { get; set; }
-		public string Schema { get; set; }
-		public string Name { get; set; }
-
 		public SqlObjectName(string database, string schema, string name)
 		{
 			Database = database;
@@ -43,9 +41,39 @@ namespace Insight.Database.Providers.Default
 				Database = CleanSqlName(nameParts[numElements - 3]);
 		}
 
+		public string Database { get; set; }
+
+		public string Schema { get; set; }
+
+		public string Name { get; set; }
+
+		public string GetFullNameAsString()
+		{
+			string fullName = String.Empty;
+
+			if (Database.IsNullOrWhiteSpace() && Schema.IsNullOrWhiteSpace())
+				fullName = $"[{Name}]";
+			else if ((!Database.IsNullOrWhiteSpace()) && (!Schema.IsNullOrWhiteSpace()))
+				fullName = $"[{Database}].[{Schema}].[{Name}]";
+			else if ((Database.IsNullOrWhiteSpace()) && (!Schema.IsNullOrWhiteSpace()))
+				fullName = $"[{Schema}].[{Name}]";
+			else if ((!Database.IsNullOrWhiteSpace()) && (Schema.IsNullOrWhiteSpace()))
+				fullName = $"[{Database}]..[{Name}]";
+
+			return fullName;
+		}
+
+		private static string CleanSqlName(string name)
+		{
+			if (name == null) return null;
+
+			return name.Replace("\"", String.Empty).Replace("'", String.Empty).Replace("[", String.Empty).Replace("]", String.Empty);
+		}
+
 		/// <summary>
 		/// Split a name, eg [My.db].dbo.proc while respecting things in brackets
 		/// </summary>
+		/// <param name="fullyQualifiedNameText">The name to split.</param>
 		private string[] SplitName(string fullyQualifiedNameText)
 		{
 			bool isInLiteralSection = false;
@@ -61,9 +89,10 @@ namespace Insight.Database.Providers.Default
 				char c = fullyQualifiedNameArray[i];
 
 				if (IsEnclosingChar(c))
-					isInLiteralSection = !isInLiteralSection; // flip the state
-
-				else if ((!isInLiteralSection) && (c == '.'))  // its a valid splitter
+				{
+					isInLiteralSection = !isInLiteralSection;
+				}
+				else if ((!isInLiteralSection) && (c == '.'))
 				{
 					fullyQualifiedNameArray[i] = specialDelimiter;
 				}
@@ -78,33 +107,6 @@ namespace Insight.Database.Providers.Default
 		{
 			return ((c == '[') || (c == ']') || (c == '"'));
 		}
-
-		public string GetFullNameAsString()
-		{
-			string fullName = "";
-
-			if (Database.IsNullOrWhiteSpace() && Schema.IsNullOrWhiteSpace())
-				fullName = $"[{Name}]";
-
-			else if ((!Database.IsNullOrWhiteSpace()) && (!Schema.IsNullOrWhiteSpace()))
-				fullName = $"[{Database}].[{Schema}].[{Name}]";
-
-			else if ((Database.IsNullOrWhiteSpace()) && (!Schema.IsNullOrWhiteSpace()))
-				fullName = $"[{Schema}].[{Name}]";
-
-			else if ((!Database.IsNullOrWhiteSpace()) && (Schema.IsNullOrWhiteSpace()))
-				fullName = $"[{Database}]..[{Name}]";
-
-			return fullName;
-		}
-
-		private static string CleanSqlName(string name)
-		{
-			if (name == null) return null;
-
-			return name.Replace("\"", "").Replace("'", "").Replace("[", "").Replace("]", "");
-		}
-
 	}
 }
 #endif

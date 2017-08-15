@@ -244,17 +244,21 @@ namespace Insight.Database.Reliable
 						// note that we need to put the timer into a closure so we can dispose it
 						// but we have to wait for the local variable to be assigned before we can start the timer
 						Timer timer = null;
-						timer = new Timer(_ =>
-						{
-							try
+						timer = new Timer(
+							_ =>
 							{
-								CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
-							}
-							finally
-							{
-								timer.Dispose();
-							}
-						}, null, Timeout.Infinite, Timeout.Infinite);
+								try
+								{
+									CheckAsyncResult(commandContext, tcs, func, attempt + 1, nextDelay);
+								}
+								finally
+								{
+									timer.Dispose();
+								}
+							},
+							null,
+							Timeout.Infinite,
+							Timeout.Infinite);
 
 						// start the timer
 						timer.Change(delay, NoRepeat);

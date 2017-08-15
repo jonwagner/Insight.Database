@@ -26,6 +26,7 @@
 #if NETSTANDARD1_5 || NETSTANDARD2_0
 
 using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
@@ -33,7 +34,6 @@ using System.Linq;
 using System.Reflection;
 using Npgsql;
 using NpgsqlTypes;
-using System.Collections.Generic;
 
 namespace Insight.Database.Providers.PostgreSQL.Compatibility
 {
@@ -164,14 +164,15 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
 						}
 					}
 					else
+					{
 						throw new InvalidOperationException($"{command.CommandText} does not exist in pg_proc");
+					}
 				}
 
 				command.Parameters.Clear();
 				for (var i = 0; i < types.Length; i++)
 				{
 					var param = new NpgsqlParameter();
-
 
 					// convert the oid to a NpgSqlDbType so Insight knows what to do with it.
 					if (_oidToNpgsqlDbType.TryGetValue(types[i], out var npgsqlDbType))
@@ -182,8 +183,10 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
 					else
 						param.ParameterName = "parameter" + (i + 1);
 
-					if (modes == null) // All params are IN, or server < 8.1.0 (and only IN is supported)
+					if (modes == null)
+					{
 						param.Direction = ParameterDirection.Input;
+					}
 					else
 					{
 						switch (modes[i])
@@ -201,7 +204,9 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
 							case 'v':
 								throw new NotImplementedException("Cannot derive function parameter of type VARIADIC");
 							default:
-								throw new ArgumentOutOfRangeException("proargmode", modes[i],
+								throw new ArgumentOutOfRangeException(
+									"proargmode",
+									modes[i],
 									"Unknown code in proargmodes while deriving: " + modes[i]);
 						}
 					}

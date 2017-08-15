@@ -15,10 +15,12 @@ namespace Insight.Database.Providers.PostgreSQL
 	/// </summary>
 	public class NpgsqlCommandWithRecordsets : DbCommandWrapper
 	{
+#pragma warning disable CA2213
 		/// <summary>
 		/// The inner Npgsql connection;
 		/// </summary>
-		NpgsqlConnection _innerConnection;
+		private NpgsqlConnection _innerConnection;
+#pragma warning restore CA2213
 
 		/// <summary>
 		/// Initializes a new instance of the NpgsqlCommandWithRecordsets class.

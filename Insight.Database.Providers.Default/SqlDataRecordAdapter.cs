@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Data;
+using System.Data.SqlTypes;
 using System.Linq;
 using System.Text;
 using Insight.Database.CodeGenerator;
 using Microsoft.SqlServer.Server;
-using System.Data;
-using System.Data.SqlTypes;
 
 namespace Insight.Database.Providers.Default
 {
@@ -15,36 +15,6 @@ namespace Insight.Database.Providers.Default
 	/// </summary>
 	class SqlDataRecordAdapter : IEnumerable<SqlDataRecord>
 	{
-		private ObjectReader _objectReader;
-		private IEnumerable _list;
-		private SqlMetaData[] _metadata;
-
-		/// <summary>
-		/// Constucts an instance of the SqlDataRecordAdapter class.
-		/// </summary>
-		/// <param name="objectReader">The ObjectReader to use to extract properties from the object.</param>
-		/// <param name="list">The list of objects to read.</param>
-		public SqlDataRecordAdapter(ObjectReader objectReader, IEnumerable list)
-		{
-			_objectReader = objectReader;
-			_list = list;
-
-			_metadata = objectReader.Columns.Select(c => new SqlMetaData(
-				c.Name,
-				GetSqlDbType(c.DataType),
-				(c.ColumnSize == 0x7fffffff) ? SqlMetaData.Max : (c.ColumnSize ?? 0),
-				Convert.ToByte((c.NumericPrecision == 0xff) ? 0 : c.NumericPrecision ?? 0),
-				Convert.ToByte((c.NumericScale == 0xff) ? 0 : c.NumericScale ?? 0),
-				0, // locale
-				SqlCompareOptions.None,
-				null, // user defined type
-				c.IsIdentity || c.IsReadOnly, // use server default
-				false, // is unique key
-				System.Data.SqlClient.SortOrder.Unspecified,
-				-1 // sort ordinal
-			)).ToArray();
-		}
-
 		/// <summary>
 		/// Mapping from object types to DbTypes.
 		/// </summary>
@@ -71,13 +41,36 @@ namespace Insight.Database.Providers.Default
 			{ typeof(byte[]), SqlDbType.VarBinary },
 		};
 
-		private static SqlDbType GetSqlDbType(Type type)
-		{
-			type = Nullable.GetUnderlyingType(type) ?? type;
+		private ObjectReader _objectReader;
+		private IEnumerable _list;
+		private SqlMetaData[] _metadata;
 
-			return _typeToDbTypeMap[type];
+		/// <summary>
+		/// Constucts an instance of the SqlDataRecordAdapter class.
+		/// </summary>
+		/// <param name="objectReader">The ObjectReader to use to extract properties from the object.</param>
+		/// <param name="list">The list of objects to read.</param>
+		public SqlDataRecordAdapter(ObjectReader objectReader, IEnumerable list)
+		{
+			_objectReader = objectReader;
+			_list = list;
+
+			_metadata = objectReader.Columns.Select(c => new SqlMetaData(
+				c.Name,
+				GetSqlDbType(c.DataType),
+				(c.ColumnSize == 0x7fffffff) ? SqlMetaData.Max : (c.ColumnSize ?? 0),
+				Convert.ToByte((c.NumericPrecision == 0xff) ? 0 : c.NumericPrecision ?? 0),
+				Convert.ToByte((c.NumericScale == 0xff) ? 0 : c.NumericScale ?? 0),
+				0, // locale
+				SqlCompareOptions.None,
+				null, // user defined type
+				c.IsIdentity || c.IsReadOnly, // use server default
+				false, // is unique key
+				System.Data.SqlClient.SortOrder.Unspecified,
+				-1)).ToArray();
 		}
 
+		/// <inheritdoc/>
 		IEnumerator<SqlDataRecord> IEnumerable<SqlDataRecord>.GetEnumerator()
 		{
 			foreach (object o in _list)
@@ -102,9 +95,18 @@ namespace Insight.Database.Providers.Default
 			}
 		}
 
+		/// <inheritdoc/>
 		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return ((IEnumerable<SqlDataRecord>)this).GetEnumerator();
+		}
+
+		/// <inheritdoc/>
+		private static SqlDbType GetSqlDbType(Type type)
+		{
+			type = Nullable.GetUnderlyingType(type) ?? type;
+
+			return _typeToDbTypeMap[type];
 		}
 	}
 }

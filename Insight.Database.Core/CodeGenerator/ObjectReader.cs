@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.Data;
 using System.Globalization;
 using System.Linq;
@@ -11,7 +12,6 @@ using System.Threading.Tasks;
 using Insight.Database.Mapping;
 using Insight.Database.Providers;
 using Insight.Database.Structure;
-using System.Collections.ObjectModel;
 
 namespace Insight.Database.CodeGenerator
 {

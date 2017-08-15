@@ -103,8 +103,8 @@ namespace Insight.Database.CodeGenerator
 						NumericScale = null,
 						ColumnSize = null
 					});
-				}		
-						
+				}
+
 				return columns;
 			}
 		}

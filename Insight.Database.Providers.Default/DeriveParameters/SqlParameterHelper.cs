@@ -4,16 +4,19 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Data.SqlClient;
+using System.Diagnostics.CodeAnalysis;
 using Insight.Database.MissingExtensions;
 
 namespace Insight.Database.Providers.Default
 {
+	[SuppressMessage("Microsoft.StyleCop.CSharp.LayoutRules", "SA1516:ElementsMustBeSeparatedByBlankLine", Justification = "This class is an implementation wrapper.")]
+	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
 	static class SqlParameterHelper
 	{
 		/// <summary>
 		/// Get the parameters for the stored the proc specified in the command. Only implemented for SQL 2008 or higher.
 		/// </summary>
-		/// <param name="cmdToPopulate"></param>
+		/// <param name="cmdToPopulate">The command to populate.</param>
 		[EditorBrowsable(EditorBrowsableState.Advanced)]
 		public static void DeriveParameters(SqlCommand cmdToPopulate)
 		{
@@ -54,7 +57,7 @@ namespace Insight.Database.Providers.Default
 		/// The the stored procedure parameter parameters for the proc specified in the command
 		/// </summary>
 		/// <param name="cmdToPopulate">The command containing the stored procedure</param>
-		/// <returns></returns>
+		/// <returns>A SqlDataReader containing the parameters.</returns>
 		private static SqlDataReader GetParametersAsReader(SqlCommand cmdToPopulate)
 		{
 			var procToPopulateName = new SqlObjectName(cmdToPopulate.CommandText);
@@ -158,6 +161,7 @@ namespace Insight.Database.Providers.Default
 				case 3: return ParameterDirection.Output;
 				case 4: return ParameterDirection.ReturnValue;
 			}
+
 			return ParameterDirection.Input;
 		}
 
@@ -169,7 +173,7 @@ namespace Insight.Database.Providers.Default
 			return p;
 		}
 
-		internal static SqlDbType GetSqlDbTypeEnumFromManagedTypeId(int managedTypeId)
+		private static SqlDbType GetSqlDbTypeEnumFromManagedTypeId(int managedTypeId)
 		{
 			return (SqlDbType)managedTypeId;
 		}
@@ -177,8 +181,10 @@ namespace Insight.Database.Providers.Default
 		private static void AssertCommandIsValid(SqlCommand cmd, string method)
 		{
 			if (cmd.CommandType != CommandType.StoredProcedure)
+			{
 				throw new InvalidOperationException(
 					$"DeriveParameters supports CommandType.StoredProcedure, not CommandType.{cmd.CommandType}");
+			}
 
 			if (cmd.CommandText.Length == 0)
 				throw new InvalidOperationException("CommandText has not been set for this Command.");
@@ -229,7 +235,6 @@ namespace Insight.Database.Providers.Default
 			internal int XmlCollectionName { get; }
 			internal int DateTimePrecision { get; }
 		}
-
 	}
 }
 #endif

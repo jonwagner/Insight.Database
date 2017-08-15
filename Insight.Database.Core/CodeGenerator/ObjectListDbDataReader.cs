@@ -145,7 +145,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			if (ordinal == _rownumber_ordinal)
 				return _readRowCount;
-			
+
 			// if we have switched columns, get the value
 			// do this only once per ordinal, because the object may be doing calculatey things
 			if (ordinal != _currentOrdinal)
