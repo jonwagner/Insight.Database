@@ -99,6 +99,35 @@ namespace Insight.Tests
 			Assert.Throws<SqlException>(() => Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new List<InsightTestData>() { new InsightTestData(), null, new InsightTestData() } }));
 		}
 
+		class RenamedInsightTestData : InsightTestData
+		{
+		}
+
+		/// <summary>
+		/// Allow the table type of a TVP to be detected in sql text.
+		/// </summary>
+		[Test]
+		public void SqlTextTVPShouldAutoDetectTableType()
+		{
+			for (int i = 1; i < 3; i++)
+			{
+				// build test data
+				RenamedInsightTestData[] array = new RenamedInsightTestData[i];
+				for (int j = 0; j < i; j++)
+					array[j] = new RenamedInsightTestData() { Int = j };
+
+				// run the query
+				var items = Connection().QuerySql<RenamedInsightTestData>("SELECT * FROM @InsightTestDataTable", new { InsightTestDataTable = array.ToList() });
+				Assert.IsNotNull(items);
+				Assert.AreEqual(i, items.Count);
+				for (int j = 0; j < i; j++)
+					Assert.AreEqual(j, items[j].Int);
+			}
+
+			// make sure that we cannot send up a null item in the list
+			Assert.Throws<SqlException>(() => Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = new List<InsightTestData>() { new InsightTestData(), null, new InsightTestData() } }));
+		}
+
 		/// <summary>
 		/// This method name COULD be longer.
 		/// We want: connection.Query("PROC", list, Parameters.Empty) to send list to a single TVP

@@ -31,7 +31,7 @@ namespace Insight.Database
 		/// <summary>
 		/// Cache for Table-Valued Parameter schemas.
 		/// </summary>
-		private static ConcurrentDictionary<Tuple<string, string, Type>, object> _tvpReaders = new ConcurrentDictionary<Tuple<string, string, Type>, object>();
+		private static ConcurrentDictionary<Tuple<string, string, string, Type>, object> _tvpReaders = new ConcurrentDictionary<Tuple<string, string, string, Type>, object>();
 
 		/// <summary>
 		/// The list of types supported by this provider.
@@ -202,11 +202,11 @@ namespace Insight.Database
 			}
 
 			// allow the provider to make sure the table parameter is set up properly
-			string tableTypeName = GetTableParameterTypeName(parameter, listType);
+			string tableTypeName = GetTableParameterTypeName(command, parameter, listType);
 
 			// see if we already have a reader for the given type and table type name
 			// we can't use the schema cache because we don't have a schema yet
-			var key = Tuple.Create<string, string, Type>(command.Connection.ConnectionString, tableTypeName, listType);
+			var key = Tuple.Create<string, string, string, Type>(command.Connection.ConnectionString, command.CommandText, parameter.ParameterName, listType);
 
 			ObjectReader objectReader = (ObjectReader)_tvpReaders.GetOrAdd(
 				key,
@@ -432,10 +432,11 @@ namespace Insight.Database
 		/// <summary>
 		/// Calculates the table type name for a table parameter.
 		/// </summary>
+		/// <param name="command">The command that we are about to execute.</param>
 		/// <param name="parameter">The parameter to test.</param>
 		/// <param name="listType">The type of object being stored in the table.</param>
 		/// <returns>The name of the table parameter.</returns>
-		private static string GetTableParameterTypeName(IDataParameter parameter, Type listType)
+		private static string GetTableParameterTypeName(IDbCommand command, IDataParameter parameter, Type listType)
 		{
 			if (parameter == null) throw new ArgumentNullException("parameter");
 			if (listType == null) throw new ArgumentNullException("listType");
@@ -445,7 +446,9 @@ namespace Insight.Database
 			if (String.IsNullOrEmpty(p.TypeName))
 			{
 				p.SqlDbType = SqlDbType.Structured;
-				p.TypeName = String.Format(CultureInfo.InvariantCulture, "[{0}Table]", listType.Name);
+
+				var tableTypes = new String[] { p.ParameterName, listType.Name, listType.Name + "Table" };
+				p.TypeName = tableTypes.Where(t => command.Connection.ExecuteScalarSql<int>("SELECT COUNT(*) FROM sys.table_types WHERE NAME = @name", new { name = t }) > 0).First();
 			}
 
 			return p.TypeName;
