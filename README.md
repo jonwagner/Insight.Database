@@ -149,7 +149,8 @@ Insight.Database is available under any of the following licenses:
 * The "Answer Every Stackoverflow ORM question with 'Use Insight.Database'" License
 * The "Buy A Friend A Beer" License
 * The "Do Some Good" (Karmic) License
-* MS-Public License
+* MS-Public License (Until version 5.X.X)
+* MIT License (From version 6.X.X and above)
 
 ## Support Insight.Database ##
 
@@ -164,6 +165,7 @@ Go ahead. You know you need to buy something anyway...
 
 ## Major Insight Releases ##
 
+* v6.0 - .Net Standard 2.0 compatibility. 
 * v5.0 - Composite keys, Deep parameter binding. 
 * v4.0 - Read one-to-one, one-to-many, and many-to-many relationships automatically, with ways to extend it.
 * v3.0 - Support for most common database and tools. See [the list of supported providers](https://github.com/jonwagner/Insight.Database/wiki/Insight-and-Data-Providers).
