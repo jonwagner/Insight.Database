@@ -20,7 +20,7 @@
     <PackageReference Include="NUnit.Console" Version="3.7.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" Condition="$(TargetFramework) != 'NET40'" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.3.0" Condition="$(HasValueTuples)" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" Condition="$(HasValueTuples)" />
   </ItemGroup>
   <ItemGroup Condition="$(HasSqlTypes) == 'true'">
     <PackageReference Include="Microsoft.SqlServer.Types" Version="$(SqlTypesVersion)" />
