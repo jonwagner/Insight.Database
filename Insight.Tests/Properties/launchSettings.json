@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "Insight.Tests": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "INSIGHT_TEST_PASSWORD": "Insight!!!Test",
+        "INSIGHT_TEST_HOST": "127.0.0.1"
+      }
+    }
+  }
+}

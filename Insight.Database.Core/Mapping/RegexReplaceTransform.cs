@@ -37,7 +37,7 @@ namespace Insight.Database
 		/// <param name="replacement">The replacement string to use with the regex.</param>
 		public RegexReplaceTransform(string regex, string replacement)
 		{
-			_regex = new Regex(regex, RegexOptions.IgnoreCase | RegexOptions.Singleline);
+			_regex = new Regex(regex, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Singleline);
 			_replacement = replacement;
 		}
 

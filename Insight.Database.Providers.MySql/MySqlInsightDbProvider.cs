@@ -19,7 +19,7 @@ namespace Insight.Database.Providers.MySql
 		/// <summary>
 		/// The prefix used on parameter names.
 		/// </summary>
-		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.Compiled);
+		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
 		/// <summary>
 		/// The list of types supported by this provider.

@@ -21,7 +21,7 @@ namespace Insight.Database.Providers.OracleManaged
 		/// <summary>
 		/// Regex used to auto-detect cursors in queries.
 		/// </summary>
-		private static Regex _cursorSql = new Regex(@"OPEN\s+[@:](?<cursor>\w+)\s+FOR", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
+		private static Regex _cursorSql = new Regex(@"OPEN\s+[@:](?<cursor>\w+)\s+FOR", RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.IgnorePatternWhitespace | RegexOptions.Multiline);
 
 		/// <summary>
 		/// The list of types supported by this provider.
