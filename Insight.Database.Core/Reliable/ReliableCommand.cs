@@ -115,13 +115,12 @@ namespace Insight.Database.Reliable
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
 			return ExecuteWithRetryAsync(
-				() =>
+				async () =>
 				{
 					FixupParameters();
 
-                    return InnerConnection.EnsureIsOpenAsync(cancellationToken)
-                                          .ContinueWith(_ => InnerCommand.ExecuteReaderAsync(behavior, cancellationToken), cancellationToken)
-                                          .Unwrap();
+                    await InnerConnection.EnsureIsOpenAsync(cancellationToken);
+					return await InnerCommand.ExecuteReaderAsync(behavior, cancellationToken);
 				});
 		}
 
@@ -129,22 +128,24 @@ namespace Insight.Database.Reliable
 		public override Task<int> ExecuteNonQueryAsync(CancellationToken cancellationToken)
 		{
 			return ExecuteWithRetryAsync(
-				() =>
+				async () =>
 				{
 					FixupParameters();
 
-                    return InnerConnection.EnsureIsOpenAsync(cancellationToken)
-				                          .ContinueWith(_ => InnerCommand.ExecuteNonQueryAsync(cancellationToken), cancellationToken)
-				                          .Unwrap();
+                    await InnerConnection.EnsureIsOpenAsync(cancellationToken);
+					return await InnerCommand.ExecuteNonQueryAsync(cancellationToken);
 				});
 		}
 
 		/// <inheritdoc/>
 		public override Task<object> ExecuteScalarAsync(CancellationToken cancellationToken)
 		{
-		    return ExecuteWithRetryAsync(() => InnerConnection.EnsureIsOpenAsync(cancellationToken)
-		                                                      .ContinueWith(_ => InnerCommand.ExecuteScalarAsync(cancellationToken), cancellationToken)
-		                                                      .Unwrap());
+		    return ExecuteWithRetryAsync(
+				async () =>
+				{
+					await InnerConnection.EnsureIsOpenAsync(cancellationToken);
+					return await InnerCommand.ExecuteScalarAsync(cancellationToken);
+				});
 		}
 #endif
 		#endregion

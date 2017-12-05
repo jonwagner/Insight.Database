@@ -51,11 +51,11 @@ namespace Insight.Database
 		/// <param name="connection">The connection to open and return.</param>
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>The opened connection.</returns>
-		public static Task<T> OpenConnectionAsync<T>(this T connection, CancellationToken cancellationToken = default(CancellationToken)) where T : IDbConnection
+		public static async Task<T> OpenConnectionAsync<T>(this T connection, CancellationToken cancellationToken = default(CancellationToken)) where T : IDbConnection
 		{
 #if NO_DBASYNC
 			connection.Open();
-			return Helpers.FromResult(connection);
+			return connection;
 #else
 			DbConnection dbConnection = connection as DbConnection;
 
@@ -63,12 +63,12 @@ namespace Insight.Database
 			if (dbConnection == null)
 			{
 				connection.Open();
-				return Helpers.FromResult(connection);
+				return connection;
 			}
 
 			// DbConnection supports OpenAsync, but it doesn't return self
-			return dbConnection.OpenAsync(cancellationToken)
-					.ContinueWith(t => connection, TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			await dbConnection.OpenAsync(cancellationToken);
+			return connection;
 #endif
 		}
 
@@ -94,28 +94,20 @@ namespace Insight.Database
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning the connection and interface when the connection is opened.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope")]
-		public static Task<T> OpenAsAsync<T>(this IDbConnection connection, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection
+		public static async Task<T> OpenAsAsync<T>(this IDbConnection connection, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection
 		{
-			return OpenConnectionAsync(connection, cancellationToken)
-					.ContinueWith(
-						t =>
-						{
-							// need to catch and close the connection if the As<T> cast fails.
-							var c = t.Result;
-							var disposable = connection;
-							try
-							{
-								var result = c.As<T>();
-								disposable = null;
-								return result;
-							}
-							finally
-							{
-								if (disposable != null)
-									disposable.Dispose();
-							}
-						},
-						TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			try
+			{
+				await OpenConnectionAsync(connection, cancellationToken);
+
+				return connection.As<T>();
+			}
+			catch
+			{
+				connection.Dispose();
+
+				throw;
+			}
 		}
 
 		/// <summary>
@@ -165,28 +157,20 @@ namespace Insight.Database
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
-		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this IDbConnection connection, CancellationToken cancellationToken = default(CancellationToken))
+		public static async Task<DbConnectionWrapper> OpenWithTransactionAsync(this IDbConnection connection, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			return DbConnectionWrapper.Wrap(connection)
-				.OpenConnectionAsync(cancellationToken)
-				.ContinueWith(
-					t =>
-					{
-						// since beginautotransaction can fail, we may need to clean up the connection
-						var disposable = t.Result;
-						try
-						{
-							var result = disposable.BeginAutoTransaction();
-							disposable = null;
-							return result;
-						}
-						finally
-						{
-							if (disposable != null)
-								disposable.Dispose();
-						}
-					},
-					TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			var wrapper = await DbConnectionWrapper.Wrap(connection).OpenConnectionAsync(cancellationToken);
+			try
+			{
+				wrapper.BeginAutoTransaction();
+				return wrapper;
+			}
+			catch
+			{
+				wrapper.Dispose();
+
+				throw;
+			}
 		}
 
 		/// <summary>
@@ -197,28 +181,19 @@ namespace Insight.Database
 		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
 		/// <returns>A task returning a connection when the connection has been opened.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
-		public static Task<T> OpenWithTransactionAsAsync<T>(this T connection, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
+		public static async Task<T> OpenWithTransactionAsAsync<T>(this T connection, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
 		{
-			// connection is already a T, so just pass it in
-			return OpenWithTransactionAsync((IDbConnection)connection, cancellationToken)
-					.ContinueWith(
-						t =>
-						{
-							// since c.As<T> can fail, we may need to clean up the connection
-							var disposable = t.Result;
-							try
-							{
-								var result = disposable.As<T>();
-								disposable = null;
-								return result;
-							}
-							finally
-							{
-								if (disposable != null)
-									disposable.Dispose();
-							}
-						},
-						TaskContinuationOptions.ExecuteSynchronously | TaskContinuationOptions.OnlyOnRanToCompletion);
+			var open = await OpenWithTransactionAsync((IDbConnection)connection, cancellationToken);
+
+			try
+			{
+				return open.As<T>();
+			}
+			catch
+			{
+				open.Dispose();
+				throw;
+			}
 		}
 
 		/// <summary>

@@ -51,22 +51,22 @@ namespace Insight.Database
 				parameters,
 				c => c.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
 				false,
-				(cmd, r) =>
+				async (cmd, r) =>
 				{
 #if NO_DBASYNC
 					// Only SqlCommand supports execute async
 					var sqlCommand = cmd as System.Data.SqlClient.SqlCommand;
 					if (sqlCommand != null)
-						return Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
+						return await Task<int>.Factory.FromAsync(sqlCommand.BeginExecuteNonQuery(), ar => sqlCommand.EndExecuteNonQuery(ar));
 					else
-						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), cancellationToken);
+						return cmd.ExecuteNonQuery();
 #else
 					// DbCommand now supports async execute
 					DbCommand dbCommand = cmd as DbCommand;
 					if (dbCommand != null)
-						return dbCommand.ExecuteNonQueryAsync(cancellationToken);
+						return await dbCommand.ExecuteNonQueryAsync(cancellationToken);
 					else
-						return Task<int>.Factory.StartNew(() => cmd.ExecuteNonQuery(), cancellationToken);
+						return cmd.ExecuteNonQuery();
 #endif
 				},
 				closeConnection,
@@ -130,18 +130,23 @@ namespace Insight.Database
 				parameters,
 				c => connection.CreateCommand(sql, parameters, commandType, commandTimeout, transaction),
 				false,
-				(cmd, r) =>
+				async (cmd, r) =>
 				{
 #if NO_DBASYNC
 					// not supported in .NET 4.0
-					return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), cancellationToken);
+					return ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar();
 #else
 					// DbCommand now supports async execute
 					DbCommand dbCommand = cmd as DbCommand;
 					if (dbCommand != null)
-						return dbCommand.ExecuteScalarAsync(cancellationToken).ContinueWith(t => ConvertScalar<T>(cmd, parameters, outputParameters, t.Result), TaskContinuationOptions.ExecuteSynchronously);
+					{
+						var scalar = await dbCommand.ExecuteScalarAsync(cancellationToken);
+						return ConvertScalar<T>(cmd, parameters, outputParameters, scalar);
+					}
 					else
-						return Task<T>.Factory.StartNew(() => ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar()), cancellationToken);
+					{
+						return ConvertScalar<T>(cmd, parameters, outputParameters, cmd.ExecuteScalar());
+					}
 #endif
 				},
 				closeConnection,
@@ -608,13 +613,15 @@ namespace Insight.Database
 		/// <param name="recordReader">The reader to use to read the record.</param>
 		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
 		/// <returns>A task that returns the list of objects.</returns>
-		public static Task<IList<T>> ToListAsync<T>(this Task<IDataReader> task, IRecordReader<T> recordReader, CancellationToken cancellationToken = default(CancellationToken))
+		public static async Task<IList<T>> ToListAsync<T>(this Task<IDataReader> task, IRecordReader<T> recordReader, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			if (task == null) throw new ArgumentNullException("task");
 
 			cancellationToken.ThrowIfCancellationRequested();
 
-			return task.ContinueWith(reader => reader.ToListAsync(recordReader), cancellationToken).Unwrap();
+			var reader = await task;
+
+			return await reader.ToListAsync(recordReader);
 		}
 		#endregion
 
@@ -1010,27 +1017,26 @@ namespace Insight.Database
 		/// <param name="commandBehavior">The behavior for the command.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
 		/// <returns>A task that returns a SqlDataReader upon completion.</returns>
-		public static Task<IDataReader> GetReaderAsync(this IDbCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken)
+		public static async Task<IDataReader> GetReaderAsync(this IDbCommand command, CommandBehavior commandBehavior, CancellationToken cancellationToken)
 		{
 #if NO_DBASYNC
 			// Only SqlCommand supports async
 			var sqlCommand = command as System.Data.SqlClient.SqlCommand;
 			if (sqlCommand != null)
-				return Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
+				return await Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
 
 			// allow reliable commands to handle the icky task logic
 			ReliableCommand reliableCommand = command as ReliableCommand;
 			if (reliableCommand != null)
-				return reliableCommand.GetReaderAsync(commandBehavior, cancellationToken);
+				return await reliableCommand.GetReaderAsync(commandBehavior, cancellationToken);
 #else
 			// DbCommand now supports async
 			DbCommand dbCommand = command as DbCommand;
 			if (dbCommand != null)
-				return dbCommand.ExecuteReaderAsync(commandBehavior, cancellationToken).ContinueWith(t => (IDataReader)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+				return (IDataReader)await dbCommand.ExecuteReaderAsync(commandBehavior, cancellationToken);
 #endif
 
-			// the command doesn't support async so stick it in a dumb task
-			return Task<IDataReader>.Factory.StartNew(() => command.ExecuteReader(commandBehavior), cancellationToken);
+			return command.ExecuteReader(commandBehavior);
 		}
 		#endregion
 
@@ -1100,21 +1106,21 @@ namespace Insight.Database
 			if (invalidOptions != 0)
 				throw new ArgumentException(String.Format(CultureInfo.InvariantCulture, "BulkCopyOption {0} is not supported for this provider", invalidOptions));
 
-			return connection.ExecuteAsyncAndAutoClose(
+			try
+			{
+				return connection.ExecuteAsyncAndAutoClose(
 					closeConnection,
-					(c, ct) =>
+					async (c, ct) =>
 					{
-						return provider.BulkCopyAsync(connection, tableName, source, configure, options, transaction, ct)
-							.ContinueWith(
-								t =>
-								{
-									source.Dispose();
-									t.Wait();
-									return source.RecordsAffected;
-								},
-								TaskContinuationOptions.ExecuteSynchronously);
+						await provider.BulkCopyAsync(connection, tableName, source, configure, options, transaction, ct);
+						return source.RecordsAffected;
 					},
 					cancellationToken);
+			}
+			finally
+			{
+				source.Dispose();
+			}
 		}
 		#endregion
 
@@ -1236,7 +1242,7 @@ namespace Insight.Database
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
 		/// <param name="outputParameters">An optional additional object to output parameters onto.</param>
 		/// <returns>A task that returns the result of the command after closing the connection.</returns>
-		private static Task<T> ExecuteAsyncAndAutoClose<T>(
+		private static async Task<T> ExecuteAsyncAndAutoClose<T>(
 			this IDbConnection connection,
 			object parameters,
 			Func<IDbConnection, IDbCommand> getCommand,
@@ -1246,101 +1252,60 @@ namespace Insight.Database
 			CancellationToken cancellationToken,
 			object outputParameters)
 		{
-			bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
-			IDbCommand command = null;
 			IDataReader reader = null;
 
-			return AutoOpenAsync(connection, cancellationToken)
-				.ContinueWith(
-					t =>
-					{
-						// this needs to run even if the open has been cancelled so we don't leak a connection
-						closeConnection |= t.Result;
+			bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
+			closeConnection |= await AutoOpenAsync(connection, cancellationToken);
 
-						// if the operation has been cancelled, throw after we know that the connection has been opened
-						// but before taking the action
-						cancellationToken.ThrowIfCancellationRequested();
+			try
+			{
+				// get the command
+				IDbCommand command = getCommand(connection);
 
-						// get the command
-						command = getCommand(connection);
+				// if we have a command, execute it
+				if (command != null && callGetReader)
+					reader = await command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, cancellationToken);
 
-						// if we have a command, execute it
-						if (command != null && callGetReader)
-							return command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, cancellationToken);
+				T result = await translate(command, reader);
 
-						return Helpers.FromResult<IDataReader>(null);
-					},
-					TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						reader = t.Result;
-						return translate(command, reader);
-					},
-					TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						if (!t.IsFaulted && !t.IsCanceled && command != null)
-						{
-                            // make sure we go to the end so we can get the outputs
-                            if (reader != null && !reader.IsClosed)
-                                while (reader.NextResult()) { }
+				if (command != null)
+				{
+					// make sure we go to the end so we can get the outputs
+					if (reader != null && !reader.IsClosed)
+						while (reader.NextResult()) { }
 
-							command.OutputParameters(parameters, outputParameters);
-						}
+					command.OutputParameters(parameters, outputParameters);
+				}
 
-						return t.Result;
-					},
-					TaskContinuationOptions.ExecuteSynchronously)
-				.ContinueWith(
-					t =>
-					{
-						if (reader != null)
-							reader.Dispose();
-
-						// close before accessing the result so we can guarantee that the connection doesn't leak
-						if (closeConnection)
-							connection.Close();
-
-						return t.Result;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+				return result;
+			}
+			finally
+			{
+				if (reader != null)
+					reader.Dispose();
+				if (closeConnection)
+					connection.Close();
+			}
 		}
 
-		private static Task<T> ExecuteAsyncAndAutoClose<T>(
+		private static async Task<T> ExecuteAsyncAndAutoClose<T>(
 			this IDbConnection connection,
 			bool closeConnection,
 			Func<IDbConnection, CancellationToken, Task<T>> action,
 			CancellationToken cancellationToken)
 		{
-			return AutoOpenAsync(connection, cancellationToken)
-				.ContinueWith(
-					t =>
-					{
-						// this needs to run even if the open has been cancelled so we don't leak a connection
-						closeConnection |= t.Result;
+			try
+			{
+				closeConnection |= await AutoOpenAsync(connection, cancellationToken);
 
-						// if the operation has been cancelled, throw after we know that the connection has been opened
-						// but before taking the action
-						cancellationToken.ThrowIfCancellationRequested();
-
-						return action(connection, cancellationToken);
-					},
-					TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// close before accessing the result so we can guarantee that the connection doesn't leak
-						if (closeConnection)
-							connection.Close();
-
-						return t.Result;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+				return await action(connection, cancellationToken);
+			}
+			finally
+			{
+				// close before accessing the result so we can guarantee that the connection doesn't leak
+				if (closeConnection)
+					connection.Close();
+			}
 		}
 
 		/// <summary>
@@ -1352,41 +1317,26 @@ namespace Insight.Database
 		/// A task representing the completion of the open operation
 		/// and a flag indicating whether the connection should be closed at the end of the operation.
 		/// </returns>
-		private static Task<bool> AutoOpenAsync(IDbConnection connection, CancellationToken cancellationToken)
+		private static async Task<bool> AutoOpenAsync(IDbConnection connection, CancellationToken cancellationToken)
 		{
 			// if the connection is already open, then it doesn't need to be opened or closed.
 			if (connection.State == ConnectionState.Open)
-				return Helpers.FalseTask;
+				return false;
 
 #if !NO_DBASYNC
 			// open the connection and plan to close it
 			DbConnection dbConnection = connection as DbConnection;
 			if (dbConnection != null)
 			{
-				return dbConnection.OpenAsync(cancellationToken).ContinueWith(
-					t =>
-					{
-						// call wait on the task to re-throw any connection errors
-						// otherwise we just get a task cancelled error
-						t.Wait();
+				await dbConnection.OpenAsync(cancellationToken);
 
-						return dbConnection.State == ConnectionState.Open;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+				return dbConnection.State == ConnectionState.Open;
 			}
 #endif
 
 			// we don't have an asynchronous open method, so do it synchronously in a task
-			return Task<bool>.Factory.StartNew(
-				() =>
-				{
-					// synchronous open is not cancellable on its own
-					connection.Open();
-
-					// since we opened the connection, we should close it
-					return true;
-				},
-				cancellationToken);
+			await Task.Run(() => connection.Open());
+			return true;
 		}
 
 		/// <summary>

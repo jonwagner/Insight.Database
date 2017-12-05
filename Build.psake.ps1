@@ -40,6 +40,14 @@ Task Build -depends Restore {
 	exec { dotnet build -c $configuration Insight.sln }
 }
 
+Task BuildCore {
+	exec { dotnet build -c $configuration Insight.Database\Insight.Database.csproj -f netstandard2.0 }
+}
+
+Task TestCore {
+	Get-ChildItem Insight.Tests\Insight.Tests.csproj | %{ exec { dotnet test $_ -c $configuration -f netcoreapp2.0 } }
+}
+
 Task Test -depends Build, TestOnly {
 }
 

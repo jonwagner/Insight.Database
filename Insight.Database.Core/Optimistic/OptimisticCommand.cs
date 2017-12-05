@@ -106,16 +106,26 @@ namespace Insight.Database
 		/// <typeparam name="T">The type of the result of the action.</typeparam>
 		/// <param name="action">The action to perform.</param>
 		/// <returns>A task representing the result of the action.</returns>
-		private Task<T> ExecuteAndTranslateExceptionsAsync<T>(Func<Task<T>> action)
+		private async Task<T> ExecuteAndTranslateExceptionsAsync<T>(Func<Task<T>> action)
 		{
-			return action().ContinueWith(
-				t =>
-				{
-					if (t.IsFaulted && t.Exception.Flatten().InnerExceptions.Any(x => IsConcurrencyException(x)))
-						throw new OptimisticConcurrencyException(t.Exception);
+			try
+			{
+				return await action();
+			}
+			catch (AggregateException e)
+			{
+				if (e.Flatten().InnerExceptions.Any(x => IsConcurrencyException(x)))
+					throw new OptimisticConcurrencyException(e);
 
-					return t.Result;
-				});
+				throw;
+			}
+			catch (Exception e)
+			{
+				if (IsConcurrencyException(e))
+					throw new OptimisticConcurrencyException(e);
+
+				throw;
+			}
 		}
 #endif
 	}
