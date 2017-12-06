@@ -1,8 +1,0 @@
-*** /home/vagrant/fstab	2015-03-06 02:33:20.664474636 +0000
---- ./fstab	2015-03-06 02:34:08.444570746 +0000
-***************
-*** 1 ****
---- 1,3 ----
-  LABEL=cloudimg-rootfs	/	 ext4	defaults	0 0
-+ /swapfile	none	swap	sw	0	0
-+ shmfs /dev/shm tmpfs size=2048m 0 0
