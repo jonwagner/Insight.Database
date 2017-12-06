@@ -58,7 +58,7 @@ Task TestQuick {
 Task PackageOnly {
     Wipe-Folder $outputDir
     Get-ChildItem $baseDir\Insight.Database*\**\**\*.nupkg | Remove-Item
-    Get-ChildItem $baseDir\Insight.Database*\*.csproj | % { exec { dotnet pack $_ -c $configuration } }
+    Get-ChildItem $baseDir\Insight.Database*\*.csproj | % { exec { dotnet pack $_ -c $configuration --no-build } }
     Get-ChildItem $baseDir\Insight.Database*\**\**\*.nupkg | Copy-Item -Destination $outputDir
 }
 
