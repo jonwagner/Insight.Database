@@ -85,11 +85,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -117,21 +116,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1>> ReadAsync(IDbCommand command, Results<T1> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1>> ReadAsync(IDbCommand command, Results<T1> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
 			results.SaveCommandForOutputs(command);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set1 = subObjects;
 
-			return _listReader.ReadAsync(command, reader, cancellationToken)
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set1 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			return results;
 		}
 
 		/// <summary>
@@ -226,11 +220,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -258,21 +251,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2>> ReadAsync(IDbCommand command, Results<T1, T2> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2>> ReadAsync(IDbCommand command, Results<T1, T2> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set2 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set2 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -367,11 +355,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -399,21 +386,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3>> ReadAsync(IDbCommand command, Results<T1, T2, T3> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3>> ReadAsync(IDbCommand command, Results<T1, T2, T3> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set3 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set3 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -508,11 +490,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -540,21 +521,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set4 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set4 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -649,11 +625,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -681,21 +656,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set5 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set5 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -790,11 +760,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -822,21 +791,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set6 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set6 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -931,11 +895,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -963,21 +926,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set7 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set7 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -1072,11 +1030,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -1104,21 +1061,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set8 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set8 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -1213,11 +1165,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -1245,21 +1196,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set9 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set9 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -1354,11 +1300,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -1386,21 +1331,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set10 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set10 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -1495,11 +1435,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -1527,21 +1466,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set11 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set11 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -1636,11 +1570,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -1668,21 +1601,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set12 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set12 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -1777,11 +1705,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -1809,21 +1736,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set13 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set13 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -1918,11 +1840,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -1950,21 +1871,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set14 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set14 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -2059,11 +1975,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -2091,21 +2006,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set15 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set15 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>
@@ -2200,11 +2110,10 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -2232,21 +2141,16 @@ namespace Insight.Database.Structure
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16>> ReadAsync(IDbCommand command, Results<T1, T2, T3, T4, T5, T6, T7, T8, T9, T10, T11, T12, T13, T14, T15, T16> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set16 = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set16 = subObjects;
+
+			return results;
 		}
 
 		/// <summary>

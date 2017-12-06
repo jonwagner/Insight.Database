@@ -119,11 +119,10 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<<#= typeList #>>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<<#= typeList #>>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<<#= typeList #>>();
-			return ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => (Results<<#= typeList #>>)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (Results<<#= typeList #>>)await ReadAsync(command, results, reader, cancellationToken);
 		}
 
 		/// <summary>
@@ -155,35 +154,20 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		/// <param name="reader">The reader to read from.</param>
 		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
 		/// <returns>The results.</returns>
-		public Task<Results<<#= typeList #>>> ReadAsync(IDbCommand command, Results<<#= typeList #>> results, IDataReader reader, CancellationToken cancellationToken)
+		public async Task<Results<<#= typeList #>>> ReadAsync(IDbCommand command, Results<<#= typeList #>> results, IDataReader reader, CancellationToken cancellationToken)
 		{
 			if (results == null) throw new ArgumentNullException("results");
 
 <# if (typeCount > 1) { #>
-			return _previous.ReadAsync(command, results, reader, cancellationToken)
-				.ContinueWith(t => { t.Wait(); return _listReader.ReadAsync(command, reader, cancellationToken); }, TaskContinuationOptions.ExecuteSynchronously)
-				.Unwrap()
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set<#= typeCount #> = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
+			await _previous.ReadAsync(command, results, reader, cancellationToken);
 <# } else { #>
 			results.SaveCommandForOutputs(command);
-
-			return _listReader.ReadAsync(command, reader, cancellationToken)
-				.ContinueWith(
-					t =>
-					{
-						// read the objects from the reader
-						results.Set<#= typeCount #> = t.Result;
-						return results;
-					},
-					TaskContinuationOptions.ExecuteSynchronously);
 <# } #>
+			// read the subobjects
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			results.Set<#= typeCount #> = subObjects;
+
+			return results;
 		}
 
 		/// <summary>

@@ -39,14 +39,14 @@ namespace Insight.Database.Providers.PostgreSQL
 
             Schema = schema;
 
-			_switchSchemaSql = String.Format(CultureInfo.InvariantCulture, "SET SCHEMA '{0}'", Schema);
+            _switchSchemaSql = String.Format(CultureInfo.InvariantCulture, "SET SCHEMA '{0}'", Schema);
         }
 
         /// <summary>
         /// Gets the schema for this connection.
         /// </summary>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Naming", "CA1721:PropertyNamesShouldNotMatchGetMethods")]
-		public string Schema { get; private set; }
+        public string Schema { get; private set; }
 
         /// <inheritdoc/>
         public override void Open()
@@ -57,11 +57,10 @@ namespace Insight.Database.Providers.PostgreSQL
 
 #if !NO_DBASYNC
         /// <inheritdoc/>
-        public override Task OpenAsync(System.Threading.CancellationToken cancellationToken)
+        public async override Task OpenAsync(System.Threading.CancellationToken cancellationToken)
         {
-            return base.OpenAsync(cancellationToken)
-                .ContinueWith(t => InnerConnection.ExecuteSqlAsync(_switchSchemaSql), cancellationToken, TaskContinuationOptions.OnlyOnRanToCompletion, null)
-                .Unwrap();
+            await base.OpenAsync(cancellationToken);
+            await InnerConnection.ExecuteSqlAsync(_switchSchemaSql, cancellationToken);
         }
 #endif
     }

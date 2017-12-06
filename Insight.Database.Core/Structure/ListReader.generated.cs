@@ -56,9 +56,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -121,9 +121,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -188,9 +188,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -257,9 +257,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -328,9 +328,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -401,9 +401,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -476,9 +476,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -553,9 +553,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -632,9 +632,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -713,9 +713,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -796,9 +796,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -881,9 +881,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -968,9 +968,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -1057,9 +1057,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
@@ -1148,9 +1148,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
-		Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
+		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return base.ReadAsync(command, reader, ct).ContinueWith(t => (TList)t.Result, TaskContinuationOptions.ExecuteSynchronously);
+			return (TList) await base.ReadAsync(command, reader, ct);
 		}
 
 		/// <inheritdoc/>
