@@ -15,10 +15,8 @@
     <HasClassicReflection>true</HasClassicReflection>
     <HasColumnSchema>false</HasColumnSchema>
     <HasCommandBuilder>true</HasCommandBuilder>
-    <HasDbAsync>true</HasDbAsync>
     <HasDbParameter>true</HasDbParameter>
     <HasDbProvider>true</HasDbProvider>
-    <HasDynamic>true</HasDynamic>
     <HasFullSystemDataImplementation>true</HasFullSystemDataImplementation>
     <HasLinq>true</HasLinq>
     <HasOleDb>true</HasOleDb>
@@ -26,33 +24,13 @@
     <HasSchemaTable>true</HasSchemaTable>
     <HasSqlDeriveParameters>true</HasSqlDeriveParameters>
     <HasSqlTypes>true</HasSqlTypes>
-    <HasTypeInfo>true</HasTypeInfo>
     <HasUdt>true</HasUdt>
-    <HasValueTuples>true</HasValueTuples>
   </PropertyGroup>
   <PropertyGroup>
 	<SqlClientVersion></SqlClientVersion>
     <SqlTypesVersion>14.0.314.76</SqlTypesVersion>
     <SystemDiagnosticsToolsVersion></SystemDiagnosticsToolsVersion>
     <TestSDKVersion></TestSDKVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(TargetFramework) == 'net35'">
-    <FrameworkPathOverride>C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v3.5\Profile\Client</FrameworkPathOverride>
-    <HasDbAsync>false</HasDbAsync>
-    <HasDynamic>false</HasDynamic>
-    <HasDbParameter>false</HasDbParameter>
-    <HasTypeInfo>false</HasTypeInfo>
-    <HasValueTuples>false</HasValueTuples>
-    <SqlTypesVersion>10.50.1600.1</SqlTypesVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(TargetFramework) == 'net40'">
-    <HasDbAsync>false</HasDbAsync>
-    <HasDbParameter>false</HasDbParameter>
-    <HasTypeInfo>false</HasTypeInfo>
-    <SqlTypesVersion>13.0.4001</SqlTypesVersion>
-    <HasValueTuples>false</HasValueTuples>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(TargetFramework) == 'net45'">
@@ -114,19 +92,15 @@
     <DefineConstants Condition="$(HasColumnSchema) != 'true'">$(DefineConstants);NO_COLUMN_SCHEMA</DefineConstants>
     <DefineConstants Condition="$(HasCommandBuilder) != 'true'">$(DefineConstants);NO_COMMAND_BUILDER</DefineConstants>
     <DefineConstants Condition="$(HasClassicReflection) != 'true'">$(DefineConstants);NO_CLASSIC_REFLECTION</DefineConstants>
-    <DefineConstants Condition="$(HasDbAsync) != 'true'">$(DefineConstants);NO_DBASYNC</DefineConstants>
     <DefineConstants Condition="$(HasDbParameter) != 'true'">$(DefineConstants);NO_DBPARAMETER</DefineConstants>
     <DefineConstants Condition="$(HasDbProvider) != 'true'">$(DefineConstants);NO_DB_PROVIDER</DefineConstants>
-    <DefineConstants Condition="$(HasDynamic) != 'true'">$(DefineConstants);NO_DYNAMIC</DefineConstants>
     <DefineConstants Condition="$(HasFullSystemDataImplementation) != 'true'">$(DefineConstants);NO_FULL_SYSTEM_DATA_IMPLEMENTATION</DefineConstants>
     <DefineConstants Condition="$(HasLinq) != 'true'">$(DefineConstants);NO_LINQ_BINARY</DefineConstants>
     <DefineConstants Condition="$(HasObdc) != 'true'">$(DefineConstants);NO_ODBC</DefineConstants>
     <DefineConstants Condition="$(HasOleDb) != 'true'">$(DefineConstants);NO_OLEDB</DefineConstants>
     <DefineConstants Condition="$(HasSchemaTable) != 'true'">$(DefineConstants);NO_SCHEMA_TABLE</DefineConstants>
     <DefineConstants Condition="$(HasSqlTypes) != 'true'">$(DefineConstants);NO_SQL_TYPES</DefineConstants>
-    <DefineConstants Condition="$(HasTypeInfo) != 'true'">$(DefineConstants);NO_TYPE_INFO</DefineConstants>
     <DefineConstants Condition="$(HasUdt) != 'true'">$(DefineConstants);NO_UDT</DefineConstants>
-    <DefineConstants Condition="$(HasValueTuples) != 'true'">$(DefineConstants);NO_VALUE_TUPLES</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(ProjectType) == 'LibraryPackage' and $(Configuration) == 'Release'">

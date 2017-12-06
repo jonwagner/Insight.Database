@@ -1,5 +1,4 @@
-﻿#if !NO_DYNAMIC
-using Insight.Database;
+﻿using Insight.Database;
 using Insight.Database.Reliable;
 using NUnit.Framework;
 using System;
@@ -264,4 +263,3 @@ namespace Insight.Tests
 		#endregion
 	}
 }
-#endif

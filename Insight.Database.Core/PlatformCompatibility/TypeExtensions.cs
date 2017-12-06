@@ -7,18 +7,13 @@ using System.Reflection;
 
 namespace Insight.Database
 {
-	/// <summary>
-	/// Provides stub methods for reflection in some framework versions.
-	/// </summary>
-	[SuppressMessage("Microsoft.StyleCop.CSharp.LayoutRules", "SA1516:ElementsMustBeSeparatedByBlankLine", Justification = "This class is an implementation wrapper.")]
-	[SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
-	static class TypeExtensions
-	{
-#if NO_TYPE_INFO
-		public static Delegate CreateDelegate(this MethodInfo methodInfo, Type delegateType) { return Delegate.CreateDelegate(delegateType, methodInfo); }
-		public static Type GetTypeInfo(this Type type) { return type; }
-#endif
-
+    /// <summary>
+    /// Provides stub methods for reflection in some framework versions.
+    /// </summary>
+    [SuppressMessage("Microsoft.StyleCop.CSharp.LayoutRules", "SA1516:ElementsMustBeSeparatedByBlankLine", Justification = "This class is an implementation wrapper.")]
+    [SuppressMessage("Microsoft.StyleCop.CSharp.DocumentationRules", "SA1600:ElementsMustBeDocumented", Justification = "This class is an implementation wrapper.")]
+    static class TypeExtensions
+    {
 #if NETSTANDARD1_5
 		public static byte[] GetBuffer(this MemoryStream stream) { return stream.ToArray(); }
 
@@ -100,5 +95,5 @@ namespace Insight.Database
 			return converter.CanConvertTo(toType);
 		}
 #endif
-	}
+    }
 }

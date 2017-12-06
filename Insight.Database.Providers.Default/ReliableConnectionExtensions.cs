@@ -41,7 +41,6 @@ namespace Insight.Database.Reliable
 			return builder.ReliableConnection().OpenConnection();
 		}
 
-#if !NO_DYNAMIC
 		/// <summary>
 		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
 		/// </summary>
@@ -63,7 +62,6 @@ namespace Insight.Database.Reliable
 		{
 			return builder.ReliableConnection().Dynamic<T>();
 		}
-#endif
 		#endregion
 	}
 }

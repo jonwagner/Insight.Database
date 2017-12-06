@@ -19,7 +19,6 @@ namespace Insight.Tests
             OdbcInsightDbProvider.RegisterProvider();
         }
 
-#if !NO_DYNAMIC
         [Test]
         public void NamedParametersAreConvertedToPositionalParameters()
         {
@@ -29,7 +28,6 @@ namespace Insight.Tests
             Assert.AreEqual(9, i.q);
             Assert.AreEqual(5, i.r);
         }
-#endif
     }
 }
 #endif

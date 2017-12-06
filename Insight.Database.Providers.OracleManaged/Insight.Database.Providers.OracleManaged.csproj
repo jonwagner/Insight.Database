@@ -9,7 +9,7 @@
 
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>net451;net45;net40</TargetFrameworks>
+    <TargetFrameworks>net451;net45</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />

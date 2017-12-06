@@ -16,7 +16,7 @@ namespace Insight.Database
 	/// </summary>
 	public static class ConnectionStringSettingsExtensions
 	{
-		#region Connection and Open Members
+#region Connection and Open Members
 		/// <summary>
 		/// Creates and returns a new DbConnection for the connection string.
 		/// </summary>
@@ -171,10 +171,9 @@ namespace Insight.Database
 		{
 			return settings.Connection().OpenWithTransactionAsAsync<T>(cancellationToken);
 		}
-		#endregion
+#endregion
 
-#if !NO_DYNAMIC
-		#region Dynamic Invocation Helper
+#region Dynamic Invocation Helper
 		/// <summary>
 		/// Converts the connection to a connection that can be invoked dynamically to return lists of FastExpando.
 		/// </summary>
@@ -195,8 +194,7 @@ namespace Insight.Database
 		{
 			return settings.Connection().Dynamic<T>();
 		}
-		#endregion
-#endif
+#endregion
 	}
 }
 #endif

@@ -13,44 +13,11 @@ namespace Insight.Database
     [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2213:DisposableFieldsShouldBeDisposed", Justification = "The reader is owned by other code.")]
     public static class Helpers
 	{
-#if NO_DBASYNC
-		/// <summary>
-		/// Represents a completed false task.
-		/// </summary>
-		internal static readonly Task<bool> FalseTask = Task<bool>.Factory.StartNew(() => false);
-#else
         /// <summary>
         /// Represents a completed false task.
         /// </summary>
         internal static readonly Task<bool> FalseTask = Task.FromResult(false);
-#endif
 
-#if NET35
-        /// <summary>
-        /// Determines whether an enum contains a flag.
-        /// </summary>
-		/// <param name="e">The enum to test.</param>
-		/// <param name="flag">The flag to check.</param>
-		/// <returns>True if the bit is set in the flag.</returns>
-		public static bool HasFlag(this Enum e, Enum flag)
-		{
-			ulong f = Convert.ToUInt64(flag);
-			return ((Convert.ToUInt64(e) & f) == f);
-		}
-#endif
-
-#if NO_DBASYNC
-        /// <summary>
-        /// Returns a completed task from the given result.
-        /// </summary>
-        /// <typeparam name="T">The type of the result.</typeparam>
-        /// <param name="result">The result.</param>
-        /// <returns>A completed task.</returns>
-        internal static Task<T> FromResult<T>(T result)
-		{
-			return Task.Factory.StartNew(() => result);
-		}
-#else
 		/// <summary>
 		/// Returns a completed task from the given result.
 		/// </summary>
@@ -61,7 +28,6 @@ namespace Insight.Database
 		{
 			return Task.FromResult(result);
 		}
-#endif
 
         /// <summary>
         /// Determines whether two strings are case-insensitive equal.

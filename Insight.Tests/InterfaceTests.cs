@@ -286,10 +286,8 @@ namespace Insight.Tests
 		[Test]
 		public void TestInterfaceMultithreaded()
 		{
-#if !NET35
 			// this only works in 4.0 and later
 			Parallel.For(0, 100, _ => TryInterfaceCall(100));
-#endif
 		}
 
 		public void TryInterfaceCall(int count)
@@ -873,7 +871,6 @@ namespace Insight.Tests
 	#endregion
 
 	#region Multi-Threaded Interface Tests
-#if !NO_DBASYNC
 	interface IMultiThreaded
 	{
 		[Sql("SELECT ParentX=@p")]
@@ -908,7 +905,6 @@ namespace Insight.Tests
 			Task.WaitAll(tasks.ToArray());
 		}
 	}
-#endif
 	#endregion
 
 	#region Abstract Class Implementation Tests

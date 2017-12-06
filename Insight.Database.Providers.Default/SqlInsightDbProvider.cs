@@ -287,7 +287,6 @@ namespace Insight.Database
 			}
 		}
 
-#if !NO_DBASYNC
 		/// <summary>
 		/// Asynchronously bulk copies a set of objects to the server.
 		/// </summary>
@@ -311,13 +310,12 @@ namespace Insight.Database
 #endif
 			}
 		}
-#endif
 
-				/// <summary>
-				/// Determines if a database exception is a transient exception and if the operation could be retried.
-				/// </summary>
-				/// <param name="exception">The exception to test.</param>
-				/// <returns>True if the exception is transient.</returns>
+		/// <summary>
+		/// Determines if a database exception is a transient exception and if the operation could be retried.
+		/// </summary>
+		/// <param name="exception">The exception to test.</param>
+		/// <returns>True if the exception is transient.</returns>
 		public override bool IsTransientException(Exception exception)
 		{
 			// we are only going to try to handle sql server exceptions
@@ -500,9 +498,7 @@ namespace Insight.Database
 			{
 				bulk = new SqlBulkCopy((SqlConnection)connection, sqlOptions, (SqlTransaction)transaction);
 				bulk.DestinationTableName = tableName;
-#if !NO_DBASYNC
 				bulk.EnableStreaming = true;
-#endif
 
 				// map the columns by name, in case we skipped a readonly column
 				for (int i = 0; i < reader.FieldCount; i++)

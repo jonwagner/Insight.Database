@@ -59,13 +59,9 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         public async Task<T> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
         {
-#if NET35
-			return Read(command, reader);
-#else
             IList<T> results = await reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: true);
             await ReadChildrenAsync(reader, results, cancellationToken);
             return results.FirstOrDefault();
-#endif
         }
 
         /// <summary>

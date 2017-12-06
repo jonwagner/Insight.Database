@@ -47,7 +47,6 @@ namespace Insight.Database
 		}
 		#endregion
 
-#if !NO_DBASYNC
 		/// <inheritdoc/>
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, System.Threading.CancellationToken cancellationToken)
 		{
@@ -65,7 +64,6 @@ namespace Insight.Database
 		{
 			return ExecuteAndTranslateExceptionsAsync(() => InnerCommand.ExecuteScalarAsync(cancellationToken));
 		}
-#endif
 
 		/// <summary>
 		/// Returns true if the exception is an optimistic concurrency exception.
@@ -99,7 +97,6 @@ namespace Insight.Database
 			}
 		}
 
-#if !NO_DBASYNC
 		/// <summary>
 		/// Asynchronously performs an action and translate exceptions.
 		/// </summary>
@@ -127,6 +124,5 @@ namespace Insight.Database
 				throw;
 			}
 		}
-#endif
 	}
 }

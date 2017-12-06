@@ -67,20 +67,6 @@ namespace Insight.Database.Structure
 				child.Read(results, reader);
 		}
 
-#if NO_DBASYNC
-		/// <summary>
-		/// Reads all of the children from the stream asynchronously.
-		/// </summary>
-		/// <param name="reader">The data reader to read from.</param>
-		/// <param name="results">The results of the current read operation.</param>
-		/// <param name="cancellationToken">A token that can be used to cancel the operation.</param>
-		/// <returns>A task representing the completion of the read.</returns>
-		protected Task ReadChildrenAsync(IDataReader reader, IEnumerable<T> results, CancellationToken cancellationToken)
-		{
-			ReadChildren(reader, results);
-			return Helpers.FalseTask;
-		}
-#else
 		/// <summary>
 		/// Reads all of the children from the stream asynchronously.
 		/// </summary>
@@ -94,7 +80,6 @@ namespace Insight.Database.Structure
 			foreach (var child in _children)
 				await child.ReadAsync(results, reader, cancellationToken);
 		}
-#endif
 		#endregion
 	}
 }

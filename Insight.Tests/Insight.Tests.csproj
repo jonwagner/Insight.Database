@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp2.0;netcoreapp1.0;net451;net45;net40</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0;netcoreapp1.0;net451;net45</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
@@ -9,7 +9,7 @@
     <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <Reference Include="Microsoft.CSharp" Condition="$(HasDynamic) == 'true'" />
+    <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings) == 'true'" />
     <Reference Include="System.Data.Linq" Condition="$(HasLinq) == 'true'" />
     <Reference Include="System.Transactions" Condition="$(HasAmbientTransactions) == 'true'" />
@@ -18,9 +18,8 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />
     <PackageReference Include="NUnit" Version="3.7.1" />
     <PackageReference Include="NUnit.Console" Version="3.7.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" Condition="$(TargetFramework) != 'NET40'" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" Condition="$(HasValueTuples)" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
   <ItemGroup Condition="$(HasSqlTypes) == 'true'">
     <PackageReference Include="Microsoft.SqlServer.Types" Version="$(SqlTypesVersion)" />

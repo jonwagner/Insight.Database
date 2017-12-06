@@ -79,38 +79,6 @@ namespace Insight.Database.Reliable
 		#endregion
 
 		#region Async Methods
-#if NO_DBASYNC
-		/// <summary>
-		/// Executes the command asynchronously with retry.
-		/// </summary>
-		/// <param name="commandBehavior">The commandBehavior to execute with.</param>
-		/// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
-		/// <returns>A task that provides an IDataReader of the results when complete.</returns>
-		internal Task<IDataReader> GetReaderAsync(CommandBehavior commandBehavior, CancellationToken cancellationToken)
-		{
-			// fallback to calling execute reader in a blocking task
-			return ExecuteWithRetryAsync(() =>
-			{
-				FixupParameters();
-                InnerConnection.EnsureIsOpen();
-
-				// start the sql command executing
-				var sqlCommand = InnerCommand as System.Data.SqlClient.SqlCommand;
-				if (sqlCommand != null)
-					return Task<IDataReader>.Factory.FromAsync(sqlCommand.BeginExecuteReader(commandBehavior), ar => sqlCommand.EndExecuteReader(ar));
-
-				return Task<IDataReader>.Factory.StartNew(
-				() =>
-				{
-					cancellationToken.ThrowIfCancellationRequested();
-
-					return InnerCommand.ExecuteReader(commandBehavior);
-				});
-			});
-		}
-#endif
-
-#if !NO_DBASYNC
         /// <inheritdoc/>
 		protected override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
@@ -147,7 +115,6 @@ namespace Insight.Database.Reliable
 					return await InnerCommand.ExecuteScalarAsync(cancellationToken);
 				});
 		}
-#endif
 		#endregion
 
 		#region Support Methods

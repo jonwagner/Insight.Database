@@ -143,7 +143,6 @@ namespace Insight.Tests
 			Assert.IsTrue(Connection().Single<string>("MappingAsJson3", input).StartsWith("<MappingTests."));
 		}
 
-#if !NET35
 		[Test]
 		public void SerializationHandlerDoesNotSwitchObjectToXmlWhenNameDoesNotMatch()
 		{
@@ -155,7 +154,6 @@ namespace Insight.Tests
 			var s = Connection().Single<string>("MappingAsJson4", input);
 			Assert.IsFalse(Connection().Single<string>("MappingAsJson4", input).StartsWith("<MappingTests."));
 		}
-#endif
 		#endregion
 
 		#region Multiple Level Mapping Tests

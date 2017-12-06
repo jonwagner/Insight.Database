@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net40;net45;net451</TargetFrameworks>
-    <!--<TargetFrameworks>net40;net45;net451;netcoreapp1.0;netcoreapp2.0</TargetFrameworks>-->
+    <TargetFrameworks>net45;net451</TargetFrameworks>
+    <!--<TargetFrameworks>net45;net451;netcoreapp1.0;netcoreapp2.0</TargetFrameworks>-->
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
@@ -13,7 +13,6 @@
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />
     <PackageReference Include="NUnit" Version="3.7.1" />
     <PackageReference Include="NUnit.Console" Version="3.7.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0-alpha1" Condition="$(TargetFramework) != 'NET40'" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
   </ItemGroup>
   <ItemGroup>

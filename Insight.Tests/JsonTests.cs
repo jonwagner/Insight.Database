@@ -6,7 +6,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 
-#if !NET35
 namespace Insight.Tests
 {
 	[TestFixture]
@@ -136,4 +135,3 @@ namespace Insight.Tests
 		#endregion
 	}
 }
-#endif

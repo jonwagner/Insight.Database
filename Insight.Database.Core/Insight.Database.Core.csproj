@@ -8,13 +8,13 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>netstandard2.0;netstandard1.5;net451;net45;net40;net35</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard1.5;net451;net45</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="System.ValueTuple" Version="4.4.0" Condition="$(HasValueTuples)" />
+    <PackageReference Include="System.ValueTuple" Version="4.4.0" />
   </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'netstandard1.5' or $(TargetFramework) == 'netcoreapp1.0'">

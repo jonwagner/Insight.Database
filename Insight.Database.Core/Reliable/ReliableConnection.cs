@@ -78,7 +78,6 @@ namespace Insight.Database.Reliable
             }
         }
 
-#if !NO_DBASYNC
         /// <summary>
         /// Asynchronously opens a ReliableConnection.
         /// </summary>
@@ -88,7 +87,6 @@ namespace Insight.Database.Reliable
         {
             return RetryStrategy.ExecuteWithRetryAsync(null, async () => { await InnerConnection.OpenAsync(); return true; });
         }
-#endif
         #endregion
     }
 

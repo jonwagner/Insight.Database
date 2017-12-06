@@ -135,7 +135,6 @@ namespace Insight.Tests
 			public int B;
 		}
 
-#if !NET35
 		[Test]
 		public void MultiReaderCanDeserializeDifferentClasses()
 		{
@@ -160,7 +159,6 @@ namespace Insight.Tests
 			Assert.IsTrue(results[1] is MyClassB);
 			Assert.AreEqual(2, ((MyClassB)results[1]).B);
 		}
-#endif
 
 		[Test]
 		public void PostProcessCanReadFieldsInAnyOrder()
