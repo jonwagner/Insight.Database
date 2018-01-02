@@ -645,5 +645,35 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 		#endregion
+
+		#region Issue 342
+		public class User
+		{
+			public string first_name { get; set; }    
+			public string last_name { get; set; }
+			public string email { get; set; }
+		}
+
+		[Test]
+		public void TestIssue342()
+		{
+			var data = new List<User>()
+			{
+				new User() { email = "john@dough.com", first_name = "John", last_name = "Dough"},
+				new User() { email = "jane@dough.com", first_name = "Jane", last_name = "Dough"}
+			};
+
+			try
+			{
+				_connection.ExecuteSql("CREATE TABLE InsightTestData (email varchar(256), first_name varchar(256), last_name varchar(256))");
+				_connection.BulkCopy("InsightTestData", data);
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP TABLE InsightTestData"); }
+				catch { }
+			}				
+		}
+		#endregion
 	}
 }
