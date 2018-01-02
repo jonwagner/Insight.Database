@@ -982,7 +982,8 @@ namespace Insight.Tests
             var parents = Connection().QuerySql("SELECT ID=1; SELECT ID=1, Name='Child'",
                     null,
                     Query.ReturnsSingle(Some<Parent>.Records)
-                        .ThenChildren(PostProcess, into: (parent, child) =>
+                        .ThenChildren(PostProcess,
+                        into: (parent, child) =>
                         {
                             parent.child = child.FirstOrDefault();
                         }));
@@ -990,14 +991,30 @@ namespace Insight.Tests
             Assert.AreEqual("Child Postprocessed", parents.child.Name);
         }
 
-
         [Test]
-        public void PostProcessRecordReaderCanProcessChildrenFromMultiReader()
+        public void PostProcessRecordReaderCanProcessChildrenFromMultiReaderWithAutoID()
         {
             var parents = Connection().QuerySql("SELECT ID=1; SELECT ID=1, Name='Child'",
                     null,
                     Query.Returns(Some<Parent>.Records)
-                        .ThenChildren(PostProcess, into: (parent, child) =>
+                        .ThenChildren(PostProcess,
+                            into: (parent, child) =>
+                        {
+                            parent.child = child.FirstOrDefault();
+                        }));
+
+            Assert.AreEqual("Child Postprocessed", parents.First().child.Name);
+        }
+
+        [Test]
+        public void PostProcessRecordReaderCanProcessChildrenFromMultiReaderWithManualID()
+        {
+            var parents = Connection().QuerySql("SELECT ID=1; SELECT ID=1, Name='Child'",
+                    null,
+                    Query.Returns(Some<Parent>.Records)
+                        .ThenChildren(PostProcess,
+                            id: (parent) => parent.ID,
+                            into: (parent, child) =>
                         {
                             parent.child = child.FirstOrDefault();
                         }));

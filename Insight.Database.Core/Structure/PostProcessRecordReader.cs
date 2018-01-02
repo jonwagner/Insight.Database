@@ -45,6 +45,17 @@ namespace Insight.Database
 		}
 
 		/// <inheritdoc/>
+		public override IRecordReader<TGuardian> GetGuardianReader<TGuardian>()
+		{
+			// this gets called when we read a child object and we have to auto-detect the id field
+			// unfortunately, we don't have access to the data reader at this point
+			return new OneToOne<TGuardian, T>((TGuardian guardian, T t) => {
+				_postRead(null, t);
+				guardian.Object = t;
+			});
+		}
+
+		/// <inheritdoc/>
 		public override Func<IDataReader, T> GetRecordReader(IDataReader reader)
 		{
 			var baseReader = _baseReader.GetRecordReader(reader);
