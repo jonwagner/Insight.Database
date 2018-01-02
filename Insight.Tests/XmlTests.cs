@@ -117,7 +117,7 @@ namespace Insight.Tests
 			var result = list[0];
 			Assert.IsNotNull(result);
 			Assert.IsNotNull(result.XDocument);
-			Assert.AreEqual("<Data>\r\n  <Text>foo</Text>\r\n</Data>", result.XDocument.ToString());
+			Assert.AreEqual(String.Format("<Data>{0}  <Text>foo</Text>{0}</Data>", Environment.NewLine), result.XDocument.ToString());
 		}
 
 		[Test]

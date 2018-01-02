@@ -80,7 +80,7 @@ namespace Insight.Tests
 				using (var stream = typeof(TestSetup).GetTypeInfo().Assembly.GetManifestResourceStream("Insight.Tests.InsightDbTest.sql"))
 				using (var reader = new StreamReader(stream))
 				{
-					foreach (var script in reader.ReadToEnd().Split(new String[] { "\r\nGO\r\n" }, StringSplitOptions.None))
+					foreach (var script in reader.ReadToEnd().Split(new String[] { Environment.NewLine + "GO" + Environment.NewLine }, StringSplitOptions.None))
 					{
 						script.Trim();
 
