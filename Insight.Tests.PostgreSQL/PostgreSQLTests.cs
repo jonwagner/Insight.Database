@@ -318,31 +318,40 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 
+		public class PostgresBulkData {
+			public int ID;
+			public Decimal Dec;
+			public TestData TestData;
+			public String Text;
+		}
+
 		[Test]
 		public void TestBulkLoad()
 		{
 			try
 			{
-				_connection.ExecuteSql("CREATE TABLE InsightTestData (ID int, Dec Decimal, TestData xml)");
+				_connection.ExecuteSql("CREATE TABLE InsightTestData (ID int, Dec Decimal, TestData xml, Text varchar(256))");
 
 				for (int i = 0; i < 3; i++)
 				{
+					var text = "test with spaces and \" quotes in it";
 					// build test data
-					ParentTestData[] array = new ParentTestData[i];
+					PostgresBulkData[] array = new PostgresBulkData[i];
 					for (int j = 0; j < i; j++)
-						array[j] = new ParentTestData() { ID = j, Dec = j, TestData = new TestData() };
+						array[j] = new PostgresBulkData() { ID = j, Dec = j, TestData = new TestData(), Text = text };
 
 					// bulk load the data
 					_connection.BulkCopy("InsightTestData", array, configure: bulkCopy => bulkCopy.BatchSize = 10);
 
 					// run the query
-					var items = _connection.QuerySql<ParentTestData>("SELECT * FROM InsightTestData");
+					var items = _connection.QuerySql<PostgresBulkData>("SELECT * FROM InsightTestData");
 					Assert.IsNotNull(items);
 					Assert.AreEqual(i, items.Count);
 					for (int j = 0; j < i; j++)
 					{
 						Assert.AreEqual(j, items[j].ID);
 						Assert.AreEqual(j, items[j].Dec);
+						Assert.AreEqual(text, items[j].Text);
 					}
 
 					_connection.ExecuteSql("DELETE FROM InsightTestData");
