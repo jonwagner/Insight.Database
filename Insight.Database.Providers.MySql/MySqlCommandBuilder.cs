@@ -1,4 +1,4 @@
-﻿#if NETSTANDARD1_6 || NETSTANDARD2_0
+﻿#if MYSQL_8
 using System;
 using System.Collections;
 using System.Collections.Generic;

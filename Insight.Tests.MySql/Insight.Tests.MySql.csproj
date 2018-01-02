@@ -1,7 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net451</TargetFrameworks>
-    <!--<TargetFrameworks>net45;net451;netcoreapp1.0;netcoreapp2.0</TargetFrameworks>-->
+    <TargetFrameworks>netcoreapp2.0;net45;net451</TargetFrameworks>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>

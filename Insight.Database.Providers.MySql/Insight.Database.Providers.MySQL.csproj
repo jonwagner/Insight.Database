@@ -9,23 +9,20 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>net451;net45</TargetFrameworks>
-    <!--<TargetFrameworks>netstandard2.0;netstandard1.6;net451;net45</TargetFrameworks>-->
+    <TargetFrameworks>netstandard2.0;net451;net45</TargetFrameworks>
   </PropertyGroup>
  
   <Import Project="..\SharedConfiguration.csproj" />
 
-  <PropertyGroup>
-    <DefineConstants Condition="$(TargetFramework) == 'netstandard1.6' or $(TargetFramework) == 'netstandard2.0'">$(DefineConstants);MYSQL_8</DefineConstants>
-  </PropertyGroup>
-
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="6.9.9" Condition="$(TargetFrameworkIdentifier) == '.NETFramework'" />
-    <PackageReference Include="MySql.Data" Version="8.0.8-dmr" Condition="$(TargetFrameworkIdentifier) != '.NETFramework'" />
-    <!-- MySql 8 has a dependency on System.Data.SqlClient. We need to make sure we get the same version of the sql client. -->
-    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != '' and $(TargetFrameworkIdentifier) != '.NETFramework'" />
+    <PackageReference Include="MySql.Data" Version="6.10.5" Condition="$(TargetFramework) == 'netstandard2.0'" />
+    <PackageReference Include="MySql.Data" Version="6.9.9" Condition="$(TargetFramework) == 'net45' or $(TargetFramework) == 'net451'" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.6' or $(TargetFramework) == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
   </ItemGroup>
 </Project>
