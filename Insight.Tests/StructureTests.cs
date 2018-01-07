@@ -957,20 +957,26 @@ namespace Insight.Tests
         public class Parent
         {
             public int ID;
-            public Child child;
+            public List<Child> children;
         }
 
         public class Child
         {
             public string Name;
+			public bool WasPostProcessed;
         }
 
         public static PostProcessRecordReader<Child> PostProcess = new PostProcessRecordReader<Child>(
             (reader, child) =>
             {
+				if (reader == null)
+				{
+					throw new InvalidOperationException("Need to have a reader during postprocessing");
+				}
                 if (child != null)
                 {
                     child.Name += " Postprocessed";
+					child.WasPostProcessed = true;
                 }
 
                 return child;
@@ -982,13 +988,11 @@ namespace Insight.Tests
             var parents = Connection().QuerySql("SELECT ID=1; SELECT ID=1, Name='Child'",
                     null,
                     Query.ReturnsSingle(Some<Parent>.Records)
-                        .ThenChildren(PostProcess,
-                        into: (parent, child) =>
-                        {
-                            parent.child = child.FirstOrDefault();
-                        }));
+                        .ThenChildren(PostProcess));
 
-            Assert.AreEqual("Child Postprocessed", parents.child.Name);
+			Child child = parents.children.First();
+			Assert.IsTrue(child.WasPostProcessed);
+            Assert.AreEqual("Child Postprocessed", child.Name);
         }
 
         [Test]
@@ -997,13 +1001,11 @@ namespace Insight.Tests
             var parents = Connection().QuerySql("SELECT ID=1; SELECT ID=1, Name='Child'",
                     null,
                     Query.Returns(Some<Parent>.Records)
-                        .ThenChildren(PostProcess,
-                            into: (parent, child) =>
-                        {
-                            parent.child = child.FirstOrDefault();
-                        }));
+                        .ThenChildren(PostProcess));
 
-            Assert.AreEqual("Child Postprocessed", parents.First().child.Name);
+			Child child = parents.First().children.First();
+			Assert.IsTrue(child.WasPostProcessed);
+            Assert.AreEqual("Child Postprocessed", child.Name);
         }
 
         [Test]
@@ -1012,14 +1014,11 @@ namespace Insight.Tests
             var parents = Connection().QuerySql("SELECT ID=1; SELECT ID=1, Name='Child'",
                     null,
                     Query.Returns(Some<Parent>.Records)
-                        .ThenChildren(PostProcess,
-                            id: (parent) => parent.ID,
-                            into: (parent, child) =>
-                        {
-                            parent.child = child.FirstOrDefault();
-                        }));
+                        .ThenChildren(PostProcess));
 
-            Assert.AreEqual("Child Postprocessed", parents.First().child.Name);
+			Child child = parents.First().children.First();
+			Assert.IsTrue(child.WasPostProcessed);
+            Assert.AreEqual("Child Postprocessed", child.Name);
         }
     }
     #endregion
