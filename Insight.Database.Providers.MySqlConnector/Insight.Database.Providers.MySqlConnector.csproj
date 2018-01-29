@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <description>
+      An Insight.Database provider for MySQL so the two can play together nicely.
+      Automatically installs MySqlConnector driver.
+    </description>
+    <PackageTags>Insight orm sql mysql micro-orm</PackageTags>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
+    <TargetFrameworks>netstandard2.0;net451;net45</TargetFrameworks>
+  </PropertyGroup>
+ 
+  <Import Project="..\SharedConfiguration.csproj" />
+
+  <ItemGroup>
+    <PackageReference Include="MySqlConnector" Version="0.35.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.6' or $(TargetFramework) == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
+  </ItemGroup>
+</Project>
