@@ -71,7 +71,6 @@
     <HasCommandBuilder>false</HasCommandBuilder>
     <HasConnectionSettings>false</HasConnectionSettings>
     <HasDbProvider>false</HasDbProvider>
-    <HasOdbc>false</HasOdbc>
     <HasOleDb>false</HasOleDb>
     <HasLinq>false</HasLinq>
     <HasSchemaTable>false</HasSchemaTable>

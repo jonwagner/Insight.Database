@@ -1,6 +1,8 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Description>The SQLServer, ODBC, and OLEDB providers for Insight.Database. These are automatically included in the Insight.Database package.</Description>
+    <Description>The SQLServer, ODBC, and OLEDB providers for Insight.Database.
+				 These are automatically included in the Insight.Database package,
+				 except the ODBC provider for .NET Core 2.0, which is in Insight.Database.Providers.Odbc.</Description>
     <PackageTags>Insight orm sql micro-orm sqlserver odbc oledb</PackageTags>
   </PropertyGroup>
   
@@ -22,7 +24,7 @@
     <Reference Include="System.Data" Condition="$(SqlClientVersion) == ''" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Remove="OdbcInsightDbProvider.cs" Condition="$(HasOdbc) != 'true'" />
+    <Compile Remove="OdbcInsightDbProvider.cs" Condition="$(HasOdbc) != 'true' or $(TargetFramework) == 'netstandard2.0'" />
     <Compile Remove="OleDbInsightDbProvider.cs" Condition="$(HasOleDb) != 'true'" />
   </ItemGroup>
 </Project>

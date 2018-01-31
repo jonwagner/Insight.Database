@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <Description>The ODBC provider for Insight.Database. This is automatically included in the Insight.Database package.</Description>
+    <PackageTags>Insight orm sql micro-orm odbc</PackageTags>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <Import Project="..\SharedConfiguration.csproj" />
+
+  <!-- this is a preview build until microsoft releases non-preview drivers -->
+  <PropertyGroup>
+    <version>$(version)-preview1</version>
+  </PropertyGroup>  
+
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
+    <PackageReference Include="System.Data.Odbc" Version="4.5.0-preview1-25914-04"/>
+  </ItemGroup>
+</Project>

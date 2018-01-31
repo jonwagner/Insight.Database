@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+  </PropertyGroup>
+  <Import Project="..\SharedConfiguration.csproj" />
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+    <ProjectReference Include="..\Insight.Database.Providers.Odbc\Insight.Database.Providers.Odbc.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />
+    <PackageReference Include="NUnit" Version="3.7.1" />
+    <PackageReference Include="NUnit.Console" Version="3.7.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+    <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />
+  </ItemGroup>
+</Project>
