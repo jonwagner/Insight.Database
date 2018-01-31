@@ -9,8 +9,6 @@
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
     <TargetFrameworks>netstandard2.0;netstandard1.6</TargetFrameworks>
-    <Platform>x64</Platform>
-    <RuntimeIdentifiers>win7</RuntimeIdentifiers>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
     <DefineConstants>$(DefineConstants);USE_CORE;NO_BULK_COPY;NO_DERIVE_PARAMETERS;NO_SCHEMA_TABLE</DefineConstants>
   </PropertyGroup>
