@@ -47,7 +47,7 @@ namespace Insight.Database.Structure
         public virtual Type ReturnType { get { return typeof(IList<T>); } }
 
         /// <inheritdoc/>
-        public IList<T> Read(IDbCommand command, IDataReader reader)
+        public virtual IList<T> Read(IDbCommand command, IDataReader reader)
         {
             var results = new List<T>();
 
@@ -61,7 +61,7 @@ namespace Insight.Database.Structure
         }
 
         /// <inheritdoc/>
-        public async Task<IList<T>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
+        public virtual async Task<IList<T>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
         {
             IList<T> results = await reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: false);
             await ReadChildrenAsync(reader, results, cancellationToken);

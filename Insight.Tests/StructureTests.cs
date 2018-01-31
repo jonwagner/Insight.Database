@@ -963,20 +963,20 @@ namespace Insight.Tests
         public class Child
         {
             public string Name;
-			public bool WasPostProcessed;
+            public bool WasPostProcessed;
         }
 
         public static PostProcessRecordReader<Child> PostProcess = new PostProcessRecordReader<Child>(
             (reader, child) =>
             {
-				if (reader == null)
-				{
-					throw new InvalidOperationException("Need to have a reader during postprocessing");
-				}
+                if (reader == null)
+                {
+                    throw new InvalidOperationException("Need to have a reader during postprocessing");
+                }
                 if (child != null)
                 {
                     child.Name += " Postprocessed";
-					child.WasPostProcessed = true;
+                    child.WasPostProcessed = true;
                 }
 
                 return child;
@@ -990,8 +990,8 @@ namespace Insight.Tests
                     Query.ReturnsSingle(Some<Parent>.Records)
                         .ThenChildren(PostProcess));
 
-			Child child = parents.children.First();
-			Assert.IsTrue(child.WasPostProcessed);
+            Child child = parents.children.First();
+            Assert.IsTrue(child.WasPostProcessed);
             Assert.AreEqual("Child Postprocessed", child.Name);
         }
 
@@ -1003,8 +1003,8 @@ namespace Insight.Tests
                     Query.Returns(Some<Parent>.Records)
                         .ThenChildren(PostProcess));
 
-			Child child = parents.First().children.First();
-			Assert.IsTrue(child.WasPostProcessed);
+            Child child = parents.First().children.First();
+            Assert.IsTrue(child.WasPostProcessed);
             Assert.AreEqual("Child Postprocessed", child.Name);
         }
 
@@ -1016,9 +1016,52 @@ namespace Insight.Tests
                     Query.Returns(Some<Parent>.Records)
                         .ThenChildren(PostProcess));
 
-			Child child = parents.First().children.First();
-			Assert.IsTrue(child.WasPostProcessed);
+            Child child = parents.First().children.First();
+            Assert.IsTrue(child.WasPostProcessed);
             Assert.AreEqual("Child Postprocessed", child.Name);
+        }
+    }
+    #endregion
+
+    #region Issue 345
+    [TestFixture]
+    public class SelfReferencingTests : BaseTest
+    {
+        public class SelfReferencing
+        {
+            public int ID;
+            public int ParentID;
+            public SelfReferencing Parent;
+        }
+
+        [Test]
+        public void SelfReferencingClassShouldAssignWithManualFunctions()
+        {
+            var results = Connection().QuerySql("SELECT ID=2, ParentID=1 UNION SELECT ID=1, ParentID=NULL",
+                    null,
+                    Query.Returns(Some<SelfReferencing>.Records)
+                         .SelfReferencing(id: r => r.ID, parentId: r => r.ParentID, into: (c, p) => c.Parent = p)
+                    );
+
+            SelfReferencing parent = results.First(s => s.ID == 1);
+            SelfReferencing child = results.First(s => s.ID == 2);
+
+            Assert.AreEqual(parent, child.Parent);
+        }
+
+        [Test]
+        public void SelfReferencingClassShouldAssignWithAutomaticFunctions()
+        {
+            var results = Connection().QuerySql("SELECT ID=2, ParentID=1 UNION SELECT ID=1, ParentID=NULL",
+                    null,
+                    Query.Returns(Some<SelfReferencing>.Records)
+                         .SelfReferencing()
+                    );
+
+            SelfReferencing parent = results.First(s => s.ID == 1);
+            SelfReferencing child = results.First(s => s.ID == 2);
+
+            Assert.AreEqual(parent, child.Parent);
         }
     }
     #endregion
