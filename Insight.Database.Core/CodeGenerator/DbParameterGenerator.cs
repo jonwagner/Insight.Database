@@ -114,7 +114,7 @@ namespace Insight.Database.CodeGenerator
 			{ DbType.Time, typeof(TimeSpan) },
 			{ DbType.Binary, typeof(byte[]) },
 			{ DbType.Object, typeof(object) },
-            { DbType.Xml, typeof(string) },
+			{ DbType.Xml, typeof(string) },
 		};
 
 		/// <summary>
@@ -190,7 +190,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="type">The type of object to parameterize.</param>
 		/// <returns>A method that serializes parameters to values.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
+		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static Action<IDbCommand, object> CreateClassInputParameterGenerator(IDbCommand command, Type type)
 		{
 			var provider = InsightDbProvider.For(command);
@@ -257,13 +257,19 @@ namespace Insight.Database.CodeGenerator
 
 				// look up the best type to use for the parameter
 				DbType sqlType = LookupDbType(memberType, serializer, dbParameter.DbType);
-
 				// give the provider an opportunity to fix up the template parameter (e.g. set UDT type names)
 				provider.FixupParameter(command, dbParameter, sqlType, memberType, mapping.Member.SerializationMode);
+				// give a chance to override the best guess parameter
+				DbType overriddenSqlType = ColumnMapping.MapParameterDataType(memberType, command, dbParameter, sqlType);
 
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
 				///////////////////////////////////////////////////////////////
+				if (overriddenSqlType != sqlType)
+				{
+					sqlType = overriddenSqlType;
+					dbParameter.DbType = sqlType;
+				}
 
 				///////////////////////////////////////////////////////////////
 				// Get the value from the object onto the stack
@@ -313,7 +319,7 @@ namespace Insight.Database.CodeGenerator
 
 					// we know the value is not null
 					il.MarkLabel(notNull);
- 				}
+				}
 
 				///////////////////////////////////////////////////////////////
 				// if this is a linq binary, convert it to a byte array
@@ -332,7 +338,7 @@ namespace Insight.Database.CodeGenerator
 					// we are sending up an XDocument. Use ToString.
 					il.Emit(OpCodes.Callvirt, memberType.GetMethod("ToString", new Type[] { }));
 				}
-                else if (serializer != null && serializer.CanSerialize(memberType, sqlType))
+				else if (serializer != null && serializer.CanSerialize(memberType, sqlType))
 				{
 					il.EmitLoadType(memberType);
 					StaticFieldStorage.EmitLoad(il, serializer);
@@ -347,9 +353,9 @@ namespace Insight.Database.CodeGenerator
 				il.MarkLabel(readyToSetLabel);
 				if (memberType == typeof(string))
 					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterStringValue", BindingFlags.NonPublic | BindingFlags.Static));
-                else if ((memberType == typeof(Guid?) || (memberType == typeof(Guid))) && dbParameter.DbType != DbType.Guid && command.CommandType == CommandType.StoredProcedure)
-                    il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterGuidValue", BindingFlags.NonPublic | BindingFlags.Static));
-                else
+				else if ((memberType == typeof(Guid?) || (memberType == typeof(Guid))) && dbParameter.DbType != DbType.Guid && command.CommandType == CommandType.StoredProcedure)
+					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterGuidValue", BindingFlags.NonPublic | BindingFlags.Static));
+				else
 					il.Emit(OpCodes.Callvirt, _iDataParameterSetValue);
 			}
 
@@ -370,22 +376,22 @@ namespace Insight.Database.CodeGenerator
 			return serializer.SerializeObject(type, value) ?? DBNull.Value;
 		}
 
-        /// <summary>
-        /// Set a string value on a parameter. .NET will not auto-convert GUIDs.
-        /// </summary>
-        /// <param name="parameter">The parameter.</param>
-        /// <param name="value">The string value.</param>
-        private static void SetParameterGuidValue(IDbDataParameter parameter, object value)
-        {
+		/// <summary>
+		/// Set a string value on a parameter. .NET will not auto-convert GUIDs.
+		/// </summary>
+		/// <param name="parameter">The parameter.</param>
+		/// <param name="value">The string value.</param>
+		private static void SetParameterGuidValue(IDbDataParameter parameter, object value)
+		{
 			parameter.Value = value;
 
-            if (parameter.DbType != DbType.Guid)
-            {
+			if (parameter.DbType != DbType.Guid)
+			{
 				if (value != DBNull.Value)
-	                parameter.Value = value.ToString();
-                parameter.DbType = DbType.AnsiString;
-            }
-        }
+					parameter.Value = value.ToString();
+				parameter.DbType = DbType.AnsiString;
+			}
+		}
 
 		/// <summary>
 		/// Set a string value on a parameter.
@@ -400,26 +406,26 @@ namespace Insight.Database.CodeGenerator
 			var s = value as string;
 			if (s != null)
 			{
-				if (parameter.DbType != DbType.String && parameter.DbType != DbType.Xml && parameter.DbType != DbType.Object)
+				if (parameter.DbType != DbType.String && parameter.DbType != DbType.AnsiString && parameter.DbType != DbType.Xml && parameter.DbType != DbType.Object)
 					parameter.DbType = DbType.String;
 
 				var dbParameter = parameter as IDbDataParameter;
-                if (dbParameter != null)
+				if (dbParameter != null)
 				{
-                    if (dbParameter.Direction.HasFlag(ParameterDirection.Output))
-                    {
-                        // for output parameters, we always want to retrieve as much data as possible
-                        dbParameter.Size = -1;
-                    }
-                    else
-                    {
-                        // for input parameters, some providers may behave better by specifying the length
-                        var length = s.Length;
-                        if (length > 4000)
-                            dbParameter.Size = -1;
-                        else
-                            dbParameter.Size = s.Length;
-                    }
+					if (dbParameter.Direction.HasFlag(ParameterDirection.Output))
+					{
+						// for output parameters, we always want to retrieve as much data as possible
+						dbParameter.Size = -1;
+					}
+					else
+					{
+						// for input parameters, some providers may behave better by specifying the length
+						var length = s.Length;
+						if (length > 4000)
+							dbParameter.Size = -1;
+						else
+							dbParameter.Size = s.Length;
+					}
 				}
 			}
 		}
@@ -448,23 +454,23 @@ namespace Insight.Database.CodeGenerator
 					// get the value from the object, converting null to db null
 					// note that if the dictionary does not have the value, we leave the value null and then the parameter gets defaulted
 					object value = null;
-                    if (dyn.TryGetValue(p.ParameterName, out value))
-                    {
-                        if (value == null)
-                        {
-                            value = DBNull.Value;
-                        }
-                        else
-                        {
-                            DbType sqlType = LookupDbType(value.GetType(), null, p.DbType);
-                            if (sqlType == DbTypeEnumerable)
-                            {
+					if (dyn.TryGetValue(p.ParameterName, out value))
+					{
+						if (value == null)
+						{
+							value = DBNull.Value;
+						}
+						else
+						{
+							DbType sqlType = LookupDbType(value.GetType(), null, p.DbType);
+							if (sqlType == DbTypeEnumerable)
+							{
 								cmd.Parameters.Add(p);
 								ListParameterHelper.ConvertListParameter(p, value, cmd);
-                                continue;
-                            }
-                        }
-                    }
+								continue;
+							}
+						}
+					}
 
 					p.Value = value;
 
@@ -518,8 +524,8 @@ namespace Insight.Database.CodeGenerator
 			var localParameters = il.DeclareLocal(typeof(IDataParameterCollection));
 
 			// get the parameters collection from the command into loc.0
-			il.Emit(OpCodes.Ldarg_0);												// push arg.0 (command), stack => [command]
-			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
+			il.Emit(OpCodes.Ldarg_0);                                               // push arg.0 (command), stack => [command]
+			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);                    // call getparams, stack => [parameters]
 			il.Emit(OpCodes.Stloc, localParameters);
 
 			// go through all of the mappings
@@ -547,28 +553,28 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Ldarg_1);
 
 				// if this is a deep mapping, then get the parent object, and do a null test if its not a value type
-                if (mapping.IsDeep)
-                {
-                    ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
+				if (mapping.IsDeep)
+				{
+					ClassPropInfo.EmitGetValue(type, mapping.Prefix, il);
 
-                    if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.GetTypeInfo().IsValueType)
-                    {
-                        il.Emit(OpCodes.Dup);
-                        var label = il.DefineLabel();
-                        il.Emit(OpCodes.Brtrue, label);
-                        il.Emit(OpCodes.Pop);               // pop the object before finishing
-                        il.Emit(OpCodes.Br, finishLabel);
-                        il.MarkLabel(label);
-                    }
-                }
+					if (!ClassPropInfo.FindMember(type, mapping.Prefix).MemberType.GetTypeInfo().IsValueType)
+					{
+						il.Emit(OpCodes.Dup);
+						var label = il.DefineLabel();
+						il.Emit(OpCodes.Brtrue, label);
+						il.Emit(OpCodes.Pop);               // pop the object before finishing
+						il.Emit(OpCodes.Br, finishLabel);
+						il.MarkLabel(label);
+					}
+				}
 
-                // get the parameter out of the collection
-                il.Emit(OpCodes.Ldloc, localParameters);
-                il.Emit(OpCodes.Ldstr, parameter.ParameterName);                 // push (parametername)
-                il.Emit(OpCodes.Callvirt, _iDataParameterCollectionGetItem);
+				// get the parameter out of the collection
+				il.Emit(OpCodes.Ldloc, localParameters);
+				il.Emit(OpCodes.Ldstr, parameter.ParameterName);                 // push (parametername)
+				il.Emit(OpCodes.Callvirt, _iDataParameterCollectionGetItem);
 
-                // get the value out of the parameter
-                il.Emit(OpCodes.Callvirt, _iDataParameterGetValue);
+				// get the value out of the parameter
+				il.Emit(OpCodes.Callvirt, _iDataParameterGetValue);
 
 				// emit the code to convert the value and set it on the object
 				TypeConverterGenerator.EmitConvertAndSetValue(il, _dbTypeToTypeMap[parameter.DbType], mapping);
@@ -593,9 +599,9 @@ namespace Insight.Database.CodeGenerator
 		{
 			DbType sqlType;
 
-            // if the serializer can serialize it, then it's a string
-            if (serializer != null && serializer.CanSerialize(type, parameterType))
-                return serializer.GetSerializedDbType(type, parameterType);
+			// if the serializer can serialize it, then it's a string
+			if (serializer != null && serializer.CanSerialize(type, parameterType))
+				return serializer.GetSerializedDbType(type, parameterType);
 
 			// if the type is nullable, get the underlying type
 			var nullUnderlyingType = Nullable.GetUnderlyingType(type);
@@ -655,16 +661,16 @@ namespace Insight.Database.CodeGenerator
 				IEnumerable list = (IEnumerable)value;
 
 				Type listType = list.GetType();
-                if (listType.IsArray)
-                {
-                    listType = listType.GetElementType();
-                }
-                else
-                {
-                    listType = listType.GetInterfaces().FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
-                    if (listType.GetTypeInfo().IsGenericType)
-                        listType = listType.GetGenericArguments()[0];
-                }
+				if (listType.IsArray)
+				{
+					listType = listType.GetElementType();
+				}
+				else
+				{
+					listType = listType.GetInterfaces().FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
+					if (listType.GetTypeInfo().IsGenericType)
+						listType = listType.GetGenericArguments()[0];
+				}
 
 				var underlyingType = Nullable.GetUnderlyingType(listType) ?? listType;
 
