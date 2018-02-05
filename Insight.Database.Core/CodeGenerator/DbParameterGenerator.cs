@@ -319,7 +319,7 @@ namespace Insight.Database.CodeGenerator
 
 					// we know the value is not null
 					il.MarkLabel(notNull);
-				}
+                }
 
 				///////////////////////////////////////////////////////////////
 				// if this is a linq binary, convert it to a byte array
@@ -464,7 +464,7 @@ namespace Insight.Database.CodeGenerator
                         {
                             DbType sqlType = LookupDbType(value.GetType(), null, p.DbType);
                             if (sqlType == DbTypeEnumerable)
-							{
+                            {
 								cmd.Parameters.Add(p);
 								ListParameterHelper.ConvertListParameter(p, value, cmd);
                                 continue;
@@ -524,7 +524,7 @@ namespace Insight.Database.CodeGenerator
 			var localParameters = il.DeclareLocal(typeof(IDataParameterCollection));
 
 			// get the parameters collection from the command into loc.0
-			il.Emit(OpCodes.Ldarg_0);                                               // push arg.0 (command), stack => [command]
+			il.Emit(OpCodes.Ldarg_0);												// push arg.0 (command), stack => [command]
 			il.Emit(OpCodes.Callvirt, _iDbCommandGetParameters);					// call getparams, stack => [parameters]
 			il.Emit(OpCodes.Stloc, localParameters);
 
@@ -669,7 +669,7 @@ namespace Insight.Database.CodeGenerator
                 {
                     listType = listType.GetInterfaces().FirstOrDefault(i => i.GetTypeInfo().IsGenericType && i.GetGenericTypeDefinition() == typeof(IEnumerable<>));
                     if (listType.GetTypeInfo().IsGenericType)
-                    listType = listType.GetGenericArguments()[0];
+                        listType = listType.GetGenericArguments()[0];
                 }
 
 				var underlyingType = Nullable.GetUnderlyingType(listType) ?? listType;
