@@ -115,7 +115,7 @@ namespace Insight.Database
             object outputParameters = null;
             CancellationToken cancellationToken = default(CancellationToken);
 
-            CallInfo callInfo = binder.CallInfo;
+			CallInfo callInfo = binder.CallInfo;
             int unnamedParameterCount = callInfo.ArgumentCount - callInfo.ArgumentNames.Count;
 
             // check the proc name - if it ends with Async, then call it asynchronously and return the results
@@ -223,9 +223,9 @@ namespace Insight.Database
                         p.Value = args[i];
                     }
 
-                    // special handling for table parameters - replace them with list parameters
-                    // note that we may be modifying the parameters collection, so we copy the list here
-                    var provider = InsightDbProvider.For(cmd);
+					// special handling for table parameters - replace them with list parameters
+					// note that we may be modifying the parameters collection, so we copy the list here
+					var provider = InsightDbProvider.For(cmd);
                     foreach (var p in cmd.Parameters.OfType<IDataParameter>().Where(p => provider.IsTableValuedParameter(cmd, p)).ToList())
                     {
                         // if any parameters are missing table parameters, then alert the developer
@@ -254,9 +254,11 @@ namespace Insight.Database
                         returns = (IQueryReader)typeof(ListReader<>).MakeGenericType(returnType).GetField("Default", BindingFlags.Static | BindingFlags.Public).GetValue(null);
                 }
 
-                // get the proper query method to call based on whether we are doing this async and whether there is a single or multiple result set
-                // the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
-                if (doAsync)
+				InsightDbProvider.For(cmd).FixupCommand(cmd);
+
+				// get the proper query method to call based on whether we are doing this async and whether there is a single or multiple result set
+				// the nice thing is that the generic expansion will automatically create the proper return type like IList<T> or Results<T>.
+				if (doAsync)
                     return CallQueryAsync(cmd, returns, cancellationToken);
                 else
                     return CallQuery(cmd, returns, outputParameters);
@@ -336,8 +338,6 @@ namespace Insight.Database
             // copy the parameter list
             foreach (IDataParameter parameter in parameterList)
                 cmd.Parameters.Add(provider.CloneParameter(cmd, parameter));
-
-            provider.FixupCommand(cmd);
         }
         #endregion
 
