@@ -442,7 +442,7 @@ namespace Insight.Database
 				p.SqlDbType = SqlDbType.Structured;
 
 				var tableTypes = new String[] { p.ParameterName, listType.Name, listType.Name + "Table" };
-				p.TypeName = tableTypes.Where(t => command.Connection.ExecuteScalarSql<int>("SELECT COUNT(*) FROM sys.table_types WHERE NAME = @name", new { name = t }) > 0).First();
+				p.TypeName = tableTypes.Where(t => command.Connection.ExecuteScalarSql<int>("SELECT COUNT(*) FROM sys.table_types WHERE NAME = @name", new { name = t }, transaction: command.Transaction) > 0).First();
 			}
 
 			return p.TypeName;
