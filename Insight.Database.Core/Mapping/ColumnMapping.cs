@@ -36,6 +36,11 @@ namespace Insight.Database
 		/// The singleton instance of the AllColumnMapping configuration for Parameters.
 		/// </summary>
 		private static DualMappingCollection _all = new DualMappingCollection(_parameters, _tables);
+
+		/// <summary>
+		/// The singleton instance of the ColumnMapping configuration for Parameters.
+		/// </summary>
+		private static MappingCollection<IParameterDataTypeMapper> _parameterDataTypes = new MappingCollection<IParameterDataTypeMapper>(BindChildrenFor.Parameters);
 		#endregion
 
 		#region Properties
@@ -53,6 +58,11 @@ namespace Insight.Database
 		/// Gets the singleton instance of the ColumnMapping configuration for both Tables and Parameters.
 		/// </summary>
 		public static MappingCollection<IDualMapper> All { get { return _all; } }
+
+		/// <summary>
+		/// Gets the singleton instance of the ColumnMapping configuration for Parameters and altering their Data Types.
+		/// </summary>
+		public static MappingCollection<IParameterDataTypeMapper> ParameterDataTypes { get { return _parameterDataTypes; } }
 		#endregion
 
 		#region Parameter Mapping Methods
@@ -97,6 +107,22 @@ namespace Insight.Database
 			}
 
 			return array.ToList();
+		}
+
+		/// <summary>
+		/// Maps a parameter data type to a new data type, if no mappings are available, returns the original best guess data type.
+		/// </summary>
+		/// <param name="type">The type being bound.</param>
+		/// <param name="command">The command being bound.</param>
+		/// <param name="parameter">The parameter being bound.</param>
+		/// <param name="dbType">The best guess data type.</param>
+		/// <returns>The data type to assign when sending the parameter to the server.</returns>
+		internal static DbType MapParameterDataType(Type type, IDbCommand command, IDataParameter parameter, DbType dbType)
+		{
+			if (!ParameterDataTypes.Mappers.Any())
+				return dbType;
+
+			return ParameterDataTypes.Mappers.Select(m => m.MapParameterType(type, command, parameter, dbType)).FirstOrDefault();
 		}
 
 		/// <summary>

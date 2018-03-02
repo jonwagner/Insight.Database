@@ -257,13 +257,19 @@ namespace Insight.Database.CodeGenerator
 
 				// look up the best type to use for the parameter
 				DbType sqlType = LookupDbType(memberType, serializer, dbParameter.DbType);
-
 				// give the provider an opportunity to fix up the template parameter (e.g. set UDT type names)
 				provider.FixupParameter(command, dbParameter, sqlType, memberType, mapping.Member.SerializationMode);
+				// give a chance to override the best guess parameter
+				DbType overriddenSqlType = ColumnMapping.MapParameterDataType(memberType, command, dbParameter, sqlType);
 
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
 				///////////////////////////////////////////////////////////////
+				if (overriddenSqlType != sqlType)
+				{
+					sqlType = overriddenSqlType;
+					dbParameter.DbType = sqlType;
+				}
 
 				///////////////////////////////////////////////////////////////
 				// Get the value from the object onto the stack
@@ -313,7 +319,7 @@ namespace Insight.Database.CodeGenerator
 
 					// we know the value is not null
 					il.MarkLabel(notNull);
- 				}
+                }
 
 				///////////////////////////////////////////////////////////////
 				// if this is a linq binary, convert it to a byte array
@@ -382,7 +388,7 @@ namespace Insight.Database.CodeGenerator
             if (parameter.DbType != DbType.Guid)
             {
 				if (value != DBNull.Value)
-	                parameter.Value = value.ToString();
+                    parameter.Value = value.ToString();
                 parameter.DbType = DbType.AnsiString;
             }
         }
@@ -400,7 +406,7 @@ namespace Insight.Database.CodeGenerator
 			var s = value as string;
 			if (s != null)
 			{
-				if (parameter.DbType != DbType.String && parameter.DbType != DbType.Xml && parameter.DbType != DbType.Object)
+				if (parameter.DbType != DbType.String && parameter.DbType != DbType.AnsiString && parameter.DbType != DbType.Xml && parameter.DbType != DbType.Object)
 					parameter.DbType = DbType.String;
 
 				var dbParameter = parameter as IDbDataParameter;
