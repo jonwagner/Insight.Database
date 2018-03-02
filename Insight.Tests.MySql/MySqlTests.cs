@@ -158,5 +158,30 @@ namespace Insight.Tests.MySql
 				Assert.AreEqual(i, items.Count);
 			}
 		}
+
+		[Test]
+		public void TestMultipleRecordsets()
+		{
+			string sql = "SELECT 5 as x; SELECT 7 as x";
+
+			var results = _connection.QuerySql(sql, null, Query.Returns(Some<TestData>.Records).Then(Some<TestData>.Records));
+
+			Assert.AreEqual(1, results.Set1.Count);
+			Assert.AreEqual(5, results.Set1[0].X);
+			Assert.AreEqual(1, results.Set2.Count);
+			Assert.AreEqual(7, results.Set2[0].X);
+		}	
+		
+		[Test]
+		public void TestParentChild()
+		{
+			string sql = "SELECT 5 as ID; SELECT 5 as ID, 7 as x";
+
+			var results = _connection.QuerySql(sql, null, Query.Returns(Some<ParentTestData>.Records).ThenChildren(Some<TestData>.Records));
+
+			Assert.AreEqual(5, results[0].ID);
+			Assert.IsNotNull(results[0].TestData);
+			Assert.AreEqual(7, results[0].TestData.X);
+		}		
 	}
 }
