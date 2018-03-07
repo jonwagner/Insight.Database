@@ -73,6 +73,8 @@ namespace Insight.Database
 			if (result == null)
 				return result;
 
+			InsightDbProvider.For(command).FixupOutputParameters(command);
+
             if (result is DynamicObject)
             {
                 // handle dynamic objects by assigning their properties right into the dictionary

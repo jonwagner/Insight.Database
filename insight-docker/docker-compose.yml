@@ -42,3 +42,12 @@ services:
     - "1521:1521"
     environment:
     - WEB_CONSOLE=false
+
+  sybase:
+    image: datagrip/sybase
+    ports:
+    - "5000:5000"
+    environment:
+    - SYBASE_USER=test
+    - SYBASE_PASSWORD=InsightTest1234
+    - SYBASE_DB=test

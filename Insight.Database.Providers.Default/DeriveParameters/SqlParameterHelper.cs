@@ -78,12 +78,12 @@ namespace Insight.Database.Providers.Default
 		{
 			SqlParameter parameter = new SqlParameter();
 
-			parameter.ParameterName = reader.GetString(columnMap.ParamName);
+			parameter.ParameterName = ReadDbNullStringSafely(reader, columnMap.ParamName);
 
 			int managedTypeId = reader.GetInt16(columnMap.ParamDataTypeNum);
 			parameter.SqlDbType = GetSqlDbTypeEnumFromManagedTypeId(managedTypeId);
 
-			string sqlDbTypeName = reader.GetString(columnMap.TypeName);
+			string sqlDbTypeName = ReadDbNullStringSafely(reader, columnMap.TypeName);
 
 			if (sqlDbTypeName == null)  // Fixes unit test issue where simple UDT's have a null type (Insight fixes the null later)
 				parameter.SqlDbType = SqlDbType.Udt; // Set the type to UDT so insight knows its a UDT
@@ -112,17 +112,17 @@ namespace Insight.Database.Providers.Default
 
 			if (parameter.SqlDbType == SqlDbType.Structured)
 			{
-				parameter.TypeName = reader.GetString(columnMap.TypeCatalogName) + "." +
-										reader.GetString(columnMap.TypeSchemaName) + "." +
-										reader.GetString(columnMap.TypeName);
+				parameter.TypeName = ReadDbNullStringSafely(reader, columnMap.TypeCatalogName) + "." +
+										ReadDbNullStringSafely(reader, columnMap.TypeSchemaName) + "." +
+										ReadDbNullStringSafely(reader, columnMap.TypeName);
 			}
 
 #if !NO_UDT
 			if (parameter.SqlDbType == SqlDbType.Udt)
 			{
-				parameter.UdtTypeName = reader.GetString(columnMap.TypeCatalogName) + "." +
-										   reader.GetString(columnMap.TypeSchemaName) + "." +
-										   reader.GetString(columnMap.TypeName);
+				parameter.UdtTypeName = ReadDbNullStringSafely(reader, columnMap.TypeCatalogName) + "." +
+										   ReadDbNullStringSafely(reader, columnMap.TypeSchemaName) + "." +
+										   ReadDbNullStringSafely(reader, columnMap.TypeName);
 			}
 #endif
 

@@ -254,6 +254,14 @@ namespace Insight.Database.Providers
         }
 
 		/// <summary>
+		/// Called before reading output parameters from the command.
+		/// </summary>
+		/// <param name="command">The command to fix up.</param>
+		public virtual void FixupOutputParameters(IDbCommand command)
+		{
+		}
+
+		/// <summary>
 		/// When building the parameter template, this allows the provider to fix properties.
 		/// </summary>
 		/// <param name="command">The command being prepared.</param>

@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <description>
+      A Sybase ASE provider for Insight.Database so Insight.Database can do its magic on PostgreSQL.
+      Automatically installs Sybase ASE drivers.
+    </description>
+    <PackageTags>Insight orm sql sybase ase sybasease micro-orm</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
+    <TargetFrameworks>net451;net45</TargetFrameworks>
+  </PropertyGroup>
+
+  <Import Project="..\SharedConfiguration.csproj" />
+
+  <ItemGroup>
+    <PackageReference Include="Sybase.AdoNet4.AseClient" Version="1.0.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+  </ItemGroup>
+</Project>
