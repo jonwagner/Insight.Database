@@ -29,6 +29,11 @@ namespace Insight.Database
 		private static Regex _parameterPrefixRegex = new Regex("^[?@:]", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
 		/// <summary>
+		/// Cache for Table-Valued Parameter type names.
+		/// </summary>
+		private static ConcurrentDictionary<Tuple<string, string, string, Type>, string> _tvpTypeNames = new ConcurrentDictionary<Tuple<string, string, string, Type>, string>();
+
+		/// <summary>
 		/// Cache for Table-Valued Parameter schemas.
 		/// </summary>
 		private static ConcurrentDictionary<Tuple<string, string, string, Type>, object> _tvpReaders = new ConcurrentDictionary<Tuple<string, string, string, Type>, object>();
@@ -203,12 +208,17 @@ namespace Insight.Database
 				return;
 			}
 
-			// allow the provider to make sure the table parameter is set up properly
-			string tableTypeName = GetTableParameterTypeName(command, parameter, listType);
-
 			// see if we already have a reader for the given type and table type name
 			// we can't use the schema cache because we don't have a schema yet
 			var key = Tuple.Create<string, string, string, Type>(command.Connection.ConnectionString, command.CommandText, parameter.ParameterName, listType);
+
+			// infer the name of the structured table type for the parameter
+			SqlParameter sqlParameter = (SqlParameter)parameter;
+			sqlParameter.SqlDbType = SqlDbType.Structured;
+			sqlParameter.TypeName = _tvpTypeNames.GetOrAdd(
+				key,
+				k => GetTableParameterTypeName(command, parameter, listType)
+			);
 
 			ObjectReader objectReader = (ObjectReader)_tvpReaders.GetOrAdd(
 				key,
@@ -436,13 +446,10 @@ namespace Insight.Database
 			if (listType == null) throw new ArgumentNullException("listType");
 
 			SqlParameter p = parameter as SqlParameter;
-
 			if (String.IsNullOrEmpty(p.TypeName))
 			{
-				p.SqlDbType = SqlDbType.Structured;
-
 				var tableTypes = new String[] { p.ParameterName, listType.Name, listType.Name + "Table" };
-				p.TypeName = tableTypes.Where(t => command.Connection.ExecuteScalarSql<int>("SELECT COUNT(*) FROM sys.table_types WHERE NAME = @name", new { name = t }, transaction: command.Transaction) > 0).First();
+				return tableTypes.Where(t => command.Connection.ExecuteScalarSql<int>("SELECT COUNT(*) FROM sys.table_types WHERE NAME = @name", new { name = t }, transaction: command.Transaction) > 0).First();
 			}
 
 			return p.TypeName;

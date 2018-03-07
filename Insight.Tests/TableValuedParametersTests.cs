@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Linq;
 using Insight.Database;
 using NUnit.Framework;
 
@@ -129,4 +130,44 @@ namespace Insight.Tests
 		}
 	}
 
+	#region Issue 354 Tests
+	[TestFixture]
+	public class Issue354Tests : BaseTest
+	{
+		[SetUp]
+		public void SetUp()
+		{
+			Connection().ExecuteSql("create type SimpleIntTable as table (Value int primary key)");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Connection().ExecuteSql("drop type SimpleIntTable");
+		}
+
+		[Test]
+		public void TVPsShouldBeCached()
+		{
+			var sql = "select count(*) from @values";
+			var values = Enumerable.Range(1, 4).Select(v => new SimpleInt(v)).ToArray();
+
+			void RunQuery() => Connection().SingleSql<int>(sql, new { values });
+
+			//Run the query twice
+			RunQuery();
+			RunQuery();
+		}
+
+		public class SimpleInt
+		{
+			public int Value { get; }
+
+			public SimpleInt(int value)
+			{
+				Value = value;
+			}
+		}
+	}
+	#endregion
 }
