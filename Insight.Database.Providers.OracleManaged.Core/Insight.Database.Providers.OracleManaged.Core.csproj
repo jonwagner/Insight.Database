@@ -1,0 +1,28 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <description>
+      An Oracle ODP.NET Managed Driver provider for Insight.Database so Insight.Database can do its magic on Oracle.
+      Automatically installs Oracle ODP.NET Managed Driver. Depends on Insight.Database.
+    </description>
+    <PackageTags>Insight orm sql oracle managed micro-orm</PackageTags>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <!-- this is a preview build until oracle releases non-preview drivers -->
+  <PropertyGroup>
+    <version>$(version)-preview1</version>
+  </PropertyGroup> 
+
+  <Import Project="..\SharedConfiguration.csproj" />
+
+  <ItemGroup>
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.12.0-beta2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+  </ItemGroup>
+</Project>
