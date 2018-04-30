@@ -134,21 +134,17 @@ namespace Insight.Database.CodeGenerator
             }
             else if (underlyingTargetType.GetTypeInfo().IsEnum && sourceType == typeof(string))
             {
-                var localString = il.DeclareLocal(typeof(string));
+																// stack => [target][object-value]
+	            var localObject = il.DeclareLocal(typeof(object));
+	            il.Emit(OpCodes.Stloc, localObject); 			// stack => [target]
+	            il.EmitLoadType(underlyingTargetType); 			// push enum, stack => [target][enum-type]
+	            il.Emit(OpCodes.Ldloc, localObject); 			// stack => [target][enum-type][object-value]
+	            il.Emit(OpCodes.Castclass, typeof(string)); 	// stack => [target][enum-type][string-value]
+	            il.Emit(OpCodes.Ldc_I4_1);						// push true, stack => [target][enum-type][string][true]
+	            il.EmitCall(OpCodes.Call, _enumParse, null);	// call Enum.Parse, stack => [target][enum-as-object]
 
-                // if we are converting a string to an enum, then parse it.
-                // see if the value from the database is a string. if so, we need to parse it. If not, we will just try to unbox it.
-                il.Emit(OpCodes.Isinst, typeof(string));			// is string, stack => [target][string]
-                il.Emit(OpCodes.Stloc, localString);				// pop loc.2 (enum), stack => [target]
-
-                // call enum.parse (type, value, true)
-                il.EmitLoadType(underlyingTargetType);
-                il.Emit(OpCodes.Ldloc, localString);				// push enum, stack => [target][enum-type][string]
-                il.Emit(OpCodes.Ldc_I4_1);							// push true, stack => [target][enum-type][string][true]
-                il.EmitCall(OpCodes.Call, _enumParse, null);		// call Enum.Parse, stack => [target][enum-as-object]
-
-                // Enum.Parse returns an object, which we need to unbox to the enum value
-                il.Emit(OpCodes.Unbox_Any, underlyingTargetType);
+	            // Enum.Parse returns an object, which we need to unbox to the enum value
+	            il.Emit(OpCodes.Unbox_Any, targetType);
             }
             else if (EmitConstructorConversion(il, sourceType, targetType))
             {

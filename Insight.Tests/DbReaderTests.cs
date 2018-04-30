@@ -19,9 +19,66 @@ namespace Insight.Tests
 			public int Int;
 			public string String;
 			public TimeSpan TimeSpan;
+			public TestEnum TestEnum;
+			public TestEnum? NullableTestEnum;
+		}
+		
+		enum TestEnum
+		{
+			One = 1,
+			Two = 2,
+			Three = 3
 		}
 		#endregion
 
+		[Test]
+		public void TestThatEnumPropertyIsDeserialized()
+		{
+			var list = Connection().QuerySql<Data>("SELECT TestEnum='Two'", new { });
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(1, list.Count);
+			var item = list[0];
+			Assert.IsNotNull(item);
+			Assert.AreEqual(TestEnum.Two, item.TestEnum);
+		}
+		
+		[Test]
+		public void TestThatEnumPropertyIsDeserializedFromInt()
+		{
+			var list = Connection().QuerySql<Data>("SELECT TestEnum=2", new { });
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(1, list.Count);
+			var item = list[0];
+			Assert.IsNotNull(item);
+			Assert.AreEqual(TestEnum.Two, item.TestEnum);
+		}
+		
+		[Test]
+		public void TestThatNullableEnumPropertyIsDeserialized()
+		{
+			var list = Connection().QuerySql<Data>("SELECT NullableTestEnum='Two'", new { });
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(1, list.Count);
+			var item = list[0];
+			Assert.IsNotNull(item);
+			Assert.AreEqual(TestEnum.Two, item.NullableTestEnum);
+		}
+		
+		[Test]
+		public void TestThatNullableEnumPropertyIsDeserializedFromInt()
+		{
+			var list = Connection().QuerySql<Data>("SELECT NullableTestEnum=2", new { });
+
+			Assert.IsNotNull(list);
+			Assert.AreEqual(1, list.Count);
+			var item = list[0];
+			Assert.IsNotNull(item);
+			Assert.AreEqual(TestEnum.Two, item.NullableTestEnum);
+		}
+		
 		[Test]
 		public void TestThatSingleClassIsDeserialized()
 		{
