@@ -9,14 +9,13 @@
   
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
-    <TargetFrameworks>netstandard2.0;net451;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
   </PropertyGroup>
  
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="6.10.5" Condition="$(TargetFramework) == 'netstandard2.0'" />
-    <PackageReference Include="MySql.Data" Version="6.9.9" Condition="$(TargetFramework) == 'net45' or $(TargetFramework) == 'net451'" />
+    <PackageReference Include="MySql.Data" Version="8.0.11" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
