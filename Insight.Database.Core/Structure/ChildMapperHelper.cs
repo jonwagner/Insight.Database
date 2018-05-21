@@ -93,15 +93,15 @@ namespace Insight.Database.Structure
 		}
 
 		/// <summary>
-		/// Gets the list setter for the class, looking for an IList that matches the type.
+		/// Gets the list getter or setter for the class, looking for an IList that matches the type.
 		/// </summary>
 		/// <param name="parentType">The type to analyze.</param>
 		/// <param name="childType">The type of object in the list.</param>
 		/// <param name="name">The name of the field or null to auto-detect.</param>
 		/// <returns>An accessor for the ID field.</returns>
-		internal static ClassPropInfo GetListSetter(Type parentType, Type childType, string name = null)
+		internal static ClassPropInfo GetListAccessor(Type parentType, Type childType, string name = null, bool setter = true)
 		{
-			var members = ClassPropInfo.GetMembersForType(parentType).Where(mi => mi.CanSetMember);
+			var members = ClassPropInfo.GetMembersForType(parentType).Where(mi => setter ? mi.CanSetMember : mi.CanGetMember);
 
 			ClassPropInfo member;
 
@@ -122,7 +122,7 @@ namespace Insight.Database.Structure
 				return member;
 
 			// look for anything that looks like the right list
-            member = listMembers.SingleOrDefault(m => m.SetMethodInfo != null) ?? listMembers.SingleOrDefault(m => m.FieldInfo != null);
+            member = listMembers.SingleOrDefault(m => (setter ? m.SetMethodInfo : m.GetMethodInfo) != null) ?? listMembers.SingleOrDefault(m => m.FieldInfo != null);
             if (member != null)
                 return member;
 

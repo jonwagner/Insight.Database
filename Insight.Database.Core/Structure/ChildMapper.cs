@@ -96,7 +96,7 @@ namespace Insight.Database.Structure
 		/// <returns>An accessor for the ID field.</returns>
 		private static Action<TParent, List<TChild>> GetListSetter()
 		{
-			return ChildMapperHelper.GetListSetter(typeof(TParent), typeof(TChild)).CreateSetMethod<TParent, List<TChild>>();
+			return ChildMapperHelper.GetListAccessor(typeof(TParent), typeof(TChild)).CreateSetMethod<TParent, List<TChild>>();
 		}
 		#endregion
 	}

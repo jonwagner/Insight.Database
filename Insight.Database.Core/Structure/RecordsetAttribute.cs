@@ -75,6 +75,11 @@ namespace Insight.Database
 		public string Into { get; set; }
 
 		/// <summary>
+		/// Gets or sets the name of the field that contains the parents in a multi-level parent-child relationship.
+		/// </summary>
+		public string Parents { get; set; }
+
+		/// <summary>
 		/// Gets or sets the name of the child ID field in the parent-child relationship.
 		/// </summary>
 		public string GroupBy { get; set; }
