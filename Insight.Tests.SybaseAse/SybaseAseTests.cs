@@ -39,7 +39,7 @@ namespace Insight.Tests.SybaseAse
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new AseConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = "Data Source=127.0.0.1;Port=5000;User ID=test;Password=InsightTest1234;Database=test";
+			_connectionStringBuilder.ConnectionString = String.Format("Data Source={0};Port=5000;User ID=test;Password=InsightTest1234;Database=test", BaseTest.TestHost ?? "localhost");
 			_connection = new AseConnection(_connectionStringBuilder.ConnectionString);
 			_connection.Open();
 		}
