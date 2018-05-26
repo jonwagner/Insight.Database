@@ -19,9 +19,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != ''" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
