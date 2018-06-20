@@ -56,7 +56,7 @@ namespace Insight.Database.Providers.MiniProfiler
 		public override IDbConnection GetInnerConnection(IDbConnection connection)
 		{
 			ProfiledDbConnection profiledConnection = (ProfiledDbConnection)connection;
-			return profiledConnection.InnerConnection;
+			return profiledConnection.WrappedConnection;
 		}
 
 		/// <summary>
