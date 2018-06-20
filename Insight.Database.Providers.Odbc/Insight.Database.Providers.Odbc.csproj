@@ -11,15 +11,10 @@
 
   <Import Project="..\SharedConfiguration.csproj" />
 
-  <!-- this is a preview build until microsoft releases non-preview drivers -->
-  <PropertyGroup>
-    <version>$(version)-preview1</version>
-  </PropertyGroup>  
-
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
-    <PackageReference Include="System.Data.Odbc" Version="4.5.0-preview1-25914-04"/>
+    <PackageReference Include="System.Data.Odbc" Version="4.5.0"/>
   </ItemGroup>
 </Project>
