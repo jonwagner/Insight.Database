@@ -19,7 +19,7 @@ namespace Insight.Tests
         {
             OdbcInsightDbProvider.RegisterProvider();
 
-			ConnectionString = String.Format("Driver={{SQL Server}}; Server={0}; Database=InsightDbTests; {1};",
+			ConnectionString = String.Format("Driver={{SQL Server}}; Server={0}; {1};",
 				TestHost ?? ".",
 				(Password != null) ? String.Format("Uid=sa; Pwd={0}", Password) : "Trusted_Connection=Yes");			
         }

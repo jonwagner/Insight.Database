@@ -35,6 +35,9 @@ namespace Insight.Database
 			}
 		}
 
+        /// <inheritdoc/>
+        protected override bool HasPositionalSqlTextParameters { get { return true; } }
+
 		/// <summary>
 		/// Registers this provider. This is generally not needed, unless you want to force an assembly reference to this provider.
 		/// </summary>
