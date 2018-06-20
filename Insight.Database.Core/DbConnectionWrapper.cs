@@ -188,7 +188,9 @@ namespace Insight.Database
                 {
                     if (InnerTransaction != null)
                     {
-                        InnerTransaction.Dispose();
+						if (OwnedTransaction) {
+	                        InnerTransaction.Dispose();
+						}
                         InnerTransaction = null;
                     }
 
@@ -229,6 +231,12 @@ namespace Insight.Database
         /// Gets the inner auto transaction for the connection.
         /// </summary>
         public DbTransaction InnerTransaction { get; private set; }
+
+        /// <summary>
+        /// Gets a boolean value representing whether the wrapper owns the transaction
+		/// and is responsible for its lifetime.
+        /// </summary>
+		public bool OwnedTransaction { get; private set; }
         #endregion
 
         #region IDbTransaction Members
@@ -284,9 +292,25 @@ namespace Insight.Database
         public DbConnectionWrapper BeginAutoTransaction(IsolationLevel isolationLevel = System.Data.IsolationLevel.Unspecified)
         {
             InnerTransaction = BeginTransaction(isolationLevel);
+			OwnedTransaction = true;
 
             return this;
         }
+
+        /// <summary>
+        /// Enlists this wrapper in an existing DbTransaction.
+		/// Note that the caller is responsible for maintaining the lifetime of the transaction.
+        /// </summary>
+        /// <param name="transaction">The transaction to enlist in.</param>
+        /// <returns>This connection.</returns>
+		public DbConnectionWrapper UsingTransaction(IDbTransaction transaction)
+		{
+			// TODO: convert all of these wrapper classes to IDb* interfaces :(
+			InnerTransaction = (DbTransaction)transaction;
+			OwnedTransaction = false;
+			
+			return this;
+		}
         #endregion
     }
 }

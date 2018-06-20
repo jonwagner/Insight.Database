@@ -203,6 +203,20 @@ namespace Insight.Database
             // convert to interface first, then open, so we only get one layer of wrapping
             return connection.As<T>().OpenWithTransactionAsAsync(cancellationToken);
         }
+
+        /// <summary>
+        /// Wraps the connection with an existing open database transaction.
+		/// Note that the caller is responsible for the lifetime of the transaction.
+        /// </summary>
+        /// <param name="connection">The connection to wrap.</param>
+        /// <param name="transaction">The transaction to bind to the wrapper.</param>
+        /// <returns>A wrapped connection that is enlisted in the transaction.</returns>
+		public static DbConnectionWrapper UsingTransaction(this IDbConnection connection, IDbTransaction transaction)
+		{
+            // if the connection isn't wrapped, we need to wrap it
+            DbConnectionWrapper wrapper = DbConnectionWrapper.Wrap(connection);
+            return wrapper.UsingTransaction(transaction);			
+		}
         #endregion
 
         #region Create Command Members

@@ -1161,6 +1161,18 @@ namespace Insight.Tests
                 Assert.AreEqual(1, i);
             }
         }
+
+		[Test]
+        public void InterfacesCanUseExternalTransactions_Issue370()
+        {
+			using (var c = Connection().OpenConnection())
+			using (var sqlTransaction = c.BeginTransaction())
+            {
+                c.UsingTransaction(sqlTransaction).As<I1>().Do();
+                int i = c.UsingTransaction(sqlTransaction).As<I2>().Do();
+                Assert.AreEqual(1, i);
+            }
+        }
     }
     #endregion  
 
