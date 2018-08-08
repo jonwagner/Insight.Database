@@ -184,7 +184,7 @@ namespace Insight.Database
 		internal static IDbObjectSerializer GetSerializer(IDbCommand command, IDataParameter parameter, ClassPropInfo prop)
 		{
 			if (InsightDbProvider.For(parameter).IsXmlParameter(command, parameter))
-				return XmlObjectSerializer.Serializer;
+				return GetCustomSerializer(prop) ?? XmlObjectSerializer.Serializer;
 
 			return EvaluateRules(prop);
 		}
@@ -199,7 +199,7 @@ namespace Insight.Database
 		internal static IDbObjectSerializer GetSerializer(IDataReader reader, int column, ClassPropInfo prop)
 		{
 			if (InsightDbProvider.For(reader).IsXmlColumn(reader, column))
-				return XmlObjectSerializer.Serializer;
+				return GetCustomSerializer(prop) ?? XmlObjectSerializer.Serializer;
 
 			return EvaluateRules(prop);
 		}
@@ -211,7 +211,17 @@ namespace Insight.Database
 		/// <returns>The serializer.</returns>
 		internal static IDbObjectSerializer EvaluateRules(ClassPropInfo prop)
 		{
-			return _handlers.Select(h => h.GetSerializer(prop.Type, prop.MemberType, prop.Name)).Where(s => s != null).FirstOrDefault() ?? _defaultConfig.GetSerializer(prop.Type, prop.MemberType, prop.Name);
+			return GetCustomSerializer(prop) ?? _defaultConfig.GetSerializer(prop.Type, prop.MemberType, prop.Name);
+		}
+
+		/// <summary>
+		/// Gets the custom serializer.
+		/// </summary>
+		/// <param name="prop">The property that is being bound.</param>
+		/// <returns>The serializer.</returns>
+		internal static IDbObjectSerializer GetCustomSerializer(ClassPropInfo prop)
+		{
+			return _handlers.Select(h => h.GetSerializer(prop.Type, prop.MemberType, prop.Name)).Where(s => s != null).FirstOrDefault();
 		}
 		#endregion
 	}
