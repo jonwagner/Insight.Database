@@ -15,7 +15,7 @@ namespace Insight.Database
 	/// <summary>
 	/// Serializes objects to XML using the DataContractSerializer.
 	/// </summary>
-	class XmlObjectSerializer : DbObjectSerializer
+	public class XmlObjectSerializer : DbObjectSerializer
 	{
 		/// <summary>
 		/// The singleton Serializer.

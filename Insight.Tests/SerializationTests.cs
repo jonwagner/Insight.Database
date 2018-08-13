@@ -7,6 +7,10 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Serialization;
 using System.Data;
+using System.Xml.Serialization;
+using System.Runtime.Serialization;
+using System.Data.Common;
+using System.IO;
 
 namespace Insight.Tests
 {
@@ -75,8 +79,10 @@ namespace Insight.Tests
             }
         }
 
+		[DataContract]
         public class EncodedInt
         {
+			[DataMember]
             public string Encoded;
         }
 
@@ -217,5 +223,42 @@ namespace Insight.Tests
 				Connection().ExecuteSql("DROP TYPE TestTableWithEncodedInt");
 			}
 		}
+
+		class CustomXmlSerializer : Insight.Database.XmlObjectSerializer
+		{
+			public bool DidSerialize { get; private set; }
+			public bool DidDeserialize { get; private set; }
+
+			public override object SerializeObject(Type type, object value)
+			{
+				DidSerialize = true;
+				return base.SerializeObject(type, value);
+			}
+
+			public override object DeserializeObject(Type type, object encoded)
+			{
+				DidDeserialize = true;
+				return base.DeserializeObject(type, encoded);
+			}
+		}
+
+		[Test]
+        public void CustomSerializerWorksWithXmlFields()
+        {
+			var customSerializer = new CustomXmlSerializer();
+			DbSerializationRule.Serialize<EncodedInt>(customSerializer);
+
+			var e = new EncodedInt() { Encoded = "Two" };
+
+			using (var c = Connection().OpenWithTransaction())
+			{
+				c.ExecuteSql("CREATE PROC TestEncodedXml(@Encoded [Xml]) AS SELECT Encoded=@Encoded");
+				var e2 = c.Query<TestWithSerializedObject>("TestEncodedXml", new { Encoded = e }).First();
+				Assert.AreEqual(e.Encoded, e2.Encoded.Encoded);
+			}
+
+			Assert.IsTrue(customSerializer.DidSerialize);
+			Assert.IsTrue(customSerializer.DidDeserialize);
+        }
     }
 }
