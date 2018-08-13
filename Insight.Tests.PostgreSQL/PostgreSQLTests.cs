@@ -700,5 +700,43 @@ namespace Insight.Tests.PostgreSQL
 			}				
 		}
 		#endregion
+
+		public enum MyEnum
+		{
+			One = 10
+		}
+
+		public class ClassWithEnum
+		{
+			public MyEnum Value;
+		}
+    
+		[Test]
+		public void TestEnumToSmallInt()
+		{
+			var e = new ClassWithEnum() { Value = MyEnum.One };
+
+			try
+			{
+				_connection.ExecuteSql("CREATE TYPE EnumTestType AS (Value smallint)");
+				_connection.ExecuteSql(@"
+					CREATE OR REPLACE FUNCTION PostgresSQLSmallInt (Value smallint) 
+					RETURNS SETOF EnumTestType
+					AS $$
+					BEGIN 
+						RETURN QUERY SELECT Value as Value; 
+					END;
+					$$ LANGUAGE plpgsql;");
+
+				var result = _connection.Query<ClassWithEnum>("PostgresSQLSmallInt", e);
+
+				Assert.AreEqual(MyEnum.One, result.First().Value);
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP FUNCTION PostgresSQLSmallInt (i smallint)"); } catch { }
+				try { _connection.ExecuteSql("DROP TYPE EnumTestType"); } catch { }
+			}
+		}
 	}
 }
