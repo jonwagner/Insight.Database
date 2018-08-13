@@ -32,6 +32,7 @@ namespace Insight.Tests.PostgreSQL
 		{
 			public int X;
 			public int Z;
+			public string Text;
 		}
 
 		[OneTimeSetUp]
@@ -592,6 +593,30 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
        
+		[Test]
+		public void TestJsonQueryParameter()
+		{
+			try
+			{
+				var input = new TestData() { X = 1, Z = 2, Text = "MyText" };
+				var users = new UsersWithTestData() { Id = 1, JsonData = input };
+
+				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData jsonb)");
+				_connection.ExecuteSql("INSERT INTO Users (Id, JsonData) VALUES (@Id, @JsonData)", users);
+
+				var result = _connection.QuerySql<UsersWithTestData>(
+//												"SELECT Users.* FROM Users WHERE JsonData @> '{ \"Text\": \"MyText\" }'",
+												"SELECT Users.* FROM Users WHERE JsonData @> ('{ \"Text\": \"' || @Text || '\" }')::jsonb",
+												new { Text = "MyText" }).FirstOrDefault();
+				Assert.AreEqual(input.X, result.JsonData.X);
+				Assert.AreEqual(input.Z, result.JsonData.Z);
+			}
+			finally
+			{
+				Cleanup("DROP TABLE Users");
+			}
+		}
+
         [Test]
         public void InvalidSchemaShouldThrow()
         {
