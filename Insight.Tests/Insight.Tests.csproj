@@ -2,6 +2,10 @@
   <PropertyGroup>
     <TargetFrameworks>netcoreapp2.0;netcoreapp1.0;net451;net45</TargetFrameworks>
   </PropertyGroup>
+  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' != ''">
+    <TargetFrameworks>netcoreapp2.0;netcoreapp1.0</TargetFrameworks>
+  </PropertyGroup>
+
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />

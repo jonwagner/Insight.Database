@@ -6,12 +6,18 @@
     </description>
     <PackageTags>Insight orm sql mysql micro-orm</PackageTags>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <ProjectType>LibraryPackage</ProjectType>
+  </PropertyGroup>
+
+  <PropertyGroup>
     <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
   </PropertyGroup>
- 
+  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' != ''">
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+  </PropertyGroup>
+
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>

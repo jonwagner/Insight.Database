@@ -1,8 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>net45;net451</TargetFrameworks>
     <OutputType>exe</OutputType>
   </PropertyGroup>
+
+ <PropertyGroup>
+    <TargetFrameworks>netcoreapp2.0;net45;net451</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' != ''">
+    <TargetFrameworks>netcoreapp2.0;</TargetFrameworks>
+  </PropertyGroup>
+
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />

@@ -1,7 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
+  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' == ''">
     <TargetFrameworks>net45;net451</TargetFrameworks>
   </PropertyGroup>
+  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' != ''">
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
+	<NoWarn>NU1701</NoWarn>
+  </PropertyGroup>
+  
   <Import Project="..\SharedConfiguration.csproj" />
   <ItemGroup>
     <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />

@@ -19,8 +19,8 @@ namespace Insight.Database.Sample
 {
 	public class Program
 	{
-		private static string connectionString = ConfigurationManager.ConnectionStrings["MyDatabase"].ConnectionString;
-		private static ConnectionStringSettings Database = ConfigurationManager.ConnectionStrings["MyDatabase"];
+		public static readonly string connectionString = "Data Source = .; Initial Catalog = InsightDbTests; Integrated Security = true";
+		private static SqlConnectionStringBuilder Database = new SqlConnectionStringBuilder(connectionString);
 
 		static void Main(string[] args)
 		{
@@ -28,8 +28,6 @@ namespace Insight.Database.Sample
 
 			#region Opening Connections
 			IDBConnection_OpenConnection();
-			ConnectionStringSettings_Connection();
-			ConnectionStringSettings_Open();
 			SqlConnectionStringBuilder_Connection();
 			SqlConnectionStringBuilder_Open();
 			#endregion
@@ -127,25 +125,6 @@ namespace Insight.Database.Sample
 		{
 			// open the connection and return it
 			using (SqlConnection c = new SqlConnection(connectionString).OpenConnection())
-			{
-				c.QuerySql("SELECT * FROM Beer", Parameters.Empty);
-			}
-		}
-
-		static void ConnectionStringSettings_Connection()
-		{
-			ConnectionStringSettings database = ConfigurationManager.ConnectionStrings["MyDatabase"];
-
-			// run a query right off the connection (this performs an auto-open/close)
-			database.Connection().QuerySql("SELECT * FROM Beer", Parameters.Empty);
-		}
-		
-		static void ConnectionStringSettings_Open()
-		{
-			ConnectionStringSettings database = ConfigurationManager.ConnectionStrings["MyDatabase"];
-
-			// get an open connection from the ConnectionStringSettings
-			using (IDbConnection c = database.Open())
 			{
 				c.QuerySql("SELECT * FROM Beer", Parameters.Empty);
 			}
@@ -371,7 +350,7 @@ namespace Insight.Database.Sample
 		#region Dynamic Database Calls
 		static void DynamicCall_Named()
 		{
-			IList<Beer> beer = Database.Dynamic<Beer>().FindBeers(name: "IPA");
+			IList<Beer> beer = Database.Connection().Dynamic<Beer>().FindBeers(name: "IPA");
 		}
 
 		static void DynamicCall_Transaction()
