@@ -1274,12 +1274,6 @@ namespace Insight.Database
 				if (_completed || _reader.IsClosed)
 					return false;
 
-				if (_mapper == null)
-				{
-					_cancellationToken.ThrowIfCancellationRequested();
-					_mapper = _recordReader.GetRecordReader(_reader);
-				}
-
 				if (!await ReadNextAsync().ConfigureAwait(false))
 				{
 					if (!await NextResultAsync().ConfigureAwait(false))
@@ -1289,6 +1283,12 @@ namespace Insight.Database
 					Current = default(T);
 
 					return false;
+				}
+
+				if (_mapper == null)
+				{
+					_cancellationToken.ThrowIfCancellationRequested();
+					_mapper = _recordReader.GetRecordReader(_reader);
 				}
 
 				Current = _mapper(_reader);
