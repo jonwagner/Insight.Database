@@ -501,6 +501,26 @@ namespace Insight.Database
         }
         #endregion
 
+        #region SelfReferencing Methods
+        /// <summary>
+        /// Evaluates parent/child relationships in a top-level result set.
+        /// </summary>
+        /// <typeparam name="T">The type of object that is returned.</typeparam>
+        /// <param name="previous">The previous reader.</param>
+        /// <param name="id">An optional function that selects the ID from the object.</param>
+        /// <param name="parentId">An optional function that selects the ParentID from the object.</param>
+        /// <param name="into">A function that assigns the parent to the child.</param>
+        /// <returns>A reader that reads a Results objects with children.</returns>
+        public static ListReader<T> SelfReferencing<T>(
+			this ListReader<T> previous,
+            Func<T, Object> id = null,
+            Func<T, Object> parentId = null,
+            Action<T, T> into = null)
+        {
+            return new SelfReferencingListReader<T>(previous, id, parentId, into);
+        }
+        #endregion
+
         #region OneToOne Methods
         /// <summary>
         /// Gets the onetoone mapping type for a list of types.
@@ -535,25 +555,6 @@ namespace Insight.Database
             }
 
             return oneToOne.MakeGenericType(types);
-        }
-        #endregion
-
-        #region SelfReferencing Methods
-        /// <summary>
-        /// Evaluates parent/child relationships in a top-level result set.
-        /// </summary>
-        /// <typeparam name="T">The type of object that is returned.</typeparam>
-        /// <param name="previous">The previous reader.</param>
-        /// <param name="id">An optional function that selects the ID from the object.</param>
-        /// <param name="parentId">An optional function that selects the ParentID from the object.</param>
-        /// <param name="into">A function that assigns the parent to the child.</param>
-        /// <returns>A reader that reads a Results objects with children.</returns>		
-        public static ListReader<T> SelfReferencing<T>(this ListReader<T> previous,
-            Func<T, Object> id = null,
-            Func<T, Object> parentId = null,
-            Action<T, T> into = null)
-        {
-            return new SelfReferencingListReader<T>(previous, id, parentId, into);
         }
         #endregion
     }

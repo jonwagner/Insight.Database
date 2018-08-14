@@ -39,7 +39,11 @@ namespace Insight.Database.Structure
         #region Constructors
         /// <summary>
         /// Initializes a new instance of the ListReader class.
-        /// </summary>
+		/// </summary>
+		/// <param name="previous">The previous reader to chain to.</param>
+		/// <param name="idSelector">The selector to return the ID of the object.</param>
+		/// <param name="parentIdSelector">The selector to return the ID of the parent.</param>
+		/// <param name="assigner">A method to assign the object to its parent.</param>
         public SelfReferencingListReader(
             ListReader<T> previous,
             Func<T, Object> idSelector,

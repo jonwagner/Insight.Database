@@ -215,7 +215,7 @@ namespace Insight.Database
 		{
             // if the connection isn't wrapped, we need to wrap it
             DbConnectionWrapper wrapper = DbConnectionWrapper.Wrap(connection);
-            return wrapper.UsingTransaction(transaction);			
+            return wrapper.UsingTransaction(transaction);
 		}
         #endregion
 

@@ -224,7 +224,11 @@ namespace Insight.Database.Providers.SybaseAse
 
 			public void Dispose()
 			{
-				_bulkCopy.AseRowsCopied -= OnRowsCopied;
+				if (_bulkCopy != null)
+				{
+					_bulkCopy.AseRowsCopied -= OnRowsCopied;
+					_bulkCopy.Dispose();
+				}
 			}
 
 			private void OnRowsCopied(object sender, AseRowsCopiedEventArgs e)

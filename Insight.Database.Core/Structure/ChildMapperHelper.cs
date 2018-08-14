@@ -98,6 +98,7 @@ namespace Insight.Database.Structure
 		/// <param name="parentType">The type to analyze.</param>
 		/// <param name="childType">The type of object in the list.</param>
 		/// <param name="name">The name of the field or null to auto-detect.</param>
+		/// <param name="setter">True to return the setter, false to return the getter.</param>
 		/// <returns>An accessor for the ID field.</returns>
 		internal static ClassPropInfo GetListAccessor(Type parentType, Type childType, string name = null, bool setter = true)
 		{

@@ -1,6 +1,6 @@
-﻿using Insight.Database.Mapping;
-using System;
+﻿using System;
 using System.Data;
+using Insight.Database.Mapping;
 
 namespace Insight.Database.Mapping
 {
@@ -16,7 +16,7 @@ namespace Insight.Database.Mapping
 		/// <param name="command">The command being executed.</param>
 		/// <param name="parameter">The parameter being mapped.</param>
 		/// <param name="dbType">The best guess of which data type the parameter should be.</param>
-		/// <returns>The DbType to map the parameter to. Return the best guess parameter if unhandled.</returns>		
+		/// <returns>The DbType to map the parameter to. Return the best guess parameter if unhandled.</returns>
 		DbType MapParameterType(Type type, IDbCommand command, IDataParameter parameter, DbType dbType);
 	}
 }

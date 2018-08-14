@@ -217,8 +217,7 @@ namespace Insight.Database
 			sqlParameter.SqlDbType = SqlDbType.Structured;
 			sqlParameter.TypeName = _tvpTypeNames.GetOrAdd(
 				key,
-				k => GetTableParameterTypeName(command, parameter, listType)
-			);
+				k => GetTableParameterTypeName(command, parameter, listType));
 
 			ObjectReader objectReader = (ObjectReader)_tvpReaders.GetOrAdd(
 				key,

@@ -1230,26 +1230,16 @@ namespace Insight.Database
 
 		#region AsEnumerable Methods
 		/// <summary>
-		/// Allows record streams to be read asynchronously.
-		/// </summary>
-		public interface IAsyncEnumerable<T>
+        /// Returns an enumerator that can read records from the stream asynchronously.
+        /// </summary>
+		/// <typeparam name="T">The type of object to return from the reader.</typeparam>
+        /// <param name="reader">The data reader to read from.</param>
+        /// <param name="recordReader">The record reader to use to translate the records.</param>
+        /// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
+        /// <returns>An asynchrnous enumerator.</returns>
+		public static IAsyncEnumerable<T> AsEnumerableAsync<T>(this IDataReader reader, IRecordReader<T> recordReader, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			/// <summary>
-			/// Moves to the next record asynchronously and returns a task representing whether a record was retrieved.
-			/// </summary>
-			/// <returns>A task representing whether a record was retrieved.</returns>
-			Task<bool> MoveNextAsync();
-
-			/// <summary>
-			/// Returns the current object in the stream.
-			/// </summary>
-			T Current { get; }
-
-			/// <summary>
-			/// Advances the reader to the next result.
-			/// </summary>
-			/// <returns>A task representing whether there is another result set.</returns>
-			Task<bool> NextResultAsync();
+			return new AsyncReader<T>(reader, recordReader, cancellationToken);
 		}
 
 		class AsyncReader<T> : IAsyncEnumerable<T>
@@ -1268,6 +1258,8 @@ namespace Insight.Database
 				_recordReader = recordReader;
 				_cancellationToken = ct;
 			}
+
+			public T Current { get; private set; }
 
 			public async Task<bool> MoveNextAsync()
 			{
@@ -1296,7 +1288,21 @@ namespace Insight.Database
 				return true;
 			}
 
-			public T Current { get; private set; }
+			public Task<bool> NextResultAsync()
+			{
+				if (_dbReader != null)
+					return _dbReader.NextResultAsync(_cancellationToken);
+				else
+					return Task.FromResult(_reader.NextResult());
+			}
+
+			public void Dispose()
+			{
+				if (_dbReader != null)
+					_dbReader.Dispose();
+				else if (_reader != null)
+					_reader.Dispose();
+			}
 
 			private Task<bool> ReadNextAsync()
 			{
@@ -1305,26 +1311,6 @@ namespace Insight.Database
 				else
 					return Task.FromResult(_reader.Read());
 			}
-
-			public Task<bool> NextResultAsync()
-			{
-				if (_dbReader != null)
-					return _dbReader.NextResultAsync(_cancellationToken);
-				else
-					return Task.FromResult(_reader.NextResult());				
-			}
-		}
-
-        /// <summary>
-        /// Returns an enumerator that can read records from the stream asynchronously.
-        /// </summary>
-        /// <param name="reader">The data reader to read from.</param>
-        /// <param name="reader">The record reader to use to translate the records.</param>
-        /// <param name="cancellationToken">The cancellationToken to use for the operation.</param>
-        /// <returns>An asynchrnous enumerator.</returns>
-		public static IAsyncEnumerable<T> AsEnumerableAsync<T>(this IDataReader reader, IRecordReader<T> recordReader, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			return new AsyncReader<T>(reader, recordReader, cancellationToken);
 		}
 		#endregion
     }

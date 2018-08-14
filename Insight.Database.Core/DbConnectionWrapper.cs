@@ -188,9 +188,11 @@ namespace Insight.Database
                 {
                     if (InnerTransaction != null)
                     {
-						if (OwnedTransaction) {
+						if (OwnedTransaction)
+						{
 	                        InnerTransaction.Dispose();
 						}
+
                         InnerTransaction = null;
                     }
 
@@ -233,7 +235,7 @@ namespace Insight.Database
         public DbTransaction InnerTransaction { get; private set; }
 
         /// <summary>
-        /// Gets a boolean value representing whether the wrapper owns the transaction
+        /// Gets a value indicating whether the wrapper owns the transaction
 		/// and is responsible for its lifetime.
         /// </summary>
 		public bool OwnedTransaction { get; private set; }
@@ -308,7 +310,7 @@ namespace Insight.Database
 			// TODO: convert all of these wrapper classes to IDb* interfaces :(
 			InnerTransaction = (DbTransaction)transaction;
 			OwnedTransaction = false;
-			
+
 			return this;
 		}
         #endregion

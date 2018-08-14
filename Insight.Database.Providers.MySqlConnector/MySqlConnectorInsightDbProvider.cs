@@ -56,7 +56,7 @@ namespace Insight.Database.Providers.MySqlConnector
 
 			// remove the @ from any parameters
 			foreach (var p in command.Parameters.Cast<MySqlParameter>())
-				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, "");
+				p.ParameterName = _parameterPrefixRegex.Replace(p.ParameterName, String.Empty);
 		}
 
 		/// <summary>
@@ -87,8 +87,7 @@ namespace Insight.Database.Providers.MySqlConnector
 				scale,
 				p.SourceColumn,
 				p.SourceVersion,
-				p.Value
-			);
+				p.Value);
 		}
 
 		/// <summary>

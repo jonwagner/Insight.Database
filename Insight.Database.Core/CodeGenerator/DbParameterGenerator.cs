@@ -257,8 +257,10 @@ namespace Insight.Database.CodeGenerator
 
 				// look up the best type to use for the parameter
 				DbType sqlType = LookupDbType(memberType, serializer, dbParameter.DbType);
+
 				// give the provider an opportunity to fix up the template parameter (e.g. set UDT type names)
 				provider.FixupParameter(command, dbParameter, sqlType, memberType, mapping.Member.SerializationMode);
+
 				// give a chance to override the best guess parameter
 				DbType overriddenSqlType = ColumnMapping.MapParameterDataType(memberType, command, dbParameter, sqlType);
 

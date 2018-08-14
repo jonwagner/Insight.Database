@@ -574,7 +574,6 @@ namespace Insight.Database.CodeGenerator
                             }
 
                             // previous and recordReader are on the stack, add the id and list methods
-
 							if (r.Parents != null)
 							{
 								var parentsMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(rootType, parents.MemberType).Invoke(parents, Parameters.EmptyArray);
