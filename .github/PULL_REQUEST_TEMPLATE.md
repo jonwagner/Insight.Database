@@ -11,22 +11,22 @@ Please make sure your pull request fulfills the following requirements:
 ## Type
 This pull request includes what type of changes?
 <!-- please check the one that applies using an "x" -->
-```
-[ ] Bug.
-[ ] Feature.
-[ ] Code style update (formatting, local variables).
-[ ] Refactoring (no functional changes, no api changes).
-[ ] Documentation content changes.
-[ ] Other (please describe below).
-```
+
+- [ ] Bug.
+- [ ] Feature.
+- [ ] Code style update (formatting, local variables).
+- [ ] Refactoring (no functional changes, no api changes).
+- [ ] Documentation content changes.
+- [ ] Other (please describe below).
+
 
 ## Breaking Changes
 Does this pull request introduce any breaking changes?
 <!-- please check the one that applies using an "x" -->
-```
-[ ] Yes
-[ ] No
-```
+
+- [ ] Yes
+- [ ] No
+
 ### Any other comment
 <!-- Provide additional relevant info here. -->
 (n/a)
