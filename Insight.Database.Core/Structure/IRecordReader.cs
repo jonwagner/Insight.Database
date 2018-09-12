@@ -24,6 +24,12 @@ namespace Insight.Database.Structure
     public interface IRecordReader<out T> : IRecordReader
     {
         /// <summary>
+        /// Gets a value indicating whether the recordreader needs its records de-duplicated.
+        /// </summary>
+        /// <returns>True if the query reader should de-duplicate the records.</returns>
+		bool RequiresDeduplication { get; }
+
+        /// <summary>
         /// Gets a function that can read a record from the given data reader.
         /// </summary>
         /// <param name="reader">The reader to be read from.</param>

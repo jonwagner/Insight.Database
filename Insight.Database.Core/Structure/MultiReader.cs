@@ -29,6 +29,9 @@ namespace Insight.Database.Structure
 		}
 
 		/// <inheritdoc/>
+		public virtual bool RequiresDeduplication { get { return false; } }
+
+		/// <inheritdoc/>
 		public Func<IDataReader, TBase> GetRecordReader(IDataReader reader)
 		{
 			return r =>

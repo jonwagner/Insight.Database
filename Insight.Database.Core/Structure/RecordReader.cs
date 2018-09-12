@@ -21,6 +21,9 @@ namespace Insight.Database.Structure
         /// </summary>
         private static ConcurrentDictionary<Tuple<Type, Type>, object> _autoGroupers = new ConcurrentDictionary<Tuple<Type, Type>, object>();
 
+		/// <inheritdoc/>
+		public virtual bool RequiresDeduplication { get { return false; } }
+
         /// <inheritdoc/>
         public abstract Func<IDataReader, T> GetRecordReader(IDataReader reader);
 
@@ -43,7 +46,7 @@ namespace Insight.Database.Structure
         /// <typeparam name="TId">The type of the ID.</typeparam>
         /// <param name="grouping">The function that gets the ID to group by.</param>
         /// <returns>A child record reader.</returns>
-        public IChildRecordReader<T, TId> GroupBy<TId>(Func<T, TId> grouping)
+        public virtual IChildRecordReader<T, TId> GroupBy<TId>(Func<T, TId> grouping)
         {
             return new ChildRecordReader<T, TId, T>(this, records => records.GroupBy(grouping, r => r));
         }
@@ -53,9 +56,11 @@ namespace Insight.Database.Structure
         /// </summary>
         /// <typeparam name="TId">The type of the ID in the recordset.</typeparam>
         /// <returns>A child record reader.</returns>
-        public IChildRecordReader<T, TId> GroupByColumn<TId>()
+        public virtual IChildRecordReader<T, TId> GroupByColumn<TId>()
         {
-            return new ChildRecordReader<Guardian<T, TId>, TId, T>(GetGuardianReader<Guardian<T, TId>>(), records => records.GroupBy(g => g.ParentId1, g => g.Object));
+            return new ChildRecordReader<Guardian<T, TId>, TId, T>(
+									GetGuardianReader<Guardian<T, TId>>(),
+									records => records.GroupBy(g => g.ParentId1, g => g.Object));
         }
 
         /// <summary>

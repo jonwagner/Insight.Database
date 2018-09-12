@@ -40,13 +40,23 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         IEnumerable<IGrouping<TId, TResult>> IChildRecordReader<TResult, TId>.Read(IDataReader reader)
         {
-            return _grouping(reader.ToList(_recordReader));
+			IEnumerable<TRecord> records = reader.ToList(_recordReader);
+
+			if (_recordReader.RequiresDeduplication)
+				records = records.Distinct();
+
+            return _grouping(records);
         }
 
         /// <inheritdoc/>
         async Task<IEnumerable<IGrouping<TId, TResult>>> IChildRecordReader<TResult, TId>.ReadAsync(IDataReader reader, CancellationToken cancellationToken)
         {
-            return _grouping(await reader.ToListAsync(_recordReader, cancellationToken));
+			IEnumerable<TRecord> records = await reader.ToListAsync(_recordReader, cancellationToken);
+
+			if (_recordReader.RequiresDeduplication)
+				records = records.Distinct();
+
+            return _grouping(records);
         }
     }
 }

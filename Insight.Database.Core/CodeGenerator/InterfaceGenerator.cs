@@ -467,6 +467,24 @@ namespace Insight.Database.CodeGenerator
                         var oneToOne = System.Activator.CreateInstance(Query.GetOneToOneType(types), new object[] { null, overrides, null });
                         StaticFieldStorage.EmitLoad(mIL, oneToOne);
                     }
+					else if (r != null && r.IsParentAndChild)
+					{
+						if (types.Length != 2)
+							throw new InvalidOperationException("Parent/Child record must have two types in the recordset attribute");
+
+						// grab the record reader for the together type
+						var togetherType = typeof(Together<,>).MakeGenericType(types);
+						if (r.ParentAndChildTogetherId != null || r.ParentAndChildTogetherInto != null)
+						{
+							StaticFieldStorage.EmitLoad(mIL, r.ParentAndChildTogetherId);
+							StaticFieldStorage.EmitLoad(mIL, r.ParentAndChildTogetherInto);
+							mIL.Emit(OpCodes.Newobj, togetherType.GetConstructor(new[] { typeof(string), typeof(string) }));
+						}
+						else
+						{
+                        	mIL.Emit(OpCodes.Ldsfld, togetherType.GetField("Records", BindingFlags.Public | BindingFlags.Static));
+						}
+					}
                     else
                     {
                         // grab the records field for the appropriate OneToOne mapping
@@ -629,7 +647,10 @@ namespace Insight.Database.CodeGenerator
                     else
                     {
                         var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
-                            .Single(mi => mi.Name == "Then" && mi.GetGenericArguments().Length == returnIndex && mi.GetParameters()[0].ParameterType.Name.StartsWith("IQueryReader", StringComparison.OrdinalIgnoreCase))
+                            .Single(mi => mi.Name == "Then" &&
+										  mi.GetGenericArguments().Length == returnIndex &&
+										  mi.GetParameters()[0].ParameterType.Name.StartsWith("IQueryReader", StringComparison.OrdinalIgnoreCase) &&
+										  mi.GetParameters()[1].ParameterType.Name.StartsWith("IRecordReader", StringComparison.OrdinalIgnoreCase))
                             .MakeGenericMethod(returnTypeArgs.Take(returnIndex).ToArray());
                         mIL.Emit(OpCodes.Call, method);
                         currentType = method.ReturnType;

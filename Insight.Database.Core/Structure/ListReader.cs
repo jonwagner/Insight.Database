@@ -49,11 +49,8 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         public virtual IList<T> Read(IDbCommand command, IDataReader reader)
         {
-            var results = new List<T>();
-
-            // read the main recordset from the reader
-            foreach (var record in reader.AsEnumerable(RecordReader))
-                results.Add(record);
+            IList<T> results = reader.ToList(RecordReader);
+			results = MergeChildren(results);
 
             ReadChildren(reader, results);
 
@@ -64,9 +61,11 @@ namespace Insight.Database.Structure
         public virtual async Task<IList<T>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
         {
             IList<T> results = await reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: false);
+			results = MergeChildren(results);
+
             await ReadChildrenAsync(reader, results, cancellationToken);
 
-            return results;
+			return results;
         }
 
         /// <summary>
@@ -79,6 +78,16 @@ namespace Insight.Database.Structure
             return (ListReader<T>)base.AddChild(child);
         }
         #endregion
+
+		#region Methods for Parent and Child Together
+		private IList<T> MergeChildren(IList<T> records)
+		{
+			if (RecordReader.RequiresDeduplication)
+				return records.Distinct().ToList();
+			else
+				return records;
+		}
+		#endregion
     }
 
     /// <summary>

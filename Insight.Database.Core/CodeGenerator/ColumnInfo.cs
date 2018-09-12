@@ -261,5 +261,25 @@ namespace Insight.Database.CodeGenerator
 
 			return true;
 		}
+
+		public override int GetHashCode()
+		{
+			int hashCode = 17;
+
+			unchecked
+			{
+				hashCode += Name.GetHashCode();
+				hashCode *= 23;
+				hashCode += DataType.GetHashCode();
+				hashCode *= 23;
+				hashCode += IsNullable.GetHashCode();
+				hashCode *= 23;
+				hashCode += IsIdentity.GetHashCode();
+				hashCode *= 23;
+				hashCode += IsReadOnly.GetHashCode();
+			}
+
+			return hashCode;
+		}
 	}
 }

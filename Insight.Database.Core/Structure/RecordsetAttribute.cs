@@ -83,6 +83,21 @@ namespace Insight.Database
 		/// Gets or sets the name of the child ID field in the parent-child relationship.
 		/// </summary>
 		public string GroupBy { get; set; }
+
+		/// <summary>
+		/// Gets or sets a value indicating whether the recordset contains parent and child records together.
+		/// </summary>
+		public bool IsParentAndChild { get; set; }
+
+		/// <summary>
+		/// Gets or sets the name of the parent ID field in the parent-child relationship.
+		/// </summary>
+		public string ParentAndChildTogetherId { get; set; }
+
+		/// <summary>
+		/// Gets or sets the name of the List field to insert the child list into for the parent-child relationship.
+		/// </summary>
+		public string ParentAndChildTogetherInto { get; set; }
 		#endregion
 	}
 }

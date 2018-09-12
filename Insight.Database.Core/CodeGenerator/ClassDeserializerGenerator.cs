@@ -103,8 +103,10 @@ namespace Insight.Database.CodeGenerator
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
 		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject, bool isRootObject, bool allowBindChild)
 		{
-			// if there are no columns detected for the class, then the deserializer is null
-			if (columnCount == 0 && !isRootObject)
+			// if there are no columns detected for the class, then don't deserialize it
+			// exception: a parentandchild object in the middle of a child hierarchy
+			var genericType = type.GetTypeInfo().IsGenericType ? type.GetGenericTypeDefinition() : null;
+			if (columnCount == 0 && !isRootObject && genericType != typeof(ParentAndChild<,>))
 				return null;
 
 			var mappings = MapColumns(type, reader, startColumn, columnCount, structure, allowBindChild && isRootObject);
@@ -138,12 +140,14 @@ namespace Insight.Database.CodeGenerator
             // read all of the values into local variables
             /////////////////////////////////////////////////////////////////////
 			il.BeginExceptionBlock();
+			var hasAtLeastOneMapping = false;
             var localValues = new LocalBuilder[mappings.Count];
             for (int index = 0; index < columnCount; index++)
             {
                 var mapping = mappings[index];
                 if (mapping == null)
                     continue;
+				hasAtLeastOneMapping = true;
 
                 var member = mapping.Member;
 
@@ -197,7 +201,7 @@ namespace Insight.Database.CodeGenerator
             /////////////////////////////////////////////////////////////////////
             // if this was a subobject and all of the values are null, then return the default for the object
             /////////////////////////////////////////////////////////////////////
-            if (startColumn > 0)
+            if (hasAtLeastOneMapping && startColumn > 0)
             {
                 var afterNullExit = il.DefineLabel();
                 il.Emit(OpCodes.Ldloc, localIsNotAllDbNull);
@@ -421,16 +425,16 @@ namespace Insight.Database.CodeGenerator
 					// find the set method on the current parent
 					setMethod = GetFirstMatchingMethod(ClassPropInfo.GetMembersForType(subTypes[parent]).Where(m => m.CanSetMember), subTypes[i]);
 
+					// if we didn't find a matching set method, then continue on to the next type in the graph
+					if (setMethod == null)
+						continue;
+
 					// make sure that at a given level, we only use the method once
 					var tuple = Tuple.Create(parent, setMethod);
 					if (usedMethods.Contains(tuple))
 						continue;
 					else
 						usedMethods.Add(tuple);
-
-					// if we didn't find a matching set method, then continue on to the next type in the graph
-					if (setMethod == null)
-						continue;
 
 					// if the parent is not the root object, we have to drill down to the parent, then set the value
 					// the root object is already on the stack, so emit a get method to get the object to drill down into
