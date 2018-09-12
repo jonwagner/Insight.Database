@@ -5,7 +5,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension="generated.cs" #>
-<#@ include file="..\GenericTypes.tt" #>
+<#@ include file="GenericTypes.tt" #>
 using System;
 using System.Collections.Generic;
 using System.Data;
