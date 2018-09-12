@@ -89,9 +89,8 @@ namespace Insight.Database.Structure
 			_into = into;
 
 			_parentID = ChildMapperHelper.GetIDAccessor(typeof(T), parentIDName).CreateGetMethod<T, Object>();
-			var listAccessor = ChildMapperHelper.GetListAccessor(typeof(T), typeof(TChild), into, setter: true);
-			_listSetter = listAccessor.CreateSetMethod<T, IList<TChild>>();
-			_listGetter = listAccessor.CreateGetMethod<T, IList<TChild>>();
+			_listSetter = ChildMapperHelper.GetListAccessor(typeof(T), typeof(TChild), into, setter: true).CreateSetMethod<T, IList<TChild>>();
+			_listGetter = ChildMapperHelper.GetListAccessor(typeof(T), typeof(TChild), into, setter: false).CreateGetMethod<T, IList<TChild>>();
 		}
 		#endregion
 
