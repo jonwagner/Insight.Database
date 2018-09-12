@@ -262,6 +262,7 @@ namespace Insight.Database.CodeGenerator
 			return true;
 		}
 
+		/// <inheritdoc/>
 		public override int GetHashCode()
 		{
 			int hashCode = 17;
