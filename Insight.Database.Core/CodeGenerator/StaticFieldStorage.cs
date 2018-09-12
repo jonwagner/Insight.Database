@@ -55,9 +55,16 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="value">The value to emit.</param>
 		internal static void EmitLoad(ILGenerator il, object value)
 		{
-			il.Emit(OpCodes.Ldc_I4, CacheValue(value));
-			il.Emit(OpCodes.Call, typeof(StaticFieldStorage).GetMethod("GetValue"));
-			il.Emit(OpCodes.Castclass, value.GetType());
+			if (value == null)
+			{
+				il.Emit(OpCodes.Ldnull);
+			}
+			else
+			{
+				il.Emit(OpCodes.Ldc_I4, CacheValue(value));
+				il.Emit(OpCodes.Call, typeof(StaticFieldStorage).GetMethod("GetValue"));
+				il.Emit(OpCodes.Castclass, value.GetType());
+			}
 		}
 	}
 }
