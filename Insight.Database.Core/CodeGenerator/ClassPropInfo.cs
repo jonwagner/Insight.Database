@@ -325,7 +325,7 @@ namespace Insight.Database.CodeGenerator
 
             // if the types don't match, see if we're trying to put a list of things into a thing
             // in that case, we want a FirstOrDefault
-            if (typeof(TValue) != MemberType)
+            if (typeof(TValue) != MemberType && !MemberType.IsAssignableFrom(typeof(TValue)))
             {
                 var enumType = typeof(IEnumerable<>).MakeGenericType(MemberType);
                 if (typeof(TValue).GetInterfaces().Contains(enumType))

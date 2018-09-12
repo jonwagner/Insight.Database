@@ -70,8 +70,8 @@ namespace Insight.Database.Structure
 
 		#region Private Members
 		private Func<T, Object> _parentID;
-		private Action<T, IList<TChild>> _listSetter;
-		private Func<T, IList<TChild>> _listGetter;
+		private Action<T, List<TChild>> _listSetter;
+		private Func<T, ICollection<TChild>> _listGetter;
 		private string _parentIDName;
 		private string _into;
 		private static RecordReader<ParentAndChild<T, TChild>> _parentAndChildRecords = OneToOne<ParentAndChild<T, TChild>, T, TChild>.Records;
@@ -89,8 +89,8 @@ namespace Insight.Database.Structure
 			_into = into;
 
 			_parentID = ChildMapperHelper.GetIDAccessor(typeof(T), parentIDName).CreateGetMethod<T, Object>();
-			_listSetter = ChildMapperHelper.GetListAccessor(typeof(T), typeof(TChild), into, setter: true).CreateSetMethod<T, IList<TChild>>();
-			_listGetter = ChildMapperHelper.GetListAccessor(typeof(T), typeof(TChild), into, setter: false).CreateGetMethod<T, IList<TChild>>();
+			_listSetter = ChildMapperHelper.GetListAccessor(typeof(T), typeof(TChild), into, setter: true).CreateSetMethod<T, List<TChild>>();
+			_listGetter = ChildMapperHelper.GetListAccessor(typeof(T), typeof(TChild), into, setter: false).CreateGetMethod<T, ICollection<TChild>>();
 		}
 		#endregion
 
@@ -114,21 +114,23 @@ namespace Insight.Database.Structure
 				var parent = record.Parent;
 				var child = record.Child;
 
+				// see if we have seen the parent before
 				var key = _parentID(parent);
 				if (parents.ContainsKey(key))
-				{
-					// we've seen this ID before. use the previous parent.
 					parent = parents[key];
-				}
 				else
-				{
-					// this is the first time we've seen the parent. make a new list and save the parent.
-					_listSetter(parent, new List<TChild>());
 					parents.Add(key, parent);
+
+				// get the collection of children
+				var childList = _listGetter(parent);
+				if (childList == null)
+				{
+					var list = new List<TChild>();
+					childList = list;
+					_listSetter(parent, list);
 				}
 
 				// stick the child into the parent
-				var childList = _listGetter(parent);
 				childList.Add(child);
 
 				return parent;
