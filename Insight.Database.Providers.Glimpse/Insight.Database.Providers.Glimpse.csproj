@@ -6,11 +6,11 @@
     <PackageTags>Insight orm sql micro-orm profiler glimpse</PackageTags>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' == ''">
+  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
     <ProjectType>LibraryPackage</ProjectType>
     <TargetFrameworks>net451;net45</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' != ''">
+  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
 	<NoWarn>NU1701</NoWarn>
   </PropertyGroup>

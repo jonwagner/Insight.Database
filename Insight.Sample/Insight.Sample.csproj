@@ -3,10 +3,10 @@
     <OutputType>exe</OutputType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' == ''">
+  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
     <TargetFrameworks>netcoreapp2.0;net45;net451</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition="'INSIGHT_NETCOREONLY' != ''">
+  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
     <TargetFrameworks>netcoreapp2.0;</TargetFrameworks>
   </PropertyGroup>
 
