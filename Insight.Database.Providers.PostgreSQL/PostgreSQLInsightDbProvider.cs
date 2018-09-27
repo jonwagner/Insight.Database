@@ -163,6 +163,16 @@ namespace Insight.Database.Providers.PostgreSQL
             }
         }
 
+		/// <inheritdoc/>
+		public override CommandBehavior FixupCommandBehavior(IDbCommand command, CommandBehavior commandBehavior)
+		{
+			//  Issue #380 - if there are any output parameters, then we can't use sequential access
+			if (command.Parameters.OfType<NpgsqlParameter>().Any(p => p.Direction.HasFlag(ParameterDirection.Output)))
+				commandBehavior &= ~CommandBehavior.SequentialAccess;
+
+			return commandBehavior;
+		}		
+
         /// <summary>
         /// Determines if the given column in the schema table is an XML column.
         /// </summary>

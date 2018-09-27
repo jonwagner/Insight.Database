@@ -83,8 +83,8 @@ namespace Insight.Database.Providers
 		/// <inheritdoc/>
 		public override IDbCommand GetInnerCommand(IDbCommand command)
 		{
-			DbCommandWrapper wrapped = (DbCommandWrapper)command;
-			return wrapped.InnerCommand;
+			DbCommandWrapper wrapped = command as DbCommandWrapper;
+			return wrapped?.InnerCommand ?? command;
 		}
 
 		/// <inheritdoc/>

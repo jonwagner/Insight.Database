@@ -1392,7 +1392,10 @@ namespace Insight.Database
 
                 // if the command is not null, then automatically generate the reader
                 if (command != null)
-                    reader = command.ExecuteReader(commandBehavior | CommandBehavior.SequentialAccess);
+				{
+					commandBehavior = InsightDbProvider.For(connection).FixupCommandBehavior(command, commandBehavior | CommandBehavior.SequentialAccess);
+                    reader = command.ExecuteReader(commandBehavior);
+				}
 
                 return translate(command, reader);
             }

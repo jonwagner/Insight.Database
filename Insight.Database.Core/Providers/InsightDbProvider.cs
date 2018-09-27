@@ -254,6 +254,16 @@ namespace Insight.Database.Providers
         }
 
 		/// <summary>
+		/// Called to adjust CommandBehavior flags prior to executing a query.
+		/// </summary>
+		/// <param name="command">The command to fix up.</param>
+		/// <param name="commandBehavior">The commandBehavior to fix up.</param>
+		public virtual CommandBehavior FixupCommandBehavior(IDbCommand command, CommandBehavior commandBehavior)
+		{
+			return commandBehavior;
+		}
+
+		/// <summary>
 		/// Called before reading output parameters from the command.
 		/// </summary>
 		/// <param name="command">The command to fix up.</param>

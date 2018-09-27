@@ -1133,7 +1133,10 @@ namespace Insight.Database
 
                 // if we have a command, execute it
                 if (command != null && callGetReader)
-                    reader = await command.GetReaderAsync(commandBehavior | CommandBehavior.SequentialAccess, cancellationToken);
+				{
+					commandBehavior = InsightDbProvider.For(connection).FixupCommandBehavior(command, commandBehavior | CommandBehavior.SequentialAccess);
+                    reader = await command.GetReaderAsync(commandBehavior, cancellationToken);
+				}
 
                 T result = await translate(command, reader);
 

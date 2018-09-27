@@ -72,6 +72,13 @@ namespace Insight.Database.Providers
 		}
 
 		/// <inheritdoc/>
+		public override CommandBehavior FixupCommandBehavior(IDbCommand command, CommandBehavior commandBehavior)
+		{
+			command = GetInnerCommand(command);
+			return InsightDbProvider.For(command).FixupCommandBehavior(command, commandBehavior);
+		}	
+
+		/// <inheritdoc/>
 		public override void FixupParameter(IDbCommand command, IDataParameter parameter, DbType dbType, Type type, SerializationMode serializationMode)
 		{
 			command = GetInnerCommand(command);
