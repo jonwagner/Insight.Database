@@ -790,8 +790,46 @@ namespace Insight.Tests.PostgreSQL
 
 				var repo = connection.As<IWidgetRepository>();
 				var id = repo.InsertWidget(new Widget { name = "Test" });
-				var widget = connection.As<IWidgetRepository>().GetWidget(id);
+				var widget = repo.GetWidget(id);
 
+				Assert.AreEqual("Test", widget.name);
+			}
+		}		
+		#endregion
+
+		#region Issue 381
+		public class GuidWidget
+		{
+			public Guid id;
+			public string name;
+		}
+
+		public interface IGuidWidgetRepository
+		{
+			[Sql("get_widget")]
+			GuidWidget GetWidget(Guid _id);
+		}
+
+		[Test]
+		public void TestGuidParameter()
+		{
+			using (var connection = _connectionStringBuilder.Connection().OpenWithTransaction())
+			{
+				connection.ExecuteSql("CREATE TABLE widget (id UUID PRIMARY KEY NOT NULL, name TEXT)");
+				connection.ExecuteSql(@"
+						CREATE OR REPLACE FUNCTION get_widget(_id UUID) RETURNS SETOF widget AS
+						$$
+						BEGIN
+							RETURN QUERY SELECT _id AS id, 'Test' as name;
+						END;
+						$$ LANGUAGE plpgsql;
+					");
+
+				var guid = new Guid();
+				var repo = connection.As<IGuidWidgetRepository>();
+				var widget = repo.GetWidget(guid);
+
+				Assert.AreEqual(guid, widget.id);
 				Assert.AreEqual("Test", widget.name);
 			}
 		}		

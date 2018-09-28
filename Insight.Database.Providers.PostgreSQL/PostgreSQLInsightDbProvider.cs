@@ -95,7 +95,7 @@ namespace Insight.Database.Providers.PostgreSQL
         {
             if (command == null) throw new ArgumentNullException("command");
 
-#if NETSTANDARD1_5 || NETSTANDARD2_0
+#if NETSTANDARD1_5
             Insight.Database.Providers.PostgreSQL.Compatibility.NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
 #else
 			NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
