@@ -120,9 +120,17 @@ GROUP BY pg_proc.proargnames, pg_proc.proargtypes, pg_proc.proallargtypes, pg_pr
 			{ 1082, NpgsqlDbType.Date },
 			{ 1083, NpgsqlDbType.Time },
 			{ 1114, NpgsqlDbType.Timestamp },
+#if NETSTANDARD1_5			
 			{ 1184, NpgsqlDbType.TimestampTZ },
+#else
+			{ 1184, NpgsqlDbType.TimestampTz },
+#endif			
 			{ 1186, NpgsqlDbType.Interval },
+#if NETSTANDARD1_5			
 			{ 1266, NpgsqlDbType.TimeTZ },
+#else
+			{ 1266, NpgsqlDbType.TimeTz },
+#endif
 			{ 1560, NpgsqlDbType.Bit },
 			{ 1562, NpgsqlDbType.Varbit },
 			{ 1700, NpgsqlDbType.Numeric },

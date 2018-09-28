@@ -704,38 +704,43 @@ namespace Insight.Tests.PostgreSQL
 		#region Enum Test
 		public enum MyEnum
 		{
-			One = 10
+			One = 10,
+			Two = 20
 		}
 
 		public class ClassWithEnum
 		{
 			public MyEnum Value;
+			public MyEnum? NullableValue;
+			public MyEnum? NullValue;
 		}
     
 		[Test]
 		public void TestEnumToSmallInt()
 		{
-			var e = new ClassWithEnum() { Value = MyEnum.One };
+			var e = new ClassWithEnum() { Value = MyEnum.One, NullableValue = MyEnum.Two };
 
 			try
 			{
-				_connection.ExecuteSql("CREATE TYPE EnumTestType AS (Value smallint)");
+				_connection.ExecuteSql("CREATE TYPE EnumTestType AS (Value smallint, NullableValue smallint, NullValue smallint)");
 				_connection.ExecuteSql(@"
-					CREATE OR REPLACE FUNCTION PostgresSQLSmallInt (Value smallint) 
+					CREATE OR REPLACE FUNCTION PostgresSQLSmallInt (Value smallint, NullableValue smallint, NullValue smallint) 
 					RETURNS SETOF EnumTestType
 					AS $$
 					BEGIN 
-						RETURN QUERY SELECT Value as Value; 
+						RETURN QUERY SELECT Value as Value, NullableValue as NullableValue, NullValue as NullValue; 
 					END;
 					$$ LANGUAGE plpgsql;");
 
 				var result = _connection.Query<ClassWithEnum>("PostgresSQLSmallInt", e);
 
 				Assert.AreEqual(MyEnum.One, result.First().Value);
+				Assert.AreEqual(MyEnum.Two, result.First().NullableValue);
+				Assert.AreEqual(null, result.First().NullValue);
 			}
 			finally
 			{
-				try { _connection.ExecuteSql("DROP FUNCTION PostgresSQLSmallInt (i smallint)"); } catch { }
+				try { _connection.ExecuteSql("DROP FUNCTION PostgresSQLSmallInt (i smallint, NullableValue smallint, NullValue smallint)"); } catch { }
 				try { _connection.ExecuteSql("DROP TYPE EnumTestType"); } catch { }
 			}
 		}

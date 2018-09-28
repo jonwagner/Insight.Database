@@ -20,9 +20,13 @@
 
   <Import Project="..\SharedConfiguration.csproj" />
 
-  <ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.5'">
     <PackageReference Include="Npgsql" Version="3.2.2" />
   </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) != 'netstandard1.5'">
+    <PackageReference Include="Npgsql" Version="4.0.3" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
