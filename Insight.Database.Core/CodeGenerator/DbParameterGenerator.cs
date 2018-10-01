@@ -325,7 +325,7 @@ namespace Insight.Database.CodeGenerator
                 }
 
 				// some providers (notably npgsql > 4.0) don't convert enums to ints, so we do it for them
-				if ((memberType != null && memberType.GetTypeInfo() != null && memberType.GetTypeInfo().IsEnum) || 
+				if ((memberType != null && memberType.GetTypeInfo() != null && memberType.GetTypeInfo().IsEnum) ||
 					(nullableUnderlyingType != null && nullableUnderlyingType.GetTypeInfo() != null && nullableUnderlyingType.GetTypeInfo().IsEnum))
 				{
 					var enumType = nullableUnderlyingType ?? memberType;
