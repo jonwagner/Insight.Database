@@ -17,7 +17,10 @@
  
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
-    <PackageReference Include="IBM.Data.DB2.Core" Version="1.1.1.101" />
+    <PackageReference Include="IBM.Data.DB2.Core" Version="1.2.2.100">
+		<!-- DB2 ships separate assemblies for win/osx/linux, so mark this as private and let the application choose their version -->
+		<PrivateAssets>All</PrivateAssets>
+	</PackageReference>
   </ItemGroup>
   
   <ItemGroup>
