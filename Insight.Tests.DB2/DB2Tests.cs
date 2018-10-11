@@ -26,7 +26,6 @@ namespace Insight.Tests.DB2
 		}
 
 		// having some trouble getting connections running with the new core package
-#if NET451
 		private IDbConnection _connection;
 
 		public class ParentTestData
@@ -66,7 +65,15 @@ namespace Insight.Tests.DB2
 			Assert.AreEqual(1, result.Count);
 			Assert.AreEqual(5, result[0]);
 		}
-#endif
+
+		[Test]
+		public void TestQueryObject()
+		{
+			var result = _connection.QuerySql<TestData>("SELECT 5 as x, 7 as z FROM SYSIBM.DUAL;").First();
+
+			Assert.AreEqual(5, result.X);
+			Assert.AreEqual(7, result.Z);
+		}
 
 #if !NO_DERIVE_PARAMETERS
 		[Test]

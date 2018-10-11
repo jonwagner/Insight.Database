@@ -129,15 +129,7 @@ namespace Insight.Database.Providers.DB2
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 
-#if !NO_COLUMN_SCHEMA
-			var schemaGenerator = (IDbColumnSchemaGenerator)reader;
-			var schema = schemaGenerator.GetColumnSchema();
-			return schemaGenerator.GetColumnSchema()[index].DataTypeName == "xml";
-#elif !NO_SCHEMA_TABLE
-			return ((DB2Type)reader.GetSchemaTable().Rows[index]["ProviderType"]) == DB2Type.Xml;
-#else
-			throw new NotImplementedException();
-#endif
+			return string.Compare(((DbDataReader)reader).GetDataTypeName(index), "XML", StringComparison.OrdinalIgnoreCase) == 0;
 		}
 
 #if !NO_BULK_COPY
