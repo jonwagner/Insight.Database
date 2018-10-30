@@ -921,15 +921,17 @@ namespace Insight.Tests
 		[Test]
 		public void DateFieldsShouldConvertProperly()
 		{
-			// send datetime and datetime? to sql
-			Connection().QuerySql<DateTime>("SELECT @date", new { date = DateTime.MinValue });
-			Connection().QuerySql<DateTime>("SELECT @date", new { date = (DateTime?)DateTime.MinValue });
+			var expected = DateTime.Now;
 
-			Connection().Query<DateTime>("TestDateTime2", new { date = DateTime.MinValue });
-			var list = Connection().Query<DateTime>("TestDateTime2", new { date = (DateTime?)DateTime.MinValue });
+			// send datetime and datetime? to sql
+			Connection().QuerySql<DateTime>("SELECT @date", new { date = expected });
+			Connection().QuerySql<DateTime>("SELECT @date", new { date = (DateTime?)expected });
+
+			Connection().Query<DateTime>("TestDateTime2", new { date = expected });
+			var list = Connection().Query<DateTime>("TestDateTime2", new { date = (DateTime?)expected });
 
 			var result = list.First();
-			Assert.AreEqual(DateTime.MinValue, result);
+			Assert.AreEqual(expected, result);
 		}
 
 		[Test]
@@ -946,6 +948,37 @@ namespace Insight.Tests
 			DateTime d = DateTime.MinValue;
 			var results = Connection().Query<DateTime>("TestDateTime2", new { date = d }).First();
 			Assert.AreEqual(d, results);
+		}
+
+		public class DateTime2Model { public DateTime MyDatetime2 { get; set; } }
+		public interface IDateTime2Repository
+		{ 
+			List<DateTime> InsertDateTime2List(IList<DateTime2Model> dateTime2TestList);
+		}
+
+		[Test]
+		public void DateFieldsShouldConvertInTVP()
+		{
+			var c = Connection();
+			try
+			{
+				c.ExecuteSql(@"create type [datetime2List] as table( [myDatetime2] [datetime2](7) not null )");
+				c.ExecuteSql(@"create procedure [InsertDateTime2List] @datetime2List as datetime2List readonly as select myDatetime2 from @datetime2List");				
+
+				var expected = DateTime.UtcNow;
+
+				var model = new DateTime2Model { MyDatetime2 = expected };
+				var repo = c.As<IDateTime2Repository>();
+				var list = new List<DateTime2Model> { model };
+				var results = repo.InsertDateTime2List(list);
+
+				Assert.AreEqual(expected, results[0]);
+			}
+			finally
+			{
+				c.ExecuteSql("drop procedure [InsertDateTime2List]");
+				c.ExecuteSql("drop type [datetime2List]");
+			}
 		}
 #endregion
 
