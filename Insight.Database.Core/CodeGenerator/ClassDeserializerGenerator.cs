@@ -423,18 +423,17 @@ namespace Insight.Database.CodeGenerator
 				for (int parent = 0; parent < i; parent++)
 				{
 					// find the set method on the current parent
-					setMethod = GetFirstMatchingMethod(ClassPropInfo.GetMembersForType(subTypes[parent]).Where(m => m.CanSetMember), subTypes[i]);
+					setMethod = GetMatchingMethods(ClassPropInfo.GetMembersForType(subTypes[parent]).Where(m => m.CanSetMember), subTypes[i])
+									.Where(m => !usedMethods.Contains(Tuple.Create(parent, m)))
+									.OrderBy(m => m.Name)
+									.FirstOrDefault();
 
 					// if we didn't find a matching set method, then continue on to the next type in the graph
 					if (setMethod == null)
 						continue;
 
 					// make sure that at a given level, we only use the method once
-					var tuple = Tuple.Create(parent, setMethod);
-					if (usedMethods.Contains(tuple))
-						continue;
-					else
-						usedMethods.Add(tuple);
+					usedMethods.Add(Tuple.Create(parent, setMethod));
 
 					// if the parent is not the root object, we have to drill down to the parent, then set the value
 					// the root object is already on the stack, so emit a get method to get the object to drill down into
@@ -485,9 +484,13 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>The first method that has the given type.</returns>
 		private static ClassPropInfo GetFirstMatchingMethod(IEnumerable<ClassPropInfo> properties, Type type)
 		{
+			return GetMatchingMethods(properties, type).FirstOrDefault();
+		}
+
+		private static IEnumerable<ClassPropInfo> GetMatchingMethods(IEnumerable<ClassPropInfo> properties, Type type)
+		{
 			// NOTE: for a subtype match, we can't bind to object, it's not specific enough, it also prevents Guardian<T> from working
-			return properties.FirstOrDefault(s => type == s.MemberType) ??
-				properties.Where(p => p.MemberType != typeof(object)).FirstOrDefault(s => type.IsSubclassOf(s.MemberType));
+			return properties.Where(s => type == s.MemberType || (s.MemberType != typeof(object) && type.IsSubclassOf(s.MemberType)));
 		}
 		#endregion
 

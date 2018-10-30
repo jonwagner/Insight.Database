@@ -386,5 +386,47 @@ namespace Insight.Tests
 			Assert.AreEqual(2, result.List[1].List[0].ID);
 		}
 		#endregion
+
+		#region Duplicate Subobject Tests
+		[BindChildren(BindChildrenFor.All)]
+		public class TestDataWithDuplicateChild
+		{
+			public TestDuplicateChild SubData;
+			public TestDuplicateChild SubData2;
+		}
+
+		public class TestDuplicateChild
+		{
+			public int SubInt;
+		}
+
+		public interface IReturnDuplicateChildren
+		{
+			[Sql("SELECT SubInt=1, SubInt=2")]
+			[Recordset(0, typeof(TestDataWithDuplicateChild), typeof(TestDuplicateChild), typeof(TestDuplicateChild))]
+			TestDataWithDuplicateChild GetDuplicateChildren();
+		}
+
+		[Test]
+		public void CanReturnDuplicateChildren()
+		{
+			var results = Connection().SingleSql<TestDataWithDuplicateChild, TestDuplicateChild, TestDuplicateChild>(@"
+				SELECT SubInt=1, SubInt=2
+			");
+
+			Assert.AreEqual(1, results.SubData.SubInt);
+			Assert.AreEqual(2, results.SubData2.SubInt);
+		}
+		
+		[Test]
+		public void InterfaceCanReturnDuplicateChildrenInNameOrder()
+		{
+			var results = Connection().As<IReturnDuplicateChildren>().GetDuplicateChildren();
+
+			// the children are bound in alphabetical order	
+			Assert.AreEqual(1, results.SubData.SubInt);
+			Assert.AreEqual(2, results.SubData2.SubInt);
+		}
+		#endregion
 	}
 }
