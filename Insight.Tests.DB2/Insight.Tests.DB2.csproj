@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp1.0;netcoreapp2.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp2.0</TargetFrameworks>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
   <Import Project="..\SharedConfiguration.csproj" />
@@ -11,9 +11,7 @@
     <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj" />
-	<PackageReference Include="IBM.Data.DB2.Core$(INSIGHT_NETCORE_RUNTIME_SUFFIX)" Version="1.2.2.100">
-		<PrivateAssets>All</PrivateAssets>
-	</PackageReference>
+	<PackageReference Include="IBM.Data.DB2.Core$(INSIGHT_NETCORE_RUNTIME_SUFFIX)" Version="1.2.2.100" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />

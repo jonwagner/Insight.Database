@@ -17,7 +17,11 @@
  
   <ItemGroup>
     <PackageReference Include="System.Data.Common" Version="4.3.0" />
-    <PackageReference Include="IBM.Data.DB2.Core" Version="1.2.2.100">
+	<PackageReference Include="IBM.Data.DB2.Core" Version="1.2.2.100" Condition="$(TargetFramework) == 'netstandard2.0'">
+		<!-- DB2 ships separate assemblies for win/osx/linux, so mark this as private and let the application choose their version -->
+		<PrivateAssets>All</PrivateAssets>
+	</PackageReference>
+    <PackageReference Include="IBM.Data.DB2.Core" Version="1.1.1.101" Condition="$(TargetFramework) == 'netstandard1.6'">
 		<!-- DB2 ships separate assemblies for win/osx/linux, so mark this as private and let the application choose their version -->
 		<PrivateAssets>All</PrivateAssets>
 	</PackageReference>
