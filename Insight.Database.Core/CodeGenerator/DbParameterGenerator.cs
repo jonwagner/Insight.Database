@@ -262,7 +262,9 @@ namespace Insight.Database.CodeGenerator
 				provider.FixupParameter(command, dbParameter, sqlType, memberType, mapping.Member.SerializationMode);
 
 				// give a chance to override the best guess parameter
-				DbType overriddenSqlType = ColumnMapping.MapParameterDataType(memberType, command, dbParameter, sqlType);
+				DbType overriddenSqlType = sqlType;
+				if (sqlType != DbTypeEnumerable)
+					overriddenSqlType = ColumnMapping.MapParameterDataType(memberType, command, dbParameter, sqlType);
 
 				///////////////////////////////////////////////////////////////
 				// We have a parameter, start handling all of the other types
@@ -746,6 +748,12 @@ namespace Insight.Database.CodeGenerator
 							length = -1;
 						listParam.Size = length;
 					}
+
+					listParam.DbType = ColumnMapping.MapParameterDataType(isString ?
+						typeof(string) : (item?.GetType() ?? typeof(object)),
+						command,
+						parameter,
+						listParam.DbType);
 
 					command.Parameters.Add(listParam);
 				}
