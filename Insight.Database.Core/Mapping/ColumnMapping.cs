@@ -124,7 +124,8 @@ namespace Insight.Database
 
 			return ParameterDataTypes
 				.Mappers
-				.Aggregate(dbType,
+				.Aggregate(
+					dbType,
 					(previousDbType, parameterTypeMapper) => parameterTypeMapper.MapParameterType(type, command, parameter, previousDbType));
 		}
 

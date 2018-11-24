@@ -749,8 +749,8 @@ namespace Insight.Database.CodeGenerator
 						listParam.Size = length;
 					}
 
-					listParam.DbType = ColumnMapping.MapParameterDataType(isString ?
-						typeof(string) : (item?.GetType() ?? typeof(object)),
+					listParam.DbType = ColumnMapping.MapParameterDataType(
+						isString ? typeof(string) : (item?.GetType() ?? typeof(object)),
 						command,
 						parameter,
 						listParam.DbType);
