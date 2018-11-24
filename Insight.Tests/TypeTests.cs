@@ -950,26 +950,52 @@ namespace Insight.Tests
 			Assert.AreEqual(d, results);
 		}
 
-		public class DateTime2Model { public DateTime MyDatetime2 { get; set; } }
-		public interface IDateTime2Repository
+		public class DateTimeModel { public DateTime MyDatetime { get; set; } }
+		public interface IDateTimeRepository
 		{ 
-			List<DateTime> InsertDateTime2List(IList<DateTime2Model> dateTime2TestList);
+			List<DateTime> InsertDateTimeList(IList<DateTimeModel> dateTimeTestList);
+			List<DateTime> InsertDateTime2List(IList<DateTimeModel> dateTime2TestList);
 		}
 
 		[Test]
-		public void DateFieldsShouldConvertInTVP()
+		public void DatetimeFieldsShouldConvertInTVP()
 		{
 			var c = Connection();
 			try
 			{
-				c.ExecuteSql(@"create type [datetime2List] as table( [myDatetime2] [datetime2](7) not null )");
-				c.ExecuteSql(@"create procedure [InsertDateTime2List] @datetime2List as datetime2List readonly as select myDatetime2 from @datetime2List");				
+				c.ExecuteSql(@"create type [datetimeList] as table( [myDatetime] [datetime] not null )");
+				c.ExecuteSql(@"create procedure [InsertDateTimeList] @datetimeList as datetimeList readonly as select myDatetime from @datetimeList");				
+
+				var expected = new DateTime(2018, 11, 15, 14, 53, 48, 493);
+
+				var model = new DateTimeModel { MyDatetime = expected };
+				var list = new List<DateTimeModel> { model, model };
+				var repo = c.As<IDateTimeRepository>();
+				var results = repo.InsertDateTimeList(list);
+
+				Assert.AreEqual(expected, results[0]);
+			}
+			finally
+			{
+				c.ExecuteSql("drop procedure [InsertDateTimeList]");
+				c.ExecuteSql("drop type [datetimeList]");
+			}
+		}
+		
+		[Test]
+		public void Datetime2FieldsShouldConvertInTVP()
+		{
+			var c = Connection();
+			try
+			{
+				c.ExecuteSql(@"create type [datetime2List] as table( [myDatetime] [datetime2](7) not null )");
+				c.ExecuteSql(@"create procedure [InsertDateTime2List] @datetime2List as datetime2List readonly as select myDatetime from @datetime2List");				
 
 				var expected = DateTime.UtcNow;
 
-				var model = new DateTime2Model { MyDatetime2 = expected };
-				var repo = c.As<IDateTime2Repository>();
-				var list = new List<DateTime2Model> { model };
+				var model = new DateTimeModel { MyDatetime = expected };
+				var list = new List<DateTimeModel> { model, model };
+				var repo = c.As<IDateTimeRepository>();
 				var results = repo.InsertDateTime2List(list);
 
 				Assert.AreEqual(expected, results[0]);
