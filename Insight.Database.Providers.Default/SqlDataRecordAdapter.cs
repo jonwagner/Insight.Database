@@ -104,18 +104,20 @@ namespace Insight.Database.Providers.Default
 		/// <inheritdoc/>
 		private static SqlDbType GetSqlDbType(Type type, string dataTypeName)
 		{
-			switch (dataTypeName.ToLowerInvariant())
+			if (!String.IsNullOrEmpty(dataTypeName))
 			{
-				case "datetime":
-					return SqlDbType.DateTime;
+				switch (dataTypeName.ToLowerInvariant())
+				{
+					case "datetime":
+						return SqlDbType.DateTime;
 
-				case "datetime2":
-					return SqlDbType.DateTime2;
-
-				default:
-					type = Nullable.GetUnderlyingType(type) ?? type;
-					return _typeToDbTypeMap[type];
+					case "datetime2":
+						return SqlDbType.DateTime2;
+				}
 			}
+
+			type = Nullable.GetUnderlyingType(type) ?? type;
+			return _typeToDbTypeMap[type];
 		}
 	}
 }
