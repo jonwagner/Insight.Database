@@ -122,7 +122,10 @@ namespace Insight.Database
 			if (!ParameterDataTypes.Mappers.Any())
 				return dbType;
 
-			return ParameterDataTypes.Mappers.Select(m => m.MapParameterType(type, command, parameter, dbType)).FirstOrDefault();
+			return ParameterDataTypes
+				.Mappers
+				.Aggregate(dbType,
+					(previousDbType, parameterTypeMapper) => parameterTypeMapper.MapParameterType(type, command, parameter, previousDbType));
 		}
 
 		/// <summary>
