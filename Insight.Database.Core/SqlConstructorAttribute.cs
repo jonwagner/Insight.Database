@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 namespace Insight.Database
 {
     /// <summary>
-    /// Marks a constructor as the preffered constructor to use when deserializing objects from the database.
+    /// Marks a constructor as the preferred constructor to use when deserializing objects from the database.
     /// </summary>
     [AttributeUsage(AttributeTargets.Constructor)]
     public sealed class SqlConstructorAttribute : Attribute
