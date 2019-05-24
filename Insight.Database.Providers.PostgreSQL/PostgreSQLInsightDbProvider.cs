@@ -98,12 +98,14 @@ namespace Insight.Database.Providers.PostgreSQL
 			if (connection == null) throw new ArgumentNullException("connection");
 
 			var schema = connection as NpgsqlConnectionWithSchema;
-			if (schema != null) {
+			if (schema != null)
+			{
 				return new NpgsqlConnectionWithSchema(new NpgsqlConnectionStringBuilder(schema.ConnectionString), schema.Schema);
 			}
 
 			var recordsets = connection as NpgsqlConnectionWithRecordsets;
-			if (recordsets != null) {
+			if (recordsets != null)
+			{
 				return new NpgsqlConnectionWithRecordsets(new NpgsqlConnectionStringBuilder(schema.ConnectionString));
 			}
 
