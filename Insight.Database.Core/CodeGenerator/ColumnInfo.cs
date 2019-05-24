@@ -146,6 +146,7 @@ namespace Insight.Database.CodeGenerator
 					IsReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture),
 					IsIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture),
 					DataType = (Type)row[dataTypeColumn],
+					DataTypeName = row[dataTypeNameColumn],
 					NumericPrecision = (precisionColumn == -1) ? (int?)null : row.IsNull(precisionColumn) ? (int?)null : Convert.ToInt32(row[precisionColumn]),
 					NumericScale = (scaleColumn == -1) ? (int?)null : row.IsNull(scaleColumn) ? (int?)null : Convert.ToInt32(row[scaleColumn]),
 					ColumnSize = (columnSizeColumn == -1) ? (int?)null : row.IsNull(columnSizeColumn) ? (int?)null : Convert.ToInt32(row[columnSizeColumn])

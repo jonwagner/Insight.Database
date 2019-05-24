@@ -35,7 +35,7 @@ namespace Insight.Database.Providers.Default
 			{ typeof(string), SqlDbType.NVarChar },
 			{ typeof(char), SqlDbType.NChar },
 			{ typeof(Guid), SqlDbType.UniqueIdentifier },
-			{ typeof(DateTime), SqlDbType.DateTime2 },
+			{ typeof(DateTime), SqlDbType.DateTime },
 			{ typeof(DateTimeOffset), SqlDbType.DateTimeOffset },
 			{ typeof(TimeSpan), SqlDbType.Time },
 			{ typeof(byte[]), SqlDbType.VarBinary },
