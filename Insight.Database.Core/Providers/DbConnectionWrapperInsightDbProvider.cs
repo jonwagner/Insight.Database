@@ -1,11 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using System.Linq;
-using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
-using Insight.Database.Reliable;
 
 namespace Insight.Database.Providers
 {
@@ -93,6 +91,14 @@ namespace Insight.Database.Providers
 			DbConnectionWrapper wrapped = (DbConnectionWrapper)connection;
 
 			base.BulkCopy(connection, tableName, reader, configure, options, transaction ?? wrapped.InnerTransaction);
+		}
+
+		/// <inheritdoc/>
+		public override Task BulkCopyAsync(IDbConnection connection, string tableName, IDataReader reader, Action<InsightBulkCopy> configure, InsightBulkCopyOptions options, IDbTransaction transaction, CancellationToken cancellationToken)
+		{
+			DbConnectionWrapper wrapped = (DbConnectionWrapper)connection;
+
+			return base.BulkCopyAsync(connection, tableName, reader, configure, options, transaction ?? wrapped.InnerTransaction, cancellationToken);
 		}
 	}
 }
