@@ -365,6 +365,12 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 
+		public interface ISwitchSchemas
+		{
+			[Sql("SELECT * FROM InsightTestData")]
+			int SelectValue();
+		}
+
         [Test]
         public void TestSchemaSwitching()
         {
@@ -379,6 +385,10 @@ namespace Insight.Tests.PostgreSQL
                 _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteSql("INSERT INTO InsightTestData VALUES (2)");
                 Assert.AreEqual(1, _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
                 Assert.AreEqual(2, _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
+
+				var parallel = _connectionStringBuilder.ConnectionWithSchema("test2").AsParallel<ISwitchSchemas>();
+				Assert.AreEqual(2, parallel.SelectValue());
+				Assert.AreEqual(2, parallel.SelectValue());
             }
             finally
             {
