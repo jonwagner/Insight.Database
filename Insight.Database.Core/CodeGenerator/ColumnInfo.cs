@@ -9,105 +9,105 @@ using System.Threading.Tasks;
 
 namespace Insight.Database.CodeGenerator
 {
-	/// <summary>
-	/// Represents a column identity.
-	/// </summary>
-	public class ColumnInfo : IEquatable<ColumnInfo>
-	{
-		#region Properties
-		/// <summary>
-		/// Gets the name of the column.
-		/// </summary>
-		public string Name { get; private set; }
+    /// <summary>
+    /// Represents a column identity.
+    /// </summary>
+    public class ColumnInfo : IEquatable<ColumnInfo>
+    {
+        #region Properties
+        /// <summary>
+        /// Gets the name of the column.
+        /// </summary>
+        public string Name { get; private set; }
 
-		/// <summary>
-		/// Gets the type of the column.
-		/// </summary>
-		public Type DataType { get; private set; }
+        /// <summary>
+        /// Gets the type of the column.
+        /// </summary>
+        public Type DataType { get; private set; }
 
-		/// <summary>
-		/// Gets the name of the type of the column.
-		/// </summary>
-		public string DataTypeName { get; private set; }
+        /// <summary>
+        /// Gets the name of the type of the column.
+        /// </summary>
+        public string DataTypeName { get; private set; }
 
-		/// <summary>
-		/// Gets a value indicating whether the column is nullable.
-		/// </summary>
-		public bool IsNullable { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether the column is nullable.
+        /// </summary>
+        public bool IsNullable { get; private set; }
 
-		/// <summary>
-		/// Gets a value indicating whether the column is the row identity.
-		/// </summary>
-		public bool IsIdentity { get; private set; }
+        /// <summary>
+        /// Gets a value indicating whether the column is the row identity.
+        /// </summary>
+        public bool IsIdentity { get; private set; }
 
-		/// <summary>
-		/// Gets  a value indicating whether the column is readonly.
-		/// </summary>
-		public bool IsReadOnly { get; private set; }
+        /// <summary>
+        /// Gets  a value indicating whether the column is readonly.
+        /// </summary>
+        public bool IsReadOnly { get; private set; }
 
-		/// <summary>
-		/// Gets the size of the column.
-		/// </summary>
-		public long? ColumnSize { get; private set; }
+        /// <summary>
+        /// Gets the size of the column.
+        /// </summary>
+        public long? ColumnSize { get; private set; }
 
-		/// <summary>
-		/// Gets the precision of the column.
-		/// </summary>
-		public int? NumericPrecision { get; private set; }
+        /// <summary>
+        /// Gets the precision of the column.
+        /// </summary>
+        public int? NumericPrecision { get; private set; }
 
-		/// <summary>
-		/// Gets the scale of the column.
-		/// </summary>
-		public int? NumericScale { get; private set; }
-		#endregion
+        /// <summary>
+        /// Gets the scale of the column.
+        /// </summary>
+        public int? NumericScale { get; private set; }
+        #endregion
 
-		#region Static Methods
+        #region Static Methods
 #if !NO_COLUMN_SCHEMA
-		/// <inheritdoc/>
-		public static List<ColumnInfo> FromDataReader(IDataReader reader)
-		{
-			var schemaGenerator = reader as IDbColumnSchemaGenerator;
-			if (schemaGenerator != null)
-			{
-				var schema = schemaGenerator.GetColumnSchema();
+        /// <inheritdoc/>
+        public static List<ColumnInfo> FromDataReader(IDataReader reader)
+        {
+            var schemaGenerator = reader as IDbColumnSchemaGenerator;
+            if (schemaGenerator != null)
+            {
+                var schema = schemaGenerator.GetColumnSchema();
 
-				return schemaGenerator.GetColumnSchema().Select(column =>
-					new ColumnInfo()
-					{
-						Name = column.ColumnName,
-						DataType = column.DataType,
-						DataTypeName = column.DataTypeName,
-						IsNullable = column.AllowDBNull ?? false,
-						IsReadOnly = column.IsReadOnly ?? false,
-						IsIdentity = column.IsIdentity ?? false,
-						NumericPrecision = column.NumericPrecision,
-						NumericScale = column.NumericScale,
-						ColumnSize = column.ColumnSize
-					}).ToList();
-			}
-			else
-			{
-				// if the provider doesn't implement IDbColumnSchemaGenerator, then this should be enough to read a schema
-				var columns = new List<ColumnInfo>();
-				for (int i = 0; i < reader.FieldCount; i++)
-				{
-					columns.Add(new ColumnInfo()
-					{
-						Name = reader.GetName(i),
-						DataType = reader.GetFieldType(i),
-						DataTypeName = reader.GetDataTypeName(i),
-						IsNullable = true,
-						IsReadOnly = false,
-						IsIdentity = false,
-						NumericPrecision = null,
-						NumericScale = null,
-						ColumnSize = null
-					});
-				}
+                return schemaGenerator.GetColumnSchema().Select(column =>
+                    new ColumnInfo()
+                    {
+                        Name = column.ColumnName,
+                        DataType = column.DataType,
+                        DataTypeName = column.DataTypeName,
+                        IsNullable = column.AllowDBNull ?? false,
+                        IsReadOnly = column.IsReadOnly ?? false,
+                        IsIdentity = column.IsIdentity ?? false,
+                        NumericPrecision = column.NumericPrecision,
+                        NumericScale = column.NumericScale,
+                        ColumnSize = column.ColumnSize
+                    }).ToList();
+            }
+            else
+            {
+                // if the provider doesn't implement IDbColumnSchemaGenerator, then this should be enough to read a schema
+                var columns = new List<ColumnInfo>();
+                for (int i = 0; i < reader.FieldCount; i++)
+                {
+                    columns.Add(new ColumnInfo()
+                    {
+                        Name = reader.GetName(i),
+                        DataType = reader.GetFieldType(i),
+                        DataTypeName = reader.GetDataTypeName(i),
+                        IsNullable = true,
+                        IsReadOnly = false,
+                        IsIdentity = false,
+                        NumericPrecision = null,
+                        NumericScale = null,
+                        ColumnSize = null
+                    });
+                }
 
-				return columns;
-			}
-		}
+                return columns;
+            }
+        }
 #else
 		/// <summary>
 		/// Gets the list of columns from a data reader.
@@ -146,6 +146,7 @@ namespace Insight.Database.CodeGenerator
 					IsReadOnly = (isReadOnlyColumn == -1) ? false : row.IsNull(isReadOnlyColumn) ? false : Convert.ToBoolean(row[isReadOnlyColumn], CultureInfo.InvariantCulture),
 					IsIdentity = (isIdentityColumn == -1) ? false : row.IsNull(isIdentityColumn) ? false : Convert.ToBoolean(row[isIdentityColumn], CultureInfo.InvariantCulture),
 					DataType = (Type)row[dataTypeColumn],
+					DataTypeName = (dataTypeNameColumn == -1) ? null : (string)row[dataTypeNameColumn],
 					NumericPrecision = (precisionColumn == -1) ? (int?)null : row.IsNull(precisionColumn) ? (int?)null : Convert.ToInt32(row[precisionColumn]),
 					NumericScale = (scaleColumn == -1) ? (int?)null : row.IsNull(scaleColumn) ? (int?)null : Convert.ToInt32(row[scaleColumn]),
 					ColumnSize = (columnSizeColumn == -1) ? (int?)null : row.IsNull(columnSizeColumn) ? (int?)null : Convert.ToInt32(row[columnSizeColumn])
@@ -236,7 +237,7 @@ namespace Insight.Database.CodeGenerator
 			}
 		}
 #endif
-#endregion
+        #endregion
 
         /// <summary>
         /// Determines whether two columns are equal.
@@ -244,43 +245,43 @@ namespace Insight.Database.CodeGenerator
         /// <param name="other">The other column.</param>
         /// <returns>True if they are equal.</returns>
         public bool Equals(ColumnInfo other)
-		{
-			if (other == null)
-				return false;
+        {
+            if (other == null)
+                return false;
 
-			if (Name != other.Name)
-				return false;
-			if (DataType != other.DataType)
-				return false;
-			if (IsNullable != other.IsNullable)
-				return false;
-			if (IsIdentity != other.IsIdentity)
-				return false;
-			if (IsReadOnly != other.IsReadOnly)
-				return false;
+            if (Name != other.Name)
+                return false;
+            if (DataType != other.DataType)
+                return false;
+            if (IsNullable != other.IsNullable)
+                return false;
+            if (IsIdentity != other.IsIdentity)
+                return false;
+            if (IsReadOnly != other.IsReadOnly)
+                return false;
 
-			return true;
-		}
+            return true;
+        }
 
-		/// <inheritdoc/>
-		public override int GetHashCode()
-		{
-			int hashCode = 17;
+        /// <inheritdoc/>
+        public override int GetHashCode()
+        {
+            int hashCode = 17;
 
-			unchecked
-			{
-				hashCode += Name.GetHashCode();
-				hashCode *= 23;
-				hashCode += DataType.GetHashCode();
-				hashCode *= 23;
-				hashCode += IsNullable.GetHashCode();
-				hashCode *= 23;
-				hashCode += IsIdentity.GetHashCode();
-				hashCode *= 23;
-				hashCode += IsReadOnly.GetHashCode();
-			}
+            unchecked
+            {
+                hashCode += Name.GetHashCode();
+                hashCode *= 23;
+                hashCode += DataType.GetHashCode();
+                hashCode *= 23;
+                hashCode += IsNullable.GetHashCode();
+                hashCode *= 23;
+                hashCode += IsIdentity.GetHashCode();
+                hashCode *= 23;
+                hashCode += IsReadOnly.GetHashCode();
+            }
 
-			return hashCode;
-		}
-	}
+            return hashCode;
+        }
+    }
 }

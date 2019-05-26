@@ -48,7 +48,8 @@ namespace Insight.Database.Providers.PostgreSQL
         /// </summary>
         private static Type[] _supportedTypes = new Type[]
         {
-            typeof(NpgsqlConnectionStringBuilder), typeof(NpgsqlConnection), typeof(NpgsqlCommand), typeof(NpgsqlParameter), typeof(NpgsqlDataReader), typeof(NpgsqlException)
+            typeof(NpgsqlConnectionStringBuilder), typeof(NpgsqlConnection), typeof(NpgsqlCommand), typeof(NpgsqlParameter), typeof(NpgsqlDataReader), typeof(NpgsqlException),
+			typeof(NpgsqlConnectionWithSchema), typeof(NpgsqlConnectionWithRecordsets)
         };
         #endregion
 
@@ -86,6 +87,30 @@ namespace Insight.Database.Providers.PostgreSQL
         {
             return new NpgsqlConnection();
         }
+
+		/// <summary>
+		/// Clones a new DbConnection supported by this provider.
+		/// </summary>
+		/// <param name="connection">The connection to clone.</param>
+		/// <returns>A new DbConnection.</returns>
+		public override IDbConnection CloneDbConnection(IDbConnection connection)
+		{
+			if (connection == null) throw new ArgumentNullException("connection");
+
+			var schema = connection as NpgsqlConnectionWithSchema;
+			if (schema != null)
+			{
+				return new NpgsqlConnectionWithSchema(new NpgsqlConnectionStringBuilder(schema.ConnectionString), schema.Schema);
+			}
+
+			var recordsets = connection as NpgsqlConnectionWithRecordsets;
+			if (recordsets != null)
+			{
+				return new NpgsqlConnectionWithRecordsets(new NpgsqlConnectionStringBuilder(schema.ConnectionString));
+			}
+
+			return base.CloneDbConnection(connection);
+		}
 
         /// <summary>
         /// Derives the parameter list from a stored procedure command.
