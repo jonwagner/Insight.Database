@@ -935,6 +935,30 @@ namespace Insight.Tests
 		}
 
 		[Test]
+		public void DateFieldsShouldConvertProperlyFromDynamic()
+		{
+			var expected = DateTime.MinValue;
+			var fe = new FastExpando();
+			var feDict = fe as IDictionary<string, object>;
+
+			// send datetime and datetime? to sql
+			feDict["date"] = expected;
+			Connection().QuerySql<DateTime>("SELECT @date", fe);
+
+			feDict["date"] = (DateTime?)expected;
+			Connection().QuerySql<DateTime>("SELECT @date", fe);
+
+			feDict["date"] = expected;
+			Connection().Query<DateTime>("TestDateTime2", fe);
+
+			feDict["date"] = (DateTime?)expected;
+			var list = Connection().Query<DateTime>("TestDateTime2", new { date = (DateTime?)expected });
+
+			var result = list.First();
+			Assert.AreEqual(expected, result);
+		}
+
+		[Test]
 		public void DateFieldsShouldConvertFromString()
 		{
 			DateTime d = DateTime.Today;
