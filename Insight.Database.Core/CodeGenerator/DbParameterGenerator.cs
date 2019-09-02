@@ -526,6 +526,7 @@ namespace Insight.Database.CodeGenerator
 					if (value != null && _typeToDbTypeMap.ContainsKey(value.GetType()))
 						dbDataParameter.DbType = _typeToDbTypeMap[value.GetType()];
 
+					provider.FixupParameter(cmd, p, p.DbType, dyn.GetType(), SerializationMode.Default);
 					cmd.Parameters.Add(p);
 				}
 			};
