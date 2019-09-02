@@ -1,6 +1,6 @@
 ﻿<Project>
   <PropertyGroup>
-    <version>6.2.9</version>
+    <version>6.2.10</version>
     <authors>Jon Wagner</authors>
     <PackageProjectUrl>http://github.com/jonwagner/Insight.Database</PackageProjectUrl>
     <PackageLicenseUrl>https://github.com/jonwagner/Insight.Database/blob/master/License.txt</PackageLicenseUrl>
