@@ -52,6 +52,7 @@ namespace Insight.Database.CodeGenerator
         private static readonly ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>> _singleThreadedConstructors = new ConcurrentDictionary<Type, Func<Func<IDbConnection>, object>>();
 
         private static readonly ModuleBuilder _moduleBuilder;
+        private static readonly object _codeGenerationLock = new object();
         #endregion
 
         #region Initialization
@@ -88,10 +89,20 @@ namespace Insight.Database.CodeGenerator
                 throw new ArgumentException("type must be an interface or abstract class", "type");
 
             var constructors = singleThreaded ? _singleThreadedConstructors : _constructors;
+            if (!constructors.TryGetValue(type, out var factory))
+            {
+                // ModuleBuilder is not thread-safe - we have to ensure there is only one thread generating code at any time
+                lock (_codeGenerationLock)
+                {
+                    if (!constructors.TryGetValue(type, out factory))
+                    {
+                        factory = CreateImplementorOf(type, singleThreaded);
+                        constructors.TryAdd(type, factory);
+                    }
+                }
+            }
 
-            return constructors.GetOrAdd(
-                type,
-                t => CreateImplementorOf(t, singleThreaded))(connectionProvider);
+            return factory(connectionProvider);
         }
 
         /// <summary>
