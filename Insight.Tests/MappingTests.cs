@@ -635,5 +635,24 @@ namespace Insight.Tests
 		}
 		#endregion
 #endif
+
+		public class A388
+		{
+			public int _a;
+		}
+		public class B388
+		{
+			public int A;
+		}
+
+		[Test]
+		public void TestIssue388()
+		{
+			ColumnMapping.Tables.RemoveStrings<A388>("_");
+
+			// this will throw because one of the columns has a NULL column name
+			Connection().SingleSql<A388>("SELECT A=1, 2");
+			Connection().SingleSql<B388>("SELECT A=1, 2");
+		}
 	}
 }
