@@ -89,9 +89,11 @@ namespace Insight.Database.CodeGenerator
 
             var constructors = singleThreaded ? _singleThreadedConstructors : _constructors;
 
-            return constructors.GetOrAdd(
+            var constructor = constructors.GetOrAdd(
                 type,
-                t => CreateImplementorOf(t, singleThreaded))(connectionProvider);
+                t => CreateImplementorOf(t, singleThreaded));
+
+			return constructor(connectionProvider);
         }
 
         /// <summary>
@@ -103,6 +105,14 @@ namespace Insight.Database.CodeGenerator
         /// <param name="singleThreaded">True to create a single-threaded implementation.</param>
         /// <returns>A construction function that takes a connection provider and returns the implementation.</returns>
         private static Func<Func<IDbConnection>, object> CreateImplementorOf(Type type, bool singleThreaded)
+		{
+			lock (_moduleBuilder)
+			{
+				return ThreadUnsafeCreateImplementorOf(type, singleThreaded);
+			}
+		}
+
+        private static Func<Func<IDbConnection>, object> ThreadUnsafeCreateImplementorOf(Type type, bool singleThreaded)
         {
             // create the type
             string typeName = type.FullName + Guid.NewGuid().ToString();
