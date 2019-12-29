@@ -11,7 +11,7 @@ You can run all of the supported databases through docker:
 
 	cd insight-docker
 	.\docker-env.bat # windows
-	source ./docker-env.bat # non-windows
+	source ./docker-env.sh # non-windows
 	docker-compose up
 
 It takes a while the first time, so wait until all of the databases boot up fully.
