@@ -146,7 +146,7 @@ namespace Insight.Database.Providers.DB2
 		{
 			if (reader == null) throw new ArgumentNullException("reader");
 			if (transaction != null)
-				throw new ArgumentException("OracleProvider does not support external transactions for bulk copy", "transaction");
+				throw new ArgumentException("DB2Provider does not support external transactions for bulk copy", "transaction");
 
 			DB2BulkCopyOptions db2Options = DB2BulkCopyOptions.Default;
 			if (options.HasFlag(InsightBulkCopyOptions.KeepIdentity))
