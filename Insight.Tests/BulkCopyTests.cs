@@ -6,6 +6,8 @@ using System.Data.SqlClient;
 using System.Data;
 using NUnit.Framework;
 using Insight.Database;
+using System.Threading.Tasks;
+
 #if !NO_SQL_TYPES
 using Microsoft.SqlServer.Types;
 #endif
@@ -74,6 +76,26 @@ namespace Insight.Tests
 
 				VerifyRecordsInserted(connection, i);
 			}
+		}
+
+		[Test]
+		public void TestBulkLoadAsyncCancel()
+		{
+			var connection = Connection();
+			var cancellationToken = new System.Threading.CancellationTokenSource();
+
+			// cancel the token
+			cancellationToken.Cancel();
+
+			// try bulk load the data
+			Cleanup();
+			Assert.CatchAsync<OperationCanceledException>(
+				async () => await 
+				connection.BulkCopyAsync(
+					"BulkCopyData",
+					new InsightTestData[10],
+					cancellationToken: cancellationToken.Token)
+				);
 		}
 
 #if !NO_SQL_TYPES
