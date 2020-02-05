@@ -180,7 +180,7 @@ namespace Insight.Database
 		/// <param name="transaction">The transaction to participate in it.</param>
 		/// <param name="cancellationToken">The CancellationToken to use for the operation or null to not use cancellation.</param>
 		/// <returns>A data reader with the results.</returns>
-		public static async Task<IDataReader> GetReaderAsync(
+		public static async Task<DbDataReader> GetReaderAsync(
 			this IDbConnection connection,
 			string sql,
 			object parameters = null,
@@ -200,7 +200,7 @@ namespace Insight.Database
 				}
 				else
 				{
-					return cmd.ExecuteReader(commandBehavior);
+					return (DbDataReader)cmd.ExecuteReader(commandBehavior);
 				}
 			}
 		}

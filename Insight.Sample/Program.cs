@@ -266,9 +266,12 @@ namespace Insight.Database.Sample
 		static void Async_ManualTransform_GetReader()
 		{
 			using (IDbConnection connection = Database.Open())
-			using (Task<IDataReader> reader = connection.GetReaderAsync("FindBeers", new { Name = "IPA" }))
+			using (DbDataReader reader = connection.GetReaderAsync("FindBeers", new { Name = "IPA" }).Result)
 			{
-				connection.BulkCopyAsync("FindBeers", reader.Result);
+				while (reader.ReadAsync().Result)
+				{
+					
+				}
 			}
 		}
 
