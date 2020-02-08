@@ -29,7 +29,7 @@ namespace Insight.Database
 			{
 				SqlConnection connection = new SqlConnection();
 				disposable = connection;
-				connection.ConnectionString = builder.ConnectionString;
+				connection.ConnectionString = builder.ConnectionString; 
 				disposable = null;
 				return connection;
 			}
@@ -104,6 +104,17 @@ namespace Insight.Database
 		public static DbConnectionWrapper OpenWithTransaction(this SqlConnectionStringBuilder builder)
 		{
 			return builder.Connection().OpenWithTransaction();
+		}
+
+		/// <summary>
+		/// Opens a database connection and begins a new transaction with the specified isolation level that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="isolationLevel">The isolationLevel for the transaction.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static DbConnectionWrapper OpenWithTransaction(this SqlConnectionStringBuilder builder, IsolationLevel isolationLevel)
+		{
+			return builder.Connection().OpenWithTransaction(isolationLevel);
 		}
 
 		/// <summary>

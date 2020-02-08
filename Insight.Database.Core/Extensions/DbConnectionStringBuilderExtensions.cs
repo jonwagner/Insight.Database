@@ -127,6 +127,17 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Opens a database connection and begins a new transaction with the specified isolation level that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="isolationLevel">The isolationLevel for the transaction.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static DbConnectionWrapper OpenWithTransaction(this DbConnectionStringBuilder builder, IsolationLevel isolationLevel)
+		{
+			return builder.Connection().OpenWithTransaction(isolationLevel);
+		}
+
+		/// <summary>
 		/// Asynchronously opens a database connection and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
 		/// <param name="builder">The builder for the connection.</param>
@@ -135,6 +146,18 @@ namespace Insight.Database
 		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this DbConnectionStringBuilder builder, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			return builder.Connection().OpenWithTransactionAsync(cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously opens a database connection and begins a new transaction with the specified isolation level that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="isolationLevel">The isolationLevel for the transaction.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<DbConnectionWrapper> OpenWithTransactionAsync(this DbConnectionStringBuilder builder, IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			return builder.Connection().OpenWithTransactionAsync(isolationLevel, cancellationToken);
 		}
 
 		/// <summary>
@@ -149,6 +172,18 @@ namespace Insight.Database
 		}
 
 		/// <summary>
+		/// Opens a database connection implementing a given interface and begins a new transaction with the specified isolation level that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="isolationLevel">The isolationLevel for the transaction.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static T OpenWithTransactionAs<T>(this DbConnectionStringBuilder builder, IsolationLevel isolationLevel) where T : class, IDbConnection, IDbTransaction
+		{
+			return builder.Connection().OpenWithTransactionAs<T>(isolationLevel);
+		}
+
+		/// <summary>
 		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction that is disposed when the returned object is disposed.
 		/// </summary>
 		/// <typeparam name="T">The interface to implement.</typeparam>
@@ -158,6 +193,19 @@ namespace Insight.Database
 		public static Task<T> OpenWithTransactionAsAsync<T>(this DbConnectionStringBuilder builder, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
 		{
 			return builder.Connection().OpenWithTransactionAsAsync<T>(cancellationToken);
+		}
+
+		/// <summary>
+		/// Asynchronously opens a database connection implementing a given interface, and begins a new transaction with the specified isolation level that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <typeparam name="T">The interface to implement.</typeparam>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="cancellationToken">The cancellation token to use for the operation.</param>
+		/// <param name="isolationLevel">The isolationLevel for the transaction.</param>
+		/// <returns>A task returning a connection when the connection has been opened.</returns>
+		public static Task<T> OpenWithTransactionAsAsync<T>(this DbConnectionStringBuilder builder, IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
+		{
+			return builder.Connection().OpenWithTransactionAsAsync<T>(isolationLevel, cancellationToken);
 		}
 	}
 }
