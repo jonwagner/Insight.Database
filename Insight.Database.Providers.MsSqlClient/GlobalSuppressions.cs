@@ -1,0 +1,4 @@
+﻿[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace", Target = "Insight.Database.Providers")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace", Target = "Insight.Database.Reliable")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1020:AvoidNamespacesWithFewTypes", Scope = "namespace", Target = "Insight.Database")]
+[assembly: System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Scope = "member", Target = "Insight.Database.SqlInsightDbProvider.#PrepareBulkCopy(System.Data.IDbConnection,System.String,System.Data.IDataReader,System.Action`1<Insight.Database.InsightBulkCopy>,Insight.Database.InsightBulkCopyOptions,System.Data.IDbTransaction)")]

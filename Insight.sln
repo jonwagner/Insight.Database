@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.27130.2036
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29709.97
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests", "Insight.Tests\Insight.Tests.csproj", "{DEB0A47D-FC34-4B7F-A2FB-151B3697533E}"
 EndProject
@@ -97,6 +97,10 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.OracleManaged.Core", "Insight.Database.Providers.OracleManaged.Core\Insight.Database.Providers.OracleManaged.Core.csproj", "{FBB1619B-E290-4A01-B77A-341D83634107}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.OracleManaged.Core", "Insight.Tests.OracleManaged.Core\Insight.Tests.OracleManaged.Core.csproj", "{2C602D6A-D10C-487C-AD14-B10CECDF7045}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.MsSqlClient", "Insight.Database.Providers.MsSqlClient\Insight.Database.Providers.MsSqlClient.csproj", "{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.MsSqlClient", "Insight.Tests.MsSqlClient\Insight.Tests.MsSqlClient.csproj", "{560F458F-A450-40A8-9DF1-FF454DF0AC4E}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -420,6 +424,30 @@ Global
 		{2C602D6A-D10C-487C-AD14-B10CECDF7045}.Release|Mixed Platforms.Build.0 = Release|Any CPU
 		{2C602D6A-D10C-487C-AD14-B10CECDF7045}.Release|x86.ActiveCfg = Release|Any CPU
 		{2C602D6A-D10C-487C-AD14-B10CECDF7045}.Release|x86.Build.0 = Release|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Debug|x86.Build.0 = Debug|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Release|x86.ActiveCfg = Release|Any CPU
+		{241AF93E-AB05-48D2-9A04-9288EB6E2C6A}.Release|x86.Build.0 = Release|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Debug|x86.Build.0 = Debug|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Release|x86.ActiveCfg = Release|Any CPU
+		{560F458F-A450-40A8-9DF1-FF454DF0AC4E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
