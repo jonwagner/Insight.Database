@@ -275,6 +275,19 @@ namespace Insight.Database.Sample
 				}
 			}
 		}
+
+		static void Async_ManualTransform_GetReader()
+		{
+			using (IDbConnection connection = Database.Open())
+			using (DbDataReader reader = connection.GetReaderAsync("FindBeers", new { Name = "IPA" }).Result)
+			{
+				while (reader.ReadAsync().Result)
+				{
+					
+				}
+			}
+		}
+
 		#endregion
 
 		#region Querying for Objects
