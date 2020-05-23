@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
-using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml;
+using Microsoft.Data.SqlClient;
 
 namespace Insight.Database
 {
@@ -20,9 +20,9 @@ namespace Insight.Database
         /// <param name="command">The command to execute.</param>
         /// <returns>The XmlDocument.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
-		public static XmlDocument ExecuteXml(this SqlCommand command)
+        public static XmlDocument ExecuteXml(this SqlCommand command)
         {
-			if (command == null) throw new ArgumentNullException("command");
+            if (command == null) throw new ArgumentNullException("command");
 
             using (var reader = command.ExecuteXmlReader())
             {
@@ -45,8 +45,8 @@ namespace Insight.Database
         /// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
         /// <returns>An XmlDocument with the results.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
-		public static XmlDocument QueryXml(
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
+        public static XmlDocument QueryXml(
             this SqlConnection connection,
             string sql,
             object parameters = null,
@@ -80,7 +80,7 @@ namespace Insight.Database
         /// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
         /// <returns>An XmlDocument with the results.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
-		public static XmlDocument QueryXmlSql(
+        public static XmlDocument QueryXmlSql(
             this SqlConnection connection,
             string sql,
             object parameters = null,

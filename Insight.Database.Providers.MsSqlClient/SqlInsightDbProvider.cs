@@ -3,7 +3,6 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using Microsoft.Data.SqlClient;
 using System.Data.SqlTypes;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
@@ -15,6 +14,7 @@ using Insight.Database.CodeGenerator;
 using Insight.Database.MissingExtensions;
 using Insight.Database.Providers;
 using Insight.Database.Providers.MsSqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace Insight.Database
 {
