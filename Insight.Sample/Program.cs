@@ -151,6 +151,18 @@ namespace Insight.Database.Sample
 				c.QuerySql("SELECT * FROM Beer", Parameters.Empty);
 			}
 		}
+
+		static void SqlConnectionStringBuilder_Open2()
+		{
+			SqlConnection database = new SqlConnection(connectionString);
+			// make other changes here
+
+			// manage the lifetime ourselves
+			using (IDbConnection c = database.OpenWithTransaction("test"))
+			{
+				c.QuerySql("SELECT * FROM Beer", Parameters.Empty);
+			}
+		}
 		#endregion
 
 		#region Executing Database Commands

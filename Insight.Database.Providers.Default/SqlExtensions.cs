@@ -91,5 +91,38 @@ namespace Insight.Database
         {
             return connection.QueryXml(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
         }
-    }
+
+		/// <summary>
+		/// Opens a database connection and begins a new transaction with the specified transaction name 
+		/// that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="transactionName">Name for the transaction.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static DbConnectionWrapper OpenWithTransaction(this SqlConnection connection, string transactionName)
+		{
+			var wrapper = new DbConnectionWrapper(connection);
+			wrapper.Open();
+			var transaction = connection.BeginTransaction(transactionName);
+			wrapper.UsingTransaction(transaction);
+			return wrapper; 
+		}
+
+		/// <summary>
+		/// Opens a database connection and begins a new transaction with the specified transaction name
+		/// and isolationLevel that is disposed when the returned object is disposed.
+		/// </summary>
+		/// <param name="builder">The builder for the connection.</param>
+		/// <param name="transactionName">Name for the transaction.</param>
+		/// <param name="isolationLevel">Specifies the isolation level for the transaction.</param>
+		/// <returns>A wrapper for the database connection.</returns>
+		public static DbConnectionWrapper OpenWithTransaction(this SqlConnection connection,IsolationLevel isolationLevel , string transactionName)
+		{
+			var wrapper = new DbConnectionWrapper(connection);
+			wrapper.Open();
+			var transaction = connection.BeginTransaction(isolationLevel, transactionName);
+			wrapper.UsingTransaction(transaction);
+			return wrapper;
+		}
+	}
 }
