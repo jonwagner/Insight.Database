@@ -313,9 +313,9 @@ namespace Insight.Database
 			using (var bcp = PrepareBulkCopy(connection, tableName, reader, configure, options, transaction))
 			{
 #if NETSTANDARD1_5
-				await bcp.BulkCopy.WriteToServerAsync((DbDataReader)reader).ConfigureAwait(false);
+				await bcp.BulkCopy.WriteToServerAsync((DbDataReader)reader, cancellationToken).ConfigureAwait(false);
 #else
-				await bcp.BulkCopy.WriteToServerAsync(reader).ConfigureAwait(false);
+				await bcp.BulkCopy.WriteToServerAsync(reader, cancellationToken).ConfigureAwait(false);
 #endif
 			}
 		}

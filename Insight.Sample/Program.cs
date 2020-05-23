@@ -70,6 +70,7 @@ namespace Insight.Database.Sample
 
 			#region Bulk Copy
 			BulkCopy();
+			Async_BulkCopy();
 			#endregion
 
 			#region Creating Commands
@@ -415,6 +416,17 @@ namespace Insight.Database.Sample
 			beer.Add(new Beer() { Name = "Hoppopotamus", Flavor = "hoppy", OriginalGravity = 3.0m });
 
 			Database.Connection().BulkCopy("Beer", beer);
+		}
+		#endregion
+
+		#region Bulk Copy Async
+		static void Async_BulkCopy()
+		{
+			List<Beer> beer = new List<Beer>();
+			beer.Add(new Beer() { Name = "Sly Fox IPA", Flavor = "yummy", OriginalGravity = 4.2m });
+			beer.Add(new Beer() { Name = "Hoppopotamus", Flavor = "hoppy", OriginalGravity = 3.0m });
+
+			Database.Connection().BulkCopyAsync("Beer", beer);
 		}
 		#endregion
 
