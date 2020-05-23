@@ -1,4 +1,8 @@
 version: '3'
+
+volumes:
+  db2:
+
 services:
   sqlserver:
     image: microsoft/mssql-server-linux
@@ -25,16 +29,21 @@ services:
     - POSTGRES_PASSWORD=Insight!!!Test
     - POSTGRES_USER=postgres
 
+# docker run --rm -it --name mydb2 --privileged=true -p 50000:50000 -e LICENSE=accept -e DB2INST1_PASSWORD=Insight!!!Test -e DBNAME=testdb -v ./db2:/database ibmcom/db2
+# NOTE: this seems to need the local volume instead of mapping to a disk
   db2:
-    build:
-      context: .
-      dockerfile: Dockerfile.db2
+    image: ibmcom/db2
+    privileged: true
     ports:
     - "50000:50000"
     environment:
     - LICENSE=accept
+    - DB2INSTANCE=db2inst1
     - DB2INST1_PASSWORD=Insight!!!Test
-    command: db2start
+    - DBNAME=testdb
+    - PERSISTENT_HOME=false
+    volumes:
+    - db2:/database
 
   oracle:
     image: sath89/oracle-12c

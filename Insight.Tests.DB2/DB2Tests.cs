@@ -16,64 +16,64 @@ using System.Data;
 
 namespace Insight.Tests.DB2
 {
-	[TestFixture]
+    [TestFixture]
     public class DB2Tests
     {
-		[Test]
-		public void EmptyTest()
-		{
-			// FTW
-		}
+        [Test]
+        public void EmptyTest()
+        {
+            // FTW
+        }
 
-		// having some trouble getting connections running with the new core package
-		private IDbConnection _connection;
+        // having some trouble getting connections running with the new core package
+        private IDbConnection _connection;
 
-		public class ParentTestData
-		{
-			public int ID;
-			public decimal Dec;
-			public TestData TestData;
-		}
+        public class ParentTestData
+        {
+            public int ID;
+            public decimal Dec;
+            public TestData TestData;
+        }
 
-		public class TestData
-		{
-			public int X;
-			public int Z;
-		}
+        public class TestData
+        {
+            public int X;
+            public int Z;
+        }
 
-		[OneTimeSetUp]
-		public void SetUpFixture()
-		{
-			var connectionString = String.Format("Server={0}:50000;database=sample;userid=db2inst1;password={1};Pooling=false",
-				BaseTest.TestHost ?? "localhost",
-				BaseTest.Password ?? "sql");
-			_connection = new DB2Connection(connectionString);
-			_connection.Open();
-		}
+        [OneTimeSetUp]
+        public void SetUpFixture()
+        {
+            var connectionString = String.Format("Server={0}:50000;database=testdb;userid=db2inst1;password={1};Pooling=false",
+                BaseTest.TestHost ?? "localhost",
+                BaseTest.Password ?? "sql");
+            _connection = new DB2Connection(connectionString);
+            _connection.Open();
+        }
 
-		[Test]
-		public void TestExecuteSql()
-		{
-			_connection.ExecuteSql("SELECT * FROM SYSIBM.DUAL");
-		}
+        [Test]
+        public void TestExecuteSql()
+        {
+            _connection.ExecuteSql("SELECT * FROM SYSIBM.DUAL");
+        }
 
-		[Test]
-		public void TestExecuteWithParameters()
-		{
-			var result = _connection.QuerySql<int>("SELECT CAST(@p AS INT) as p FROM SYSIBM.DUAL", new { p = 5 });
+        [Test]
+        public void TestExecuteWithParameters()
+        {
+            var result = _connection.QuerySql<int>("SELECT CAST(@p AS INT) as p FROM SYSIBM.DUAL", new { p = 5 });
 
-			Assert.AreEqual(1, result.Count);
-			Assert.AreEqual(5, result[0]);
-		}
+            Assert.AreEqual(1, result.Count);
+            Assert.AreEqual(5, result[0]);
+        }
 
-		[Test]
-		public void TestQueryObject()
-		{
-			var result = _connection.QuerySql<TestData>("SELECT 5 as x, 7 as z FROM SYSIBM.DUAL;").First();
+        [Test]
+        public void TestQueryObject()
+        {
+            var result = _connection.QuerySql<TestData>("SELECT 5 as x, 7 as z FROM SYSIBM.DUAL;").First();
 
-			Assert.AreEqual(5, result.X);
-			Assert.AreEqual(7, result.Z);
-		}
+            Assert.AreEqual(5, result.X);
+            Assert.AreEqual(7, result.Z);
+        }
 
 #if !NO_DERIVE_PARAMETERS
 		[Test]
@@ -261,5 +261,5 @@ namespace Insight.Tests.DB2
 			}
 		}
 #endif
-	}
+    }
 }
