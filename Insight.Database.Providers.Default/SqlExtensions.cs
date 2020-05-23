@@ -20,9 +20,9 @@ namespace Insight.Database
         /// <param name="command">The command to execute.</param>
         /// <returns>The XmlDocument.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
-		public static XmlDocument ExecuteXml(this SqlCommand command)
+        public static XmlDocument ExecuteXml(this SqlCommand command)
         {
-			if (command == null) throw new ArgumentNullException("command");
+            if (command == null) throw new ArgumentNullException("command");
 
             using (var reader = command.ExecuteXmlReader())
             {
@@ -45,8 +45,8 @@ namespace Insight.Database
         /// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
         /// <returns>An XmlDocument with the results.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1011:ConsiderPassingBaseTypesAsParameters")]
-		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
-		public static XmlDocument QueryXml(
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
+        public static XmlDocument QueryXml(
             this SqlConnection connection,
             string sql,
             object parameters = null,
@@ -80,7 +80,7 @@ namespace Insight.Database
         /// <param name="outputParameters">An optional object to send the output parameters to. This may be the same as parameters.</param>
         /// <returns>An XmlDocument with the results.</returns>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Design", "CA1059:MembersShouldNotExposeCertainConcreteTypes", MessageId = "System.Xml.XmlNode")]
-		public static XmlDocument QueryXmlSql(
+        public static XmlDocument QueryXmlSql(
             this SqlConnection connection,
             string sql,
             object parameters = null,
@@ -92,37 +92,37 @@ namespace Insight.Database
             return connection.QueryXml(sql, parameters, CommandType.Text, commandBehavior, commandTimeout, transaction, outputParameters);
         }
 
-		/// <summary>
-		/// Opens a database connection and begins a new transaction with the specified transaction name 
-		/// that is disposed when the returned object is disposed.
-		/// </summary>
-		/// <param name="builder">The builder for the connection.</param>
-		/// <param name="transactionName">Name for the transaction.</param>
-		/// <returns>A wrapper for the database connection.</returns>
-		public static DbConnectionWrapper OpenWithTransaction(this SqlConnection connection, string transactionName)
-		{
-			var wrapper = new DbConnectionWrapper(connection);
-			wrapper.Open();
-			var transaction = connection.BeginTransaction(transactionName);
-			wrapper.UsingTransaction(transaction);
-			return wrapper; 
-		}
+        /// <summary>
+        /// Opens a database connection and begins a new transaction with the specified transaction name
+        /// that is disposed when the returned object is disposed.
+        /// </summary>
+        /// <param name="connection">The connection to open.</param>
+        /// <param name="transactionName">Name for the transaction.</param>
+        /// <returns>A wrapper for the database connection.</returns>
+        public static DbConnectionWrapper OpenWithTransaction(this SqlConnection connection, string transactionName)
+        {
+            var wrapper = new DbConnectionWrapper(connection);
+            wrapper.Open();
+            var transaction = connection.BeginTransaction(transactionName);
+            wrapper.UsingTransaction(transaction);
+            return wrapper;
+        }
 
-		/// <summary>
-		/// Opens a database connection and begins a new transaction with the specified transaction name
-		/// and isolationLevel that is disposed when the returned object is disposed.
-		/// </summary>
-		/// <param name="builder">The builder for the connection.</param>
-		/// <param name="transactionName">Name for the transaction.</param>
-		/// <param name="isolationLevel">Specifies the isolation level for the transaction.</param>
-		/// <returns>A wrapper for the database connection.</returns>
-		public static DbConnectionWrapper OpenWithTransaction(this SqlConnection connection,IsolationLevel isolationLevel , string transactionName)
-		{
-			var wrapper = new DbConnectionWrapper(connection);
-			wrapper.Open();
-			var transaction = connection.BeginTransaction(isolationLevel, transactionName);
-			wrapper.UsingTransaction(transaction);
-			return wrapper;
-		}
-	}
+        /// <summary>
+        /// Opens a database connection and begins a new transaction with the specified transaction name
+        /// and isolationLevel that is disposed when the returned object is disposed.
+        /// </summary>
+        /// <param name="connection">The connection to open.</param>
+        /// <param name="isolationLevel">Specifies the isolation level for the transaction.</param>
+        /// <param name="transactionName">Name for the transaction.</param>
+        /// <returns>A wrapper for the database connection.</returns>
+        public static DbConnectionWrapper OpenWithTransaction(this SqlConnection connection, IsolationLevel isolationLevel, string transactionName)
+        {
+            var wrapper = new DbConnectionWrapper(connection);
+            wrapper.Open();
+            var transaction = connection.BeginTransaction(isolationLevel, transactionName);
+            wrapper.UsingTransaction(transaction);
+            return wrapper;
+        }
+    }
 }
