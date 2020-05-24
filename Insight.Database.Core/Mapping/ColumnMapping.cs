@@ -138,8 +138,11 @@ namespace Insight.Database
         /// <returns>The mapping for the parameters.</returns>
         private static FieldMapping MapParameter(Type type, IDbCommand command, IDataParameter parameter)
         {
-            // allow for a custom mapper
-            var fieldName = Parameters.Mappers.Select(m => m.MapParameter(type, command, parameter)).FirstOrDefault();
+            // allow for a custom mapper - the first one that doesn't return null
+            var fieldName = Parameters.Mappers
+                                        .Select(m => m.MapParameter(type, command, parameter))
+                                        .Where(m => m != null)
+                                        .FirstOrDefault();
 
             // by default, let all of the transforms transform the name, then search for it
             if (fieldName == null)
