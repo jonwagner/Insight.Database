@@ -127,5 +127,13 @@ namespace Insight.Tests
             Assert.IsNotNull(result[0].List[0].More);
             result[0].List[0].More.Verify();
         }
+
+        [Test]
+        public void TestIssue426()
+        {
+            // allow NOBIND to inform insight to not bind the parameter
+            var result = Connection().ExecuteScalarSql<int>("DECLARE /*NOBIND*/ @i int = 5, @j int; SELECT @i", new { i = 10 });
+            Assert.AreEqual(result, 5);
+        }
     }
 }
