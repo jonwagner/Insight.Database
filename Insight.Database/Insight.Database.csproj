@@ -12,11 +12,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
+    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
   </ItemGroup>
+
+  <!-- Include the new Microsoft.Data.SqlClient provider in the base package -->
   <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'net46'">
     <ProjectReference Include="..\Insight.Database.Providers.MsSqlClient\Insight.Database.Providers.MsSqlClient.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) != 'netstandard2.0' and $(TargetFramework) != 'net46'">
-    <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
   </ItemGroup>
 </Project>
