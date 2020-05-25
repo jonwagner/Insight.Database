@@ -25,7 +25,8 @@ namespace Insight.Database.Sample
 
         static void Main(string[] args)
         {
-            SqlInsightDbProvider.RegisterProvider();
+            // Registering a provider is usually not necessary
+            // SqlInsightDbProvider.RegisterProvider();
 
             #region Opening Connections
             IDBConnection_OpenConnection();

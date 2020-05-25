@@ -28,10 +28,10 @@ Let's get Insight.Database:
 
 	PM> Install-Package Insight.Database
 
-Tell it what database you're using:
+If you have a database other than SqlServer, use one of the alternate provider packages:
 
-```c#
-SqlInsightDbProvider.RegisterProvider(); // or Oracle, DB2, Postgres, MySql...
+```
+	PM> Install-Package Insight.Database.Providers.Postgres
 ```
 
 Now, wire up those stored procedures to an interface with a single `connection.As<T>`:
@@ -154,17 +154,14 @@ Insight.Database is available under any of the following licenses:
 
 ## Support Insight.Database ##
 
-The best way is to buy my novel, and then leave a good review.
-
-[UNDO! The True Legend of Eugene the Misconceived](http://www.amazon.com/Undo-True-Legend-Eugene-Misconceived-ebook/dp/B00PQWJWSI)
-
-Or you can shop through my Amazon Affiliate Link: [Amazon - Shop. Connect. Enjoy. All from Earth's Biggest Selection.](http://www.amazon.com/ref=assoc_tag_ph_1390604847723?_encoding=UTF8&camp=1789&creative=9325&linkCode=pf4&tag=jmileswagner-20)
+Shop through my Amazon Affiliate Link: [Amazon - Shop. Connect. Enjoy. All from Earth's Biggest Selection.](http://www.amazon.com/ref=assoc_tag_ph_1390604847723?_encoding=UTF8&camp=1789&creative=9325&linkCode=pf4&tag=jmileswagner-20)
 
 Go ahead. You know you need to buy something anyway...
 
 
 ## Major Insight Releases ##
 
+* v7.0 - Microsoft.Data.SqlClient compatibility, c# 8 interface default methods, cleaned up package organization.
 * v6.0 - .Net Standard 2.0 compatibility. 
 * v5.0 - Composite keys, Deep parameter binding. 
 * v4.0 - Read one-to-one, one-to-many, and many-to-many relationships automatically, with ways to extend it.

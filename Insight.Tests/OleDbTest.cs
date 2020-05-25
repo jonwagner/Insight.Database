@@ -17,7 +17,6 @@ namespace Insight.Tests
         [OneTimeSetUp]
         public void SetUp()
         {
-            OleDbInsightDbProvider.RegisterProvider();
         }
 
         [Test]
