@@ -93,7 +93,7 @@ namespace Insight.Database.CodeGenerator
                 type,
                 t => CreateImplementorOf(t, singleThreaded));
 
-			return constructor(connectionProvider);
+            return constructor(connectionProvider);
         }
 
         /// <summary>
@@ -105,12 +105,12 @@ namespace Insight.Database.CodeGenerator
         /// <param name="singleThreaded">True to create a single-threaded implementation.</param>
         /// <returns>A construction function that takes a connection provider and returns the implementation.</returns>
         private static Func<Func<IDbConnection>, object> CreateImplementorOf(Type type, bool singleThreaded)
-		{
-			lock (_moduleBuilder)
-			{
-				return ThreadUnsafeCreateImplementorOf(type, singleThreaded);
-			}
-		}
+        {
+            lock (_moduleBuilder)
+            {
+                return ThreadUnsafeCreateImplementorOf(type, singleThreaded);
+            }
+        }
 
         private static Func<Func<IDbConnection>, object> ThreadUnsafeCreateImplementorOf(Type type, bool singleThreaded)
         {
@@ -259,8 +259,11 @@ namespace Insight.Database.CodeGenerator
         {
             if (type.GetTypeInfo().IsInterface)
             {
+                // NOTE: default methods in c# 8 are not abstract. We don't reimplement them.
                 return type.GetMethods(BindingFlags.Public | BindingFlags.Instance | BindingFlags.InvokeMethod)
-                    .Union(type.GetInterfaces().Where(i => !i.FullName.StartsWith("System", StringComparison.OrdinalIgnoreCase)).SelectMany(i => DiscoverMethods(i)));
+                    .Union(type.GetInterfaces().Where(i => !i.FullName.StartsWith("System", StringComparison.OrdinalIgnoreCase))
+                    .SelectMany(i => DiscoverMethods(i)))
+                    .Where(m => m.IsAbstract);
             }
             else
             {
@@ -477,24 +480,24 @@ namespace Insight.Database.CodeGenerator
                         var oneToOne = System.Activator.CreateInstance(Query.GetOneToOneType(types), new object[] { null, overrides, null });
                         StaticFieldStorage.EmitLoad(mIL, oneToOne);
                     }
-					else if (r != null && r.IsParentAndChild)
-					{
-						if (types.Length != 2)
-							throw new InvalidOperationException("Parent/Child record must have two types in the recordset attribute");
+                    else if (r != null && r.IsParentAndChild)
+                    {
+                        if (types.Length != 2)
+                            throw new InvalidOperationException("Parent/Child record must have two types in the recordset attribute");
 
-						// grab the record reader for the together type
-						var togetherType = typeof(Together<,>).MakeGenericType(types);
-						if (r.ParentAndChildTogetherId != null || r.ParentAndChildTogetherInto != null)
-						{
-							StaticFieldStorage.EmitLoad(mIL, r.ParentAndChildTogetherId);
-							StaticFieldStorage.EmitLoad(mIL, r.ParentAndChildTogetherInto);
-							mIL.Emit(OpCodes.Newobj, togetherType.GetConstructor(new[] { typeof(string), typeof(string) }));
-						}
-						else
-						{
-                        	mIL.Emit(OpCodes.Ldsfld, togetherType.GetField("Records", BindingFlags.Public | BindingFlags.Static));
-						}
-					}
+                        // grab the record reader for the together type
+                        var togetherType = typeof(Together<,>).MakeGenericType(types);
+                        if (r.ParentAndChildTogetherId != null || r.ParentAndChildTogetherInto != null)
+                        {
+                            StaticFieldStorage.EmitLoad(mIL, r.ParentAndChildTogetherId);
+                            StaticFieldStorage.EmitLoad(mIL, r.ParentAndChildTogetherInto);
+                            mIL.Emit(OpCodes.Newobj, togetherType.GetConstructor(new[] { typeof(string), typeof(string) }));
+                        }
+                        else
+                        {
+                            mIL.Emit(OpCodes.Ldsfld, togetherType.GetField("Records", BindingFlags.Public | BindingFlags.Static));
+                        }
+                    }
                     else
                     {
                         // grab the records field for the appropriate OneToOne mapping
@@ -547,8 +550,8 @@ namespace Insight.Database.CodeGenerator
                         // the parent is single and we haven't overridden the id field
                         if (r.Id == null && TypeIsSingleReader(currentType))
                         {
-	                        var list = ChildMapperHelper.GetListAccessor(parentType, childType, r.Into);
-    	                    var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
+                            var list = ChildMapperHelper.GetListAccessor(parentType, childType, r.Into);
+                            var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
 
                             // previous and recordReader are on the stack, add the id and list method
                             StaticFieldStorage.EmitLoad(mIL, listMethod);
@@ -567,19 +570,19 @@ namespace Insight.Database.CodeGenerator
                         }
                         else
                         {
-							var rootType = returnTypeArgs[0];
+                            var rootType = returnTypeArgs[0];
                             var recordReaderType = typeof(RecordReader<>).MakeGenericType(childType);
 
-							// if the Parents attribute is set, then we're dealing with a multi-level hierarchy
-							ClassPropInfo parents = null;
-							if (r.Parents != null)
-							{
-								parents = ChildMapperHelper.GetListAccessor(rootType, null, r.Parents, setter: false);
-								parentType = parents.MemberType.GenericTypeArguments[0];
-							}
+                            // if the Parents attribute is set, then we're dealing with a multi-level hierarchy
+                            ClassPropInfo parents = null;
+                            if (r.Parents != null)
+                            {
+                                parents = ChildMapperHelper.GetListAccessor(rootType, null, r.Parents, setter: false);
+                                parentType = parents.MemberType.GenericTypeArguments[0];
+                            }
 
-							var list = ChildMapperHelper.GetListAccessor(parentType, childType, r.Into);
-							var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
+                            var list = ChildMapperHelper.GetListAccessor(parentType, childType, r.Into);
+                            var listMethod = typeof(ClassPropInfo).GetMethod("CreateSetMethod").MakeGenericMethod(parentType, typeof(List<>).MakeGenericType(childType)).Invoke(list, Parameters.EmptyArray);
 
                             var parentid = ChildMapperHelper.GetIDAccessor(parentType, r.Id);
                             var parentIdType = parentid.MemberType;
@@ -602,53 +605,53 @@ namespace Insight.Database.CodeGenerator
                             }
 
                             // previous and recordReader are on the stack, add the id and list methods
-							if (r.Parents != null)
-							{
-								var parentsMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(rootType, parents.MemberType).Invoke(parents, Parameters.EmptyArray);
+                            if (r.Parents != null)
+                            {
+                                var parentsMethod = typeof(ClassPropInfo).GetMethod("CreateGetMethod").MakeGenericMethod(rootType, parents.MemberType).Invoke(parents, Parameters.EmptyArray);
 
-	                            StaticFieldStorage.EmitLoad(mIL, parentsMethod); // parents
-	                            StaticFieldStorage.EmitLoad(mIL, parentIdMethod); // id
-	                            StaticFieldStorage.EmitLoad(mIL, listMethod); // into
+                                StaticFieldStorage.EmitLoad(mIL, parentsMethod); // parents
+                                StaticFieldStorage.EmitLoad(mIL, parentIdMethod); // id
+                                StaticFieldStorage.EmitLoad(mIL, listMethod); // into
 
-								method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
-									.Single(
-										mi => mi.Name == "ThenChildren" &&
-											mi.GetGenericArguments().Length == 4 &&
-											currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
-											mi.GetParameters()[1].ParameterType.Name == recordReaderType.Name &&
-											mi.GetParameters().Any(p => String.Compare(p.Name, "parents", StringComparison.OrdinalIgnoreCase) == 0) &&
-											mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0) &&
-											mi.GetParameters().Any(p => String.Compare(p.Name, "into", StringComparison.OrdinalIgnoreCase) == 0))
-									.MakeGenericMethod(
-										new Type[]
-										{
-											rootType,		// TRoot
+                                method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                                    .Single(
+                                        mi => mi.Name == "ThenChildren" &&
+                                            mi.GetGenericArguments().Length == 4 &&
+                                            currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
+                                            mi.GetParameters()[1].ParameterType.Name == recordReaderType.Name &&
+                                            mi.GetParameters().Any(p => String.Compare(p.Name, "parents", StringComparison.OrdinalIgnoreCase) == 0) &&
+                                            mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0) &&
+                                            mi.GetParameters().Any(p => String.Compare(p.Name, "into", StringComparison.OrdinalIgnoreCase) == 0))
+                                    .MakeGenericMethod(
+                                        new Type[]
+                                        {
+                                            rootType,		// TRoot
 											parentType,		// TParent
 											childType,		// TChild
 											parentIdType	// TId
 										});
-							}
-							else
-							{
-	                            StaticFieldStorage.EmitLoad(mIL, parentIdMethod); // id
-	                            StaticFieldStorage.EmitLoad(mIL, listMethod); // into
+                            }
+                            else
+                            {
+                                StaticFieldStorage.EmitLoad(mIL, parentIdMethod); // id
+                                StaticFieldStorage.EmitLoad(mIL, listMethod); // into
 
-								method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
-									.Single(
-										mi => mi.Name == "ThenChildren" &&
-											mi.GetGenericArguments().Length == 3 &&
-											currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
-											mi.GetParameters()[1].ParameterType.Name == recordReaderType.Name &&
-											mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0) &&
-											mi.GetParameters().Any(p => String.Compare(p.Name, "into", StringComparison.OrdinalIgnoreCase) == 0))
-									.MakeGenericMethod(
-										new Type[]
-										{
-											parentType,		// TParent
+                                method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
+                                    .Single(
+                                        mi => mi.Name == "ThenChildren" &&
+                                            mi.GetGenericArguments().Length == 3 &&
+                                            currentType.GetGenericTypeDefinition().Name == mi.GetParameters()[0].ParameterType.Name &&
+                                            mi.GetParameters()[1].ParameterType.Name == recordReaderType.Name &&
+                                            mi.GetParameters().Any(p => String.Compare(p.Name, "id", StringComparison.OrdinalIgnoreCase) == 0) &&
+                                            mi.GetParameters().Any(p => String.Compare(p.Name, "into", StringComparison.OrdinalIgnoreCase) == 0))
+                                    .MakeGenericMethod(
+                                        new Type[]
+                                        {
+                                            parentType,		// TParent
 											childType,		// TChild
 											parentIdType	// TId
 										});
-							}
+                            }
                         }
 
                         mIL.Emit(OpCodes.Call, method);
@@ -658,9 +661,9 @@ namespace Insight.Database.CodeGenerator
                     {
                         var method = typeof(Query).GetMethods(BindingFlags.Public | BindingFlags.Static)
                             .Single(mi => mi.Name == "Then" &&
-										  mi.GetGenericArguments().Length == returnIndex &&
-										  mi.GetParameters()[0].ParameterType.Name.StartsWith("IQueryReader", StringComparison.OrdinalIgnoreCase) &&
-										  mi.GetParameters()[1].ParameterType.Name.StartsWith("IRecordReader", StringComparison.OrdinalIgnoreCase))
+                                          mi.GetGenericArguments().Length == returnIndex &&
+                                          mi.GetParameters()[0].ParameterType.Name.StartsWith("IQueryReader", StringComparison.OrdinalIgnoreCase) &&
+                                          mi.GetParameters()[1].ParameterType.Name.StartsWith("IRecordReader", StringComparison.OrdinalIgnoreCase))
                             .MakeGenericMethod(returnTypeArgs.Take(returnIndex).ToArray());
                         mIL.Emit(OpCodes.Call, method);
                         currentType = method.ReturnType;

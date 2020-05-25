@@ -7,7 +7,7 @@
 	<PackageIconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</PackageIconUrl>
     <PackageReleaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</PackageReleaseNotes>
   </PropertyGroup>
-  
+
   <PropertyGroup>
     <HasAmbientTransactions>true</HasAmbientTransactions>
     <HasAppDomains>true</HasAppDomains>
@@ -64,7 +64,7 @@
     <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
   
-  <PropertyGroup Condition="$(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
+  <PropertyGroup Condition="$(TargetFramework) == 'netstandard3.0' or $(TargetFramework) == 'netcoreapp3.0' or $(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
     <HasAppDomains>false</HasAppDomains>
     <HasClassicReflection>false</HasClassicReflection>
     <HasColumnSchema>true</HasColumnSchema>
@@ -80,7 +80,7 @@
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp2.0'">
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp3.0' or $(TargetFramework) == 'netcoreapp2.0'">
     <HasAmbientTransactions>false</HasAmbientTransactions>
   </PropertyGroup>
   
