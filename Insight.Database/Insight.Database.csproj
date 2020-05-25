@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5;net451;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard1.5;net46;net451;net45</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
     <TargetFrameworks>netstandard2.0;netstandard1.5</TargetFrameworks>
@@ -12,6 +12,11 @@
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'net46'">
+    <ProjectReference Include="..\Insight.Database.Providers.MsSqlClient\Insight.Database.Providers.MsSqlClient.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition="$(TargetFramework) != 'netstandard2.0' and $(TargetFramework) != 'net46'">
     <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
   </ItemGroup>
 </Project>

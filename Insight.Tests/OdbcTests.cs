@@ -7,6 +7,7 @@ using System.Configuration;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Insight.Database.Providers.OleDb;
 
 namespace Insight.Tests
 {
