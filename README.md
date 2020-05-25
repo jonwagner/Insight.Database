@@ -161,7 +161,7 @@ Go ahead. You know you need to buy something anyway...
 
 ## Major Insight Releases ##
 
-* v7.0 - Microsoft.Data.SqlClient compatibility, c# 8 interface default methods, cleaned up package organization.
+* v6.3 - Microsoft.Data.SqlClient compatibility, c# 8 interface default methods, cleaned up package organization.
 * v6.0 - .Net Standard 2.0 compatibility. 
 * v5.0 - Composite keys, Deep parameter binding. 
 * v4.0 - Read one-to-one, one-to-many, and many-to-many relationships automatically, with ways to extend it.
