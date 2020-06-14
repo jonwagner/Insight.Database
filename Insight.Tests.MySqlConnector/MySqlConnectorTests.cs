@@ -2,7 +2,7 @@
 using System.Linq;
 using Insight.Database;
 using NUnit.Framework;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using System.Data;
 
 namespace Insight.Tests.MySqlConnector

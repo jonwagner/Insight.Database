@@ -21,7 +21,7 @@
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="MySqlConnector" Version="0.40.3" />
+    <PackageReference Include="MySqlConnector" Version="1.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />

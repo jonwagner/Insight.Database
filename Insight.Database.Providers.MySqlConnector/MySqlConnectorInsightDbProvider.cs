@@ -5,7 +5,7 @@ using System.Data.Common;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 
 namespace Insight.Database.Providers.MySqlConnector
 {
