@@ -53,10 +53,6 @@ namespace Insight.Tests
 		[OneTimeSetUp]
 		public static void SetUpFixture()
 		{
-#if !NO_SQL_TYPES
-			SqlServerTypes.Utilities.LoadNativeAssemblies(AppDomain.CurrentDomain.BaseDirectory + @"..\..\..");
-#endif
-
 			CreateTestDatabase();
 		}
 
