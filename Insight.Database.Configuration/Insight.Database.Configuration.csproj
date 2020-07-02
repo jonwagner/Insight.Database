@@ -11,7 +11,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5;net451;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;netstandard1.5;net451</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
     <TargetFrameworks>netstandard2.0;netstandard1.5</TargetFrameworks>

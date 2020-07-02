@@ -6,7 +6,7 @@
 # 2. build package
 #########################################
 
-exec { & $env:VS150COMNTOOLS\vsmsbuildcmd.bat }
+#exec { & $env:VS150COMNTOOLS\vsmsbuildcmd.bat }
 
 properties {
     $baseDir = $psake.build_script_dir

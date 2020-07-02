@@ -12,11 +12,12 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>net451;net45</TargetFrameworks>
+    <TargetFrameworks>netstandard2.0;net451</TargetFrameworks>
+	  <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
     <TargetFrameworks>netstandard2.0</TargetFrameworks>
-	<NoWarn>NU1701</NoWarn>
+	  <NoWarn>NU1701</NoWarn>
   </PropertyGroup>  
 
   <Import Project="..\SharedConfiguration.csproj" />
