@@ -16,7 +16,7 @@
     <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
   </ItemGroup>
-  <ItemGroup>
+  <ItemGroup Condition="'$(TargetFramework)'=='net451'">
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
   </ItemGroup>
