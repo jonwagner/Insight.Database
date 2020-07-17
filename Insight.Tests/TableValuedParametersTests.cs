@@ -130,6 +130,50 @@ namespace Insight.Tests
 		}
 	}
 
+	[TestFixture]
+	public class TvpWithDefaultDateTimeDataTypeIssueTests : BaseTest
+	{
+		[SetUp]
+		public void SetUp()
+		{
+			Connection().ExecuteSql("create type SimpleDateTable as table (Value date)");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Connection().ExecuteSql("drop type SimpleDateTable");
+		}
+
+		[Test]
+		public void TVPs_WithDefaultDateTime_DoesNotBlowUp()
+		{
+			var sql    = "select count(*) from @values";
+			var values = new[]
+			{
+				WithDate(new DateTime(2020, 3, 17)),
+				WithDate(new DateTime()), // default(DateTime)
+				WithDate(new DateTime(2020, 3, 19)),
+				WithDate(new DateTime(2020, 3, 20))
+			};
+
+			var result = Connection().SingleSql<int>(sql, new { values });
+
+			Assert.AreEqual(result, 4);
+		}
+
+		private SimpleDate WithDate(DateTime value)
+			=> new SimpleDate(value);
+
+		public class SimpleDate
+		{
+			public SimpleDate(DateTime value)
+				=> Value = value;
+
+			public DateTime Value { get; }
+		}
+	}
+
 	#region Issue 354 Tests
 	[TestFixture]
 	public class Issue354Tests : BaseTest
