@@ -45,8 +45,9 @@ services:
     volumes:
     - db2:/database
 
+  # this requires you to log into docker hub and agree to terms of service
   oracle:
-    image: sath89/oracle-12c
+    image: store/oracle/database-enterprise:12.2.0.1
     ports:
     - "1521:1521"
     environment:
