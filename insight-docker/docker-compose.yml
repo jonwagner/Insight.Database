@@ -20,7 +20,7 @@ services:
     - MYSQL_ALLOW_EMPTY_PASSWORD=yes
     - MYSQL_ROOT_HOST=%
     - MYSQL_DATABASE=test
- 
+
   postgres:
     image: postgres:latest
     ports:
@@ -46,7 +46,7 @@ services:
     - db2:/database
 
   oracle:
-    image: sath89/oracle-12c
+    image: truevoly/oracle-12c
     ports:
     - "1521:1521"
     environment:
