@@ -35,7 +35,7 @@ namespace Insight.Database.Providers.Default
 			{ typeof(string), SqlDbType.NVarChar },
 			{ typeof(char), SqlDbType.NChar },
 			{ typeof(Guid), SqlDbType.UniqueIdentifier },
-			{ typeof(DateTime), SqlDbType.DateTime2 },
+			{ typeof(DateTime), SqlDbType.DateTime },
 			{ typeof(DateTimeOffset), SqlDbType.DateTimeOffset },
 			{ typeof(TimeSpan), SqlDbType.Time },
 			{ typeof(byte[]), SqlDbType.VarBinary },
@@ -44,16 +44,19 @@ namespace Insight.Database.Providers.Default
 		private ObjectReader _objectReader;
 		private IEnumerable _list;
 		private SqlMetaData[] _metadata;
+		private bool _supportsDateTime2;
 
 		/// <summary>
 		/// Constucts an instance of the SqlDataRecordAdapter class.
 		/// </summary>
 		/// <param name="objectReader">The ObjectReader to use to extract properties from the object.</param>
 		/// <param name="list">The list of objects to read.</param>
-		public SqlDataRecordAdapter(ObjectReader objectReader, IEnumerable list)
+		/// <param name="supportsDateTime2">True if the server supports DateTime2.</param>
+		public SqlDataRecordAdapter(ObjectReader objectReader, IEnumerable list, bool supportsDateTime2)
 		{
 			_objectReader = objectReader;
 			_list = list;
+			_supportsDateTime2 = supportsDateTime2;
 
 			_metadata = objectReader.Columns.Select(c => new SqlMetaData(
 				c.Name,
@@ -102,14 +105,15 @@ namespace Insight.Database.Providers.Default
 		}
 
 		/// <inheritdoc/>
-		private static SqlDbType GetSqlDbType(Type type, string dataTypeName)
+		private SqlDbType GetSqlDbType(Type type, string dataTypeName)
 		{
 			if (!String.IsNullOrEmpty(dataTypeName))
 			{
 				switch (dataTypeName.ToLowerInvariant())
 				{
+					case "date":
 					case "datetime":
-						return SqlDbType.DateTime;
+						return _supportsDateTime2 ? SqlDbType.DateTime2 : SqlDbType.DateTime;
 
 					case "datetime2":
 						return SqlDbType.DateTime2;

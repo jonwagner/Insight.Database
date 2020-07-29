@@ -39,6 +39,11 @@ namespace Insight.Database
         private static ConcurrentDictionary<Tuple<string, string, string, Type>, object> _tvpReaders = new ConcurrentDictionary<Tuple<string, string, string, Type>, object>();
 
         /// <summary>
+        /// Cache for DateTime2 support.. ConnectionString -> DateTime2.
+        /// </summary>
+        private static ConcurrentDictionary<string, bool> _datetime2Cache = new ConcurrentDictionary<string, bool>();
+
+        /// <summary>
         /// The list of types supported by this provider.
         /// </summary>
         private static Type[] _supportedTypes = new Type[]
@@ -169,13 +174,8 @@ namespace Insight.Database
 
             // older versions of SQL Server (CE and 2005) don't support DateTime2
             // newer versions do, so if we have a new version and it's a datetime, make it bigger
-            if (parameter.DbType == DbType.DateTime)
-            {
-                var sc = (SqlConnection)command.Connection;
-                var version = Int32.Parse(sc.ServerVersion.Split('.')[0], CultureInfo.InvariantCulture);
-                if (version >= 10)
-                    parameter.DbType = DbType.DateTime2;
-            }
+            if (parameter.DbType == DbType.DateTime && SupportsDateTime2(command))
+                parameter.DbType = DbType.DateTime2;
         }
 
         /// <summary>
@@ -222,7 +222,7 @@ namespace Insight.Database
                     CommandBehavior.Default));
 
             if (!isEmpty)
-                parameter.Value = new SqlDataRecordAdapter(objectReader, list);
+                parameter.Value = new SqlDataRecordAdapter(objectReader, list, SupportsDateTime2(command));
         }
 
         /// <summary>
@@ -394,6 +394,27 @@ namespace Insight.Database
                 if (typeParameter != null)
                     p.UdtTypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
             }
+        }
+
+        /// <summary>
+        /// Determine if the server supports datetime2.
+        /// </summary>
+        /// <param name="command">The command to use.</param>
+        /// <returns>An open reader with the schema.</returns>
+        /// <remarks>This operation requires an open connection and a roundtrip.</remarks>
+        private static bool SupportsDateTime2(IDbCommand command)
+        {
+            return _datetime2Cache.GetOrAdd(
+                        command.Connection.ConnectionString,
+                        cs => command.Connection.ExecuteAndAutoClose(
+                                _ => null,
+                                (_, __) =>
+                                {
+                                    var sc = (SqlConnection)command.Connection;
+                                    var version = Int32.Parse(sc.ServerVersion.Split('.')[0], CultureInfo.InvariantCulture);
+                                    return version >= 10;
+                                },
+                                CommandBehavior.Default));
         }
 
         /// <summary>

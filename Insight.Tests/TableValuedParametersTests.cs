@@ -130,6 +130,7 @@ namespace Insight.Tests
 		}
 	}
 
+	#region TVP With Date Tests
 	[TestFixture]
 	public class TvpWithDefaultDateTimeDataTypeIssueTests : BaseTest
 	{
@@ -173,6 +174,7 @@ namespace Insight.Tests
 			public DateTime Value { get; }
 		}
 	}
+	#endregion
 
 	#region Issue 354 Tests
 	[TestFixture]

@@ -2,9 +2,11 @@
 using NUnit.Framework;
 using System;
 using System.Data;
+using System.Linq;
 
 namespace Insight.Tests.MsSqlClient
 {
+	[TestFixture]
 	public class TableValuedParameterWithClassesTests : MsSqlClientBaseTest
 	{
 		[TearDown]
@@ -128,4 +130,91 @@ namespace Insight.Tests.MsSqlClient
 			throw new NotImplementedException();
 		}
 	}
+
+		#region TVP With Date Tests
+	[TestFixture]
+	public class TvpWithDefaultDateTimeDataTypeIssueTests : BaseTest
+	{
+		[SetUp]
+		public void SetUp()
+		{
+			Connection().ExecuteSql("create type SimpleDateTable as table (Value date)");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Connection().ExecuteSql("drop type SimpleDateTable");
+		}
+
+		[Test]
+		public void TVPs_WithDefaultDateTime_DoesNotBlowUp()
+		{
+			var sql    = "select count(*) from @values";
+			var values = new[]
+			{
+				WithDate(new DateTime(2020, 3, 17)),
+				WithDate(new DateTime()), // default(DateTime)
+				WithDate(new DateTime(2020, 3, 19)),
+				WithDate(new DateTime(2020, 3, 20))
+			};
+
+			var result = Connection().SingleSql<int>(sql, new { values });
+
+			Assert.AreEqual(result, 4);
+		}
+
+		private SimpleDate WithDate(DateTime value)
+			=> new SimpleDate(value);
+
+		public class SimpleDate
+		{
+			public SimpleDate(DateTime value)
+				=> Value = value;
+
+			public DateTime Value { get; }
+		}
+	}
+	#endregion
+
+	#region Issue 354 Tests
+	[TestFixture]
+	public class Issue354Tests : BaseTest
+	{
+		[SetUp]
+		public void SetUp()
+		{
+			Connection().ExecuteSql("create type SimpleIntTable as table (Value int primary key)");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			Connection().ExecuteSql("drop type SimpleIntTable");
+		}
+
+		[Test]
+		public void TVPsShouldBeCached()
+		{
+			var sql = "select count(*) from @values";
+			var values = Enumerable.Range(1, 4).Select(v => new SimpleInt(v)).ToArray();
+
+			void RunQuery() => Connection().SingleSql<int>(sql, new { values });
+
+			//Run the query twice
+			RunQuery();
+			RunQuery();
+		}
+
+		public class SimpleInt
+		{
+			public int Value { get; }
+
+			public SimpleInt(int value)
+			{
+				Value = value;
+			}
+		}
+	}
+	#endregion
 }
