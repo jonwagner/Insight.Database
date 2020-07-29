@@ -7,22 +7,6 @@ namespace Insight.Tests.MsSqlClient
 {
 	public class MsSqlClientBaseTest 
 	{
-		public static IDbConnection _connection;
-		
-		[OneTimeSetUp]
-		public void OneTimeSetup()
-		{
-			TestSetup.CreateTestDatabase();
-			_connection = new SqlConnection(BaseTest.ConnectionString);
-			_connection.Open();
-		}
-
-		[OneTimeTearDown]
-		public void OneTimeTeardown()
-		{
-			TestSetup.TeardownFixture();
-		}
-
 		public IDbConnection Connection()
 		{
 			return new SqlConnection(BaseTest.ConnectionString);
@@ -31,6 +15,22 @@ namespace Insight.Tests.MsSqlClient
 		public IDbConnection ConnectionWithTransaction()
 		{
 			return new SqlConnection(BaseTest.ConnectionString).OpenWithTransaction();
+		}
+	}
+
+	[SetUpFixture]
+	public class MsSqlTestSetup
+	{
+		[OneTimeSetUp]
+		public void OneTimeSetup()
+		{
+			TestSetup.CreateTestDatabase();
+		}
+
+		[OneTimeTearDown]
+		public void OneTimeTeardown()
+		{
+			TestSetup.TeardownFixture();
 		}
 	}
 }

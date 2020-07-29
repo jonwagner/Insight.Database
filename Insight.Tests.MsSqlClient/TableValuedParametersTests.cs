@@ -133,7 +133,7 @@ namespace Insight.Tests.MsSqlClient
 
 		#region TVP With Date Tests
 	[TestFixture]
-	public class TvpWithDefaultDateTimeDataTypeIssueTests : BaseTest
+	public class TvpWithDefaultDateTimeDataTypeIssueTests : MsSqlClientBaseTest
 	{
 		[SetUp]
 		public void SetUp()
@@ -179,7 +179,7 @@ namespace Insight.Tests.MsSqlClient
 
 	#region Issue 354 Tests
 	[TestFixture]
-	public class Issue354Tests : BaseTest
+	public class Issue354Tests : MsSqlClientBaseTest
 	{
 		[SetUp]
 		public void SetUp()
