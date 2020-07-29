@@ -8,8 +8,11 @@
     <ProjectType>LibraryPackage</ProjectType>
   </PropertyGroup>
 
-  <PropertyGroup>
+  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
     <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
+    <TargetFrameworks>netstandard2.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
