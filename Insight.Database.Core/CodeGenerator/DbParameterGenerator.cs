@@ -386,11 +386,18 @@ namespace Insight.Database.CodeGenerator
 				// value is above
 				il.MarkLabel(readyToSetLabel);
 				if (memberType == typeof(string))
+				{
+					IlHelper.EmitLdInt32(il, (int)command.CommandType);
 					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterStringValue", BindingFlags.NonPublic | BindingFlags.Static));
-                else if ((memberType == typeof(Guid?) || (memberType == typeof(Guid))) && dbParameter.DbType != DbType.Guid && command.CommandType == CommandType.StoredProcedure)
-                    il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterGuidValue", BindingFlags.NonPublic | BindingFlags.Static));
-                else
+				}
+				else if ((memberType == typeof(Guid?) || (memberType == typeof(Guid))) && dbParameter.DbType != DbType.Guid && command.CommandType == CommandType.StoredProcedure)
+                {
+					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("SetParameterGuidValue", BindingFlags.NonPublic | BindingFlags.Static));
+				}
+				else
+				{
 					il.Emit(OpCodes.Callvirt, _iDataParameterSetValue);
+				}
 			}
 
 			il.Emit(OpCodes.Ret);
@@ -432,7 +439,8 @@ namespace Insight.Database.CodeGenerator
 		/// </summary>
 		/// <param name="parameter">The parameter.</param>
 		/// <param name="value">The string value.</param>
-		private static void SetParameterStringValue(IDbDataParameter parameter, object value)
+		/// <param name="commandType">The commandType of the command we are attaching to.null</param>
+		private static void SetParameterStringValue(IDbDataParameter parameter, object value, CommandType commandType)
 		{
 			parameter.Value = value;
 
@@ -454,11 +462,7 @@ namespace Insight.Database.CodeGenerator
                     else
                     {
                         // for input parameters, some providers may behave better by specifying the length
-                        var length = s.Length;
-                        if (length > 4000)
-                            dbParameter.Size = -1;
-                        else
-                            dbParameter.Size = s.Length;
+						dbParameter.Size = GetStringParameterLength(s, commandType, parameter.DbType);
                     }
 				}
 			}
@@ -511,16 +515,7 @@ namespace Insight.Database.CodeGenerator
 					// if it's a string, fill in the length
 					IDbDataParameter dbDataParameter = p as IDbDataParameter;
 					if (dbDataParameter != null)
-					{
-						string s = value as string;
-						if (s != null)
-						{
-							int length = s.Length;
-							if (length > 4000)
-								length = -1;
-							dbDataParameter.Size = length;
-						}
-					}
+						dbDataParameter.Size = GetStringParameterLength(value as String, command.CommandType, dbDataParameter.DbType);
 
 					// explicitly set the type of the parameter
 					if (value != null && _typeToDbTypeMap.ContainsKey(value.GetType()))
@@ -530,6 +525,36 @@ namespace Insight.Database.CodeGenerator
 					cmd.Parameters.Add(p);
 				}
 			};
+		}
+
+		/// <summary>
+		/// Calculate the length to set a string parameter to.
+		/// Text commmands should be set to max length or -1 to allow query plan caching.
+		/// </summary>
+		/// <param name="s">The string to evaluate.</param>
+		/// <param name="commandType">The type of command being processed.</param>
+		/// <param name="parameterType">The type of the parameter being processed.</param>
+		private static int GetStringParameterLength(String s, CommandType commandType, DbType parameterType)
+		{
+			int maxLen = -1;
+			switch (parameterType)
+			{
+				case DbType.StringFixedLength:
+				case DbType.String:
+					maxLen = 4000;
+					break;
+
+				case DbType.AnsiString:
+				case DbType.AnsiStringFixedLength:
+					maxLen = 8000;
+					break;
+			}
+
+			int length = s?.Length ?? 0;
+			if (length > maxLen)
+				return -1;
+
+			return maxLen;
 		}
 		#endregion
 
@@ -741,20 +766,15 @@ namespace Insight.Database.CodeGenerator
 					listParam.ParameterName = parameterName + count;
 					listParam.Value = item ?? DBNull.Value;
 
-					// if we are dealing with strings, add the length of the string
-					if (isString && item != null)
-					{
-						int length = ((string)item).Length;
-						if (length > 4000)
-							length = -1;
-						listParam.Size = length;
-					}
-
 					listParam.DbType = ColumnMapping.MapParameterDataType(
 						isString ? typeof(string) : (item?.GetType() ?? typeof(object)),
 						command,
 						parameter,
 						listParam.DbType);
+
+					// if we are dealing with strings, add the length of the string
+					if (isString && item != null)
+						listParam.Size = GetStringParameterLength(item as string, command.CommandType, listParam.DbType);
 
 					command.Parameters.Add(listParam);
 				}
