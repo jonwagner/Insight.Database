@@ -42,7 +42,7 @@ namespace Insight.Tests.OracleManaged
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = string.Format("Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=xe))(ADDRESS=(PROTOCOL=TCP)(HOST={0})(PORT=1521))); User Id = system; Password = oracle",
+			_connectionStringBuilder.ConnectionString = string.Format("Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain))(ADDRESS=(PROTOCOL=TCP)(HOST={0})(PORT=1521))); User Id=system; Password=Oradoc_db1",
 				BaseTest.TestHost ?? "localhost");
 			_connection = _connectionStringBuilder.Open();
 		}
