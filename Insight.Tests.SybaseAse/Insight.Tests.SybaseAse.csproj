@@ -1,6 +1,6 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netcoreapp3.0;net451</TargetFrameworks>
+    <TargetFrameworks>net451</TargetFrameworks>
 	  <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
