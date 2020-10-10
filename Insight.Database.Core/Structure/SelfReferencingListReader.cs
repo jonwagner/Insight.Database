@@ -70,9 +70,9 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         public override async Task<IList<T>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
         {
-            var results = await previous.ReadAsync(command, reader, cancellationToken);
+            var results = await previous.ReadAsync(command, reader, cancellationToken).ConfigureAwait(false);
             PostProcess(results);
-            await ReadChildrenAsync(reader, results, cancellationToken);
+            await ReadChildrenAsync(reader, results, cancellationToken).ConfigureAwait(false);
             return results;
         }
 

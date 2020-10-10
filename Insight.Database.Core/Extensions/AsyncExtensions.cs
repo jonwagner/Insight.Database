@@ -56,7 +56,7 @@ namespace Insight.Database
                     // DbCommand now supports async execute
                     DbCommand dbCommand = cmd as DbCommand;
                     if (dbCommand != null)
-                        return await dbCommand.ExecuteNonQueryAsync(cancellationToken);
+                        return await dbCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
                     else
                         return cmd.ExecuteNonQuery();
                 },
@@ -642,9 +642,9 @@ namespace Insight.Database
 
             cancellationToken.ThrowIfCancellationRequested();
 
-            var reader = await task;
+            var reader = await task.ConfigureAwait(false);
 
-            return await reader.ToListAsync(recordReader);
+            return await reader.ToListAsync(recordReader).ConfigureAwait(false);
         }
         #endregion
 
@@ -1007,7 +1007,7 @@ namespace Insight.Database
             // DbCommand now supports async
             DbCommand dbCommand = command as DbCommand;
             if (dbCommand != null)
-                return (IDataReader)await dbCommand.ExecuteReaderAsync(commandBehavior, cancellationToken);
+                return (IDataReader)await dbCommand.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
 
             return command.ExecuteReader(commandBehavior);
         }
@@ -1085,7 +1085,7 @@ namespace Insight.Database
                     closeConnection,
                     async (c, ct) =>
                     {
-                        await provider.BulkCopyAsync(connection, tableName, source, configure, options, transaction, ct);
+                        await provider.BulkCopyAsync(connection, tableName, source, configure, options, transaction, ct).ConfigureAwait(false);
                         return source.RecordsAffected;
                     },
                     cancellationToken);
@@ -1187,7 +1187,7 @@ namespace Insight.Database
             IDataReader reader = null;
 
             bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
-            closeConnection |= await AutoOpenAsync(connection, cancellationToken);
+            closeConnection |= await AutoOpenAsync(connection, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -1198,10 +1198,10 @@ namespace Insight.Database
                 if (command != null && callGetReader)
                 {
                     commandBehavior = InsightDbProvider.For(connection).FixupCommandBehavior(command, commandBehavior | CommandBehavior.SequentialAccess);
-                    reader = await command.GetReaderAsync(commandBehavior, cancellationToken);
+                    reader = await command.GetReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(false);
                 }
 
-                T result = await translate(command, reader);
+                T result = await translate(command, reader).ConfigureAwait(false);
 
                 if (command != null)
                 {
@@ -1231,9 +1231,9 @@ namespace Insight.Database
         {
             try
             {
-                closeConnection |= await AutoOpenAsync(connection, cancellationToken);
+                closeConnection |= await AutoOpenAsync(connection, cancellationToken).ConfigureAwait(false);
 
-                return await action(connection, cancellationToken);
+                return await action(connection, cancellationToken).ConfigureAwait(false);
             }
             finally
             {
@@ -1262,13 +1262,13 @@ namespace Insight.Database
             DbConnection dbConnection = connection as DbConnection;
             if (dbConnection != null)
             {
-                await dbConnection.OpenAsync(cancellationToken);
+                await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
 
                 return dbConnection.State == ConnectionState.Open;
             }
 
             // we don't have an asynchronous open method, so do it synchronously in a task
-            await Task.Run(() => connection.Open());
+            await Task.Run(() => connection.Open()).ConfigureAwait(false);
             return true;
         }
 

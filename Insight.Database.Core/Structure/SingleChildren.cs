@@ -45,7 +45,7 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         public override async Task ReadAsync(IEnumerable<TParent> parents, IDataReader reader, CancellationToken ct)
         {
-            var result = await reader.ToListAsync(_recordReader);
+            var result = await reader.ToListAsync(_recordReader).ConfigureAwait(false);
             _mapper.MapChildren(parents, result);
         }
     }

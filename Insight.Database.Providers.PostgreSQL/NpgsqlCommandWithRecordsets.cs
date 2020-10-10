@@ -48,12 +48,12 @@ namespace Insight.Database.Providers.PostgreSQL
 		/// <inheritdoc/>
 		protected async override Task<DbDataReader> ExecuteDbDataReaderAsync(CommandBehavior behavior, CancellationToken cancellationToken)
 		{
-			var reader = await base.ExecuteDbDataReaderAsync(behavior, cancellationToken);
+			var reader = await base.ExecuteDbDataReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
 
 			if (!ShouldDereference(reader))
 				return reader;
 
-			return await CreateDereferenceDbCommand(reader).ExecuteReaderAsync(behavior);
+			return await CreateDereferenceDbCommand(reader).ExecuteReaderAsync(behavior).ConfigureAwait(false);
 		}
 
 		/// <summary>

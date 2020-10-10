@@ -107,7 +107,7 @@ namespace Insight.Database
 		{
 			try
 			{
-				return await action();
+				return await action().ConfigureAwait(false);
 			}
 			catch (AggregateException e)
 			{

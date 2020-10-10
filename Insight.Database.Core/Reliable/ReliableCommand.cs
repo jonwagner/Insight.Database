@@ -87,8 +87,8 @@ namespace Insight.Database.Reliable
 				{
 					FixupParameters();
 
-                    await InnerConnection.EnsureIsOpenAsync(cancellationToken);
-					return await InnerCommand.ExecuteReaderAsync(behavior, cancellationToken);
+                    await InnerConnection.EnsureIsOpenAsync(cancellationToken).ConfigureAwait(false);
+					return await InnerCommand.ExecuteReaderAsync(behavior, cancellationToken).ConfigureAwait(false);
 				});
 		}
 
@@ -100,8 +100,8 @@ namespace Insight.Database.Reliable
 				{
 					FixupParameters();
 
-                    await InnerConnection.EnsureIsOpenAsync(cancellationToken);
-					return await InnerCommand.ExecuteNonQueryAsync(cancellationToken);
+                    await InnerConnection.EnsureIsOpenAsync(cancellationToken).ConfigureAwait(false);
+					return await InnerCommand.ExecuteNonQueryAsync(cancellationToken).ConfigureAwait(false);
 				});
 		}
 
@@ -111,8 +111,8 @@ namespace Insight.Database.Reliable
 		    return ExecuteWithRetryAsync(
 				async () =>
 				{
-					await InnerConnection.EnsureIsOpenAsync(cancellationToken);
-					return await InnerCommand.ExecuteScalarAsync(cancellationToken);
+					await InnerConnection.EnsureIsOpenAsync(cancellationToken).ConfigureAwait(false);
+					return await InnerCommand.ExecuteScalarAsync(cancellationToken).ConfigureAwait(false);
 				});
 		}
 		#endregion
