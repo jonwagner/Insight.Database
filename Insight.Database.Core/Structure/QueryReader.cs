@@ -78,7 +78,7 @@ namespace Insight.Database.Structure
 		{
 			// read in the children
 			foreach (var child in _children)
-				await child.ReadAsync(results, reader, cancellationToken);
+				await child.ReadAsync(results, reader, cancellationToken).ConfigureAwait(false);
 		}
 		#endregion
 	}

@@ -60,10 +60,10 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         public virtual async Task<IList<T>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
         {
-            IList<T> results = await reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: false);
+            IList<T> results = await reader.ToListAsync(RecordReader, cancellationToken, firstRecordOnly: false).ConfigureAwait(false);
 			results = MergeChildren(results);
 
-            await ReadChildrenAsync(reader, results, cancellationToken);
+            await ReadChildrenAsync(reader, results, cancellationToken).ConfigureAwait(false);
 
 			return results;
         }
@@ -140,7 +140,7 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
         {
-            return (TList)await ReadAsync(command, reader, ct);
+            return (TList)await ReadAsync(command, reader, ct).ConfigureAwait(false);
         }
         #endregion
     }

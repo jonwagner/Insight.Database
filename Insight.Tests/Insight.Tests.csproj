@@ -47,9 +47,9 @@
     <None Update="AsyncQueryCoreTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>
-    <None Update="GenericTypes.tt">
-      <Generator>TextTemplatingFileGenerator</Generator>
-    </None>
+
+    <None Include="GenericTypes.tt" />
+    
     <None Update="SyncQueryCoreTests.tt">
       <Generator>TextTemplatingFileGenerator</Generator>
     </None>

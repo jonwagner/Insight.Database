@@ -72,7 +72,7 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 		/// <inheritdoc/>
 		async Task<TList> IQueryReader<TList>.ReadAsync(IDbCommand command, IDataReader reader, CancellationToken ct)
 		{
-			return (TList) await base.ReadAsync(command, reader, ct);
+			return (TList) await base.ReadAsync(command, reader, ct).ConfigureAwait(false);
 		}
 
 		/// <inheritdoc/>

@@ -9,3 +9,7 @@ trim_tailing_whitespace = true
 indent_style = space
 indent_size = 2
 trim_tailing_whitespace = true
+
+# T4 templates don't like final newlines
+[*.tt]
+insert_final_newline = false

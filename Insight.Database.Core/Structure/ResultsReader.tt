@@ -5,7 +5,7 @@
 <#@ import namespace="System.Text" #>
 <#@ import namespace="System.Collections.Generic" #>
 <#@ output extension="generated.cs" #>
-<#@ include file="GenericTypes.tt" #>
+<#@ include file="..\GenericTypes.tt" #>
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -122,7 +122,7 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 		public async Task<Results<<#= typeList #>>> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
 		{
 			var results = new Results<<#= typeList #>>();
-			return (Results<<#= typeList #>>)await ReadAsync(command, results, reader, cancellationToken);
+			return (Results<<#= typeList #>>)await ReadAsync(command, results, reader, cancellationToken).ConfigureAwait(false);
 		}
 
 		/// <summary>
@@ -159,12 +159,12 @@ for (var typeCount = 1; typeCount <= GenericTypeMax; typeCount++)
 			if (results == null) throw new ArgumentNullException("results");
 
 <# if (typeCount > 1) { #>
-			await _previous.ReadAsync(command, results, reader, cancellationToken);
+			await _previous.ReadAsync(command, results, reader, cancellationToken).ConfigureAwait(false);
 <# } else { #>
 			results.SaveCommandForOutputs(command);
 <# } #>
 			// read the subobjects
-			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken);
+			var subObjects = await _listReader.ReadAsync(command, reader, cancellationToken).ConfigureAwait(false);
 			results.Set<#= typeCount #> = subObjects;
 
 			return results;

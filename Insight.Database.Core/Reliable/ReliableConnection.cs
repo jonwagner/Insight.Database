@@ -85,7 +85,7 @@ namespace Insight.Database.Reliable
         /// <returns>A task representing the completion of the open operation.</returns>
         public override Task OpenAsync(CancellationToken cancellationToken)
         {
-            return RetryStrategy.ExecuteWithRetryAsync(null, async () => { await InnerConnection.OpenAsync(); return true; });
+            return RetryStrategy.ExecuteWithRetryAsync(null, async () => { await InnerConnection.OpenAsync(cancellationToken).ConfigureAwait(false); return true; });
         }
         #endregion
     }

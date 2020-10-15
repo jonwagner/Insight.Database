@@ -36,7 +36,7 @@ namespace Insight.Database.Structure
         public async Task<T> ReadAsync(IDbCommand command, IDataReader reader, CancellationToken cancellationToken)
         {
             var t = new T();
-            await t.ReadAsync(command, reader, cancellationToken);
+            await t.ReadAsync(command, reader, cancellationToken).ConfigureAwait(false);
             return t;
         }
     }

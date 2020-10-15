@@ -63,7 +63,7 @@ namespace Insight.Database
             }
 
             // DbConnection supports OpenAsync, but it doesn't return self
-            await dbConnection.OpenAsync(cancellationToken);
+            await dbConnection.OpenAsync(cancellationToken).ConfigureAwait(false);
             return connection;
         }
 
@@ -93,7 +93,7 @@ namespace Insight.Database
         {
             try
             {
-                await OpenConnectionAsync(connection, cancellationToken);
+                await OpenConnectionAsync(connection, cancellationToken).ConfigureAwait(false);
 
                 return connection.As<T>();
             }
@@ -197,7 +197,7 @@ namespace Insight.Database
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
         public static async Task<DbConnectionWrapper> OpenWithTransactionAsync(this IDbConnection connection, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var wrapper = await DbConnectionWrapper.Wrap(connection).OpenConnectionAsync(cancellationToken);
+            var wrapper = await DbConnectionWrapper.Wrap(connection).OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 wrapper.BeginAutoTransaction();
@@ -220,7 +220,7 @@ namespace Insight.Database
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
         public static async Task<DbConnectionWrapper> OpenWithTransactionAsync(this IDbConnection connection, IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken))
         {
-            var wrapper = await DbConnectionWrapper.Wrap(connection).OpenConnectionAsync(cancellationToken);
+            var wrapper = await DbConnectionWrapper.Wrap(connection).OpenConnectionAsync(cancellationToken).ConfigureAwait(false);
             try
             {
                 wrapper.BeginAutoTransaction(isolationLevel);
@@ -243,7 +243,7 @@ namespace Insight.Database
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
         public static async Task<T> OpenWithTransactionAsAsync<T>(this T connection, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
         {
-            var open = await OpenWithTransactionAsync((IDbConnection)connection, cancellationToken);
+            var open = await OpenWithTransactionAsync((IDbConnection)connection, cancellationToken).ConfigureAwait(false);
 
             try
             {
@@ -280,7 +280,7 @@ namespace Insight.Database
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Reliability", "CA2000:Dispose objects before losing scope", Justification = "The connection is returned")]
         public static async Task<T> OpenWithTransactionAsAsync<T>(this T connection, IsolationLevel isolationLevel, CancellationToken cancellationToken = default(CancellationToken)) where T : class, IDbConnection, IDbTransaction
         {
-            var open = await OpenWithTransactionAsync((IDbConnection)connection, isolationLevel, cancellationToken);
+            var open = await OpenWithTransactionAsync((IDbConnection)connection, isolationLevel, cancellationToken).ConfigureAwait(false);
 
             try
             {

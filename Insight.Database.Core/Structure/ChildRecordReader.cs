@@ -51,7 +51,7 @@ namespace Insight.Database.Structure
         /// <inheritdoc/>
         async Task<IEnumerable<IGrouping<TId, TResult>>> IChildRecordReader<TResult, TId>.ReadAsync(IDataReader reader, CancellationToken cancellationToken)
         {
-			IEnumerable<TRecord> records = await reader.ToListAsync(_recordReader, cancellationToken);
+			IEnumerable<TRecord> records = await reader.ToListAsync(_recordReader, cancellationToken).ConfigureAwait(false);
 
 			if (_recordReader.RequiresDeduplication)
 				records = records.Distinct();

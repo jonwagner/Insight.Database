@@ -58,8 +58,8 @@ namespace Insight.Database.Providers.PostgreSQL
         /// <inheritdoc/>
         public async override Task OpenAsync(System.Threading.CancellationToken cancellationToken)
         {
-            await base.OpenAsync(cancellationToken);
-            await InnerConnection.ExecuteSqlAsync(_switchSchemaSql, cancellationToken);
+            await base.OpenAsync(cancellationToken).ConfigureAwait(false);
+            await InnerConnection.ExecuteSqlAsync(_switchSchemaSql, cancellationToken).ConfigureAwait(false);
         }
     }
 }
