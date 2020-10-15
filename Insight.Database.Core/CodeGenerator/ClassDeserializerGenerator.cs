@@ -74,7 +74,7 @@ namespace Insight.Database.CodeGenerator
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		private static Delegate CreateClassDeserializer(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject)
 		{
-			var method = CreateClassDeserializerDynamicMethod(type, reader, structure, startColumn, columnCount, createNewObject, true, !createNewObject);
+			var method = CreateClassDeserializerDynamicMethod(type, reader, structure, startColumn, columnCount, createNewObject, true, !createNewObject, startColumn > 0);
 
 			// create a generic type for the delegate we are returning
 			Type delegateType;
@@ -101,7 +101,7 @@ namespace Insight.Database.CodeGenerator
 		/// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1502:AvoidExcessiveComplexity")]
-		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject, bool isRootObject, bool allowBindChild)
+		private static DynamicMethod CreateClassDeserializerDynamicMethod(Type type, IDataReader reader, IRecordStructure structure, int startColumn, int columnCount, bool createNewObject, bool isRootObject, bool allowBindChild, bool checkForAllDbNull)
 		{
 			// if there are no columns detected for the class, then don't deserialize it
 			// exception: a parentandchild object in the middle of a child hierarchy
@@ -201,7 +201,7 @@ namespace Insight.Database.CodeGenerator
             /////////////////////////////////////////////////////////////////////
             // if this was a subobject and all of the values are null, then return the default for the object
             /////////////////////////////////////////////////////////////////////
-            if (hasAtLeastOneMapping && startColumn > 0)
+            if (hasAtLeastOneMapping && checkForAllDbNull)
             {
                 var afterNullExit = il.DefineLabel();
                 il.Emit(OpCodes.Ldloc, localIsNotAllDbNull);
@@ -583,10 +583,23 @@ namespace Insight.Database.CodeGenerator
 				// generate a deserializer for the class
 				var subType = subTypes[i];
 				if (TypeHelper.IsAtomicType(subType))
+				{
 					deserializers[i] = CreateValueDeserializer(subType, column);
+				}
 				else
-					deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, structure, column, endColumn - column, true, (i == 0), (i == 0) && allowBindChild);
+				{
+					// sub-objects coming back through a LEFT JOIN may return a null for all columns. If so, we'll want to return a null object.
+					// however if we're returning multiple recordsets and this is a sub-object of a guardian, we let the guardian figure out if the object is valid. 
+					var checkForAllDbNull = column > 0;
+					if (i > 0)
+					{
+						var priorType = subTypes[i - 1];
+						if (priorType.IsGenericType && priorType.GetGenericTypeDefinition() == typeof(Guardian<,>))
+							checkForAllDbNull = false;
+					}
 
+					deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, structure, column, endColumn - column, true, (i == 0), (i == 0) && allowBindChild, checkForAllDbNull);
+				}
 				column = endColumn;
 			}
 

@@ -1065,4 +1065,93 @@ namespace Insight.Tests
         }
     }
     #endregion
+
+	#region Issue 446
+	// Issue 446 - when all fields of an object come back as DbNull, we have to decide whether to return null or to return an empty object.
+	public class Issue446Tests : BaseTest
+	{
+		public class TestDataPrimary
+		{
+			public int ID { get; set; }
+			public int? PrimaryField1 { get; set; }
+			public IList<TestDataForeign> ForeignRecords { get; set; }
+		}
+
+		public class TestDataForeign
+		{
+			public int? ForeignField1 { get; set; }
+		}
+
+		[Test]
+		public void ChildObjectWithDataShouldBeReturned()
+		{
+			var results = Connection().QuerySql(@"
+				CREATE TABLE #TestDataPrimary ([ID] [int] NOT NULL, [PrimaryField1] [int])
+				CREATE TABLE #TestDataForeign ([PrimaryID] [int] NOT NULL, [ForeignField1] [int])
+				INSERT INTO #TestDataPrimary (ID, PrimaryField1) VALUES (1, 222)
+				INSERT INTO #TestDataForeign (PrimaryID, ForeignField1) VALUES (1, 333)
+				SELECT * FROM #TestDataPrimary t;
+				SELECT * FROM #TestDataForeign s
+		", null, Query.Returns(Some<TestDataPrimary>.Records).ThenChildren(Some<TestDataForeign>.Records, id: a => a.ID));
+
+			Assert.IsNotNull(results);
+			Assert.AreEqual(1, results.Count);
+
+			var testDataPrimary = results[0];
+			Assert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
+			Assert.AreEqual(222, testDataPrimary.PrimaryField1);
+
+			Assert.IsNotNull(testDataPrimary.ForeignRecords);
+			Assert.AreEqual(1, testDataPrimary.ForeignRecords.Count);
+			Assert.IsNotNull(testDataPrimary.ForeignRecords[0]);
+			Assert.AreEqual(333, testDataPrimary.ForeignRecords[0].ForeignField1);
+		}
+
+		[Test]
+		public void ChildObjectWithIDShouldBeReturnedEvenIfAllNonIdColumnsAreNull()
+		{
+			var results = Connection().QuerySql(@"
+				CREATE TABLE #TestDataPrimary ([ID] [int] NOT NULL, [PrimaryField1] [int])
+				CREATE TABLE #TestDataForeign ([PrimaryID] [int] NOT NULL, [ForeignField1] [int])
+				INSERT INTO #TestDataPrimary (ID, PrimaryField1) VALUES (1, 222)
+				INSERT INTO #TestDataForeign (PrimaryID, ForeignField1) VALUES (1, NULL)
+				SELECT * FROM #TestDataPrimary t;
+				SELECT * FROM #TestDataForeign s
+		", null, Query.Returns(Some<TestDataPrimary>.Records).ThenChildren(Some<TestDataForeign>.Records, id: a => a.ID));
+
+			Assert.IsNotNull(results);
+			Assert.AreEqual(1, results.Count);
+
+			var testDataPrimary = results[0];
+			Assert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
+			Assert.AreEqual(222, testDataPrimary.PrimaryField1);
+
+			Assert.IsNotNull(testDataPrimary.ForeignRecords);
+			Assert.AreEqual(1, testDataPrimary.ForeignRecords.Count);
+			Assert.IsNotNull(testDataPrimary.ForeignRecords[0]);
+			Assert.IsNull(testDataPrimary.ForeignRecords[0].ForeignField1);
+		}
+
+		[Test]
+		public void ChildObjectWithNullIDAndNullRowShouldBeSkipped()
+		{
+			var results = Connection().QuerySql(@"
+				CREATE TABLE #TestDataPrimary ([ID] [int] NOT NULL, [PrimaryField1] [int])
+				INSERT INTO #TestDataPrimary (ID, PrimaryField1) VALUES (1, NULL)
+				SELECT * FROM #TestDataPrimary t;
+				SELECT PrimaryID=NULL, ForeignField1=NULL
+		", null, Query.Returns(Some<TestDataPrimary>.Records).ThenChildren(Some<TestDataForeign>.Records, id: a => a.ID));
+
+			Assert.IsNotNull(results);
+			Assert.AreEqual(1, results.Count);
+
+			var testDataPrimary = results[0];
+			Assert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
+			Assert.IsNull(testDataPrimary.PrimaryField1);
+
+			Assert.IsNotNull(testDataPrimary.ForeignRecords);
+			Assert.AreEqual(0, testDataPrimary.ForeignRecords.Count);
+		}		
+	}
+	#endregion
 }
