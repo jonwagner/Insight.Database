@@ -3,8 +3,8 @@
     <version>6.3.1</version>
     <authors>Jon Wagner</authors>
     <PackageProjectUrl>http://github.com/jonwagner/Insight.Database</PackageProjectUrl>
-    <PackageLicenseUrl>https://github.com/jonwagner/Insight.Database/blob/master/License.txt</PackageLicenseUrl>
-	<PackageIconUrl>https://github.com/jonwagner/Insight.Database/raw/master/InsightDatabase.png</PackageIconUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+	  <PackageIcon>InsightDatabase.png</PackageIcon>
     <PackageReleaseNotes>See important release notes at: https://github.com/jonwagner/Insight.Database/wiki/Change-Log</PackageReleaseNotes>
   </PropertyGroup>
 
@@ -122,6 +122,12 @@
     <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="1.1.0">
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="..\InsightDatabase.png" Link="InsightDatabase.png" Pack="true" PackagePath="\" >
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
