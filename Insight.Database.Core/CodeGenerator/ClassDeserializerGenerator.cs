@@ -97,6 +97,7 @@ namespace Insight.Database.CodeGenerator
 		/// <param name="createNewObject">True if the method should create a new instance of an object, false to have the object passed in as a parameter.</param>
 		/// <param name="isRootObject">True if this object is the root object and should always be created.</param>
 		/// <param name="allowBindChild">True if the columns should be allowed to bind to children.</param>
+		/// <param name="checkForAllDbNull">True to check for all columns being DbNull and return a null reference instead of an empty object.</param>
 		/// <returns>If createNewObject=true, then Func&lt;IDataReader, T&gt;.</returns>
 		/// <remarks>This returns a DynamicMethod so that the graph deserializer can call the methods using IL. IL cannot call the dm after it is converted to a delegate.</remarks>
 		[System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Maintainability", "CA1506:AvoidExcessiveClassCoupling")]
@@ -589,7 +590,7 @@ namespace Insight.Database.CodeGenerator
 				else
 				{
 					// sub-objects coming back through a LEFT JOIN may return a null for all columns. If so, we'll want to return a null object.
-					// however if we're returning multiple recordsets and this is a sub-object of a guardian, we let the guardian figure out if the object is valid. 
+					// however if we're returning multiple recordsets and this is a sub-object of a guardian, we let the guardian figure out if the object is valid.
 					var checkForAllDbNull = column > 0;
 					if (i > 0)
 					{
@@ -600,6 +601,7 @@ namespace Insight.Database.CodeGenerator
 
 					deserializers[i] = CreateClassDeserializerDynamicMethod(subType, reader, structure, column, endColumn - column, true, (i == 0), (i == 0) && allowBindChild, checkForAllDbNull);
 				}
+
 				column = endColumn;
 			}
 
