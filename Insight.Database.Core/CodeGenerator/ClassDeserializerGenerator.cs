@@ -595,7 +595,7 @@ namespace Insight.Database.CodeGenerator
 					if (i > 0)
 					{
 						var priorType = subTypes[i - 1];
-						if (priorType.IsGenericType && priorType.GetGenericTypeDefinition() == typeof(Guardian<,>))
+						if (priorType.GetTypeInfo().IsGenericType && priorType.GetGenericTypeDefinition() == typeof(Guardian<,>))
 							checkForAllDbNull = false;
 					}
 
