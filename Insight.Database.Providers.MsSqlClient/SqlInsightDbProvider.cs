@@ -16,7 +16,7 @@ using Insight.Database.Providers;
 using Insight.Database.Providers.MsSqlClient;
 using Microsoft.Data.SqlClient;
 
-namespace Insight.Database
+namespace Insight.Database.Providers.MsSqlClient
 {
     /// <summary>
     /// Implements the Insight provider for Sql connections.

@@ -16,7 +16,7 @@ using Insight.Database.MissingExtensions;
 using Insight.Database.Providers;
 using Insight.Database.Providers.Default;
 
-namespace Insight.Database.Providers.SqlInsightDbProvider
+namespace Insight.Database
 {
     /// <summary>
     /// Implements the Insight provider for Sql connections.

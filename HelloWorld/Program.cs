@@ -11,9 +11,26 @@ namespace HelloWorld
 
         static void Main(string[] args)
         {
+			SqlInsightDbProvider.RegisterProvider();
+
             using (var c = Database.Open())
 			{
-				Console.WriteLine(c.ExecuteScalarSql<String>("SELECT 'Hello, World.'"));
+				try
+				{
+					c.ExecuteSql("DROP PROCEDURE HelloWorld", null);					
+				}
+				catch
+				{
+				}
+				try
+				{
+					c.ExecuteSql("CREATE PROCEDURE HelloWorld AS SELECT 'Hello, World.'", null);
+					Console.WriteLine(c.ExecuteScalar<String>("HelloWorld", null));
+				}
+				finally
+				{
+					c.ExecuteSql("DROP PROCEDURE HelloWorld", null);					
+				}
 			}
         }
     }
