@@ -217,4 +217,47 @@ namespace Insight.Tests.MsSqlClient
 		}
 	}
 	#endregion
+
+	#region Issue 448 Tests
+	[TestFixture]
+	public class Issue448Tests : BaseTest
+	{
+		[Test]
+		public void TestIssue448()
+		{
+			try
+			{
+				Connection().ExecuteSql(
+					@"CREATE TYPE [ErrorRecord] AS TABLE(
+					[Id] [int] NULL,
+					[TableId] [int] NULL,
+					[DocTypeRowPK] [int] NULL,
+					[ErrorJson] varchar(4001) NULL
+					)");
+
+				Connection().ExecuteSql(
+					@"CREATE PROCEDURE [InsertPdsData] (
+					@errors [ErrorRecord] READONLY,
+					@someid INT)
+
+					AS BEGIN
+						SELECT COUNT(*) FROM @errors
+					END");		
+
+
+
+				Connection().ExecuteScalar<int>("[InsertPdsData]", new
+				{
+					Errors = new[] { new { ErrorJson = "test"} },
+					SomeId = 1
+				});
+			}
+			finally
+			{
+				Connection().ExecuteSql("DROP PROC [InsertPdsData]");
+				Connection().ExecuteSql("DROP TYPE [ErrorRecord]");
+			}
+		}
+	}
+	#endregion
 }

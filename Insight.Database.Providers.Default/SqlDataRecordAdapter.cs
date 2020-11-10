@@ -61,7 +61,7 @@ namespace Insight.Database.Providers.Default
 			_metadata = objectReader.Columns.Select(c => new SqlMetaData(
 				c.Name,
 				GetSqlDbType(c.DataType, c.DataTypeName),
-				(c.ColumnSize == 0x7fffffff) ? SqlMetaData.Max : (c.ColumnSize ?? 0),
+				GetColumnSize(c),
 				Convert.ToByte((c.NumericPrecision == 0xff) ? 0 : c.NumericPrecision ?? 0),
 				Convert.ToByte((c.NumericScale == 0xff) ? 0 : c.NumericScale ?? 0),
 				0, // locale
@@ -122,6 +122,32 @@ namespace Insight.Database.Providers.Default
 
 			type = Nullable.GetUnderlyingType(type) ?? type;
 			return _typeToDbTypeMap[type];
+		}
+
+		private long GetColumnSize(ColumnInfo c)
+		{
+			if (c.ColumnSize == 0x7fffffff)
+				return SqlMetaData.Max;
+
+			long maxLen = -1;
+			switch (GetSqlDbType(c.DataType, c.DataTypeName))
+			{
+				case SqlDbType.NChar:
+				case SqlDbType.NVarChar:
+					maxLen = 4000;
+					break;
+
+				case SqlDbType.Char:
+				case SqlDbType.VarChar:
+					maxLen = 8000;
+					break;
+			}
+
+			long length = c.ColumnSize ?? 0;
+			if (length > maxLen)
+				return SqlMetaData.Max;
+
+			return maxLen;
 		}
 	}
 }
