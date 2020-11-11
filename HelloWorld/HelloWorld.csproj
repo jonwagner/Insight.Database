@@ -7,6 +7,8 @@
 
   <ItemGroup>
     <PackageReference Include="Insight.Database" Version="6.3.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.0.1" />
   </ItemGroup>
 
 </Project>
+
