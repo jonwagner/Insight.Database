@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using System.Data.Common;
 using Insight.Database;
 using Insight.Database.Sample;
-using Insight.Database.Providers.SqlInsightDbProvider;
 using System.Runtime.CompilerServices;
 
 #pragma warning disable 0649
