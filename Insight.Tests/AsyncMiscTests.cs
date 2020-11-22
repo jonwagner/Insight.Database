@@ -6,6 +6,7 @@ using NUnit.Framework;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Data;
+using System.Transactions;
 using Insight.Database;
 using Insight.Tests.Cases;
 
@@ -172,5 +173,46 @@ namespace Insight.Tests
 			Assert.AreEqual(70, results.TotalCount);
 		}
 		#endregion
+
+#if !NO_AMBIENT_TRANSACTIONS
+		#region Issue 445
+		[TestFixture]
+		public class Issue445Tests : BaseTest
+		{
+			public interface IHaveMethods
+			{
+				[Sql("SELECT 1")]
+				public Task<int> SelectOne();
+
+				[Sql("SELECT 2")]
+				public Task<int> SelectTwo();
+			}
+
+			[Test]
+			public void AmbientTransactionShouldTransferAcrossThreads()
+			{
+				RunAsync().Wait();		
+			}
+
+			private async Task RunAsync()
+			{
+				var i = Connection().As<IHaveMethods>();
+
+				var options = new TransactionOptions {
+					IsolationLevel = System.Transactions.IsolationLevel.ReadCommitted,
+					Timeout = TransactionManager.DefaultTimeout,
+					
+				};
+
+				using (var ts = new TransactionScope(TransactionScopeOption.Required, options, TransactionScopeAsyncFlowOption.Enabled))
+				{
+					await i.SelectOne();
+					await i.SelectTwo();
+					ts.Complete();
+				}	
+			}
+		}
+		#endregion
+#endif
 	}
 }

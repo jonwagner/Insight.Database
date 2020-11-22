@@ -16,7 +16,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings) == 'true'" />
     <Reference Include="System.Data.Linq" Condition="$(HasLinq) == 'true'" />
-    <Reference Include="System.Transactions" Condition="$(HasAmbientTransactions) == 'true'" />
+    <Reference Include="System.Transactions" Condition="$(HasAmbientTransactions) == 'true' and $(TargetFramework) == 'net451'" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />

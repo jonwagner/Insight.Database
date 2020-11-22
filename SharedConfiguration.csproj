@@ -76,12 +76,9 @@
     <HasSchemaTable>false</HasSchemaTable>
     <HasSqlTypes>false</HasSqlTypes>
     <HasUdt>false</HasUdt>
-	<SqlClientVersion>4.4.0</SqlClientVersion>
+	<SqlClientVersion>4.5.0</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
-  </PropertyGroup>
-  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp3.0' or $(TargetFramework) == 'netcoreapp2.0'">
-    <HasAmbientTransactions>false</HasAmbientTransactions>
   </PropertyGroup>
   
   <PropertyGroup>
