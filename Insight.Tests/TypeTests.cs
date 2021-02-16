@@ -1135,13 +1135,23 @@ namespace Insight.Tests
 #endif
 
 #region Record Class Tests
-		public record MyRecord(int Value);
+		public record MyRecord(int Value, string Text);
+		public record ParentRecord(int ParentID, MyRecord Child);
 
 		[Test]
 		public void CanConstructRecords()
 		{
-			var r = Connection().SingleSql<MyRecord>("SELECT 1 AS VALUE");
+			var r = Connection().SingleSql<MyRecord>("SELECT 1 AS VALUE, 'foo' as TEXT");
 			Assert.AreEqual(1, r.Value);
+			Assert.AreEqual("foo", r.Text);
+		}
+
+		[Test]
+		public void CanConstructNestedRecords()
+		{
+			var r = Connection().SingleSql<ParentRecord, MyRecord>("SELECT 5 as PARENTID, 1 AS VALUE, 'foo' as TEXT");
+			Assert.AreEqual(1, r.Child.Value);
+			Assert.AreEqual("foo", r.Child.Text);
 		}
 #endregion
 	}
