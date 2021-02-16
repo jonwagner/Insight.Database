@@ -1133,5 +1133,16 @@ namespace Insight.Tests
 		}
 		#endregion
 #endif
+
+#region Record Class Tests
+		public record MyRecord(int Value);
+
+		[Test]
+		public void CanConstructRecords()
+		{
+			var r = Connection().SingleSql<MyRecord>("SELECT 1 AS VALUE");
+			Assert.AreEqual(1, r.Value);
+		}
+#endregion
 	}
 }

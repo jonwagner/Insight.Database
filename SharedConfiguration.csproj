@@ -64,7 +64,7 @@
     <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
   
-  <PropertyGroup Condition="$(TargetFramework) == 'netstandard3.0' or $(TargetFramework) == 'netcoreapp3.0' or $(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp5.0' or $(TargetFramework) == 'netstandard3.0' or $(TargetFramework) == 'netcoreapp3.0' or $(TargetFramework) == 'netstandard2.0' or $(TargetFramework) == 'netcoreapp2.0'">
     <HasAppDomains>false</HasAppDomains>
     <HasClassicReflection>false</HasClassicReflection>
     <HasColumnSchema>true</HasColumnSchema>

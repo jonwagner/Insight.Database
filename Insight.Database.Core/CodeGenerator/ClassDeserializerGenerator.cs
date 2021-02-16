@@ -329,11 +329,14 @@ namespace Insight.Database.CodeGenerator
             // allow the developer to specify a constructor to use when loading records from the database
             // or use a single constructor if there is only one
             // or use the default constructor
+			// or use the only public constructor if there is only one
             var constructor = allConstructors.SingleOrDefault(c => c.GetCustomAttributes(true).OfType<SqlConstructorAttribute>().Any());
             if (constructor == null && allConstructors.Length == 1)
                 constructor = allConstructors[0];
             if (constructor == null)
                 constructor = type.GetConstructor(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic, null, Type.EmptyTypes, null);
+			if (constructor == null)
+				constructor = allConstructors.SingleOrDefault(c => c.IsPublic);
 
             if (constructor == null && !type.GetTypeInfo().IsValueType)
                 throw new InvalidOperationException(String.Format(CultureInfo.InvariantCulture, "Cannot find a default constructor for type {0}, and there was more than one constructor, but no DbConstructorAttribute was specified.", type.FullName));
