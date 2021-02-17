@@ -52,7 +52,7 @@ Task TestOnly {
 }
 
 Task TestQuick {
-    Get-ChildItem Insight.Tests\Insight.Tests.csproj | % { exec { dotnet test $_ -c $configuration -f netcoreapp3.0 } }
+    Get-ChildItem Insight.Tests\Insight.Tests.csproj | % { exec { dotnet test $_ -c $configuration -f netcoreapp5.0 } }
 }
 
 Task PackageOnly {

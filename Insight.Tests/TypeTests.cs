@@ -1135,6 +1135,7 @@ namespace Insight.Tests
 #endif
 
 #region Record Class Tests
+#if !NO_RECORDS
 		public record MyRecord(int Value, string Text);
 		public record ParentRecord(int ParentID, MyRecord Child);
 
@@ -1153,6 +1154,7 @@ namespace Insight.Tests
 			Assert.AreEqual(1, r.Child.Value);
 			Assert.AreEqual("foo", r.Child.Text);
 		}
+#endif
 #endregion
 	}
 }

@@ -4,10 +4,10 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netcoreapp3.0;net451</TargetFrameworks>
+    <TargetFrameworks>netcoreapp5.0;net451</TargetFrameworks>
   </PropertyGroup>
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netcoreapp3.0;</TargetFrameworks>
+    <TargetFrameworks>netcoreapp5.0;</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />

@@ -25,6 +25,7 @@
     <HasSqlDeriveParameters>true</HasSqlDeriveParameters>
     <HasSqlTypes>true</HasSqlTypes>
     <HasUdt>true</HasUdt>
+    <HasRecords>false</HasRecords>
   </PropertyGroup>
   <PropertyGroup>
 	<SqlClientVersion></SqlClientVersion>
@@ -76,11 +77,15 @@
     <HasSchemaTable>false</HasSchemaTable>
     <HasSqlTypes>false</HasSqlTypes>
     <HasUdt>false</HasUdt>
-	<SqlClientVersion>4.5.0</SqlClientVersion>
+  	<SqlClientVersion>4.5.0</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
-  
+
+  <PropertyGroup Condition="$(TargetFramework) == 'netcoreapp5.0'">
+    <HasRecords>true</HasRecords>
+  </PropertyGroup>
+
   <PropertyGroup>
     <DefineConstants Condition="$(HasAmbientTransactions) != 'true'">$(DefineConstants);NO_AMBIENT_TRANSACTIONS</DefineConstants>
     <DefineConstants Condition="$(HasAppDomains) != 'true'">$(DefineConstants);NO_APP_DOMAINS</DefineConstants>
@@ -97,6 +102,7 @@
     <DefineConstants Condition="$(HasSchemaTable) != 'true'">$(DefineConstants);NO_SCHEMA_TABLE</DefineConstants>
     <DefineConstants Condition="$(HasSqlTypes) != 'true'">$(DefineConstants);NO_SQL_TYPES</DefineConstants>
     <DefineConstants Condition="$(HasUdt) != 'true'">$(DefineConstants);NO_UDT</DefineConstants>
+    <DefineConstants Condition="$(HasRecords) != 'true'">$(DefineConstants);NO_RECORDS</DefineConstants>
   </PropertyGroup>
 
   <PropertyGroup Condition="$(ProjectType) == 'LibraryPackage' and $(Configuration) == 'Release'">

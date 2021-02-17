@@ -4,7 +4,7 @@
 	  <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netcoreapp3.0</TargetFrameworks>
+    <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
 	  <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
 

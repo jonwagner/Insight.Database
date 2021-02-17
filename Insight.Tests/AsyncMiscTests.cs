@@ -182,10 +182,10 @@ namespace Insight.Tests
 			public interface IHaveMethods
 			{
 				[Sql("SELECT 1")]
-				public Task<int> SelectOne();
+				Task<int> SelectOne();
 
 				[Sql("SELECT 2")]
-				public Task<int> SelectTwo();
+				Task<int> SelectTwo();
 			}
 
 			[Test]
