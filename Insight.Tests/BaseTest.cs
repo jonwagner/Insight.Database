@@ -27,6 +27,8 @@ namespace Insight.Tests
 			var testHost = Environment.GetEnvironmentVariable("INSIGHT_TEST_HOST");
 			if (testHost != null)
 				TestHost = Regex.Match(testHost, @"\d+\.\d+\.\d+\.\d+").Value;
+			if (string.IsNullOrEmpty(TestHost)  && !string.IsNullOrEmpty(testHost))
+				TestHost = testHost;
 
 			Password = Environment.GetEnvironmentVariable("INSIGHT_TEST_PASSWORD");
 

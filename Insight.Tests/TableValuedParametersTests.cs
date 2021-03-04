@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.SqlTypes;
 using System.Linq;
 using Insight.Database;
 using NUnit.Framework;
@@ -137,7 +138,7 @@ namespace Insight.Tests
 		[SetUp]
 		public void SetUp()
 		{
-			Connection().ExecuteSql("create type SimpleDateTable as table (Value date)");
+			Connection().ExecuteSql("create type SimpleDateTable as table (Value date, Value2 datetime not null, Value3 datetime null, Value4 datetime2)");
 		}
 
 		[TearDown]
@@ -169,9 +170,17 @@ namespace Insight.Tests
 		public class SimpleDate
 		{
 			public SimpleDate(DateTime value)
-				=> Value = value;
+			{
+				Value = value;
+				Value2 = default == value ? (DateTime)SqlDateTime.MinValue : value;
+				Value3 = default != value ? (DateTime?)value : null;
+				Value4 = value;
+			}
 
 			public DateTime Value { get; }
+			public DateTime Value2 { get; }
+			public DateTime? Value3 { get; }
+			public DateTime Value4 { get; }
 		}
 	}
 	#endregion

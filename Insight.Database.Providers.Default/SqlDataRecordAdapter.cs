@@ -44,19 +44,16 @@ namespace Insight.Database.Providers.Default
 		private ObjectReader _objectReader;
 		private IEnumerable _list;
 		private SqlMetaData[] _metadata;
-		private bool _supportsDateTime2;
 
 		/// <summary>
 		/// Constucts an instance of the SqlDataRecordAdapter class.
 		/// </summary>
 		/// <param name="objectReader">The ObjectReader to use to extract properties from the object.</param>
 		/// <param name="list">The list of objects to read.</param>
-		/// <param name="supportsDateTime2">True if the server supports DateTime2.</param>
-		public SqlDataRecordAdapter(ObjectReader objectReader, IEnumerable list, bool supportsDateTime2)
+		public SqlDataRecordAdapter(ObjectReader objectReader, IEnumerable list)
 		{
 			_objectReader = objectReader;
 			_list = list;
-			_supportsDateTime2 = supportsDateTime2;
 
 			_metadata = objectReader.Columns.Select(c => new SqlMetaData(
 				c.Name,
@@ -112,9 +109,9 @@ namespace Insight.Database.Providers.Default
 				switch (dataTypeName.ToLowerInvariant())
 				{
 					case "date":
+						return SqlDbType.Date;
 					case "datetime":
-						return _supportsDateTime2 ? SqlDbType.DateTime2 : SqlDbType.DateTime;
-
+						return SqlDbType.DateTime;
 					case "datetime2":
 						return SqlDbType.DateTime2;
 				}
