@@ -1332,10 +1332,10 @@ namespace Insight.Database
                 if (_completed || _reader.IsClosed)
                     return false;
 
+				// if we have read the last record out of this recordset, get ready to read the next recordset
                 if (!await ReadNextAsync().ConfigureAwait(false))
                 {
-                    if (!await NextResultAsync().ConfigureAwait(false))
-                        _reader.Dispose();
+					await NextResultAsync().ConfigureAwait(false);
 
                     _completed = true;
                     Current = default(T);
