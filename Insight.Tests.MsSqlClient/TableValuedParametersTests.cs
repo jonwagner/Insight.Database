@@ -2,6 +2,7 @@
 using NUnit.Framework;
 using System;
 using System.Data;
+using System.Data.SqlTypes;
 using System.Linq;
 
 namespace Insight.Tests.MsSqlClient
@@ -131,14 +132,14 @@ namespace Insight.Tests.MsSqlClient
 		}
 	}
 
-		#region TVP With Date Tests
+	#region TVP With Date Tests
 	[TestFixture]
 	public class TvpWithDefaultDateTimeDataTypeIssueTests : MsSqlClientBaseTest
 	{
 		[SetUp]
 		public void SetUp()
 		{
-			Connection().ExecuteSql("create type SimpleDateTable as table (Value date)");
+			Connection().ExecuteSql("create type SimpleDateTable as table (Value date, Value2 datetime not null, Value3 datetime null, Value4 datetime2)");
 		}
 
 		[TearDown]
@@ -150,7 +151,7 @@ namespace Insight.Tests.MsSqlClient
 		[Test]
 		public void TVPs_WithDefaultDateTime_DoesNotBlowUp()
 		{
-			var sql    = "select count(*) from @values";
+			var sql = "select count(*) from @values";
 			var values = new[]
 			{
 				WithDate(new DateTime(2020, 3, 17)),
@@ -170,9 +171,17 @@ namespace Insight.Tests.MsSqlClient
 		public class SimpleDate
 		{
 			public SimpleDate(DateTime value)
-				=> Value = value;
+			{
+				Value = value;
+				Value2 = default == value ? (DateTime)SqlDateTime.MinValue : value;
+				Value3 = default != value ? (DateTime?)value : null;
+				Value4 = value;
+			}
 
 			public DateTime Value { get; }
+			public DateTime Value2 { get; }
+			public DateTime? Value3 { get; }
+			public DateTime Value4 { get;  }
 		}
 	}
 	#endregion
@@ -242,13 +251,13 @@ namespace Insight.Tests.MsSqlClient
 
 					AS BEGIN
 						SELECT COUNT(*) FROM @errors
-					END");		
+					END");
 
 
 
 				Connection().ExecuteScalar<int>("[InsertPdsData]", new
 				{
-					Errors = new[] { new { ErrorJson = "test"} },
+					Errors = new[] { new { ErrorJson = "test" } },
 					SomeId = 1
 				});
 			}

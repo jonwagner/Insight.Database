@@ -231,7 +231,7 @@ namespace Insight.Database
                     CommandBehavior.Default));
 
             if (!isEmpty)
-                parameter.Value = new SqlDataRecordAdapter(objectReader, list, SupportsDateTime2(command));
+                parameter.Value = new SqlDataRecordAdapter(objectReader, list);
         }
 
         /// <summary>
