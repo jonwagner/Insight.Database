@@ -23,7 +23,7 @@
     <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework) == 'net451'">
-    <PackageReference Include="Npgsql" Version="3.2.2" />
+    <PackageReference Include="Npgsql" Version="4.0.3" />
   </ItemGroup>
   <ItemGroup Condition="$(TargetFramework) != 'net451'">
     <PackageReference Include="Npgsql" Version="5.0.0" />
