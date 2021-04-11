@@ -217,7 +217,7 @@ namespace Insight.Database.CodeGenerator
 				}
 				else
 				{
-					il.Emit(OpCodes.Isinst, type);                  // cast object -> type
+					il.Emit(OpCodes.Castclass, type);                  // cast object -> type
 				}
 
 				ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
@@ -260,14 +260,14 @@ namespace Insight.Database.CodeGenerator
 				sourceType = type;
 
 				// if the value is null then exit immediately
-				var notNullLabel = il.DefineLabel();
 				il.Emit(OpCodes.Dup);
 				il.Emit(OpCodes.Brfalse, readyToSetLabel);
-				il.MarkLabel(notNullLabel);
 
-				// we get it as an object. unbox it so we can apply conversion operations
+				// we get it as an object. unbox it so we can apply conversion operations, or cast it so we don't pass objects into methods that don't expect it
 				if (sourceType.GetTypeInfo().IsValueType)
 					il.Emit(OpCodes.Unbox_Any, sourceType);
+				else
+					il.Emit(OpCodes.Castclass, sourceType);
 			}
 
 			// if the serializer isn't the default ToStringSerializer, and it can serialize the type properly, then use it

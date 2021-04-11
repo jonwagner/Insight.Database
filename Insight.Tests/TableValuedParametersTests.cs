@@ -273,11 +273,6 @@ namespace Insight.Tests
 	[TestFixture]
 	public class Issue456Tests : BaseTest
 	{
-		public class SampleTableEntry
-		{
-			public string ItemId { get; set; }
-			public string TextField { get; set; }
-		}
 
 		[Test]
 		public void TestIssue456()
@@ -293,19 +288,13 @@ namespace Insight.Tests
 					@"CREATE PROCEDURE [SampleTable_GetOrderedItems]
 						@TableEntryIDs [UniqueIdTable] READONLY
 					AS BEGIN
-						SELECT ItemId, TextField='Test' FROM @TableEntryIDs
+						SELECT COUNT(*) FROM @TableEntryIDs
 					END");		
 
-				using (var c = Connection())
-				{
-					c.Open();
-					var tx = c.BeginTransaction();
+				var orderedList = new[] { "a72863cf-c573-4bf8-9a0b-02212f84698a", "56a0c8ef-c826-45a5-bbce-fb334e59f4b7", "26525d03-1a64-4843-bab4-9daf88e9ae02" };
+				var result = Connection().ExecuteScalar<int>("SampleTable_GetOrderedItems", new { TableEntryIDs = orderedList });
 
-					var orderedList = new[] { "a72863cf-c573-4bf8-9a0b-02212f84698a", "56a0c8ef-c826-45a5-bbce-fb334e59f4b7", "26525d03-1a64-4843-bab4-9daf88e9ae02" };
-					var result = c.Query<SampleTableEntry>("SampleTable_GetOrderedItems", new { TableEntryIDs = orderedList }, transaction: tx);
-
-					Assert.AreEqual(result.Count, 3);
-				}
+				Assert.AreEqual(result, 3);
 			}
 			finally
 			{
