@@ -116,6 +116,19 @@ namespace Insight.Database.CodeGenerator
 			bool isStruct = type.GetTypeInfo().IsValueType;
 			ConstructorInfo constructor = createNewObject ? SelectConstructor(type) : null;
 
+			// if there is a constructor, determine which columns will be mapped to constructor parameters
+			// constructorMappings will be indexes into the mappin array (or -1 if there is no mapping)
+			var constructorParameters = (constructor != null) ? constructor.GetParameters() : null;
+			var constructorMappings = (constructor != null) ? constructorParameters.Select(p => mappings.FindIndex(m => m != null && p.Name.IsIEqualTo(m.Member.Name))).ToArray() : new int[0];
+
+			// remove any mappings that are not settable and not used for constructor initialization
+			// this will save on translating properties we can't set and prevent issue #459
+			for (var m = 0; m < mappings.Count; m++)
+			{
+				if (mappings[m] != null && !mappings[m].Member.CanSetMember && !constructorMappings.Contains(m))
+					mappings[m] = null;
+			}
+
 			// the method can either be:
 			// createNewObject => Func<IDataReader, T>
 			// !createNewObject => Func<IDataReader, T, T>
@@ -225,16 +238,15 @@ namespace Insight.Database.CodeGenerator
                         il.Emit(OpCodes.Ldloca_S, localResult);
                 }
 
-                // if there is a constructor, then populate the values
+                // if there is a constructor, then populate the values from the pre-converted local values we created above
                 if (constructor != null)
                 {
-                    foreach (var p in constructor.GetParameters())
+					for (var p = 0; p < constructorParameters.Length; p++)
                     {
-                        var mapping = mappings.Where(m => m != null).SingleOrDefault(m => m.Member.Name.IsIEqualTo(p.Name));
-                        if (mapping != null)
-                            il.Emit(OpCodes.Ldloc, localValues[mappings.IndexOf(mapping)]);
+						if (constructorMappings[p] >= 0)
+                            il.Emit(OpCodes.Ldloc, localValues[constructorMappings[p]]);
                         else
-                            TypeHelper.EmitDefaultValue(il, p.ParameterType);
+                            TypeHelper.EmitDefaultValue(il, constructorParameters[p].ParameterType);
                     }
                 }
 
@@ -264,12 +276,13 @@ namespace Insight.Database.CodeGenerator
 				if (mapping == null)
 					continue;
 
+				// don't attempt to set values that can't be set at all
 				var member = mapping.Member;
 				if (!member.CanSetMember)
 					continue;
 
-                // don't set values that have already been set
-                if (constructor != null && constructor.GetParameters().Any(p => p.Name.IsIEqualTo(mapping.Member.Name)))
+                // don't set values that have already been set in the constructor
+                if (constructorMappings.Contains(index))
                     continue;
 
 				// load the address of the object we are working on

@@ -681,5 +681,44 @@ namespace Insight.Tests
             Connection().SingleSql<A388>("SELECT A=1, 2");
             Connection().SingleSql<B388>("SELECT A=1, 2");
         }
+
+#region Test459
+        public class Test459 : BaseTest
+        {
+            [Test]
+            public void TestReadingPrivateSetters()
+            {
+                var o = Connection().SingleSql<PrivateSetterInt>("SELECT X=1");
+				// should map
+                Assert.AreEqual(1, o.X);
+            }
+
+            [Test]
+            public void TestReadingPrivateNoSetter()
+            {
+                var o = Connection().SingleSql<PrivateNoSetterInt>("SELECT X=1");
+				// should not map
+                Assert.AreEqual(0, o.X);
+            }
+
+            [Test]
+            public void TestReadingPrivateNoSetterWithConversion()
+            {
+                var o = Connection().SingleSql<PrivateNoSetterInt>("SELECT X='string'");
+				// should not map and should not throw due to incompatible type
+                Assert.AreEqual(0, o.X);
+            }
+
+            private class PrivateSetterInt
+            {
+                public int X { get; private set; }
+            }
+
+            private class PrivateNoSetterInt
+            {
+                public int X { get; }
+            }
+        }
+#endregion
     }
 }
