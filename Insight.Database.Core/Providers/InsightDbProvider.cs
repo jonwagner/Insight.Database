@@ -29,7 +29,7 @@ namespace Insight.Database.Providers
         /// <summary>
         /// Regex to detect parameters in sql text.
         /// </summary>
-        private static Regex _parameterRegex = new Regex(@"[?@:]([a-zA-Z0-9_]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        private static Regex _parameterRegex = new Regex(@"[?@:]([\w_]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
         /// <summary>
         /// Regex to detect parameters in sql text.

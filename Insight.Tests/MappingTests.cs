@@ -720,5 +720,33 @@ namespace Insight.Tests
             }
         }
 #endregion
+
+#region Test 466
+		public class Test466 : BaseTest
+		{
+			[Test]
+			public void TestUmlautParamsProc()
+			{
+				try
+				{
+					Connection().ExecuteSql("CREATE PROCEDURE ProcWithUmlaut(@paräm int) AS SELECT @paräm");
+
+					var result = Connection().ExecuteScalar<int>("ProcWithUmlaut", new { paräm = 5 });
+					Assert.AreEqual(result, 5);
+				}
+				finally
+				{
+					Connection().ExecuteSql("DROP PROCEDURE ProcWithUmlaut");
+				}
+			}
+
+			[Test]
+			public void TestUmlautParamsSql()
+			{
+				var result = Connection().ExecuteScalarSql<int>("SELECT @paräm", new { paräm = 5 });
+				Assert.AreEqual(result, 5);
+			}
+		}
+#endregion
     }
 }
