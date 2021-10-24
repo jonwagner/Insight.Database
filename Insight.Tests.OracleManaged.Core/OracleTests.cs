@@ -286,6 +286,23 @@ namespace Insight.Tests.OracleManaged
 
 			var result = wrapped.QuerySql<dynamic>(sql, args);
 			result = wrapped.QuerySql<dynamic>(sql, args);
+		}	
+	
+		[Test]
+		public void TestIssue464()
+		{
+			try
+			{
+				var testString = new String('z', 16 * 1024);
+				_connection.ExecuteSql("CREATE TABLE chunks (data clob)");
+				_connection.ExecuteSql("INSERT INTO chunks (data) VALUES (:data)", new { data = testString });
+				var result = _connection.ExecuteScalarSql<string>("SELECT data FROM chunks");
+				Assert.AreEqual(result, testString);
+			}
+			finally
+			{
+				_connection.ExecuteSql("DROP TABLE chunks");
+			}
 		}
 	}
 }

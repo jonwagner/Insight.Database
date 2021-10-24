@@ -529,32 +529,14 @@ namespace Insight.Database.CodeGenerator
 
 		/// <summary>
 		/// Calculate the length to set a string parameter to.
-		/// Text commmands should be set to max length or -1 to allow query plan caching.
 		/// </summary>
 		/// <param name="s">The string to evaluate.</param>
 		/// <param name="commandType">The type of command being processed.</param>
 		/// <param name="parameterType">The type of the parameter being processed.</param>
 		private static int GetStringParameterLength(String s, CommandType commandType, DbType parameterType)
 		{
-			int maxLen = -1;
-			switch (parameterType)
-			{
-				case DbType.StringFixedLength:
-				case DbType.String:
-					maxLen = 4000;
-					break;
-
-				case DbType.AnsiString:
-				case DbType.AnsiStringFixedLength:
-					maxLen = 8000;
-					break;
-			}
-
-			int length = s?.Length ?? 0;
-			if (length > maxLen)
-				return -1;
-
-			return maxLen;
+			// we never want to truncate the input or output parameter lengths.
+			return int.MaxValue;
 		}
 		#endregion
 
