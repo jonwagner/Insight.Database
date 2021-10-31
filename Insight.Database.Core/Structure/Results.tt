@@ -36,6 +36,26 @@ for (var typeCount = 2; typeCount <= GenericTypeMax; typeCount++)
 	public class Results<<#= typeList #>> : Results<<#= prevTypeList #>>
 	{
 		/// <summary>
+		/// Constructs an instance of the Results class.
+		/// </summary>
+		public Results()
+		{
+		}
+
+		/// <summary>
+		/// Constructs an instance of the Results class.
+		/// </summary>
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+		/// <param name="set<#= typeIndex #>">The value of Set<#= typeIndex #>.</param>
+<# } #>
+		public Results(IList<T1> set1<# for (var typeIndex = 2; typeIndex <= typeCount; typeIndex++) { #>, IList<T<#= typeIndex #>> set<#= typeIndex #><# } #>)
+		{
+<# for (var typeIndex = 1; typeIndex <= typeCount; typeIndex++) { #>
+			Set<#= typeIndex #> = set<#= typeIndex #>;
+<# } #>
+		}
+
+		/// <summary>
 		/// Gets the <#= ConvertToOrdinal(typeCount) #> set of data returned from the database.
 		/// </summary>
 		public IList<T<#= typeCount #>> Set<#= typeCount #> { get; internal set; }

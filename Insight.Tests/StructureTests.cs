@@ -1151,7 +1151,13 @@ namespace Insight.Tests
 
 			Assert.IsNotNull(testDataPrimary.ForeignRecords);
 			Assert.AreEqual(0, testDataPrimary.ForeignRecords.Count);
-		}		
+		}
+
+        [Test]
+        public void CanCreateResults()
+        {
+            var results = new Results<int, int>(new List<int>() { 1, 2 }, new List<int>() { 3, 4 });
+        }
 	}
 	#endregion
 }

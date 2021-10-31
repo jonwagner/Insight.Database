@@ -69,6 +69,22 @@ namespace Insight.Database
 	public class Results<T1> : Results
 	{
 		/// <summary>
+		/// Constructs an instance of the Results class.
+		/// </summary>
+		public Results()
+		{
+		}
+
+		/// <summary>
+		/// Constructs an instance of the Results class.
+		/// </summary>
+		/// <param name="set1">The value of Set1.</param>
+		public Results(IList<T1> set1)
+		{
+			Set1 = set1;
+		}
+
+		/// <summary>
 		/// Gets the first set of data returned from the database.
 		/// </summary>
 		public IList<T1> Set1 { get; internal set; }
