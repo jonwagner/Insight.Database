@@ -114,6 +114,8 @@ namespace Insight.Database.Providers.MsSqlClient
 						return SqlDbType.DateTime;
 					case "datetime2":
 						return SqlDbType.DateTime2;
+					case "money":
+						return SqlDbType.Money;
 				}
 			}
 

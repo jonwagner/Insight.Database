@@ -1028,6 +1028,37 @@ namespace Insight.Tests.MsSqlClient
                 c.ExecuteSql("drop type [datetime2List]");
             }
         }
+
+		public class MoneyModel { public decimal MyMoney { get; set; } }
+		public interface IMoneyRepository
+		{
+			List<Decimal> InsertMoneyList(IList<MoneyModel> moneyTestList);
+		}
+
+		[Test]
+		public void MoneyFieldsShouldConvertInTVP()
+		{
+			var c = Connection();
+			try
+			{
+				c.ExecuteSql(@"create type [moneyList] as table( [myMoney] [money] not null )");
+				c.ExecuteSql(@"create procedure [InsertMoneyList] @moneyList as moneyList readonly as select myMoney from @moneyList");				
+
+				var expected = 12.345m;
+
+				var model = new MoneyModel { MyMoney = expected };
+				var list = new List<MoneyModel> { model, model };
+				var repo = c.As<IMoneyRepository>();
+				var results = repo.InsertMoneyList(list);
+
+				Assert.AreEqual(expected, results[0]);
+			}
+			finally
+			{
+				c.ExecuteSql("drop procedure [InsertMoneyList]");
+				c.ExecuteSql("drop type [moneyList]");
+			}
+		}
         #endregion
 
         #region Guid Tests
