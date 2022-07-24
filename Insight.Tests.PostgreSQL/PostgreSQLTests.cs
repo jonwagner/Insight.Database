@@ -847,5 +847,44 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}		
 		#endregion
+
+		[Test]
+		public void TestTableValuedParameters()
+		{
+			try
+			{
+				using (var connection = new NpgsqlConnectionWithRecordsets(_connectionStringBuilder).OpenWithTransaction())
+				{
+					connection.ExecuteSql(@"
+						CREATE FUNCTION info_insert(
+							names text[])
+							RETURNS integer
+							LANGUAGE 'plpgsql'
+						AS $BODY$
+						DECLARE
+							order_id integer;
+							name text;
+						BEGIN
+							order_id = 0;
+						    FOREACH name IN ARRAY names
+							LOOP
+								order_id = order_id + 1;
+							END LOOP;
+							RETURN order_id;
+						END;
+						$BODY$;
+					");
+
+					IEnumerable<string> names = new string[] { "a", "c" };
+					var result = connection.Single<int>("info_insert", names);
+
+					Assert.AreEqual(names.Count(), result);
+				}
+			}
+			finally
+			{
+				try { _connection.ExecuteSql("DROP FUNCTION info_insert (names text[])"); } catch { }
+			}
+		}
 	}
 }
