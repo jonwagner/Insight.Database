@@ -3,6 +3,7 @@ using System.Data;
 using System.Data.SqlTypes;
 using System.Linq;
 using Insight.Database;
+using Insight.Database.Mapping;
 using NUnit.Framework;
 
 namespace Insight.Tests
@@ -181,6 +182,115 @@ namespace Insight.Tests
 			public DateTime Value2 { get; }
 			public DateTime? Value3 { get; }
 			public DateTime Value4 { get; }
+		}
+	}
+	#endregion
+
+	#region TVP With Deep Member Mapping Tests
+	[TestFixture]
+	public class TvpWithDeepMemberTests : BaseTest
+	{
+		private class Parent
+		{
+			public ChildA A { get; set; }
+			public ChildB B { get; set; }
+
+			public Parent()
+			{
+				A = new ChildA();
+				B = new ChildB();
+			}
+		}
+
+		private class ChildA : Child { }
+		private class ChildB : Child { }
+
+		private abstract class Child
+		{
+			public int X { get; set; }
+		}
+
+		private class MyMapper : IColumnMapper
+		{
+			public string MapColumn(Type type, IDataReader reader, int column)
+			{
+				if (type != typeof(Parent))
+					return null;	
+
+				if (reader.GetName(column) == "A_X")
+					return "A.X";
+
+				if (reader.GetName(column) == "B_X")
+					return "B.X";
+
+				return null;
+			}
+		}
+
+		[SetUp]
+		public void SetUp()
+		{
+			// This is needed for mapping object to TVP
+			ColumnMapping.Tables.AddMapper(new MyMapper());
+
+			// This is needed for mapping result to object
+			// Is it a bug that these are required?
+			ColumnMapping.Tables.RemovePrefixes("A_");
+			ColumnMapping.Tables.RemovePrefixes("B_");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			ColumnMapping.Tables.ResetMappers();
+			ColumnMapping.Tables.ResetTransforms();
+		}
+
+		[Test]
+		public void TvpWithDeepMembersCanRoundTrip()
+		{
+			try
+			{
+				Connection().ExecuteSql(@"
+					CREATE TYPE dbo.TvpWithDeepMembers AS TABLE (
+						A_X int NOT NULL,
+						B_X int NOT NULL
+					);
+				");
+
+				Connection().ExecuteSql(@"
+					CREATE PROCEDURE dbo.TestTvpWithDeepMembers
+						@Rows dbo.TvpWithDeepMembers READONLY
+					AS
+						SELECT * FROM @Rows;
+				");
+
+				var rowsIn = new[]
+				{
+					new Parent
+					{
+						A = new ChildA { X = 1 },
+						B = new ChildB { X = 2 },
+					},
+				};
+
+				var rowsOut = Connection().Query<Parent, ChildA, ChildB>(
+					"dbo.TestTvpWithDeepMembers",
+					new { Rows = rowsIn }
+				);
+
+				Assert.That(rowsOut,        Is.Not.Null.With.Count.EqualTo(1));
+				Assert.That(rowsOut[0],     Is.Not.Null);
+				Assert.That(rowsOut[0].A,   Is.Not.Null);
+				Assert.That(rowsOut[0].A.X, Is.EqualTo(1));
+				Assert.That(rowsOut[0].B,   Is.Not.Null);
+				Assert.That(rowsOut[0].B.X, Is.EqualTo(2));
+			}
+			finally
+			{
+				Connection().ExecuteSql("DROP PROCEDURE IF EXISTS dbo.TestTvpWithDeepMembers;");
+				Connection().ExecuteSql("DROP TYPE      IF EXISTS dbo.TvpWithDeepMembers;");
+			}
 		}
 	}
 	#endregion

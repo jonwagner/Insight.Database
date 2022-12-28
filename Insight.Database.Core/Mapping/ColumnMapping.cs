@@ -94,16 +94,14 @@ namespace Insight.Database
                 .ToArray();
 
             // remove duplicates from the list
-            var usedFields = new HashSet<ClassPropInfo>();
+            var usedFields = new HashSet<string>(StringComparer.Ordinal);
             for (int i = 0; i < array.Length; i++)
             {
                 if (array[i] == null)
                     continue;
 
-                if (usedFields.Contains(array[i].Member))
+                if (!usedFields.Add(array[i].PathToMember))
                     array[i] = null;
-                else
-                    usedFields.Add(array[i].Member);
             }
 
             return array.ToList();
