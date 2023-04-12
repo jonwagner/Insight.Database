@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <description>
       An Oracle ODP.NET Managed Driver provider for Insight.Database so Insight.Database can do its magic on Oracle.
@@ -23,7 +23,7 @@
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="Oracle.ManagedDataAccess" Version="12.1.24160719" />
+    <PackageReference Include="Oracle.ManagedDataAccess" Version="21.9.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
