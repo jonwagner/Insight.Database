@@ -549,9 +549,18 @@ namespace Insight.Database.CodeGenerator
 				il.Emit(OpCodes.Dup);                                       // duplicate the array
 				il.Emit(OpCodes.Ldc_I4, i);                                 // the index to store to
 
-				// call the deserializer for the subobject
-				il.Emit(OpCodes.Ldarg_0);
-				il.Emit(OpCodes.Call, deserializers[i]);
+				// #482 - if the object doesn't have any mappable columns, it won't have a deserilizer
+				if (deserializers[i] == null)
+				{
+					// since we're going to call a callback to handle the value, just set it to null
+					il.Emit(OpCodes.Ldnull);
+				}
+				else
+				{
+					// call the deserializer for the subobject
+					il.Emit(OpCodes.Ldarg_0);
+					il.Emit(OpCodes.Call, deserializers[i]);
+				}
 
 				// for the root object, store it in our local variable
 				if (i == 0)
