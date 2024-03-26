@@ -9,6 +9,7 @@ using Insight.Database;
 using NUnit.Framework;
 using Insight.Tests.Cases;
 using Insight.Database.Structure;
+using System.Collections;
 
 #pragma warning disable 0649
 
@@ -1159,5 +1160,76 @@ namespace Insight.Tests
             var results = new Results<int, int>(new List<int>() { 1, 2 }, new List<int>() { 3, 4 });
         }
 	}
+	#endregion
+
+	#region OneToOne - GetHashCode / Memory Leak Fix implementation
+	[TestFixture]
+    public class OneToOneGetHashCodeTests : BaseTest
+	{
+		public class TestEntity
+		{
+			public int ID { get; set; }
+		}
+
+		[Test]
+		public void OneToOneGetHashCodeTest()
+		{
+			var oto1 = new OneToOne<TestEntity>();
+			var oto2 = new OneToOne<TestEntity>();
+
+			Assert.AreEqual(oto1,oto2);
+			//If two objects compare as equal, the GetHashCode() method for each object must return the same value
+			Assert.AreEqual(oto1.GetHashCode(), oto2.GetHashCode());
+		}
+
+		// this re-creates the actual issue causing the memory leak
+		[Test]		
+		public void OneToOneMemoryLeakTest()
+		{
+			var oto1 = new OneToOne<TestEntity>();
+			var oto2 = new OneToOne<TestEntity>();
+
+			Func<IDataReader, TestEntity> rr1 = null;
+			Func<IDataReader, TestEntity> rr2 = null;
+			
+			using (var connection = Connection()) 
+			{ 
+				connection.Open();
+
+				var dataReader = connection.GetReader("SELECT 1", commandType: CommandType.Text);
+
+				// get record reader
+				rr1 = oto1.GetRecordReader(dataReader);
+
+				// get the record reader a second time
+				rr2 = oto2.GetRecordReader(dataReader);
+			}
+
+			Assert.AreEqual(rr1, rr2);
+
+			// peek at the _deserializers dictionary to confirm there is no leak
+			var assm = typeof(OneToOne<TestEntity>).Assembly;
+			var dbReaderDeserializerType = assm.GetType("Insight.Database.CodeGenerator.DbReaderDeserializer");
+			var deserializersField = dbReaderDeserializerType.GetField("_deserializers", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic);
+			var deserializers = (IDictionary) deserializersField.GetValue(null);
+
+			int rrCount = 0;
+			foreach(dynamic d in deserializers)
+			{
+				var key = d.Key;
+				Type keyType = key.GetType();
+				var rrProp = keyType.GetProperty("RecordReader", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+				var rr = rrProp.GetValue(key);
+
+				if(rr.Equals(oto1) || rr.Equals(oto2))
+				{
+					rrCount++;
+				}
+			}
+
+			Assert.AreEqual(1, rrCount);
+		}
+	}
+
 	#endregion
 }

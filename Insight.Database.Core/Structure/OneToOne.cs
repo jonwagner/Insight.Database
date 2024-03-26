@@ -106,6 +106,15 @@ namespace Insight.Database
 		#endregion
 
 		#region Methods
+		/// <summary>
+		/// Returns the hash code for this mapping.
+		/// </summary>
+		/// <returns>The hash code for this mapping.</returns>
+		public override int GetHashCode()
+		{
+			return _hashCode;
+		}
+
 		/// <inheritdoc/>
 		public override bool Equals(IRecordReader other)
 		{
