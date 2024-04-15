@@ -1,6 +1,7 @@
 ﻿using Insight.Database;
 using Insight.Tests.MsSqlClient.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.Data;
 using System.Linq;
 
