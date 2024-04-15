@@ -19,13 +19,19 @@ namespace Insight.Database.Sample
 {
     public class Program
     {
-        public static readonly string connectionString = "Data Source = .; Initial Catalog = InsightDbTests; Integrated Security = true";
+        public static string connectionString;
         private static SqlConnectionStringBuilder Database = new SqlConnectionStringBuilder(connectionString);
 
         static void Main(string[] args)
         {
             // Registering a provider is usually not necessary
             // SqlInsightDbProvider.RegisterProvider();
+            string password = Environment.GetEnvironmentVariable("INSIGHT_TEST_PASSWORD");
+            Console.WriteLine(password);
+            connectionString = String.Format("Data Source = {0}; Initial Catalog = InsightDbTests; Integrated Security = {1}; {2}",
+                ".",
+                (password != null) ? "false" : "true",
+                (password != null) ? String.Format("User ID=sa; Password={0}", password) : "");
 
             #region Opening Connections
             IDBConnection_OpenConnection();
