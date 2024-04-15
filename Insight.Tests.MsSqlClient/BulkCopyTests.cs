@@ -5,6 +5,7 @@ using System.Text;
 using System.Data.SqlClient;
 using System.Data;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database;
 using System.Threading.Tasks;
 
