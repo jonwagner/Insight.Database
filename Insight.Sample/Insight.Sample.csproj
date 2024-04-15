@@ -1,13 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>exe</OutputType>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netcoreapp5.0;net451</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netcoreapp5.0;</TargetFrameworks>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
@@ -15,9 +9,5 @@
     <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
     <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.Default\Insight.Database.Providers.Default.csproj" />
-  </ItemGroup>
-  <ItemGroup Condition="'$(TargetFramework)'=='net451'">
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
   </ItemGroup>
 </Project>
