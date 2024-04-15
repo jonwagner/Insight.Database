@@ -142,7 +142,7 @@ namespace Insight.Tests.MsSqlClient
                 Cleanup();
                 var count = connection.BulkCopy("BulkCopyData", array);
 
-                Assert.AreEqual(i, count);
+                ClassicAssert.AreEqual(i, count);
             }
         }
 
@@ -167,7 +167,7 @@ namespace Insight.Tests.MsSqlClient
             });
 
             VerifyRecordsInserted(connection, ItemCount);
-            Assert.AreEqual(ItemCount, totalRows);
+            ClassicAssert.AreEqual(ItemCount, totalRows);
         }
 
         [Test]
@@ -229,10 +229,10 @@ namespace Insight.Tests.MsSqlClient
         {
             // run the query
             var items = connection.QuerySql<InsightTestData>(String.Format("SELECT * FROM {0} ORDER BY Int", tableName), transaction: transaction);
-            Assert.IsNotNull(items);
-            Assert.AreEqual(count, items.Count);
+            ClassicAssert.IsNotNull(items);
+            ClassicAssert.AreEqual(count, items.Count);
             for (int j = 0; j < count; j++)
-                Assert.AreEqual(j, items[j].Int);
+                ClassicAssert.AreEqual(j, items[j].Int);
         }
 
         class MerchNameTermTransaction
@@ -256,10 +256,10 @@ namespace Insight.Tests.MsSqlClient
                 connection.BulkCopy("MerchNameTermsTransactions", new List<MerchNameTermTransaction>() { m });
 
                 var items = connection.QuerySql<MerchNameTermTransaction>("SELECT * FROM MerchNameTermsTransactions");
-                Assert.AreEqual(1, items.Count);
-                Assert.AreNotEqual(0, items[0].Id);
-                Assert.AreEqual(2, items[0].TranId);
-                Assert.AreEqual(3, items[0].TermId);
+                ClassicAssert.AreEqual(1, items.Count);
+                ClassicAssert.AreNotEqual(0, items[0].Id);
+                ClassicAssert.AreEqual(2, items[0].TranId);
+                ClassicAssert.AreEqual(3, items[0].TermId);
             }
         }
 
@@ -278,10 +278,10 @@ namespace Insight.Tests.MsSqlClient
                 connection.BulkCopy("MerchNameTermsTransactions", new List<MerchNameTermTransaction>() { m }, options: InsightBulkCopyOptions.KeepIdentity);
 
                 var items = connection.QuerySql<MerchNameTermTransaction>("SELECT * FROM MerchNameTermsTransactions");
-                Assert.AreEqual(1, items.Count);
-                Assert.AreEqual(99, items[0].Id);
-                Assert.AreEqual(2, items[0].TranId);
-                Assert.AreEqual(3, items[0].TermId);
+                ClassicAssert.AreEqual(1, items.Count);
+                ClassicAssert.AreEqual(99, items[0].Id);
+                ClassicAssert.AreEqual(2, items[0].TranId);
+                ClassicAssert.AreEqual(3, items[0].TermId);
             }
         }
 
@@ -329,9 +329,9 @@ namespace Insight.Tests.MsSqlClient
             Cleanup();
             var count = connection.BulkCopy("BulkCopyData", array);
 
-            Assert.AreEqual(1, count);
+            ClassicAssert.AreEqual(1, count);
             var result = connection.QuerySql<InsightTestDataWithColumnMapping>("SELECT * FROM BulkCopyData").First();
-            Assert.AreEqual(1, result.Foo);
+            ClassicAssert.AreEqual(1, result.Foo);
         }
         #endregion
 
@@ -361,9 +361,9 @@ namespace Insight.Tests.MsSqlClient
                 i.BulkCopy("BulkCopyWithComputedData", array);
 
                 var inserted = i.QuerySql<BulkCopyDataWithComputedColumn>("SELECT * FROM BulkCopyWithComputedData").First();
-                Assert.AreEqual(array[0].Int1, inserted.Int1);
-                Assert.AreEqual(array[0].Int2, inserted.Int2);
-                Assert.AreEqual(array[0].Int1 + 1, inserted.Computed);
+                ClassicAssert.AreEqual(array[0].Int1, inserted.Int1);
+                ClassicAssert.AreEqual(array[0].Int2, inserted.Int2);
+                ClassicAssert.AreEqual(array[0].Int1 + 1, inserted.Computed);
             }
         }
         #endregion

@@ -27,9 +27,9 @@ namespace Insight.Tests
         {
             var c = new System.Data.Odbc.OdbcConnection(ConnectionString);
             dynamic i = c.QuerySql("SELECT p=@p, q=@q, r=@p", new { p = 5, q = 9 }).First();
-            Assert.AreEqual(5, i.p);
-            Assert.AreEqual(9, i.q);
-            Assert.AreEqual(5, i.r);
+            ClassicAssert.AreEqual(5, i.p);
+            ClassicAssert.AreEqual(9, i.q);
+            ClassicAssert.AreEqual(5, i.r);
         }
     }
 }

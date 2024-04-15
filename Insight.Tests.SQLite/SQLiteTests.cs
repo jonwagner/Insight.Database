@@ -50,9 +50,9 @@ namespace Insight.Tests.SQLite
 			_connection.ExecuteSql("INSERT INTO Beer (id, name) values (@id, @name)", beer);
 
 			var pour = _connection.QuerySql<Beer>("SELECT * FROM Beer WHERE ID = @id", new { id = 1 }).FirstOrDefault();
-			Assert.IsNotNull(pour);
-			Assert.AreEqual(beer.id, pour.id);
-			Assert.AreEqual(beer.name, pour.name);
+			ClassicAssert.IsNotNull(pour);
+			ClassicAssert.AreEqual(beer.id, pour.id);
+			ClassicAssert.AreEqual(beer.name, pour.name);
 		}
     }
 }

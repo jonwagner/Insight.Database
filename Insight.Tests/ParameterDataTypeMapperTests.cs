@@ -2,6 +2,7 @@
 using Insight.Database.Mapping;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -27,7 +28,7 @@ namespace Insight.Tests
 					transaction: null
 				);
 
-				Assert.AreEqual(((IDataParameter)command.Parameters[0]).DbType, DbType.AnsiString);
+				ClassicAssert.AreEqual(((IDataParameter)command.Parameters[0]).DbType, DbType.AnsiString);
 			});
 		}
 
@@ -47,7 +48,7 @@ namespace Insight.Tests
 					transaction: null
 				);
 
-				Assert.AreEqual(((IDataParameter)command.Parameters[0]).DbType, DbType.String);
+				ClassicAssert.AreEqual(((IDataParameter)command.Parameters[0]).DbType, DbType.String);
 			});
 		}
 
@@ -74,7 +75,7 @@ namespace Insight.Tests
 					transaction: null
 				);
 
-				Assert.AreEqual(((IDataParameter)command.Parameters[0]).DbType, DbType.AnsiString);
+				ClassicAssert.AreEqual(((IDataParameter)command.Parameters[0]).DbType, DbType.AnsiString);
 			});
 		}
 

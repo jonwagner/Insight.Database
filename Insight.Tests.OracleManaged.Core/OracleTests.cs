@@ -58,8 +58,8 @@ namespace Insight.Tests.OracleManaged
 		{
 			var result = _connection.QuerySql<decimal>("SELECT :p as p FROM dual", new { p = 5 });
 
-			Assert.AreEqual(1, result.Count);
-			Assert.AreEqual(5, result[0]);
+			ClassicAssert.AreEqual(1, result.Count);
+			ClassicAssert.AreEqual(5, result[0]);
 		}
 
 		[Test]
@@ -85,7 +85,7 @@ namespace Insight.Tests.OracleManaged
 				var output = new TestData() { X = 11, Z = 0 };
 				var result = _connection.Execute("OracleTestOutput", output, outputParameters: output);
 
-				Assert.AreEqual(output.X, output.Z);
+				ClassicAssert.AreEqual(output.X, output.Z);
 			}
 			finally
 			{
@@ -100,8 +100,8 @@ namespace Insight.Tests.OracleManaged
 			{
 				_connection.ExecuteSql("CREATE OR REPLACE PROCEDURE OracleTestProc (i int, r out sys_refcursor) IS BEGIN open r for select i as p from dual; END;");
 				var result = _connection.Query<decimal>("OracleTestProc", new { i = 5 });
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -117,8 +117,8 @@ namespace Insight.Tests.OracleManaged
 				_connection.ExecuteSql("CREATE OR REPLACE PROCEDURE OracleTestProc (i int, r out sys_refcursor) IS BEGIN open r for select i as p from dual; END;");
 				var result = _connection.Dynamic<decimal>().OracleTestProc(i: 5);
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -134,9 +134,9 @@ namespace Insight.Tests.OracleManaged
 				_connection.ExecuteSql("CREATE OR REPLACE PROCEDURE OracleTestRecordset (r out sys_refcursor) IS BEGIN open r for select 2 as x, 3 as z from dual; END;");
 				var result = _connection.Query<TestData>("OracleTestRecordset");
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(2, result[0].X);
-				Assert.AreEqual(3, result[0].Z);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(2, result[0].X);
+				ClassicAssert.AreEqual(3, result[0].Z);
 			}
 			finally
 			{
@@ -153,8 +153,8 @@ namespace Insight.Tests.OracleManaged
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
 				var items = _connection.QuerySql(sql, new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
 
@@ -175,10 +175,10 @@ namespace Insight.Tests.OracleManaged
 
 				var results = _connection.Query<ParentTestData, TestData>("OracleXmlTableProc", parentTestData);
 				var resultParent = results[0];
-				Assert.AreEqual(parentTestData.ID, resultParent.ID);
-				Assert.IsNotNull(resultParent.TestData);
-				Assert.AreEqual(parentTestData.TestData.X, resultParent.TestData.X);
-				Assert.AreEqual(parentTestData.TestData.Z, resultParent.TestData.Z);
+				ClassicAssert.AreEqual(parentTestData.ID, resultParent.ID);
+				ClassicAssert.IsNotNull(resultParent.TestData);
+				ClassicAssert.AreEqual(parentTestData.TestData.X, resultParent.TestData.X);
+				ClassicAssert.AreEqual(parentTestData.TestData.Z, resultParent.TestData.Z);
 			}
 			finally
 			{
@@ -211,8 +211,8 @@ namespace Insight.Tests.OracleManaged
 					OPEN :r1 FOR Select 1 as p from dual;
 					OPEN :r2 FOR Select 2 as p from dual;
 				END;");
-			Assert.AreEqual(1, results.Set1.First());
-			Assert.AreEqual(2, results.Set2.First());
+			ClassicAssert.AreEqual(1, results.Set1.First());
+			ClassicAssert.AreEqual(2, results.Set2.First());
 		}
 
 		#region Output Parameter Tests
@@ -235,8 +235,8 @@ namespace Insight.Tests.OracleManaged
 
 					var output = new OutputParameters();
 					connection.Execute("OutputParameterMappingTest", outputParameters: output);
-					Assert.AreEqual(0, output.out_foo);
-					Assert.AreEqual(5, output.foo);
+					ClassicAssert.AreEqual(0, output.out_foo);
+					ClassicAssert.AreEqual(5, output.foo);
 				}
 			}
 			finally
@@ -297,7 +297,7 @@ namespace Insight.Tests.OracleManaged
 				_connection.ExecuteSql("CREATE TABLE chunks (data clob)");
 				_connection.ExecuteSql("INSERT INTO chunks (data) VALUES (:data)", new { data = testString });
 				var result = _connection.ExecuteScalarSql<string>("SELECT data FROM chunks");
-				Assert.AreEqual(result, testString);
+				ClassicAssert.AreEqual(result, testString);
 			}
 			finally
 			{

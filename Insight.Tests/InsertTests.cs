@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 #pragma warning disable 0649
 
@@ -38,9 +39,9 @@ namespace Insight.Tests
 
 			var result = Connection().Insert("InsertIdentityReturn", i);
 
-			Assert.AreEqual(i, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(5, i.Id2);
+			ClassicAssert.AreEqual(i, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -55,9 +56,9 @@ namespace Insight.Tests
 
 			var result = Connection().Insert("InsertIdentityReturn2", i, i.Expand(new { OtherValue = 5 }));
 
-			Assert.AreEqual(i, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(5, i.Id2);
+			ClassicAssert.AreEqual(i, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -73,11 +74,11 @@ namespace Insight.Tests
 
 			var result = Connection().InsertList("InsertByTable", list, new { OtherValue = 5, Items = list });
 
-			Assert.AreEqual(list, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(2, i.Id2);
-			Assert.AreEqual(2, i2.Id);
-			Assert.AreEqual(2, i2.Id2);
+			ClassicAssert.AreEqual(list, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(2, i.Id2);
+			ClassicAssert.AreEqual(2, i2.Id);
+			ClassicAssert.AreEqual(2, i2.Id2);
 		}
 
 		[Test]
@@ -89,9 +90,9 @@ namespace Insight.Tests
 			// this would normally be INSERT INTO blah VALUES (@blah) SELECT @@SCOPE_IDENTITY
 			var result = Connection().InsertSql<InsertRecord>("SELECT Id=1, Id2=2", i);
 
-			Assert.AreEqual(i, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(2, i.Id2);
+			ClassicAssert.AreEqual(i, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(2, i.Id2);
 		}
 
 		[Test]
@@ -123,9 +124,9 @@ namespace Insight.Tests
 
 			var result = Connection().InsertAsync("InsertIdentityReturn", i).Result;
 
-			Assert.AreEqual(i, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(5, i.Id2);
+			ClassicAssert.AreEqual(i, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -140,9 +141,9 @@ namespace Insight.Tests
 
 			var result = Connection().InsertAsync("InsertIdentityReturn2", i, i.Expand(new { OtherValue = 5 })).Result;
 
-			Assert.AreEqual(i, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(5, i.Id2);
+			ClassicAssert.AreEqual(i, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(5, i.Id2);
 		}
 
 		/// <summary>
@@ -158,11 +159,11 @@ namespace Insight.Tests
 
 			var result = Connection().InsertListAsync("InsertByTable", list, new { OtherValue = 5, Items = list }).Result;
 
-			Assert.AreEqual(list, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(2, i.Id2);
-			Assert.AreEqual(2, i2.Id);
-			Assert.AreEqual(2, i2.Id2);
+			ClassicAssert.AreEqual(list, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(2, i.Id2);
+			ClassicAssert.AreEqual(2, i2.Id);
+			ClassicAssert.AreEqual(2, i2.Id2);
 		}
 
 		[Test]
@@ -174,9 +175,9 @@ namespace Insight.Tests
 			// this would normally be INSERT INTO blah VALUES (@blah) SELECT @@SCOPE_IDENTITY
 			var result = Connection().InsertSqlAsync<InsertRecord>("SELECT Id=1, Id2=2", i).Result;
 
-			Assert.AreEqual(i, result);
-			Assert.AreEqual(1, i.Id);
-			Assert.AreEqual(2, i.Id2);
+			ClassicAssert.AreEqual(i, result);
+			ClassicAssert.AreEqual(1, i.Id);
+			ClassicAssert.AreEqual(2, i.Id2);
 		}
 		#endregion
 	}

@@ -30,7 +30,7 @@ namespace Insight.Tests
 			var profiled = new ProfiledDbConnection((DbConnection)Connection(), MiniProfiler.Current);
 			var result = profiled.QuerySql<int>("SELECT @p --MiniProfiler", new { p = 1 }).First();
 
-			Assert.AreEqual((int)1, result);
+			ClassicAssert.AreEqual((int)1, result);
 		}
 
 		/// <summary>
@@ -46,7 +46,7 @@ namespace Insight.Tests
 				var profiled = new ProfiledDbConnection((DbConnection)connection, MiniProfiler.Current);
 				var result = profiled.Query<int>("InsightTestProcMiniProfiler", new { Value = 1 }).First();
 
-				Assert.AreEqual((int)1, result);
+				ClassicAssert.AreEqual((int)1, result);
 			}
 		}
 	}

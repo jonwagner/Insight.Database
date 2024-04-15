@@ -11,6 +11,7 @@ using Insight.Database;
 using Insight.Database.Structure;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -174,7 +175,7 @@ for (var oneToOneCount = setCount; oneToOneCount <= setCount; oneToOneCount++)
 					);
 
 <# for (int i = 1; i <= setCount; i++) { #>
-			Assert.AreEqual(1, result.Set<#= i #>.Count());
+			ClassicAssert.AreEqual(1, result.Set<#= i #>.Count());
 			result.Set<#= i #>.First().Verify();
 <# } #>
 		}

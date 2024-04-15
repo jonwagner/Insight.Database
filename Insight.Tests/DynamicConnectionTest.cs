@@ -1,10 +1,11 @@
 ﻿using Insight.Database;
 using Insight.Database.Reliable;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -33,25 +34,25 @@ namespace Insight.Tests
 
 			// make sure the connection is closed first
 			_connection.Close();
-			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+			ClassicAssert.AreEqual(ConnectionState.Closed, _connection.State);
 
 			// call a proc that we know exists and make sure we get data back
 			var result = _connection.Dynamic().sp_Who();
-			Assert.IsTrue(result.Count > 0);
-			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+			ClassicAssert.IsTrue(result.Count > 0);
+			ClassicAssert.AreEqual(ConnectionState.Closed, _connection.State);
 
 			// call a proc with no results
 			var result2 = _connection.Dynamic().sp_validname("foo");
-			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+			ClassicAssert.AreEqual(ConnectionState.Closed, _connection.State);
 
 			// call a proc that we know exists and make sure we get data back
 			var result3 = _connection.Dynamic().sp_WhoAsync().Result;
-			Assert.IsTrue(result3.Count > 0);
-			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+			ClassicAssert.IsTrue(result3.Count > 0);
+			ClassicAssert.AreEqual(ConnectionState.Closed, _connection.State);
 
 			// call a proc async with no results
 			var result4 = _connection.Dynamic().sp_validnameAsync("foo").Result;
-			Assert.AreEqual(ConnectionState.Closed, _connection.State);
+			ClassicAssert.AreEqual(ConnectionState.Closed, _connection.State);
 		}
 
 		[Test]
@@ -85,7 +86,7 @@ namespace Insight.Tests
 			IList<Data> list = Connection().Dynamic<Data>().ReflectInt(d);
 			Data result = list.First();
 
-			Assert.AreEqual(d.Value, result.Value);
+			ClassicAssert.AreEqual(d.Value, result.Value);
 		}
 
 		[Test]
@@ -95,7 +96,7 @@ namespace Insight.Tests
 			IList<string> list = Connection().Dynamic<string>().ReflectString(value);
 			string result = list.First();
 
-			Assert.AreEqual(value, result);
+			ClassicAssert.AreEqual(value, result);
 		}
 
 		[Test]
@@ -105,8 +106,8 @@ namespace Insight.Tests
 			string value2 = "foo2";
 			Results<string, string> results = Connection().Dynamic<Results<string, string>>().ReflectTwoRecordsets(value, value2);
 
-			Assert.AreEqual(value, results.Set1.First());
-			Assert.AreEqual(value2, results.Set2.First());
+			ClassicAssert.AreEqual(value, results.Set1.First());
+			ClassicAssert.AreEqual(value2, results.Set2.First());
 		}
 
 		[Test]
@@ -117,7 +118,7 @@ namespace Insight.Tests
 			var dc = Connection().Dynamic();
 			IList<string> results = dc.ReflectString(value, returnType: typeof(string));
 
-			Assert.AreEqual(value, results.First());
+			ClassicAssert.AreEqual(value, results.First());
 		}
 
 		[Test]
@@ -130,7 +131,7 @@ namespace Insight.Tests
 			Task<IList<string>> task = dc.ReflectStringAsync(value, returnType: typeof(string));
 			var results = task.Result;
 
-			Assert.AreEqual(value, results.First());
+			ClassicAssert.AreEqual(value, results.First());
 		}
 
 		[Test]
@@ -155,7 +156,7 @@ namespace Insight.Tests
 				returns: Query.Returns(Some<ParentTestData>.Records)
 							.Then(Some<TestData2>.Records));
 
-			Assert.IsNotNull(results);
+			ClassicAssert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: false);
 			TestData2.Verify(results.Set2);
 		}
@@ -169,7 +170,7 @@ namespace Insight.Tests
 							.Then(Some<TestData2>.Records))
 							.Result;
 
-			Assert.IsNotNull(results);
+			ClassicAssert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: false);
 			TestData2.Verify(results.Set2);
 		}
@@ -181,7 +182,7 @@ namespace Insight.Tests
 				returns: Query.Returns(OneToOne<ParentTestData, TestData>.Records)
 						.Then(Some<TestData2>.Records));
 
-			Assert.IsNotNull(results);
+			ClassicAssert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: true);
 			TestData2.Verify(results.Set2);
 		}
@@ -253,12 +254,12 @@ namespace Insight.Tests
 		[Test]
 		public void DynamicProcCanHaveTableParameters()
 		{
-			Assert.AreEqual(0, Connection().Dynamic().DynamicProcWithTable(new { Table = Parameters.EmptyList }).Count);
-			Assert.AreEqual(0, Connection().Dynamic().DynamicProcWithTable(Table: Parameters.EmptyList).Count);
+			ClassicAssert.AreEqual(0, Connection().Dynamic().DynamicProcWithTable(new { Table = Parameters.EmptyList }).Count);
+			ClassicAssert.AreEqual(0, Connection().Dynamic().DynamicProcWithTable(Table: Parameters.EmptyList).Count);
 
 			var results = Connection().Dynamic().DynamicProcWithTable(Table: new List<DynamicTableType>() { new DynamicTableType() { Value = 9 } });
-			Assert.AreEqual(1, results.Count);
-			Assert.AreEqual(9, results[0].Value);
+			ClassicAssert.AreEqual(1, results.Count);
+			ClassicAssert.AreEqual(9, results[0].Value);
 		}
 		#endregion
 	}

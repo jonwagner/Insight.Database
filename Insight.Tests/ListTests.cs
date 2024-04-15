@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database;
 using System.Data;
 using System.Dynamic;
@@ -44,8 +45,8 @@ namespace Insight.Tests
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
 				var items = Connection().QuerySql(sql, new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
 
@@ -64,10 +65,10 @@ namespace Insight.Tests
 
 				// run the query
 				var items = Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual(j, items[j].Int);
+					ClassicAssert.AreEqual(j, items[j].Int);
 			}
 
 			// make sure that we cannot send up a null item in the list
@@ -89,10 +90,10 @@ namespace Insight.Tests
 
 				// run the query
 				var items = Connection().QuerySql<InsightTestData>("SELECT * FROM @p", new { p = array.ToList() });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual(j, items[j].Int);
+					ClassicAssert.AreEqual(j, items[j].Int);
 			}
 
 			// make sure that we cannot send up a null item in the list
@@ -118,10 +119,10 @@ namespace Insight.Tests
 
 				// run the query
 				var items = Connection().QuerySql<RenamedInsightTestData>("SELECT * FROM @InsightTestDataTable", new { InsightTestDataTable = array.ToList() });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual(j, items[j].Int);
+					ClassicAssert.AreEqual(j, items[j].Int);
 			}
 
 			// make sure that we cannot send up a null item in the list
@@ -142,10 +143,10 @@ namespace Insight.Tests
 
 			// run the query
 			var items = Connection().Query<InsightTestData>("InsightTestDataTestProc", array);
-			Assert.IsNotNull(items);
-			Assert.AreEqual(3, items.Count);
+			ClassicAssert.IsNotNull(items);
+			ClassicAssert.AreEqual(3, items.Count);
 			for (int j = 0; j < 3; j++)
-				Assert.AreEqual(j, items[j].Int);
+				ClassicAssert.AreEqual(j, items[j].Int);
 		}
 
 		/// <summary>
@@ -162,10 +163,10 @@ namespace Insight.Tests
 
 			// run the query
 			var items = Connection().Query<int>("Int32TestProc", array);
-			Assert.IsNotNull(items);
-			Assert.AreEqual(3, items.Count);
+			ClassicAssert.IsNotNull(items);
+			ClassicAssert.AreEqual(3, items.Count);
 			for (int j = 0; j < 3; j++)
-				Assert.AreEqual(j, items[j]);
+				ClassicAssert.AreEqual(j, items[j]);
 		}
 
 		/// <summary>
@@ -182,10 +183,10 @@ namespace Insight.Tests
 
 			// run the query
 			var items = Connection().Query<int>("Int32TestProc", ids);
-			Assert.IsNotNull(items);
-			Assert.AreEqual(3, items.Count);
+			ClassicAssert.IsNotNull(items);
+			ClassicAssert.AreEqual(3, items.Count);
 			for (int j = 0; j < 3; j++)
-				Assert.AreEqual(j, items[j]);
+				ClassicAssert.AreEqual(j, items[j]);
 		}
 
 		/// <summary>
@@ -194,7 +195,7 @@ namespace Insight.Tests
 		[Test]
 		public void TestEnumerableValueParametersToStoredProc()
 		{
-			Assert.AreEqual(3, Connection().Query<InsightTestData>("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
+			ClassicAssert.AreEqual(3, Connection().Query<InsightTestData>("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
 
 			for (int i = 0; i < 3; i++)
 			{
@@ -203,12 +204,12 @@ namespace Insight.Tests
 
 				// run the query
 				var items = Connection().Query<InsightTestData>("Int32TestProc", new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 
 			// make sure that we CAN send up a null item in the list
-			Assert.AreEqual(3, Connection().Query<InsightTestData>("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
+			ClassicAssert.AreEqual(3, Connection().Query<InsightTestData>("Int32TestProc", new { p = new int?[] { 0, null, 1 } }).Count);
 		}
 
 		class Data
@@ -245,10 +246,10 @@ namespace Insight.Tests
 
 				// run the query
 				var items = Connection().Query<InsightTestDataString>("InsightTestDataStringTestProc", new { p = array.ToList() });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual(j.ToString(), items[j].String);
+					ClassicAssert.AreEqual(j.ToString(), items[j].String);
 			}
 		}
 
@@ -266,10 +267,10 @@ namespace Insight.Tests
 
 				// run the query
 				var items = Connection().Query<InsightTestDataString>("InsightTestDataStringTestProc", new { p = array.ToList() });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 				for (int j = 0; j < i; j++)
-					Assert.AreEqual(j.ToString(), items[j].String);
+					ClassicAssert.AreEqual(j.ToString(), items[j].String);
 			}
 		}
 
@@ -287,10 +288,10 @@ namespace Insight.Tests
 
 			// run the query
 			var items = Connection().QueryAsync<InsightTestData>("InsightTestDataTestProc", array).Result;
-			Assert.IsNotNull(items);
-			Assert.AreEqual(3, items.Count);
+			ClassicAssert.IsNotNull(items);
+			ClassicAssert.AreEqual(3, items.Count);
 			for (int j = 0; j < 3; j++)
-				Assert.AreEqual(j, items[j].Int);
+				ClassicAssert.AreEqual(j, items[j].Int);
 		}
 
 		[Test]
@@ -307,8 +308,8 @@ namespace Insight.Tests
 
 			var results = connection.Query("TestMap", list);
 			dynamic first = results[0];
-			Assert.AreEqual("from", first["Key"]);
-			Assert.AreEqual("to", first["Value"]);
+			ClassicAssert.AreEqual("from", first["Key"]);
+			ClassicAssert.AreEqual("to", first["Value"]);
 		}
 
 		/// <summary>
@@ -322,8 +323,8 @@ namespace Insight.Tests
 
 			var results = connection.Query("TestMap", list);
 			dynamic first = results[0];
-			Assert.AreEqual("from", first["Key"]);
-			Assert.AreEqual("to", first["Value"]);
+			ClassicAssert.AreEqual("from", first["Key"]);
+			ClassicAssert.AreEqual("to", first["Value"]);
 		}
 		#endregion
 

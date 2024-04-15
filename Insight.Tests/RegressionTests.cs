@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database;
 
 namespace Insight.Tests
@@ -34,7 +35,7 @@ namespace Insight.Tests
 
 				Beer b = new Beer() { AlcoholPts = 11 };
 				connection.ExecuteScalar<int>("InsertBeer18", b);
-				Assert.AreEqual(11, connection.ExecuteScalarSql<int>("SELECT AlcoholPts FROM Beer18"));
+				ClassicAssert.AreEqual(11, connection.ExecuteScalarSql<int>("SELECT AlcoholPts FROM Beer18"));
 			}
 		}
 		#endregion

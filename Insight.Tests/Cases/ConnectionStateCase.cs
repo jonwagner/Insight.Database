@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -45,12 +46,12 @@ namespace Insight.Tests.Cases
 
 		private void VerifyPreCondition()
 		{
-			Assert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
+			ClassicAssert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
 		}
 
 		private void VerifyPostCondition()
 		{
-			Assert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
+			ClassicAssert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
 		}
 	}
 }

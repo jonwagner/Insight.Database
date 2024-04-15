@@ -4,6 +4,7 @@ using Insight.Database;
 using Insight.Database.Structure;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -1789,7 +1790,7 @@ namespace Insight.Tests
 				Query.ReturnsResults(OneToOne<InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
 		}
 		[Test]
@@ -1802,9 +1803,9 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
 		}
 		[Test]
@@ -1818,11 +1819,11 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
 		}
 		[Test]
@@ -1837,13 +1838,13 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
 		}
 		[Test]
@@ -1859,15 +1860,15 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
 		}
 		[Test]
@@ -1884,17 +1885,17 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
 		}
 		[Test]
@@ -1912,19 +1913,19 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
 		}
 		[Test]
@@ -1943,21 +1944,21 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
 		}
 		[Test]
@@ -1977,23 +1978,23 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
 		}
 		[Test]
@@ -2014,25 +2015,25 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
-			Assert.AreEqual(1, result.Set10.Count());
+			ClassicAssert.AreEqual(1, result.Set10.Count());
 			result.Set10.First().Verify();
 		}
 		[Test]
@@ -2054,27 +2055,27 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
-			Assert.AreEqual(1, result.Set10.Count());
+			ClassicAssert.AreEqual(1, result.Set10.Count());
 			result.Set10.First().Verify();
-			Assert.AreEqual(1, result.Set11.Count());
+			ClassicAssert.AreEqual(1, result.Set11.Count());
 			result.Set11.First().Verify();
 		}
 		[Test]
@@ -2097,29 +2098,29 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
-			Assert.AreEqual(1, result.Set10.Count());
+			ClassicAssert.AreEqual(1, result.Set10.Count());
 			result.Set10.First().Verify();
-			Assert.AreEqual(1, result.Set11.Count());
+			ClassicAssert.AreEqual(1, result.Set11.Count());
 			result.Set11.First().Verify();
-			Assert.AreEqual(1, result.Set12.Count());
+			ClassicAssert.AreEqual(1, result.Set12.Count());
 			result.Set12.First().Verify();
 		}
 		[Test]
@@ -2143,31 +2144,31 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
-			Assert.AreEqual(1, result.Set10.Count());
+			ClassicAssert.AreEqual(1, result.Set10.Count());
 			result.Set10.First().Verify();
-			Assert.AreEqual(1, result.Set11.Count());
+			ClassicAssert.AreEqual(1, result.Set11.Count());
 			result.Set11.First().Verify();
-			Assert.AreEqual(1, result.Set12.Count());
+			ClassicAssert.AreEqual(1, result.Set12.Count());
 			result.Set12.First().Verify();
-			Assert.AreEqual(1, result.Set13.Count());
+			ClassicAssert.AreEqual(1, result.Set13.Count());
 			result.Set13.First().Verify();
 		}
 		[Test]
@@ -2192,33 +2193,33 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
-			Assert.AreEqual(1, result.Set10.Count());
+			ClassicAssert.AreEqual(1, result.Set10.Count());
 			result.Set10.First().Verify();
-			Assert.AreEqual(1, result.Set11.Count());
+			ClassicAssert.AreEqual(1, result.Set11.Count());
 			result.Set11.First().Verify();
-			Assert.AreEqual(1, result.Set12.Count());
+			ClassicAssert.AreEqual(1, result.Set12.Count());
 			result.Set12.First().Verify();
-			Assert.AreEqual(1, result.Set13.Count());
+			ClassicAssert.AreEqual(1, result.Set13.Count());
 			result.Set13.First().Verify();
-			Assert.AreEqual(1, result.Set14.Count());
+			ClassicAssert.AreEqual(1, result.Set14.Count());
 			result.Set14.First().Verify();
 		}
 		[Test]
@@ -2244,35 +2245,35 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
-			Assert.AreEqual(1, result.Set10.Count());
+			ClassicAssert.AreEqual(1, result.Set10.Count());
 			result.Set10.First().Verify();
-			Assert.AreEqual(1, result.Set11.Count());
+			ClassicAssert.AreEqual(1, result.Set11.Count());
 			result.Set11.First().Verify();
-			Assert.AreEqual(1, result.Set12.Count());
+			ClassicAssert.AreEqual(1, result.Set12.Count());
 			result.Set12.First().Verify();
-			Assert.AreEqual(1, result.Set13.Count());
+			ClassicAssert.AreEqual(1, result.Set13.Count());
 			result.Set13.First().Verify();
-			Assert.AreEqual(1, result.Set14.Count());
+			ClassicAssert.AreEqual(1, result.Set14.Count());
 			result.Set14.First().Verify();
-			Assert.AreEqual(1, result.Set15.Count());
+			ClassicAssert.AreEqual(1, result.Set15.Count());
 			result.Set15.First().Verify();
 		}
 		[Test]
@@ -2299,37 +2300,37 @@ namespace Insight.Tests
 					.Then(OneToOne<InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer, InfiniteBeer>.Records)
 					);
 
-			Assert.AreEqual(1, result.Set1.Count());
+			ClassicAssert.AreEqual(1, result.Set1.Count());
 			result.Set1.First().Verify();
-			Assert.AreEqual(1, result.Set2.Count());
+			ClassicAssert.AreEqual(1, result.Set2.Count());
 			result.Set2.First().Verify();
-			Assert.AreEqual(1, result.Set3.Count());
+			ClassicAssert.AreEqual(1, result.Set3.Count());
 			result.Set3.First().Verify();
-			Assert.AreEqual(1, result.Set4.Count());
+			ClassicAssert.AreEqual(1, result.Set4.Count());
 			result.Set4.First().Verify();
-			Assert.AreEqual(1, result.Set5.Count());
+			ClassicAssert.AreEqual(1, result.Set5.Count());
 			result.Set5.First().Verify();
-			Assert.AreEqual(1, result.Set6.Count());
+			ClassicAssert.AreEqual(1, result.Set6.Count());
 			result.Set6.First().Verify();
-			Assert.AreEqual(1, result.Set7.Count());
+			ClassicAssert.AreEqual(1, result.Set7.Count());
 			result.Set7.First().Verify();
-			Assert.AreEqual(1, result.Set8.Count());
+			ClassicAssert.AreEqual(1, result.Set8.Count());
 			result.Set8.First().Verify();
-			Assert.AreEqual(1, result.Set9.Count());
+			ClassicAssert.AreEqual(1, result.Set9.Count());
 			result.Set9.First().Verify();
-			Assert.AreEqual(1, result.Set10.Count());
+			ClassicAssert.AreEqual(1, result.Set10.Count());
 			result.Set10.First().Verify();
-			Assert.AreEqual(1, result.Set11.Count());
+			ClassicAssert.AreEqual(1, result.Set11.Count());
 			result.Set11.First().Verify();
-			Assert.AreEqual(1, result.Set12.Count());
+			ClassicAssert.AreEqual(1, result.Set12.Count());
 			result.Set12.First().Verify();
-			Assert.AreEqual(1, result.Set13.Count());
+			ClassicAssert.AreEqual(1, result.Set13.Count());
 			result.Set13.First().Verify();
-			Assert.AreEqual(1, result.Set14.Count());
+			ClassicAssert.AreEqual(1, result.Set14.Count());
 			result.Set14.First().Verify();
-			Assert.AreEqual(1, result.Set15.Count());
+			ClassicAssert.AreEqual(1, result.Set15.Count());
 			result.Set15.First().Verify();
-			Assert.AreEqual(1, result.Set16.Count());
+			ClassicAssert.AreEqual(1, result.Set16.Count());
 			result.Set16.First().Verify();
 		}
 

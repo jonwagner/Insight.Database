@@ -174,7 +174,7 @@ for (var oneToOneCount = setCount; oneToOneCount <= setCount; oneToOneCount++)
 					).Result;
 
 <# for (int i = 1; i <= setCount; i++) { #>
-			Assert.AreEqual(1, result.Set<#= i #>.Count());
+			ClassicAssert.AreEqual(1, result.Set<#= i #>.Count());
 			result.Set<#= i #>.First().Verify();
 <# } #>
 		}

@@ -55,8 +55,8 @@ namespace Insight.Tests.SybaseAse
 		{
 			var result = _connection.QuerySql<int>("SELECT @p as p", new { p = 5 });
 
-			Assert.AreEqual(1, result.Count);
-			Assert.AreEqual(5, result[0]);
+			ClassicAssert.AreEqual(1, result.Count);
+			ClassicAssert.AreEqual(5, result[0]);
 		}
 
 		[Test]
@@ -83,7 +83,7 @@ namespace Insight.Tests.SybaseAse
 				var output = new TestData() { X = 11, Z = 0 };
 				var result = _connection.Execute("AseTestOutput", output, outputParameters: output);
 
-				Assert.AreEqual(output.X, output.Z);
+				ClassicAssert.AreEqual(output.X, output.Z);
 			}
 			finally
 			{
@@ -98,8 +98,8 @@ namespace Insight.Tests.SybaseAse
 			{
 				_connection.ExecuteSql("CREATE PROCEDURE AseTestProc (@i int) AS SELECT @i as p");
 				var result = _connection.Query<int>("AseTestProc", new { i = 5 });
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -115,8 +115,8 @@ namespace Insight.Tests.SybaseAse
 				_connection.ExecuteSql("CREATE PROCEDURE AseTestProc (@i int) AS select @i as p");
 				var result = _connection.Dynamic<int>().AseTestProc(i: 5);
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -132,9 +132,9 @@ namespace Insight.Tests.SybaseAse
 				_connection.ExecuteSql("CREATE PROCEDURE AseTestRecordset AS select 2 as x, 3 as z");
 				var result = _connection.Query<TestData>("AseTestRecordset");
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(2, result[0].X);
-				Assert.AreEqual(3, result[0].Z);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(2, result[0].X);
+				ClassicAssert.AreEqual(3, result[0].Z);
 			}
 			finally
 			{
@@ -151,8 +151,8 @@ namespace Insight.Tests.SybaseAse
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
 				var items = _connection.QuerySql(sql, new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
 
@@ -175,12 +175,12 @@ namespace Insight.Tests.SybaseAse
 
 					// run the query
 					var items = _connection.QuerySql<ParentTestData>("SELECT * FROM InsightTestData");
-					Assert.IsNotNull(items);
-					Assert.AreEqual(i, items.Count);
+					ClassicAssert.IsNotNull(items);
+					ClassicAssert.AreEqual(i, items.Count);
 					for (int j = 0; j < i; j++)
 					{
-						Assert.AreEqual(j, items[j].ID);
-						Assert.AreEqual(j, items[j].Dec);
+						ClassicAssert.AreEqual(j, items[j].ID);
+						ClassicAssert.AreEqual(j, items[j].Dec);
 					}
 
 					_connection.ExecuteSql("DELETE FROM InsightTestData");

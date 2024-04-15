@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -45,7 +46,7 @@ namespace Insight.Tests
 		public void CustomDeserializerCanBeAppliedToStrings()
 		{
 			var result = Connection().QuerySql<CustomSerializerClass>("SELECT Trimmed='Trim      '").First();
-			Assert.AreEqual("Trim", result.Trimmed);
+			ClassicAssert.AreEqual("Trim", result.Trimmed);
 		}
 	}
 
@@ -144,7 +145,7 @@ namespace Insight.Tests
 
                 c.ExecuteSql("CREATE PROC TestEncoded(@Encoded int) AS SELECT Encoded=@Encoded");
                 var e2 = c.Query<EncodedInt>("TestEncoded", e).First();
-                Assert.AreEqual(e.Encoded, e2.Encoded);
+                ClassicAssert.AreEqual(e.Encoded, e2.Encoded);
             }
         }
 
@@ -215,7 +216,7 @@ namespace Insight.Tests
 				{
 					c.ExecuteSql("CREATE PROC TestEncoded(@Encoded [TestTableWithEncodedInt] READONLY) AS SELECT * FROM @Encoded");
 					var e2 = c.Query<TestWithSerializedObject>("TestEncoded", new { Encoded = data }).First();
-					Assert.AreEqual(e.Encoded, e2.Encoded.Encoded);
+					ClassicAssert.AreEqual(e.Encoded, e2.Encoded.Encoded);
 				}
 			}
 			finally
@@ -254,11 +255,11 @@ namespace Insight.Tests
 			{
 				c.ExecuteSql("CREATE PROC TestEncodedXml(@Encoded [Xml]) AS SELECT Encoded=@Encoded");
 				var e2 = c.Query<TestWithSerializedObject>("TestEncodedXml", new { Encoded = e }).First();
-				Assert.AreEqual(e.Encoded, e2.Encoded.Encoded);
+				ClassicAssert.AreEqual(e.Encoded, e2.Encoded.Encoded);
 			}
 
-			Assert.IsTrue(customSerializer.DidSerialize);
-			Assert.IsTrue(customSerializer.DidDeserialize);
+			ClassicAssert.IsTrue(customSerializer.DidSerialize);
+			ClassicAssert.IsTrue(customSerializer.DidDeserialize);
         }
     }
 }

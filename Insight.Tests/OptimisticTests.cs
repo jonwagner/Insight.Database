@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.Data.Common;
 
 namespace Insight.Tests
@@ -36,7 +37,7 @@ namespace Insight.Tests
 			}
 			catch (AggregateException ax)
 			{
-				Assert.IsNotNull(ax.Flatten().InnerExceptions.OfType<OptimisticConcurrencyException>());
+				ClassicAssert.IsNotNull(ax.Flatten().InnerExceptions.OfType<OptimisticConcurrencyException>());
 			}
 		}
 	}

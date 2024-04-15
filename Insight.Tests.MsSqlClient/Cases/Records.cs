@@ -51,24 +51,24 @@ namespace Insight.Tests.MsSqlClient.Cases
 
         public virtual void Verify()
         {
-            Assert.AreEqual(1, ID);
-            Assert.AreEqual("Sly Fox 113", Name);
-            Assert.AreEqual("IPA", Style);
+            ClassicAssert.AreEqual(1, ID);
+            ClassicAssert.AreEqual("Sly Fox 113", Name);
+            ClassicAssert.AreEqual("IPA", Style);
         }
 
         public void VerifySample()
         {
-            Assert.AreNotEqual(0, ID);
-            Assert.AreEqual("HopDevil", Name);
-            Assert.AreEqual("Hoppy", Style);
+            ClassicAssert.AreNotEqual(0, ID);
+            ClassicAssert.AreEqual("HopDevil", Name);
+            ClassicAssert.AreEqual("Hoppy", Style);
         }
 
         public static void VerifyAll(IEnumerable<Beer> beer)
         {
-            Assert.AreEqual(3, beer.Count());
+            ClassicAssert.AreEqual(3, beer.Count());
 
             var slyFox = beer.First(b => b.ID == 1);
-            Assert.IsNotNull(slyFox);
+            ClassicAssert.IsNotNull(slyFox);
             slyFox.Verify();
         }
     }

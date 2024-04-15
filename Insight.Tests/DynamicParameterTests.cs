@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -25,12 +26,12 @@ namespace Insight.Tests
 
 			var list = Connection().QuerySql("SELECT Int=CONVERT (int, @Int), Text=@Text", p);
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 
 			dynamic result = list[0];
-			Assert.AreEqual(pd["Int"], result["Int"]);
-			Assert.AreEqual(pd["Text"], result["Text"]);
+			ClassicAssert.AreEqual(pd["Int"], result["Int"]);
+			ClassicAssert.AreEqual(pd["Text"], result["Text"]);
 		}
 
 		[Test]
@@ -39,9 +40,9 @@ namespace Insight.Tests
 			FastExpando o = FastExpando.FromObject(new { Id = 1, Text = "foo" });
 			dynamic d = o;
 
-			Assert.AreEqual(4, o.Count());
-			Assert.AreEqual(1, d["ID"]);
-			Assert.AreEqual("foo", d["Text"]);
+			ClassicAssert.AreEqual(4, o.Count());
+			ClassicAssert.AreEqual(1, d["ID"]);
+			ClassicAssert.AreEqual("foo", d["Text"]);
 		}
 
 		[Test]
@@ -51,10 +52,10 @@ namespace Insight.Tests
 			o.Expand(new { Id = 2, Guest = "boo" });
 			dynamic d = o;
 
-			Assert.AreEqual(6, o.Count());
-			Assert.AreEqual(2, d["ID"]);
-			Assert.AreEqual("foo", d["Text"]);
-			Assert.AreEqual("boo", d["GUEST"]);
+			ClassicAssert.AreEqual(6, o.Count());
+			ClassicAssert.AreEqual(2, d["ID"]);
+			ClassicAssert.AreEqual("foo", d["Text"]);
+			ClassicAssert.AreEqual("boo", d["GUEST"]);
 		}
 
 		[Test]
@@ -65,10 +66,10 @@ namespace Insight.Tests
 			d.Expand(new { Id = 2, Guest = "boo" });
 
 			FastExpando o = (FastExpando)d;
-			Assert.AreEqual(7, o.Count());
-			Assert.AreEqual(2, d["ID"]);
-			Assert.AreEqual("foo", d["Text"]);
-			Assert.AreEqual("prop", d["Property"]);
+			ClassicAssert.AreEqual(7, o.Count());
+			ClassicAssert.AreEqual(2, d["ID"]);
+			ClassicAssert.AreEqual("foo", d["Text"]);
+			ClassicAssert.AreEqual("prop", d["Property"]);
 		}
 
 		[Test]
@@ -82,10 +83,10 @@ namespace Insight.Tests
 			FastExpando f = list[0];
 			dynamic d = f;
 
-			Assert.AreEqual(3, f.Count());
-			Assert.AreEqual(2, d["ID"]);
-			Assert.AreEqual("foo", d["Text"]);
-			Assert.AreEqual("boo", d["GUEST"]);
+			ClassicAssert.AreEqual(3, f.Count());
+			ClassicAssert.AreEqual(2, d["ID"]);
+			ClassicAssert.AreEqual("foo", d["Text"]);
+			ClassicAssert.AreEqual("boo", d["GUEST"]);
 		}
 
 		[Test]
@@ -103,10 +104,10 @@ namespace Insight.Tests
 			FastExpando f = list[0];
 			dynamic d = f;
 
-			Assert.AreEqual(3, f.Count());
-			Assert.AreEqual(2, d["ID"]);
-			Assert.AreEqual("foo", d["Text"]);
-			Assert.AreEqual("boo", d["GUEST"]);
+			ClassicAssert.AreEqual(3, f.Count());
+			ClassicAssert.AreEqual(2, d["ID"]);
+			ClassicAssert.AreEqual("foo", d["Text"]);
+			ClassicAssert.AreEqual("boo", d["GUEST"]);
 		}
 
 		[Test]
@@ -116,12 +117,12 @@ namespace Insight.Tests
 			dynamic f = new FastExpando();
 			f["Value"] = null;
 			dynamic result = Connection().Query("ReflectInt", (object)f).FirstOrDefault();
-			Assert.IsNull(result["Value"]);
+			ClassicAssert.IsNull(result["Value"]);
 
 			// an expando with a NO value passes in DEFAULT
 			f = new FastExpando();
 			result = Connection().Query("ReflectInt", (object)f).FirstOrDefault();
-			Assert.AreEqual(5, result["Value"]);
+			ClassicAssert.AreEqual(5, result["Value"]);
 		}
 
 		[Test]
@@ -130,12 +131,12 @@ namespace Insight.Tests
 			var p = new Dictionary<string, object>() { { "Int", 1 }, { "Text", "foo" } };
 			var list = Connection().QuerySql("SELECT Int=CONVERT (int, @Int), Text=@Text", p);
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 
 			dynamic result = list[0];
-			Assert.AreEqual(p["Int"], result["Int"]);
-			Assert.AreEqual(p["Text"], result["Text"]);
+			ClassicAssert.AreEqual(p["Int"], result["Int"]);
+			ClassicAssert.AreEqual(p["Text"], result["Text"]);
 		}
 
 		[Test]
@@ -147,11 +148,11 @@ namespace Insight.Tests
 
 			var list = Connection().QuerySql("SELECT G=@g", p);
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 
 			dynamic result = list[0];
-			Assert.AreEqual(pd["g"], result["g"]);
+			ClassicAssert.AreEqual(pd["g"], result["g"]);
 		}
     }
 
@@ -195,8 +196,8 @@ namespace Insight.Tests
 				var results = cmd.ExecuteReader().ToList<TestData>();
 
 				// this was failing because the list parameter was not being added to the command
-				Assert.AreEqual(1, results.Count());
-				Assert.AreEqual(2, results[0].Z);
+				ClassicAssert.AreEqual(1, results.Count());
+				ClassicAssert.AreEqual(2, results[0].Z);
 			}
 
 			// this was failing the second time because there was a closure with a command with an old connection
@@ -210,8 +211,8 @@ namespace Insight.Tests
 
 				var cmd = c.CreateCommand("ReflectMultipleTestData", parameters);
 				var results = cmd.ExecuteReader().ToList<TestData>();
-				Assert.AreEqual(1, results.Count());
-				Assert.AreEqual(2, results[0].Z);
+				ClassicAssert.AreEqual(1, results.Count());
+				ClassicAssert.AreEqual(2, results[0].Z);
 			}
 		}
 	}

@@ -6,12 +6,15 @@ using System.Reflection;
 using System.Text;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 //using System.Transactions;
 using System.Data.Common;
 using System.Threading.Tasks;
 using System.Data;
+using System.Globalization;
 
 #pragma warning disable 0649
+
 
 namespace Insight.Tests
 {
@@ -42,7 +45,7 @@ namespace Insight.Tests
 				var outputData = new OutputData();
 				command.OutputParameters(outputData);
 
-				Assert.AreEqual(9, outputData.p);
+				ClassicAssert.AreEqual(9, outputData.p);
 			}
 		}
 
@@ -59,7 +62,7 @@ namespace Insight.Tests
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
-				Assert.AreEqual(9, output["p"]);
+				ClassicAssert.AreEqual(9, output["p"]);
 			}
 		}
 
@@ -76,7 +79,7 @@ namespace Insight.Tests
 				var result = command.ExecuteNonQuery();
 				var output = command.OutputParameters();
 
-				Assert.AreEqual(9, output["p"]);
+				ClassicAssert.AreEqual(9, output["p"]);
 			}
 		}
 		#endregion
@@ -86,12 +89,12 @@ namespace Insight.Tests
 		{
 			public T p;
 
-			public static void Test(T value, IDbConnection connection, string sqlType)
+			public static void Test(object value, IDbConnection connection, string sqlType, string stringValue = null)
 			{
 				using (IDbTransaction t = connection.BeginTransaction())
 				{
 					// special case for formatting enums in our proc definition
-					string stringValue = value.ToString();
+					stringValue = stringValue ?? value.ToString();
 					if (typeof(T).GetTypeInfo().IsEnum)
 						stringValue = Enum.Format(typeof(T), value, "D");
 
@@ -115,7 +118,7 @@ namespace Insight.Tests
 					var outputData = new ReturnTypeTest<T>();
 					command.OutputParameters(outputData);
 
-					Assert.AreEqual(value.ToString(), outputData.p.ToString());
+					ClassicAssert.AreEqual(value.ToString(), outputData.p.ToString());
 				}
 			}
 		}
@@ -155,8 +158,10 @@ namespace Insight.Tests
 				ReturnTypeTest<bool>.Test(true, _connection, "bit");
 				ReturnTypeTest<char>.Test('c', _connection, "char");
 				ReturnTypeTest<Guid>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
-				ReturnTypeTest<DateTime>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
-				ReturnTypeTest<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
+				var now = DateTime.Now;
+				var nowOffset = DateTimeOffset.Now;
+				ReturnTypeTest<DateTime>.Test(now.Date, _connection, "date", now.Date.ToString("u"));				// SQL will round the time, so need to knock off some milliseconds 
+				ReturnTypeTest<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset", nowOffset.ToString(CultureInfo.InvariantCulture));
 				ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
 				ReturnTypeTest<TimeSpan>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
 
@@ -171,8 +176,8 @@ namespace Insight.Tests
 				ReturnTypeTest<Nullable<bool>>.Test(true, _connection, "bit");
 				ReturnTypeTest<Nullable<char>>.Test('c', _connection, "char");
 				ReturnTypeTest<Nullable<Guid>>.Test(Guid.NewGuid(), _connection, "uniqueidentifier");
-				ReturnTypeTest<Nullable<DateTime>>.Test(DateTime.Now.Date, _connection, "date");				// SQL will round the time, so need to knock off some milliseconds 
-				ReturnTypeTest<Nullable<DateTimeOffset>>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
+				ReturnTypeTest<Nullable<DateTime>>.Test(now.Date, _connection, "date", now.Date.ToString("u"));				// SQL will round the time, so need to knock off some milliseconds 
+				ReturnTypeTest<Nullable<DateTimeOffset>>.Test(nowOffset, _connection, "datetimeoffset", nowOffset.ToString(CultureInfo.InvariantCulture));
 				ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "time");
 				ReturnTypeTest<Nullable<TimeSpan>>.Test(TimeSpan.Parse("00:01:15"), _connection, "datetime");
 
@@ -191,8 +196,8 @@ namespace Insight.Tests
 		{
 			var result = Connection().QueryResults<Results<int>>("TestOutputParameters", new { p = 5 });
 
-			Assert.IsNotNull(result.Outputs);
-			Assert.AreEqual(9, result.Outputs["p"]);
+			ClassicAssert.IsNotNull(result.Outputs);
+			ClassicAssert.AreEqual(9, result.Outputs["p"]);
 		}
 
 		/// <summary>
@@ -203,8 +208,8 @@ namespace Insight.Tests
 		{
 			var result = Connection().QueryResultsAsync<Results<int>>("TestOutputParameters", new { p = 5 }).Result;
 
-			Assert.IsNotNull(result.Outputs);
-			Assert.AreEqual(9, result.Outputs["p"]);
+			ClassicAssert.IsNotNull(result.Outputs);
+			ClassicAssert.AreEqual(9, result.Outputs["p"]);
 		}
 		#endregion
 
@@ -222,7 +227,7 @@ namespace Insight.Tests
 
 			Connection().Execute("TestXmlOutputParameters", input, outputParameters: output);
 
-			Assert.AreEqual(5, output.Data.p);
+			ClassicAssert.AreEqual(5, output.Data.p);
 		}
 		#endregion
 
@@ -237,7 +242,7 @@ namespace Insight.Tests
 		{
 			var output = new ReturnValue();
 			Connection().Execute("ReturnAValue", outputParameters: output);
-			Assert.AreEqual(11, output.Return_Value);
+			ClassicAssert.AreEqual(11, output.Return_Value);
 		}
 
 		[Test]
@@ -245,14 +250,14 @@ namespace Insight.Tests
 		{
 			dynamic output = new FastExpando();
 			Connection().Execute("ReturnAValue", outputParameters: (object)output);
-			Assert.AreEqual(11, output["Return_Value"]);
+			ClassicAssert.AreEqual(11, output["Return_Value"]);
 		}
 
 		[Test]
 		public void ReturnValueCanFillQueryResults()
 		{
 			var results = Connection().Query("ReturnAValue", null, Query.ReturnsResults<Results>());
-			Assert.AreEqual(11, results.Outputs["Return_Value"]);
+			ClassicAssert.AreEqual(11, results.Outputs["Return_Value"]);
 		}
 		#endregion
 
@@ -268,7 +273,7 @@ namespace Insight.Tests
 
 			task.Wait();
 
-			Assert.AreEqual(9, outputData.p);
+			ClassicAssert.AreEqual(9, outputData.p);
 		}
 
 		public interface IAsyncWithOutputParameters
@@ -289,7 +294,7 @@ namespace Insight.Tests
 
 			task.Wait();
 
-			Assert.AreEqual(9, outputData.p);
+			ClassicAssert.AreEqual(9, outputData.p);
 		}
 		#endregion
 
@@ -308,8 +313,8 @@ namespace Insight.Tests
 
                 var o = new OutputWithString() { In = "abcdefg", Out = "" };
                 var oOut = c.ExecuteScalar<string>("OutputString", o);
-                Assert.AreEqual(o.In, oOut);
-                Assert.AreEqual(o.In, o.Out);
+                ClassicAssert.AreEqual(o.In, oOut);
+                ClassicAssert.AreEqual(o.In, o.Out);
             }
         }
 	}

@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database.Reliable;
 using System.Data.Common;
 
@@ -383,7 +384,7 @@ namespace Insight.Tests
 						var list = new List<TestData>() { new TestData() { i = 1 } };
 						var count = reliable.ExecuteScalar<int>("ProcWithTestTable", new { table = list });
 
-						Assert.AreEqual(list.Count, count);
+						ClassicAssert.AreEqual(list.Count, count);
 					}
 				}
 				finally
@@ -414,7 +415,7 @@ namespace Insight.Tests
 			};
 
 			var result = Connection().Query<int>("[CallTVPWithIdentityColumn]", data);
-			Assert.AreEqual(new int[] { 1, 2, 3 }, result);
+			ClassicAssert.AreEqual(new int[] { 1, 2, 3 }, result);
 		}
 		#endregion
 	}

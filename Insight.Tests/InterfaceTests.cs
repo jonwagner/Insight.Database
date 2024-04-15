@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database;
 using System.Data.Common;
 using System.Data;
@@ -127,46 +128,46 @@ namespace Insight.Tests
 
             // make sure that we can create an interface
             ITest1 i = connection.As<ITest1>();
-            Assert.IsNotNull(i);
+            ClassicAssert.IsNotNull(i);
 
             // make sure that the wrapper is still a connection
             DbConnection c = i as DbConnection;
-            Assert.IsNotNull(c);
+            ClassicAssert.IsNotNull(c);
 
             // let's call us some methods
             i.ExecuteSomething();
             i.ExecuteSomethingWithParameters(5, "6");
-            Assert.AreEqual(9, i.ExecuteSomethingScalar(9));
+            ClassicAssert.AreEqual(9, i.ExecuteSomethingScalar(9));
             i.SingleObject().Verify(false);
-            Assert.IsNull(i.SingleObjectWithNoData());
-            Assert.AreEqual(2, i.QueryValue(9).Count());
+            ClassicAssert.IsNull(i.SingleObjectWithNoData());
+            ClassicAssert.AreEqual(2, i.QueryValue(9).Count());
             ParentTestData.Verify(i.QueryObject(), false);
-            Assert.AreEqual(11, i.ObjectAsParameter(new ParentTestData() { ParentX = 11 }));
-            Assert.AreEqual(11, i.ObjectListAsParameter(new[] { new ParentTestData() { ParentX = 11 } }).First());
+            ClassicAssert.AreEqual(11, i.ObjectAsParameter(new ParentTestData() { ParentX = 11 }));
+            ClassicAssert.AreEqual(11, i.ObjectListAsParameter(new[] { new ParentTestData() { ParentX = 11 } }).First());
 
             var results = i.QueryResults(7);
             ParentTestData.Verify(results.Set1, false);
-            Assert.AreEqual(7, results.Set2.First());
+            ClassicAssert.AreEqual(7, results.Set2.First());
 
             // let's call them asynchronously
             i.ExecuteSomethingAsync().Wait();
             i.ExecuteSomethingWithParametersAsync(5, "6").Wait();
-            Assert.AreEqual(9, i.ExecuteSomethingScalarAsync(9).Result);
+            ClassicAssert.AreEqual(9, i.ExecuteSomethingScalarAsync(9).Result);
             i.SingleObjectAsync().Result.Verify(false);
-            Assert.AreEqual(2, i.QueryValueAsync(9).Result.Count());
+            ClassicAssert.AreEqual(2, i.QueryValueAsync(9).Result.Count());
             ParentTestData.Verify(i.QueryObjectAsync().Result, false);
-            Assert.AreEqual(11, i.ObjectAsParameterAsync(new ParentTestData() { ParentX = 11 }).Result);
-            Assert.AreEqual(11, i.ObjectListAsParameterAsync(new[] { new ParentTestData() { ParentX = 11 } }).Result.First());
+            ClassicAssert.AreEqual(11, i.ObjectAsParameterAsync(new ParentTestData() { ParentX = 11 }).Result);
+            ClassicAssert.AreEqual(11, i.ObjectListAsParameterAsync(new[] { new ParentTestData() { ParentX = 11 } }).Result.First());
 
             results = i.QueryResultsAsync(7).Result;
             ParentTestData.Verify(results.Set1, false);
-            Assert.AreEqual(7, results.Set2.First());
+            ClassicAssert.AreEqual(7, results.Set2.First());
 
             // inline SQL!
-            Assert.AreEqual("42", i.InlineSql(42));
-            Assert.AreEqual(99, i.InlineSqlProcOverride(99));
-            Assert.AreEqual(98, i.InlineSqlWithSchema(98));
-            Assert.AreEqual(98, connection.As<ITestWithSqlAttribute>().ExecuteSomethingScalar(98));
+            ClassicAssert.AreEqual("42", i.InlineSql(42));
+            ClassicAssert.AreEqual(99, i.InlineSqlProcOverride(99));
+            ClassicAssert.AreEqual(98, i.InlineSqlWithSchema(98));
+            ClassicAssert.AreEqual(98, connection.As<ITestWithSqlAttribute>().ExecuteSomethingScalar(98));
         }
         #endregion
 
@@ -178,7 +179,7 @@ namespace Insight.Tests
             {
                 // make sure that we can create an interface
                 ITestWithSpecialParameters i = connection.As<ITestWithSpecialParameters>();
-                Assert.IsNotNull(i);
+                ClassicAssert.IsNotNull(i);
 
                 // let's call us some methods
 
@@ -224,18 +225,18 @@ namespace Insight.Tests
                 // single insert
                 TestData data = new TestData() { Z = 4 };
                 i.InsertTestData(data);
-                Assert.AreEqual(1, data.X, "ID should be returned");
+                ClassicAssert.AreEqual(1, data.X, "ID should be returned");
 
                 // single update
                 i.UpdateTestData(data);
-                Assert.AreEqual(0, data.X, "ID should be reset");
+                ClassicAssert.AreEqual(0, data.X, "ID should be reset");
 
                 // single upsert
                 data = new TestData() { Z = 4 };
                 i.InsertTestData(data);
-                Assert.AreEqual(2, data.X, "ID should be returned");
+                ClassicAssert.AreEqual(2, data.X, "ID should be returned");
                 i.UpsertTestData(data);
-                Assert.AreEqual(0, data.X, "ID should be reset");
+                ClassicAssert.AreEqual(0, data.X, "ID should be reset");
 
                 // multiple insert
                 var list = new[]
@@ -244,22 +245,22 @@ namespace Insight.Tests
                     new TestData() { Z = 6 }
                 };
                 i.InsertMultipleTestData(list);
-                Assert.AreEqual(3, list[0].X, "ID should be returned");
-                Assert.AreEqual(4, list[1].X, "ID should be returned");
+                ClassicAssert.AreEqual(3, list[0].X, "ID should be returned");
+                ClassicAssert.AreEqual(4, list[1].X, "ID should be returned");
 
                 // multiple update
                 i.UpsertMultipleTestData(list);
-                Assert.AreEqual(0, list[0].X, "ID should be reset");
-                Assert.AreEqual(0, list[1].X, "ID should be reset");
+                ClassicAssert.AreEqual(0, list[0].X, "ID should be reset");
+                ClassicAssert.AreEqual(0, list[1].X, "ID should be reset");
 
                 // single insert
                 data = new TestData() { Z = 4 };
                 i.InsertTestDataAsync(data).Wait();
-                Assert.AreEqual(5, data.X, "ID should be returned");
+                ClassicAssert.AreEqual(5, data.X, "ID should be returned");
 
                 // single update
                 i.UpsertTestDataAsync(data).Wait();
-                Assert.AreEqual(0, data.X, "ID should be reset");
+                ClassicAssert.AreEqual(0, data.X, "ID should be reset");
 
                 // multiple insert
                 list = new[]
@@ -268,13 +269,13 @@ namespace Insight.Tests
                     new TestData() { Z = 6 }
                 };
                 i.InsertMultipleTestDataAsync(list).Wait();
-                Assert.AreEqual(6, list[0].X, "ID should be returned");
-                Assert.AreEqual(7, list[1].X, "ID should be returned");
+                ClassicAssert.AreEqual(6, list[0].X, "ID should be returned");
+                ClassicAssert.AreEqual(7, list[1].X, "ID should be returned");
 
                 // multiple update
                 i.UpsertMultipleTestDataAsync(list).Wait();
-                Assert.AreEqual(0, list[0].X, "ID should be reset");
-                Assert.AreEqual(0, list[1].X, "ID should be reset");
+                ClassicAssert.AreEqual(0, list[0].X, "ID should be reset");
+                ClassicAssert.AreEqual(0, list[1].X, "ID should be reset");
             }
         }
         #endregion
@@ -313,32 +314,32 @@ namespace Insight.Tests
                 int original = 2;
                 int p = original;
                 i.ExecuteWithOutputParameter(out p);
-                Assert.AreEqual(original + 1, p);
+                ClassicAssert.AreEqual(original + 1, p);
 
                 // test executescalar with output parameter
                 p = original;
                 var scalar = i.ExecuteScalarWithOutputParameter(out p);
-                Assert.AreEqual(original + 1, p);
-                Assert.AreEqual(7, scalar);
+                ClassicAssert.AreEqual(original + 1, p);
+                ClassicAssert.AreEqual(7, scalar);
 
                 // test query with output parameters
                 p = original;
                 var results = i.QueryWithOutputParameter(out p);
-                Assert.AreEqual(original + 1, p);
-                Assert.AreEqual(1, results.Count);
-                Assert.AreEqual(5, results[0]);
+                ClassicAssert.AreEqual(original + 1, p);
+                ClassicAssert.AreEqual(1, results.Count);
+                ClassicAssert.AreEqual(5, results[0]);
 
                 // test query results with output parameters
                 p = original;
                 i.QueryResultsWithOutputParameter(out p);
-                Assert.AreEqual(original + 1, p);
+                ClassicAssert.AreEqual(original + 1, p);
 
                 // test insert with output parameters
                 TestData data = new TestData() { Z = 4 };
                 var list = new List<TestData>() { data };
                 p = original;
                 i.InsertWithOutputParameter(list, out p);
-                Assert.AreEqual(original + 1, p);
+                ClassicAssert.AreEqual(original + 1, p);
             }
         }
         #endregion
@@ -366,44 +367,44 @@ namespace Insight.Tests
                 IReturnItems i = connection.As<IReturnItems>();
 
                 IEnumerable<int> result = i.QueryEnumerable();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryIList();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryList();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryCollection();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryResults().Set1;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryEnumerableAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryIListAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryListAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryCollectionAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
 
                 result = i.QueryResultsAsync().Result.Set1;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(2, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(2, result.Count());
             }
         }
 
@@ -429,44 +430,44 @@ namespace Insight.Tests
                 var i = connection.As<IReturnNothing>();
 
                 IEnumerable<int> result = i.EmptyEnumerable();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyIList();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyList();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyCollection();
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyResults().Set1;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyEnumerableAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyIListAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyListAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyCollectionAsync().Result;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
 
                 result = i.EmptyResultsAsync().Result.Set1;
-                Assert.IsNotNull(result);
-                Assert.AreEqual(0, result.Count());
+                ClassicAssert.IsNotNull(result);
+                ClassicAssert.AreEqual(0, result.Count());
             }
         }
         #endregion
@@ -572,12 +573,12 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetBeerAndMoreWithExplicitStructure(Insight.Database.Structure.ListReader<InfiniteBeer, InfiniteBeer>.Default);
 
-            Assert.AreEqual(1, result.Count);
+            ClassicAssert.AreEqual(1, result.Count);
             var beer = result[0];
-            Assert.IsNotNull(beer);
-            Assert.AreEqual(1, beer.ID);
-            Assert.IsNotNull(beer.More);
-            Assert.AreEqual(2, beer.More.ID);
+            ClassicAssert.IsNotNull(beer);
+            ClassicAssert.AreEqual(1, beer.ID);
+            ClassicAssert.IsNotNull(beer.More);
+            ClassicAssert.AreEqual(2, beer.More.ID);
         }
 
         [Test]
@@ -596,12 +597,12 @@ namespace Insight.Tests
             {
                 var result = call();
 
-                Assert.AreEqual(1, result.Count());
+                ClassicAssert.AreEqual(1, result.Count());
                 var beer = result.First();
-                Assert.IsNotNull(beer);
-                Assert.AreEqual(1, beer.ID);
-                Assert.IsNotNull(beer.More);
-                Assert.AreEqual(2, beer.More.ID);
+                ClassicAssert.IsNotNull(beer);
+                ClassicAssert.AreEqual(1, beer.ID);
+                ClassicAssert.IsNotNull(beer.More);
+                ClassicAssert.AreEqual(2, beer.More.ID);
             }
         }
 
@@ -611,12 +612,12 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetBeerAndMoreWithAttributeAsync().Result;
 
-            Assert.AreEqual(1, result.Count);
+            ClassicAssert.AreEqual(1, result.Count);
             var beer = result[0];
-            Assert.IsNotNull(beer);
-            Assert.AreEqual(1, beer.ID);
-            Assert.IsNotNull(beer.More);
-            Assert.AreEqual(2, beer.More.ID);
+            ClassicAssert.IsNotNull(beer);
+            ClassicAssert.AreEqual(1, beer.ID);
+            ClassicAssert.IsNotNull(beer.More);
+            ClassicAssert.AreEqual(2, beer.More.ID);
         }
 
         [Test]
@@ -625,14 +626,14 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetBeerResultsWithAttribute();
 
-            Assert.AreEqual(1, result.Set1.Count);
-            Assert.AreEqual(1, result.Set1[0].ID);
-            Assert.IsNull(result.Set1[0].More);
+            ClassicAssert.AreEqual(1, result.Set1.Count);
+            ClassicAssert.AreEqual(1, result.Set1[0].ID);
+            ClassicAssert.IsNull(result.Set1[0].More);
 
-            Assert.AreEqual(1, result.Set2.Count);
-            Assert.AreEqual(2, result.Set2[0].ID);
-            Assert.IsNotNull(result.Set2[0].More);
-            Assert.AreEqual(2, result.Set2[0].More.ID);
+            ClassicAssert.AreEqual(1, result.Set2.Count);
+            ClassicAssert.AreEqual(2, result.Set2[0].ID);
+            ClassicAssert.IsNotNull(result.Set2[0].More);
+            ClassicAssert.AreEqual(2, result.Set2[0].More.ID);
         }
 
         [Test]
@@ -641,10 +642,10 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetDerivedRecordset();
 
-            Assert.AreEqual(1, result.Set1.Count);
-            Assert.AreEqual(1, result.Set1[0].ParentX);
+            ClassicAssert.AreEqual(1, result.Set1.Count);
+            ClassicAssert.AreEqual(1, result.Set1[0].ParentX);
 
-            Assert.AreEqual(70, result.TotalCount);
+            ClassicAssert.AreEqual(70, result.TotalCount);
         }
 
         [Test]
@@ -653,9 +654,9 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetBeerWithChildrenList();
 
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual(1, result[0].List.Count);
-            Assert.AreEqual(1, result[0].List[0].ID);
+            ClassicAssert.AreEqual(1, result.Count);
+            ClassicAssert.AreEqual(1, result[0].List.Count);
+            ClassicAssert.AreEqual(1, result[0].List[0].ID);
         }
 
         [Test]
@@ -664,9 +665,9 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetBeerWithChildrenResults().Set1;
 
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual(1, result[0].List.Count);
-            Assert.AreEqual(1, result[0].List[0].ID);
+            ClassicAssert.AreEqual(1, result.Count);
+            ClassicAssert.AreEqual(1, result[0].List.Count);
+            ClassicAssert.AreEqual(1, result[0].List[0].ID);
         }
 
         [Test]
@@ -675,11 +676,11 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetLiquorStoreWithMultipleChildren();
 
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual(1, result[0].Beer.Count);
-            Assert.AreEqual(2, result[0].Beer[0].ID);
-            Assert.AreEqual(1, result[0].Wine.Count);
-            Assert.AreEqual(3, result[0].Wine[0].ID);
+            ClassicAssert.AreEqual(1, result.Count);
+            ClassicAssert.AreEqual(1, result[0].Beer.Count);
+            ClassicAssert.AreEqual(2, result[0].Beer[0].ID);
+            ClassicAssert.AreEqual(1, result[0].Wine.Count);
+            ClassicAssert.AreEqual(3, result[0].Wine[0].ID);
         }
 
         [Test]
@@ -688,14 +689,14 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetLiquorStoreWithChildrenAndMore();
 
-            Assert.AreEqual(1, result.Set1.Count);
-            Assert.AreEqual(1, result.Set1[0].Beer.Count);
-            Assert.AreEqual(2, result.Set1[0].Beer[0].ID);
-            Assert.AreEqual(1, result.Set1[0].Wine.Count);
-            Assert.AreEqual(3, result.Set1[0].Wine[0].ID);
+            ClassicAssert.AreEqual(1, result.Set1.Count);
+            ClassicAssert.AreEqual(1, result.Set1[0].Beer.Count);
+            ClassicAssert.AreEqual(2, result.Set1[0].Beer[0].ID);
+            ClassicAssert.AreEqual(1, result.Set1[0].Wine.Count);
+            ClassicAssert.AreEqual(3, result.Set1[0].Wine[0].ID);
 
-            Assert.AreEqual(1, result.Set2.Count);
-            Assert.AreEqual(4, result.Set2[0].ID);
+            ClassicAssert.AreEqual(1, result.Set2.Count);
+            ClassicAssert.AreEqual(4, result.Set2[0].ID);
         }
 
         [Test]
@@ -704,11 +705,11 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure>();
             var result = i.GetLiquorStoreWithChildrenAndMoreWithOverrides().Set1;
 
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual(1, result[0].OtherBeer.Count);
-            Assert.AreEqual(2, result[0].OtherBeer[0].ID);
-            Assert.AreEqual(1, result[0].Wine.Count);
-            Assert.AreEqual(3, result[0].Wine[0].ID);
+            ClassicAssert.AreEqual(1, result.Count);
+            ClassicAssert.AreEqual(1, result[0].OtherBeer.Count);
+            ClassicAssert.AreEqual(2, result[0].OtherBeer[0].ID);
+            ClassicAssert.AreEqual(1, result[0].Wine.Count);
+            ClassicAssert.AreEqual(3, result[0].Wine[0].ID);
         }
 
         [Test]
@@ -718,10 +719,10 @@ namespace Insight.Tests
             var result = i.GetSingleBeerWithAttribute();
 
             var beer = result;
-            Assert.IsNotNull(beer);
-            Assert.AreEqual(1, beer.ID);
-            Assert.IsNotNull(beer.More);
-            Assert.AreEqual(2, beer.More.ID);
+            ClassicAssert.IsNotNull(beer);
+            ClassicAssert.AreEqual(1, beer.ID);
+            ClassicAssert.IsNotNull(beer.More);
+            ClassicAssert.AreEqual(2, beer.More.ID);
         }
 
         [Test]
@@ -731,11 +732,11 @@ namespace Insight.Tests
             var result = i.GetSingleBeerWithChildren();
 
             var beer = result;
-            Assert.IsNotNull(beer);
-            Assert.AreEqual(1, beer.ID);
-            Assert.AreEqual(2, beer.List.Count);
-            Assert.AreEqual(2, beer.List[0].ID);
-            Assert.AreEqual(3, beer.List[1].ID);
+            ClassicAssert.IsNotNull(beer);
+            ClassicAssert.AreEqual(1, beer.ID);
+            ClassicAssert.AreEqual(2, beer.List.Count);
+            ClassicAssert.AreEqual(2, beer.List[0].ID);
+            ClassicAssert.AreEqual(3, beer.List[1].ID);
         }
 
         [Test]
@@ -745,9 +746,9 @@ namespace Insight.Tests
             var result = i.GetSingleBeerWithChildrenWithIDOverride();
 
             var beer = result;
-            Assert.IsNotNull(beer);
-            Assert.AreEqual(1, beer.ID);
-            Assert.AreEqual(0, beer.List.Count);
+            ClassicAssert.IsNotNull(beer);
+            ClassicAssert.AreEqual(1, beer.ID);
+            ClassicAssert.AreEqual(0, beer.List.Count);
         }
 
         [Test]
@@ -757,16 +758,16 @@ namespace Insight.Tests
             var result = i.GetMultiLevelChildren();
 
             var beer = result;
-            Assert.IsNotNull(beer);
-            Assert.AreEqual(1, beer.ID);
-            Assert.AreEqual(2, beer.List.Count);
-            Assert.AreEqual(2, beer.List[0].ID);
-            Assert.AreEqual(3, beer.List[1].ID);
+            ClassicAssert.IsNotNull(beer);
+            ClassicAssert.AreEqual(1, beer.ID);
+            ClassicAssert.AreEqual(2, beer.List.Count);
+            ClassicAssert.AreEqual(2, beer.List[0].ID);
+            ClassicAssert.AreEqual(3, beer.List[1].ID);
 
             var beer2 = beer.List[0];
-            Assert.AreEqual(2, beer2.ID);
-            Assert.AreEqual(1, beer2.List.Count);
-            Assert.AreEqual(4, beer2.List[0].ID);
+            ClassicAssert.AreEqual(2, beer2.ID);
+            ClassicAssert.AreEqual(1, beer2.List.Count);
+            ClassicAssert.AreEqual(4, beer2.List[0].ID);
         }
 
         #endregion
@@ -777,14 +778,14 @@ namespace Insight.Tests
         {
             // make sure that we can create an interface
             var i = Connection().As<IDerivedSql>();
-            Assert.IsNotNull(i);
-            Assert.AreEqual("base", i.Base());
-            Assert.AreEqual("derived", i.Derived());
+            ClassicAssert.IsNotNull(i);
+            ClassicAssert.AreEqual("base", i.Base());
+            ClassicAssert.AreEqual("derived", i.Derived());
 
             i = Connection().AsParallel<IDerivedSql>();
-            Assert.IsNotNull(i);
-            Assert.AreEqual("base", i.Base());
-            Assert.AreEqual("derived", i.Derived());
+            ClassicAssert.IsNotNull(i);
+            ClassicAssert.AreEqual("base", i.Base());
+            ClassicAssert.AreEqual("derived", i.Derived());
         }
         #endregion
 
@@ -795,8 +796,8 @@ namespace Insight.Tests
             var i = Connection().As<IMergeOutputs>();
             i.DoAMerge(data);
 
-            Assert.AreEqual(4, data.X);
-            Assert.AreEqual(6, data.Z);
+            ClassicAssert.AreEqual(4, data.X);
+            ClassicAssert.AreEqual(6, data.Z);
         }
 
         #region TVP Test
@@ -819,10 +820,10 @@ namespace Insight.Tests
 
             var i = Connection().As<IHaveTVPWithSQL>();
             var result = i.ReflectBeer(beer);
-            Assert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual(1, result.Count());
 
             result = i.ReflectBeer2(beer, 2);
-            Assert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual(1, result.Count());
         }
         #endregion
 
@@ -849,7 +850,7 @@ namespace Insight.Tests
             var i1 = Connection().As<ITest1>();
             var i2 = Connection().As<ITestInsertUpdate>();
 
-            Assert.AreEqual(i1.GetType().GetTypeInfo().Assembly, i2.GetType().GetTypeInfo().Assembly);
+            ClassicAssert.AreEqual(i1.GetType().GetTypeInfo().Assembly, i2.GetType().GetTypeInfo().Assembly);
         }
         #endregion
 
@@ -952,7 +953,7 @@ namespace Insight.Tests
 
         public void Test()
         {
-            Assert.IsNotNull(GetConnection());
+            ClassicAssert.IsNotNull(GetConnection());
         }
     }
 
@@ -972,9 +973,9 @@ namespace Insight.Tests
 
         public void Test()
         {
-            Assert.AreNotEqual(this, InnerConnection);
-            Assert.IsNotNull(InnerConnection);
-            Assert.AreEqual(this, GetConnection());
+            ClassicAssert.AreNotEqual(this, InnerConnection);
+            ClassicAssert.IsNotNull(InnerConnection);
+            ClassicAssert.AreEqual(this, GetConnection());
         }
     }
 
@@ -1013,20 +1014,20 @@ namespace Insight.Tests
         {
             // make sure that we can create an interface
             var i = Connection().As<AbstractClass>();
-            Assert.IsNotNull(i);
-            Assert.AreEqual("abstract", i.AbstractMethod());
+            ClassicAssert.IsNotNull(i);
+            ClassicAssert.AreEqual("abstract", i.AbstractMethod());
             i = Connection().AsParallel<AbstractClass>();
-            Assert.IsNotNull(i);
-            Assert.AreEqual("abstract", i.AbstractMethod());
+            ClassicAssert.IsNotNull(i);
+            ClassicAssert.AreEqual("abstract", i.AbstractMethod());
 
             var derived = Connection().As<DerivedAbstractClass>();
-            Assert.IsNotNull(derived);
-            Assert.AreEqual("abstract", derived.AbstractMethod());
-            Assert.AreEqual("derived", derived.DerivedAbstractMethod());
+            ClassicAssert.IsNotNull(derived);
+            ClassicAssert.AreEqual("abstract", derived.AbstractMethod());
+            ClassicAssert.AreEqual("derived", derived.DerivedAbstractMethod());
             derived = Connection().AsParallel<DerivedAbstractClass>();
-            Assert.IsNotNull(derived);
-            Assert.AreEqual("abstract", derived.AbstractMethod());
-            Assert.AreEqual("derived", derived.DerivedAbstractMethod());
+            ClassicAssert.IsNotNull(derived);
+            ClassicAssert.AreEqual("abstract", derived.AbstractMethod());
+            ClassicAssert.AreEqual("derived", derived.DerivedAbstractMethod());
         }
 
         [Test]
@@ -1046,7 +1047,7 @@ namespace Insight.Tests
 
             // make sure that we can create an interface
             var i = connection.As<AbstractClassWithPublicGetConnection>();
-            Assert.IsNotNull(i.GetConnection());
+            ClassicAssert.IsNotNull(i.GetConnection());
         }
 
         [Test]
@@ -1073,7 +1074,7 @@ namespace Insight.Tests
             var connection = Connection();
 
             var i = connection.As<AbstractClassWithProtectedMethod>();
-            Assert.AreEqual("abstract", i.PublicMethod());
+            ClassicAssert.AreEqual("abstract", i.PublicMethod());
         }
 
         [Test]
@@ -1082,10 +1083,10 @@ namespace Insight.Tests
             var connection = Connection();
 
             var i = connection.As<AbstractClassWithDefaultConstructor>();
-            Assert.IsTrue(i.DefaultConstructorCalled);
+            ClassicAssert.IsTrue(i.DefaultConstructorCalled);
 
             var i2 = connection.AsParallel<AbstractClassWithDefaultConstructor>();
-            Assert.IsTrue(i2.DefaultConstructorCalled);
+            ClassicAssert.IsTrue(i2.DefaultConstructorCalled);
         }
 
         [Test]
@@ -1131,7 +1132,7 @@ namespace Insight.Tests
 
             var b = i.GetBit().Result;
 
-            Assert.AreEqual(true, b);
+            ClassicAssert.AreEqual(true, b);
         }
     }
 
@@ -1158,7 +1159,7 @@ namespace Insight.Tests
             {
                 c.As<I1>().Do();
                 int i = c.As<I2>().Do();
-                Assert.AreEqual(1, i);
+                ClassicAssert.AreEqual(1, i);
             }
         }
 
@@ -1170,7 +1171,7 @@ namespace Insight.Tests
             {
                 c.UsingTransaction(sqlTransaction).As<I1>().Do();
                 int i = c.UsingTransaction(sqlTransaction).As<I2>().Do();
-                Assert.AreEqual(1, i);
+                ClassicAssert.AreEqual(1, i);
             }
         }
     }
@@ -1190,7 +1191,7 @@ namespace Insight.Tests
         public void ParameterNameCanBeOverridden()
         {
             var p = Connection().As<IHaveColumnAttribute>().RenameParameter(5);
-            Assert.AreEqual(5, p);
+            ClassicAssert.AreEqual(5, p);
         }
     }
     #endregion
@@ -1232,16 +1233,16 @@ namespace Insight.Tests
             var result = i.GetMultiLevelChildren();
 
             var root = result;
-            Assert.IsNotNull(root);
-            Assert.AreEqual(1, root.ID);
-            Assert.AreEqual(2, root.List.Count);
-            Assert.AreEqual(2, root.List[0].ID);
-            Assert.AreEqual(3, root.List[1].ID);
+            ClassicAssert.IsNotNull(root);
+            ClassicAssert.AreEqual(1, root.ID);
+            ClassicAssert.AreEqual(2, root.List.Count);
+            ClassicAssert.AreEqual(2, root.List[0].ID);
+            ClassicAssert.AreEqual(3, root.List[1].ID);
 
             var level2 = root.List[0];
-            Assert.AreEqual(2, level2.ID);
-            Assert.AreEqual(1, level2.List.Count);
-            Assert.AreEqual(4, level2.List[0].ID);
+            ClassicAssert.AreEqual(2, level2.ID);
+            ClassicAssert.AreEqual(1, level2.List.Count);
+            ClassicAssert.AreEqual(4, level2.List[0].ID);
         }
     }
     #endregion
@@ -1263,8 +1264,8 @@ namespace Insight.Tests
         [Test]
         public void TestDefaultMethod()
         {
-            Assert.AreEqual(Connection().As<IHaveDefaultMethod>().HasDefault(), "default");
-            Assert.AreEqual(Connection().As<IHaveDefaultMethod>().NoDefault(), "sql");
+            ClassicAssert.AreEqual(Connection().As<IHaveDefaultMethod>().HasDefault(), "default");
+            ClassicAssert.AreEqual(Connection().As<IHaveDefaultMethod>().NoDefault(), "sql");
         }
 #endif
     }

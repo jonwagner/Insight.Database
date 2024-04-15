@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.Data.SqlClient;
 using System.Threading.Tasks;
 using System.Data;
@@ -29,9 +30,9 @@ namespace Insight.Tests
 		{
 			var results = Connection().QueryAsync("SELECT X=1", Parameters.Empty, CommandType.Text).Result;
 
-			Assert.AreEqual(1, results.Count);
+			ClassicAssert.AreEqual(1, results.Count);
 			dynamic d = results[0];
-			Assert.AreEqual(1, d["X"]);
+			ClassicAssert.AreEqual(1, d["X"]);
 		}
 
 		/// <summary>
@@ -50,14 +51,14 @@ namespace Insight.Tests
 					using (reader)
 					{
 						reader.Read();
-						Assert.AreEqual(1, reader.GetInt32(0));
+						ClassicAssert.AreEqual(1, reader.GetInt32(0));
 					}
 				},
 				commandBehavior: CommandBehavior.CloseConnection);
 
 			task.Wait();
 
-			Assert.IsTrue(connection.State == ConnectionState.Closed);
+			ClassicAssert.IsTrue(connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
@@ -85,8 +86,8 @@ namespace Insight.Tests
 
 			task.Wait();
 
-			Assert.AreEqual(1, result);
-			Assert.IsTrue(connection.State == ConnectionState.Closed);
+			ClassicAssert.AreEqual(1, result);
+			ClassicAssert.IsTrue(connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
@@ -112,7 +113,7 @@ namespace Insight.Tests
 				commandBehavior: CommandBehavior.CloseConnection);
 
 			Assert.Throws<AggregateException>(() => task.Wait());
-			Assert.IsTrue(connection.State == ConnectionState.Closed);
+			ClassicAssert.IsTrue(connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
@@ -125,7 +126,7 @@ namespace Insight.Tests
 			var task = connection.ExecuteSqlAsync("THIS IS INVALID SQL", Parameters.Empty, closeConnection: true);
 
 			Assert.Throws<AggregateException>(() => task.Wait());
-			Assert.IsTrue(connection.State == ConnectionState.Closed);
+			ClassicAssert.IsTrue(connection.State == ConnectionState.Closed);
 		}
 
 		/// <summary>
@@ -151,11 +152,11 @@ namespace Insight.Tests
 
 			task.Wait();
 
-			Assert.IsTrue(connection.State == ConnectionState.Closed);
-			Assert.IsNotNull(foo);
-			Assert.AreEqual(1, foo[0]["Foo"]);
-			Assert.IsNotNull(goo);
-			Assert.AreEqual("Text", goo[0]["Goo"]);
+			ClassicAssert.IsTrue(connection.State == ConnectionState.Closed);
+			ClassicAssert.IsNotNull(foo);
+			ClassicAssert.AreEqual(1, foo[0]["Foo"]);
+			ClassicAssert.IsNotNull(goo);
+			ClassicAssert.AreEqual("Text", goo[0]["Goo"]);
 		}
 		#endregion
 
@@ -165,12 +166,12 @@ namespace Insight.Tests
 		{
 			var results = Connection().QueryResultsSqlAsync<PageData<ParentTestData>>(ParentTestData.Sql + "SELECT TotalCount=70").Result;
 
-			Assert.IsNotNull(results);
+			ClassicAssert.IsNotNull(results);
 			ParentTestData.Verify(results.Set1, withGraph: false);
 
-			Assert.IsNotNull(results.Set2);
-			Assert.AreEqual(1, results.Set2.Count);
-			Assert.AreEqual(70, results.TotalCount);
+			ClassicAssert.IsNotNull(results.Set2);
+			ClassicAssert.AreEqual(1, results.Set2.Count);
+			ClassicAssert.AreEqual(70, results.TotalCount);
 		}
 		#endregion
 
