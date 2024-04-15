@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -23,8 +24,8 @@ namespace Insight.Tests
         {
             var tuple = new FakeTuple { Item1 = 1, Item2 = 2 };
             var (one, two) = Connection().QuerySql<ValueTuple<int, int>>("SELECT Item1=@Item1, Item2=@Item2", tuple).First();
-            Assert.AreEqual(1, one);
-            Assert.AreEqual(2, two);
+            ClassicAssert.AreEqual(1, one);
+            ClassicAssert.AreEqual(2, two);
         }
         #endregion
 
@@ -33,8 +34,8 @@ namespace Insight.Tests
         public void ReturningTuplesShouldBindToItemXColumns()
         {
             var (one, two) = Connection().QuerySql<ValueTuple<int, int>>("SELECT Item1=1, Item2=2").First();
-            Assert.AreEqual(1, one);
-            Assert.AreEqual(2, two);
+            ClassicAssert.AreEqual(1, one);
+            ClassicAssert.AreEqual(2, two);
         }
 
         [Test]
@@ -42,8 +43,8 @@ namespace Insight.Tests
         {
             var tuple = (one: 1, two: 2);
             var (one, two) = Connection().QuerySql<ValueTuple<int, int>>("SELECT Item1=@Item1, Item2=@Item2", tuple).First();
-            Assert.AreEqual(1, one);
-            Assert.AreEqual(2, two);
+            ClassicAssert.AreEqual(1, one);
+            ClassicAssert.AreEqual(2, two);
         }
         #endregion
 
@@ -61,32 +62,32 @@ namespace Insight.Tests
         public void TupleInterfaceListShouldBeDeconstructible()
         {
             var (one, two) = Connection().As<IHandleTuples>().GetTuples().First();
-            Assert.AreEqual(1, one);
-            Assert.AreEqual(2, two);
+            ClassicAssert.AreEqual(1, one);
+            ClassicAssert.AreEqual(2, two);
         }
 
         [Test]
         public void TupleInterfaceListShouldHaveNamedProperties()
         {
             var tuple = Connection().As<IHandleTuples>().GetTuples().First();
-            Assert.AreEqual(1, tuple.one);
-            Assert.AreEqual(2, tuple.two);
+            ClassicAssert.AreEqual(1, tuple.one);
+            ClassicAssert.AreEqual(2, tuple.two);
         }
 
         [Test]
         public void TupleInterfaceShouldHaveNamedProperties()
         {
             var tuple = Connection().As<IHandleTuples>().GetTuple();
-            Assert.AreEqual(1, tuple.one);
-            Assert.AreEqual(2, tuple.two);
+            ClassicAssert.AreEqual(1, tuple.one);
+            ClassicAssert.AreEqual(2, tuple.two);
         }
 
         [Test]
         public void TupleInterfaceShouldBeDeconstructible()
         {
             var tuple = Connection().As<IHandleTuples>().GetTuple();
-            Assert.AreEqual(1, tuple.one);
-            Assert.AreEqual(2, tuple.two);
+            ClassicAssert.AreEqual(1, tuple.one);
+            ClassicAssert.AreEqual(2, tuple.two);
         }
         #endregion
     }

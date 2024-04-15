@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 #if !NO_CONNECTION_SETTINGS
 using System.Configuration;
 #endif
@@ -30,10 +31,10 @@ namespace Insight.Tests
 			IDictionary<string, object> otherDict = other;
 			dynamic otherD = other;
 
-			Assert.AreNotSame(o, other);
-			Assert.IsFalse(otherDict.ContainsKey("A"));
-			Assert.IsNotNull(otherD["B"]);
-			Assert.AreEqual(otherD["Z"], d["A"]);
+			ClassicAssert.AreNotSame(o, other);
+			ClassicAssert.IsFalse(otherDict.ContainsKey("A"));
+			ClassicAssert.IsNotNull(otherD["B"]);
+			ClassicAssert.AreEqual(otherD["Z"], d["A"]);
 		}
 
 		[Test]
@@ -44,9 +45,9 @@ namespace Insight.Tests
 			FastExpando other = o.Transform(new Dictionary<string, string>() { { "A", "Z" } });
 			IDictionary<string, object> otherDict = other;
 
-			Assert.AreNotSame(o, other);
-			Assert.IsFalse(otherDict.ContainsKey("A"));
-			Assert.IsFalse(otherDict.ContainsKey("Z"));
+			ClassicAssert.AreNotSame(o, other);
+			ClassicAssert.IsFalse(otherDict.ContainsKey("A"));
+			ClassicAssert.IsFalse(otherDict.ContainsKey("Z"));
 		}
 
 		[Test]
@@ -60,9 +61,9 @@ namespace Insight.Tests
 			o.Mutate(new Dictionary<string, string>() { { "A", "Z" } });
 			IDictionary<string, object> dict = o;
 
-			Assert.IsFalse(dict.ContainsKey("A"));
-			Assert.IsNotNull(d["B"]);
-			Assert.AreEqual(d["Z"], "foo");
+			ClassicAssert.IsFalse(dict.ContainsKey("A"));
+			ClassicAssert.IsNotNull(d["B"]);
+			ClassicAssert.AreEqual(d["Z"], "foo");
 		}
 
 		[Test]
@@ -75,8 +76,8 @@ namespace Insight.Tests
 			o.Mutate(new Dictionary<string, string>() { { "A", "Z" } });
 			IDictionary<string, object> dict = o;
 
-			Assert.IsFalse(dict.ContainsKey("A"));
-			Assert.IsTrue(dict.ContainsKey("B"));
+			ClassicAssert.IsFalse(dict.ContainsKey("A"));
+			ClassicAssert.IsTrue(dict.ContainsKey("B"));
 		}
 
 		[Test]
@@ -88,7 +89,7 @@ namespace Insight.Tests
 			var d = (IDictionary<string, object>)o;
 			o[key] = "goo";
 
-			Assert.AreEqual(key, d.Keys.First());
+			ClassicAssert.AreEqual(key, d.Keys.First());
 		}
 	}
 }

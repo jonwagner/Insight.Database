@@ -1,5 +1,6 @@
 ﻿using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -30,7 +31,7 @@ namespace Insight.Tests
         public void TestClassWithNonDefaultConstructor()
         {
             var a = Connection().QuerySql<ClassWithNonDefaultConstructor>("SELECT A=3").First();
-            Assert.AreEqual(3, a.A);
+            ClassicAssert.AreEqual(3, a.A);
         }
         #endregion
 
@@ -50,7 +51,7 @@ namespace Insight.Tests
         public void TestClassWithPrivateConstructor()
         {
             var a = Connection().QuerySql<ClassWithPrivateConstructor>("SELECT A=3").First();
-            Assert.AreEqual(3, a.A);
+            ClassicAssert.AreEqual(3, a.A);
         }
         #endregion
 
@@ -73,8 +74,8 @@ namespace Insight.Tests
         public void TestClassWithSecondaryProperties()
         {
             var a = Connection().QuerySql<ClassWithSecondaryProperties>("SELECT A=3, B=4").First();
-            Assert.AreEqual(3, a.A);
-            Assert.AreEqual(4, a.B);
+            ClassicAssert.AreEqual(3, a.A);
+            ClassicAssert.AreEqual(4, a.B);
         }
         #endregion
 
@@ -99,7 +100,7 @@ namespace Insight.Tests
         public void TestConstructorWithAttribute()
         {
             var a = Connection().QuerySql<ConstructorWithAttribute>("SELECT A=3").First();
-            Assert.AreEqual(3, a.A);
+            ClassicAssert.AreEqual(3, a.A);
         }
         #endregion
 
@@ -120,7 +121,7 @@ namespace Insight.Tests
         public void TestColumnMapping()
         {
             var a = Connection().QuerySql<ColumnMapping>("SELECT Foo=3").First();
-            Assert.AreEqual(3, a.A);
+            ClassicAssert.AreEqual(3, a.A);
         }
         #endregion
 
@@ -134,7 +135,7 @@ namespace Insight.Tests
         public void TestParentWithChildren()
         {
             var a = Connection().QuerySql<MyParent, ClassWithNonDefaultConstructor>("SELECT A=3").First();
-            Assert.AreEqual(3, a.Child.A);
+            ClassicAssert.AreEqual(3, a.Child.A);
         }
         #endregion
 
@@ -171,7 +172,7 @@ namespace Insight.Tests
         public void TestThatSerializerIsCopiedFromField()
         {
             var result = Connection().QuerySql<CustomSerializerClass>("SELECT Trimmed='Trim      '").First();
-            Assert.AreEqual("Trim", result.Trimmed);
+            ClassicAssert.AreEqual("Trim", result.Trimmed);
         }
         #endregion
 
@@ -192,7 +193,7 @@ namespace Insight.Tests
         public void TestClassWithMismatchedParameters()
         {
             var a = Connection().QuerySql<ClassWithMismatchedParameters>("SELECT A=3, B=7").First();
-            Assert.AreEqual(0, a.A);
+            ClassicAssert.AreEqual(0, a.A);
         }
         #endregion
 

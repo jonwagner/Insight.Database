@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -21,7 +22,7 @@ namespace Insight.Tests
 			{
 				var parameters = new { p = 1 };
 				var result = c.ExecuteScalarSqlAsync<int>("SELECT @p", parameters).Result;
-				Assert.AreEqual(parameters.p, result);
+				ClassicAssert.AreEqual(parameters.p, result);
 			});
 		}
 
@@ -32,7 +33,7 @@ namespace Insight.Tests
 			{
 				bool wasOpen = c.State == ConnectionState.Open;
 				var recordCount = c.ExecuteScalarSqlAsync<int>("SELECT @p", new { p = 1 }, closeConnection: true).Result;
-				Assert.AreEqual(ConnectionState.Closed, c.State);
+				ClassicAssert.AreEqual(ConnectionState.Closed, c.State);
 				if (wasOpen)
 					c.Open();
 			});
@@ -46,7 +47,7 @@ namespace Insight.Tests
 
 			var result = Connection().ExecuteScalarAsync<int>(InOutParameters.ProcName, input, outputParameters: output).Result;
 
-			Assert.AreEqual(input.In, result);
+			ClassicAssert.AreEqual(input.In, result);
 			input.Verify(output);
 		}
 
@@ -55,7 +56,7 @@ namespace Insight.Tests
 		{
 			var result = Connection().ExecuteScalarSqlAsync<int?>("SELECT CAST(NULL as INT)").Result;
 
-			Assert.AreEqual(null, result);
+			ClassicAssert.AreEqual(null, result);
 		}
 	}
 }

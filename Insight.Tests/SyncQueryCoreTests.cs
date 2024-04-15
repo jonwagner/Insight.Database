@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -34,7 +35,7 @@ namespace Insight.Tests
 
                 c.Query<Beer>(Beer.SelectAllProc, commandBehavior: CommandBehavior.CloseConnection);
 
-                Assert.AreEqual(ConnectionState.Closed, c.State);
+                ClassicAssert.AreEqual(ConnectionState.Closed, c.State);
                 if (wasOpen)
                     c.Open();
             });
@@ -57,13 +58,13 @@ namespace Insight.Tests
         {
             var result = Connection().QuerySql("SELECT Field123=123, FieldAbc='abC'");
 
-            Assert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual(1, result.Count());
 
             dynamic row = result.First();
-            Assert.IsNotNull(row);
+            ClassicAssert.IsNotNull(row);
 
-            Assert.AreEqual(row.Field123, 123);
-            Assert.AreEqual(row.FieldAbc, "abC");
+            ClassicAssert.AreEqual(row.Field123, 123);
+            ClassicAssert.AreEqual(row.FieldAbc, "abC");
         }
 
         [Test]
@@ -77,9 +78,9 @@ namespace Insight.Tests
                 Query.Returns(Some<InfiniteBeerList>.Records)
                     .ThenChildren(OneToOne<InfiniteBeerList, InfiniteBeer>.Records));
 
-            Assert.AreEqual(3, result.Count());
-            Assert.AreEqual(1, result[0].List.Count());
-            Assert.IsNotNull(result[0].List[0].More);
+            ClassicAssert.AreEqual(3, result.Count());
+            ClassicAssert.AreEqual(1, result[0].List.Count());
+            ClassicAssert.IsNotNull(result[0].List[0].More);
             result[0].List[0].More.Verify();
         }
 
@@ -95,8 +96,8 @@ namespace Insight.Tests
                 Query.Returns(Some<InfiniteBeerList>.Records)
                     .ThenChildren(OneToOne<InfiniteBeerList, InfiniteBeer>.Records));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual(1, result[0].List.Count());
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual(1, result[0].List.Count());
         }
 
         [Test]
@@ -122,9 +123,9 @@ namespace Insight.Tests
                 Query.Returns(Some<InfiniteBeerList>.Records)
                     .ThenChildren(OneToOne<InfiniteBeerList, InfiniteBeer>.Records));
 
-            Assert.AreEqual(3, result.Count());
-            Assert.AreEqual(1, result[0].List.Count());
-            Assert.IsNotNull(result[0].List[0].More);
+            ClassicAssert.AreEqual(3, result.Count());
+            ClassicAssert.AreEqual(1, result[0].List.Count());
+            ClassicAssert.IsNotNull(result[0].List[0].More);
             result[0].List[0].More.Verify();
         }
 
@@ -133,7 +134,7 @@ namespace Insight.Tests
         {
             // allow NOBIND to inform insight to not bind the parameter
             var result = Connection().ExecuteScalarSql<int>("DECLARE /*NOBIND*/ @i int = 5, @j int; SELECT @i", new { i = 10 });
-            Assert.AreEqual(result, 5);
+            ClassicAssert.AreEqual(result, 5);
         }
     }
 }

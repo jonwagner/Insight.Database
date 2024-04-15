@@ -33,7 +33,7 @@ namespace Insight.Tests
 			var profiled = new GlimpseDbConnection((DbConnection)Connection());
 			var result = profiled.QuerySql<int>("SELECT @p --GLIMPSE", new { p = 1 }).First();
 
-			Assert.AreEqual((int)1, result);
+			ClassicAssert.AreEqual((int)1, result);
 		}
 
 		/// <summary>
@@ -49,7 +49,7 @@ namespace Insight.Tests
 				var profiled = new GlimpseDbConnection((DbConnection)connection);
 				var result = profiled.Query<int>("InsightTestProcGlimpse", new { Value = 1 }).First();
 
-				Assert.AreEqual((int)1, result);
+				ClassicAssert.AreEqual((int)1, result);
 			}
 		}
 

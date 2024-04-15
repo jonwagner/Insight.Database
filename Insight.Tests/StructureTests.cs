@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Tests.Cases;
 using Insight.Database.Structure;
 using System.Collections;
@@ -30,9 +31,9 @@ namespace Insight.Tests
         public void RecordsetAttributeShouldControlDefaultOneToOneMapping()
         {
             var result = Connection().SingleSql<HasDefaultRecordset>("SELECT ID=1, ID=2");
-            Assert.AreEqual(1, result.ID);
-            Assert.IsNotNull(result.Beer);
-            Assert.AreEqual(2, result.Beer.ID);
+            ClassicAssert.AreEqual(1, result.ID);
+            ClassicAssert.IsNotNull(result.Beer);
+            ClassicAssert.AreEqual(2, result.Beer.ID);
         }
         #endregion
 
@@ -52,9 +53,9 @@ namespace Insight.Tests
                         .ThenChildren(Some<Beer>.Records))
                         .First();
 
-            Assert.AreEqual(1, result.Foo);
-            Assert.AreEqual(1, result.List.Count);
-            Assert.AreEqual(2, result.List[0].ID);
+            ClassicAssert.AreEqual(1, result.Foo);
+            ClassicAssert.AreEqual(1, result.List.Count);
+            ClassicAssert.AreEqual(2, result.List[0].ID);
         }
         #endregion
 
@@ -78,9 +79,9 @@ namespace Insight.Tests
                         .ThenChildren(Some<Beer>.Records))
                         .First();
 
-            Assert.AreEqual(1, result.ID);
-            Assert.AreEqual(1, result.List.Count);
-            Assert.AreEqual(2, result.List[0].ID);
+            ClassicAssert.AreEqual(1, result.ID);
+            ClassicAssert.AreEqual(1, result.List.Count);
+            ClassicAssert.AreEqual(2, result.List[0].ID);
         }
         #endregion
 
@@ -116,8 +117,8 @@ namespace Insight.Tests
                 null,
                 Query.Returns(mappedRecords)).First();
 
-            Assert.AreEqual(1, result.ID);
-            Assert.AreEqual(2, result.Beer.ID);
+            ClassicAssert.AreEqual(1, result.ID);
+            ClassicAssert.AreEqual(2, result.Beer.ID);
         }
         #endregion
 
@@ -154,11 +155,11 @@ namespace Insight.Tests
 
             var results = Connection().QuerySql("SELECT [Type]='a', A=1, B=NULL UNION SELECT [Type]='b', A=NULL, B=2", Parameters.Empty, Query.Returns(mr));
 
-            Assert.AreEqual(2, results.Count);
-            Assert.IsTrue(results[0] is MyClassA);
-            Assert.AreEqual(1, ((MyClassA)results[0]).A);
-            Assert.IsTrue(results[1] is MyClassB);
-            Assert.AreEqual(2, ((MyClassB)results[1]).B);
+            ClassicAssert.AreEqual(2, results.Count);
+            ClassicAssert.IsTrue(results[0] is MyClassA);
+            ClassicAssert.AreEqual(1, ((MyClassA)results[0]).A);
+            ClassicAssert.IsTrue(results[1] is MyClassB);
+            ClassicAssert.AreEqual(2, ((MyClassB)results[1]).B);
         }
 
         [Test]
@@ -174,9 +175,9 @@ namespace Insight.Tests
 
             var results = Connection().QuerySql("SELECT [Type]='a', A=1, B=NULL", Parameters.Empty, Query.Returns(pr));
 
-            Assert.AreEqual(1, results.Count);
-            Assert.IsTrue(results[0] is MyClassA);
-            Assert.AreEqual(9, ((MyClassA)results[0]).A);
+            ClassicAssert.AreEqual(1, results.Count);
+            ClassicAssert.IsTrue(results[0] is MyClassA);
+            ClassicAssert.AreEqual(9, ((MyClassA)results[0]).A);
         }
         #endregion
 
@@ -201,8 +202,8 @@ namespace Insight.Tests
                             Query.Returns(Some<ParentFor109>.Records)
                                 .ThenChildren(childReader)).First();
 
-            Assert.AreEqual(1, results.Children.Count);
-            Assert.AreEqual(3, results.Children[0].Foo);
+            ClassicAssert.AreEqual(1, results.Children.Count);
+            ClassicAssert.AreEqual(3, results.Children[0].Foo);
         }
         #endregion
 
@@ -231,8 +232,8 @@ namespace Insight.Tests
         {
             // overriding Id two different ways was causing a conflict in some of the internal reflection structures
             var result = Connection().SingleSql<ChildRecord, GrandChildRecord>("SELECT ChildRecordID=12345, GrandChildRecordId=99999");
-            Assert.AreEqual(12345, result.Id);
-            Assert.AreEqual(99999, result.GrandChild.Id);
+            ClassicAssert.AreEqual(12345, result.Id);
+            ClassicAssert.AreEqual(99999, result.GrandChild.Id);
         }
         #endregion
     }
@@ -266,7 +267,7 @@ namespace Insight.Tests
             var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
                 Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records, into: (p, l) => p.Child = l.First())).First();
 
-            Assert.AreEqual("Alice", result.Child.Name);
+            ClassicAssert.AreEqual("Alice", result.Child.Name);
         }
 
         [Test]
@@ -275,7 +276,7 @@ namespace Insight.Tests
             var result = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2, Name='Alice'", null,
                 Query.Returns(Some<Parent>.Records).ThenChildren(Some<Child>.Records)).First();
 
-            Assert.AreEqual("Alice", result.Child.Name);
+            ClassicAssert.AreEqual("Alice", result.Child.Name);
         }
 
         [Test]
@@ -283,7 +284,7 @@ namespace Insight.Tests
         {
             var result = Connection().As<IHaveSingleChild>().GetParent();
 
-            Assert.AreEqual("Alice", result.Child.Name);
+            ClassicAssert.AreEqual("Alice", result.Child.Name);
         }
 
     }
@@ -298,8 +299,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithPlainID));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("ID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("ID", result.ElementAt(0));
         }
 
         [Test]
@@ -307,8 +308,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.Invoice));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("Invoice_id", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("Invoice_id", result.ElementAt(0));
         }
 
         /// <summary>
@@ -321,8 +322,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.InvoiceLine));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("InvoiceLine_id", result.ElementAt(0));
         }
 
         /// <summary>
@@ -334,8 +335,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.InvoiceLine), null, typeof(TestClasses.Invoice));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("Invoice_id", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("Invoice_id", result.ElementAt(0));
         }
 
         /// <summary>
@@ -346,8 +347,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.Glass238a), null, typeof(TestClasses.Beer238));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("Beer238ID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("Beer238ID", result.ElementAt(0));
         }
 
         /// <summary>
@@ -358,8 +359,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.Glass238b), null, typeof(TestClasses.Beer238));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("Beer238_ID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("Beer238_ID", result.ElementAt(0));
         }
 
 
@@ -372,8 +373,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithSuffixed));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("ClassWithSuffixedId", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("ClassWithSuffixedId", result.ElementAt(0));
         }
 
         [Test]
@@ -381,8 +382,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithSuffixed2));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("ClassWithSuffixed2Id", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("ClassWithSuffixed2Id", result.ElementAt(0));
         }
 
         [Test]
@@ -390,8 +391,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithSuffixedUnderscore));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("ClassWithSuffixedUnderscore_ID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("ClassWithSuffixedUnderscore_ID", result.ElementAt(0));
         }
 
         [Test]
@@ -399,30 +400,30 @@ namespace Insight.Tests
         {
             //-----------------test single fields-----------------
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID");
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("ID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("ID", result.ElementAt(0));
 
             result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "AnotherID");
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("AnotherID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("AnotherID", result.ElementAt(0));
 
             //-----------------test multiple fields-----------------
             result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID, AnotherID");
-            Assert.AreEqual(2, result.Count());
-            Assert.AreEqual("ID", result.ElementAt(0));
-            Assert.AreEqual("AnotherID", result.ElementAt(1));
+            ClassicAssert.AreEqual(2, result.Count());
+            ClassicAssert.AreEqual("ID", result.ElementAt(0));
+            ClassicAssert.AreEqual("AnotherID", result.ElementAt(1));
 
             // take out the spaces
             result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "ID,AnotherID");
-            Assert.AreEqual(2, result.Count());
-            Assert.AreEqual("ID", result.ElementAt(0));
-            Assert.AreEqual("AnotherID", result.ElementAt(1));
+            ClassicAssert.AreEqual(2, result.Count());
+            ClassicAssert.AreEqual("ID", result.ElementAt(0));
+            ClassicAssert.AreEqual("AnotherID", result.ElementAt(1));
 
             // reverse the order
             result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.ClassWithPlainID), "AnotherID, ID");
-            Assert.AreEqual(2, result.Count());
-            Assert.AreEqual("AnotherID", result.ElementAt(0));
-            Assert.AreEqual("ID", result.ElementAt(1));
+            ClassicAssert.AreEqual(2, result.Count());
+            ClassicAssert.AreEqual("AnotherID", result.ElementAt(0));
+            ClassicAssert.AreEqual("ID", result.ElementAt(1));
         }
 
         /// <summary> Verifies bad requests throw the expected exceptions</summary>
@@ -453,8 +454,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.ChildWithGenericNames), null, null);
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("ParentID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("ParentID", result.ElementAt(0));
         }
 
         [Test]
@@ -463,8 +464,8 @@ namespace Insight.Tests
             // This is case in the rules, a field ending in _ParentID
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.ChildEndingWithUnderscoreParentID), null, null);
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("My_ParentID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("My_ParentID", result.ElementAt(0));
         }
 
         [Test]
@@ -473,8 +474,8 @@ namespace Insight.Tests
             // This is case in the rules, a field ending in ParentID
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.ChildEndingWithParentID), null, null);
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("MyParentID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("MyParentID", result.ElementAt(0));
         }
 
         [Test]
@@ -482,8 +483,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.InvoiceLineWithAttributes));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("InvoiceLine_id", result.ElementAt(0));
         }
 
         [Test]
@@ -491,8 +492,8 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.InvoiceLineWithAttributes), null, null);
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("Invoice_id", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("Invoice_id", result.ElementAt(0));
         }
 
         [Test]
@@ -500,9 +501,9 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.GetIDAccessor(typeof(TestClasses.InvoiceLineWithMultiAttributes));
 
-            Assert.AreEqual(2, result.Count());
-            Assert.AreEqual("InvoiceLine_id", result.ElementAt(0));
-            Assert.AreEqual("Company_id", result.ElementAt(1));
+            ClassicAssert.AreEqual(2, result.Count());
+            ClassicAssert.AreEqual("InvoiceLine_id", result.ElementAt(0));
+            ClassicAssert.AreEqual("Company_id", result.ElementAt(1));
         }
 
         [Test]
@@ -510,9 +511,9 @@ namespace Insight.Tests
         {
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.InvoiceLineWithMultiAttributes), null, null);
 
-            Assert.AreEqual(2, result.Count());
-            Assert.AreEqual("Company_id", result.ElementAt(0));
-            Assert.AreEqual("Invoice_id", result.ElementAt(1));
+            ClassicAssert.AreEqual(2, result.Count());
+            ClassicAssert.AreEqual("Company_id", result.ElementAt(0));
+            ClassicAssert.AreEqual("Invoice_id", result.ElementAt(1));
         }
 
         [Test]
@@ -530,7 +531,7 @@ namespace Insight.Tests
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.ClassWithInsufficientData), null, null);
 
             // FindParentIDAccessor does not throw an exception like FindIDAccessor does:
-            Assert.AreEqual(0, result.Count());
+            ClassicAssert.AreEqual(0, result.Count());
         }
 
         [Test]
@@ -539,8 +540,8 @@ namespace Insight.Tests
             // This is case in the rules, a field ending in _ParentID
             var result = ChildMapperTestingHelper.FindParentIDAccessor(typeof(TestClasses.Parent), null, typeof(TestClasses.Grandparent));
 
-            Assert.AreEqual(1, result.Count());
-            Assert.AreEqual("GrandparentID", result.ElementAt(0));
+            ClassicAssert.AreEqual(1, result.Count());
+            ClassicAssert.AreEqual("GrandparentID", result.ElementAt(0));
         }
 
         //*************************** Test Classes ***************************
@@ -734,19 +735,19 @@ namespace Insight.Tests
             // child is not null, so child should not be null
             var results = Connection().QuerySql<TestParent, TestChild>("SELECT ParentA=1, ParentB=2, ChildA=3, ChildB=4, ParentC=5");
             var result = results.First();
-            Assert.AreEqual(1, result.ParentA);
-            Assert.AreEqual(2, result.ParentB);
-            Assert.AreEqual(3, result.Child.ChildA);
-            Assert.AreEqual(4, result.Child.ChildB);
-            Assert.AreEqual(0, result.ParentC);
+            ClassicAssert.AreEqual(1, result.ParentA);
+            ClassicAssert.AreEqual(2, result.ParentB);
+            ClassicAssert.AreEqual(3, result.Child.ChildA);
+            ClassicAssert.AreEqual(4, result.Child.ChildB);
+            ClassicAssert.AreEqual(0, result.ParentC);
 
             // all of child is null, so the child should be null
             results = Connection().QuerySql<TestParent, TestChild>("SELECT ParentA=1, ParentB=2, ChildA=NULL, ChildB=NULL, ParentC=5");
             result = results.First();
-            Assert.AreEqual(1, result.ParentA);
-            Assert.AreEqual(2, result.ParentB);
-            Assert.AreEqual(null, result.Child);
-            Assert.AreEqual(0, result.ParentC);
+            ClassicAssert.AreEqual(1, result.ParentA);
+            ClassicAssert.AreEqual(2, result.ParentB);
+            ClassicAssert.AreEqual(null, result.Child);
+            ClassicAssert.AreEqual(0, result.ParentC);
         }
     }
 
@@ -778,8 +779,8 @@ namespace Insight.Tests
                     .ThenChildren(CustomRecordReader<TestChild>.Read(r => new TestChild((int)r["ChildA"], (int)r["ChildB"]))));
 
             var result = results.First();
-            Assert.AreEqual(1, result.ID);
-            Assert.AreEqual(1, result.Children.Count);
+            ClassicAssert.AreEqual(1, result.ID);
+            ClassicAssert.AreEqual(1, result.Children.Count);
         }
     }
     #endregion
@@ -802,11 +803,11 @@ namespace Insight.Tests
                     .ThenChildren(Some<string>.Records));
 
             var result = results.First();
-            Assert.AreEqual(1, result.ID);
-            Assert.AreEqual(2, result.Children.Count);
-            Assert.AreEqual("Child1", result.Children[0]);
-            Assert.IsTrue(result.Children.Contains("Child1"));
-            Assert.IsTrue(result.Children.Contains("Child2"));
+            ClassicAssert.AreEqual(1, result.ID);
+            ClassicAssert.AreEqual(2, result.Children.Count);
+            ClassicAssert.AreEqual("Child1", result.Children[0]);
+            ClassicAssert.IsTrue(result.Children.Contains("Child1"));
+            ClassicAssert.IsTrue(result.Children.Contains("Child2"));
         }
     }
     #endregion
@@ -839,7 +840,7 @@ namespace Insight.Tests
             var i = Connection().As<IHaveStructure3>();
             var result = i.GetNoLiquorStore();
 
-            Assert.IsNull(result);
+            ClassicAssert.IsNull(result);
         }
     }
     #endregion
@@ -881,8 +882,8 @@ namespace Insight.Tests
                             into: (p, children) => p.Children = children.Where(c => c != null).ToList()));
 
             var result = results.First();
-            Assert.AreEqual(1, result.ID);
-            Assert.AreEqual(0, result.Children.Count);  // FAIL! I would expect that the child wouldn't be added, but a null is added
+            ClassicAssert.AreEqual(1, result.ID);
+            ClassicAssert.AreEqual(0, result.Children.Count);  // FAIL! I would expect that the child wouldn't be added, but a null is added
         }
     }
     #endregion
@@ -912,8 +913,8 @@ namespace Insight.Tests
                     .ThenChildren(Some<Child>.Records);
 
             var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ID=2; SELECT ParentID=2, ID=3", null, returns);
-            Assert.AreEqual(2, results.Set2[0].ID);
-            Assert.AreEqual(3, results.Set2[0].Children[0].ID);
+            ClassicAssert.AreEqual(2, results.Set2[0].ID);
+            ClassicAssert.AreEqual(3, results.Set2[0].Children[0].ID);
         }
 
         [Test]
@@ -926,8 +927,8 @@ namespace Insight.Tests
                     .ThenChildren<Parent, Parent, Child, int>(Some<Child>.Records.GroupBy(c => c.ParentID));
 
             var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2; SELECT ID=2; SELECT ParentID=2, ID=3", null, returns);
-            Assert.AreEqual(2, results.Set2[0].ID);
-            Assert.AreEqual(3, results.Set2[0].Children[0].ID);
+            ClassicAssert.AreEqual(2, results.Set2[0].ID);
+            ClassicAssert.AreEqual(3, results.Set2[0].Children[0].ID);
         }
     }
 
@@ -946,8 +947,8 @@ namespace Insight.Tests
             var returns = Query.Returns(Some<Parent>.Records)
                 .ThenChildren(Some<int>.Records, x => x.ID, (p, r) => p.Children = r.Select(x => x).ToList());
             var results = Connection().QuerySql("SELECT ID=1; SELECT ParentID=1, ID=2;", null, returns);
-            Assert.AreEqual(1, results[0].ID);
-            Assert.AreEqual(2, results[0].Children[0]);
+            ClassicAssert.AreEqual(1, results[0].ID);
+            ClassicAssert.AreEqual(2, results[0].Children[0]);
         }
     }
 
@@ -992,8 +993,8 @@ namespace Insight.Tests
                         .ThenChildren(PostProcess));
 
             Child child = parents.children.First();
-            Assert.IsTrue(child.WasPostProcessed);
-            Assert.AreEqual("Child Postprocessed", child.Name);
+            ClassicAssert.IsTrue(child.WasPostProcessed);
+            ClassicAssert.AreEqual("Child Postprocessed", child.Name);
         }
 
         [Test]
@@ -1005,8 +1006,8 @@ namespace Insight.Tests
                         .ThenChildren(PostProcess));
 
             Child child = parents.First().children.First();
-            Assert.IsTrue(child.WasPostProcessed);
-            Assert.AreEqual("Child Postprocessed", child.Name);
+            ClassicAssert.IsTrue(child.WasPostProcessed);
+            ClassicAssert.AreEqual("Child Postprocessed", child.Name);
         }
 
         [Test]
@@ -1018,8 +1019,8 @@ namespace Insight.Tests
                         .ThenChildren(PostProcess));
 
             Child child = parents.First().children.First();
-            Assert.IsTrue(child.WasPostProcessed);
-            Assert.AreEqual("Child Postprocessed", child.Name);
+            ClassicAssert.IsTrue(child.WasPostProcessed);
+            ClassicAssert.AreEqual("Child Postprocessed", child.Name);
         }
     }
     #endregion
@@ -1047,7 +1048,7 @@ namespace Insight.Tests
             SelfReferencing parent = results.First(s => s.ID == 1);
             SelfReferencing child = results.First(s => s.ID == 2);
 
-            Assert.AreEqual(parent, child.Parent);
+            ClassicAssert.AreEqual(parent, child.Parent);
         }
 
         [Test]
@@ -1062,7 +1063,7 @@ namespace Insight.Tests
             SelfReferencing parent = results.First(s => s.ID == 1);
             SelfReferencing child = results.First(s => s.ID == 2);
 
-            Assert.AreEqual(parent, child.Parent);
+            ClassicAssert.AreEqual(parent, child.Parent);
         }
     }
     #endregion
@@ -1095,17 +1096,17 @@ namespace Insight.Tests
 				SELECT * FROM #TestDataForeign s
 		", null, Query.Returns(Some<TestDataPrimary>.Records).ThenChildren(Some<TestDataForeign>.Records, id: a => a.ID));
 
-			Assert.IsNotNull(results);
-			Assert.AreEqual(1, results.Count);
+			ClassicAssert.IsNotNull(results);
+			ClassicAssert.AreEqual(1, results.Count);
 
 			var testDataPrimary = results[0];
-			Assert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
-			Assert.AreEqual(222, testDataPrimary.PrimaryField1);
+			ClassicAssert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
+			ClassicAssert.AreEqual(222, testDataPrimary.PrimaryField1);
 
-			Assert.IsNotNull(testDataPrimary.ForeignRecords);
-			Assert.AreEqual(1, testDataPrimary.ForeignRecords.Count);
-			Assert.IsNotNull(testDataPrimary.ForeignRecords[0]);
-			Assert.AreEqual(333, testDataPrimary.ForeignRecords[0].ForeignField1);
+			ClassicAssert.IsNotNull(testDataPrimary.ForeignRecords);
+			ClassicAssert.AreEqual(1, testDataPrimary.ForeignRecords.Count);
+			ClassicAssert.IsNotNull(testDataPrimary.ForeignRecords[0]);
+			ClassicAssert.AreEqual(333, testDataPrimary.ForeignRecords[0].ForeignField1);
 		}
 
 		[Test]
@@ -1120,17 +1121,17 @@ namespace Insight.Tests
 				SELECT * FROM #TestDataForeign s
 		", null, Query.Returns(Some<TestDataPrimary>.Records).ThenChildren(Some<TestDataForeign>.Records, id: a => a.ID));
 
-			Assert.IsNotNull(results);
-			Assert.AreEqual(1, results.Count);
+			ClassicAssert.IsNotNull(results);
+			ClassicAssert.AreEqual(1, results.Count);
 
 			var testDataPrimary = results[0];
-			Assert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
-			Assert.AreEqual(222, testDataPrimary.PrimaryField1);
+			ClassicAssert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
+			ClassicAssert.AreEqual(222, testDataPrimary.PrimaryField1);
 
-			Assert.IsNotNull(testDataPrimary.ForeignRecords);
-			Assert.AreEqual(1, testDataPrimary.ForeignRecords.Count);
-			Assert.IsNotNull(testDataPrimary.ForeignRecords[0]);
-			Assert.IsNull(testDataPrimary.ForeignRecords[0].ForeignField1);
+			ClassicAssert.IsNotNull(testDataPrimary.ForeignRecords);
+			ClassicAssert.AreEqual(1, testDataPrimary.ForeignRecords.Count);
+			ClassicAssert.IsNotNull(testDataPrimary.ForeignRecords[0]);
+			ClassicAssert.IsNull(testDataPrimary.ForeignRecords[0].ForeignField1);
 		}
 
 		[Test]
@@ -1143,15 +1144,15 @@ namespace Insight.Tests
 				SELECT PrimaryID=NULL, ForeignField1=NULL
 		", null, Query.Returns(Some<TestDataPrimary>.Records).ThenChildren(Some<TestDataForeign>.Records, id: a => a.ID));
 
-			Assert.IsNotNull(results);
-			Assert.AreEqual(1, results.Count);
+			ClassicAssert.IsNotNull(results);
+			ClassicAssert.AreEqual(1, results.Count);
 
 			var testDataPrimary = results[0];
-			Assert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
-			Assert.IsNull(testDataPrimary.PrimaryField1);
+			ClassicAssert.AreEqual(1, testDataPrimary.ID, "ID should not be overwritten by sub-object id");
+			ClassicAssert.IsNull(testDataPrimary.PrimaryField1);
 
-			Assert.IsNotNull(testDataPrimary.ForeignRecords);
-			Assert.AreEqual(0, testDataPrimary.ForeignRecords.Count);
+			ClassicAssert.IsNotNull(testDataPrimary.ForeignRecords);
+			ClassicAssert.AreEqual(0, testDataPrimary.ForeignRecords.Count);
 		}
 
         [Test]

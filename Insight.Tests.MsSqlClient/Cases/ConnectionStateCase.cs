@@ -42,12 +42,12 @@ namespace Insight.Tests.MsSqlClient.Cases
 
 		private void VerifyPreCondition()
 		{
-			Assert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
+			ClassicAssert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
 		}
 
 		private void VerifyPostCondition()
 		{
-			Assert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
+			ClassicAssert.AreEqual(IsOpen, Connection.State == ConnectionState.Open);
 		}
 	}
 }

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database.Mapping;
 #if !NO_SQL_TYPES
 using Microsoft.SqlServer.Types;
@@ -36,7 +37,7 @@ namespace Insight.Tests
             ColumnMapping.Tables.ReplaceRegex("_", String.Empty);
 
             var sql = ParentTestData.Sql.Replace("ParentX", "_Parent_X");
-            Assert.AreNotEqual(sql, ParentTestData.Sql);
+            ClassicAssert.AreNotEqual(sql, ParentTestData.Sql);
             var results = Connection().QuerySql<ParentTestData, TestData>(sql);
             ParentTestData.Verify(results);
         }
@@ -47,7 +48,7 @@ namespace Insight.Tests
             ColumnMapping.Tables.RemovePrefixes("int");
 
             var sql = ParentTestData.Sql.Replace("ParentX", "intParentX");
-            Assert.AreNotEqual(sql, ParentTestData.Sql);
+            ClassicAssert.AreNotEqual(sql, ParentTestData.Sql);
             var results = Connection().QuerySql<ParentTestData, TestData>(sql);
             ParentTestData.Verify(results);
         }
@@ -58,7 +59,7 @@ namespace Insight.Tests
             ColumnMapping.Tables.RemoveSuffixes("int");
 
             var sql = ParentTestData.Sql.Replace("ParentX", "ParentXint");
-            Assert.AreNotEqual(sql, ParentTestData.Sql);
+            ClassicAssert.AreNotEqual(sql, ParentTestData.Sql);
             var results = Connection().QuerySql<ParentTestData, TestData>(sql);
             ParentTestData.Verify(results);
         }
@@ -69,7 +70,7 @@ namespace Insight.Tests
             ColumnMapping.Tables.RemovePrefixes("int").RemoveSuffixes("Foo").RemoveStrings("_");
 
             var sql = ParentTestData.Sql.Replace("ParentX", "_Parent_X_Foo");
-            Assert.AreNotEqual(sql, ParentTestData.Sql);
+            ClassicAssert.AreNotEqual(sql, ParentTestData.Sql);
             var results = Connection().QuerySql<ParentTestData, TestData>(sql);
             ParentTestData.Verify(results);
         }
@@ -98,7 +99,7 @@ namespace Insight.Tests
             ColumnMapping.Parameters.AddMapper(new NullMapper()).AddMapper(new XMapper());
 
             var result = Connection().ExecuteScalarSql<int>("SELECT @y", new { x = 5 });
-            Assert.AreEqual(result, 5);
+            ClassicAssert.AreEqual(result, 5);
         }
         #endregion
 
@@ -116,8 +117,8 @@ namespace Insight.Tests
 
             var output = new OutputParameters();
             Connection().Execute("OutputParameterMappingTest", outputParameters: output);
-            Assert.AreEqual(0, output.out_foo);
-            Assert.AreEqual(5, output.foo);
+            ClassicAssert.AreEqual(0, output.out_foo);
+            ClassicAssert.AreEqual(5, output.foo);
         }
         #endregion
 
@@ -143,7 +144,7 @@ namespace Insight.Tests
             input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
             var s = Connection().Single<string>("MappingAsJson1", input);
-            Assert.IsTrue(Connection().Single<string>("MappingAsJson1", input).StartsWith("<MappingTests."));
+            ClassicAssert.IsTrue(Connection().Single<string>("MappingAsJson1", input).StartsWith("<MappingTests."));
         }
 
         [Test]
@@ -155,7 +156,7 @@ namespace Insight.Tests
             input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
             var s = Connection().Single<string>("MappingAsJson2", input);
-            Assert.IsTrue(Connection().Single<string>("MappingAsJson2", input).StartsWith("<MappingTests."));
+            ClassicAssert.IsTrue(Connection().Single<string>("MappingAsJson2", input).StartsWith("<MappingTests."));
         }
 
         [Test]
@@ -167,7 +168,7 @@ namespace Insight.Tests
             input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
             var s = Connection().Single<string>("MappingAsJson3", input);
-            Assert.IsTrue(Connection().Single<string>("MappingAsJson3", input).StartsWith("<MappingTests."));
+            ClassicAssert.IsTrue(Connection().Single<string>("MappingAsJson3", input).StartsWith("<MappingTests."));
         }
 
         [Test]
@@ -179,7 +180,7 @@ namespace Insight.Tests
             input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
             var s = Connection().Single<string>("MappingAsJson4", input);
-            Assert.IsFalse(Connection().Single<string>("MappingAsJson4", input).StartsWith("<MappingTests."));
+            ClassicAssert.IsFalse(Connection().Single<string>("MappingAsJson4", input).StartsWith("<MappingTests."));
         }
         #endregion
 
@@ -214,9 +215,9 @@ namespace Insight.Tests
         {
             FastExpando result = Connection().As<IFlattenParameters>().Flatten(1, new FlattenedParameters() { Y1 = 2, Y2 = 3 });
 
-            Assert.AreEqual(1, result["x"]);
-            Assert.AreEqual(2, result["y1"]);
-            Assert.AreEqual(3, result["y2"]);
+            ClassicAssert.AreEqual(1, result["x"]);
+            ClassicAssert.AreEqual(2, result["y1"]);
+            ClassicAssert.AreEqual(3, result["y2"]);
         }
 
         [Test]
@@ -224,11 +225,11 @@ namespace Insight.Tests
         {
             FastExpando result = Connection().As<IFlattenParameters>().Flatten(1, new FlattenedParameters() { Y1 = 2, Y2 = 3 }, new FlattenedParameters2() { Z1 = 4, Z2 = 5 });
 
-            Assert.AreEqual(1, result["x"]);
-            Assert.AreEqual(2, result["y1"]);
-            Assert.AreEqual(3, result["y2"]);
-            Assert.AreEqual(4, result["z1"]);
-            Assert.AreEqual(5, result["z2"]);
+            ClassicAssert.AreEqual(1, result["x"]);
+            ClassicAssert.AreEqual(2, result["y1"]);
+            ClassicAssert.AreEqual(3, result["y2"]);
+            ClassicAssert.AreEqual(4, result["z1"]);
+            ClassicAssert.AreEqual(5, result["z2"]);
         }
 
         [Test]
@@ -245,9 +246,9 @@ namespace Insight.Tests
             // we should be able to read in child fields
             FastExpando result = (FastExpando)Connection().QuerySql("SELECT x=@x, y1=@y1, y2=@y2", new { X = 1, Y = new { Y1 = 2, Y2 = 3 } }).First();
 
-            Assert.AreEqual(1, result["x"]);
-            Assert.AreEqual(2, result["y1"]);
-            Assert.AreEqual(3, result["y2"]);
+            ClassicAssert.AreEqual(1, result["x"]);
+            ClassicAssert.AreEqual(2, result["y1"]);
+            ClassicAssert.AreEqual(3, result["y2"]);
         }
 
         [Test]
@@ -264,11 +265,11 @@ namespace Insight.Tests
             // we should be able to read in child fields
             FastExpando result = (FastExpando)Connection().QuerySql("SELECT x=@x, y1=@y1, y2=@y2, z1=@z1, z2=@z2", new { X = 1, Y = new { Y1 = 2, Y2 = 3 }, Z = new { Z1 = 4, Z2 = 5 } }).First();
 
-            Assert.AreEqual(1, result["x"]);
-            Assert.AreEqual(2, result["y1"]);
-            Assert.AreEqual(3, result["y2"]);
-            Assert.AreEqual(4, result["z1"]);
-            Assert.AreEqual(5, result["z2"]);
+            ClassicAssert.AreEqual(1, result["x"]);
+            ClassicAssert.AreEqual(2, result["y1"]);
+            ClassicAssert.AreEqual(3, result["y2"]);
+            ClassicAssert.AreEqual(4, result["z1"]);
+            ClassicAssert.AreEqual(5, result["z2"]);
         }
 
         [Test]
@@ -301,8 +302,8 @@ namespace Insight.Tests
             // we should be able to read in child fields
             Connection().Execute("OutputParameterParentMappingTest", outputParameters: output);
 
-            Assert.AreEqual(1, output.parent);
-            Assert.AreEqual(2, output.Child.foo);
+            ClassicAssert.AreEqual(1, output.parent);
+            ClassicAssert.AreEqual(2, output.Child.foo);
         }
 
         [Test]
@@ -317,8 +318,8 @@ namespace Insight.Tests
 
             Connection().InsertSql("SELECT parent=1, Foo=2", parent);
 
-            Assert.AreEqual(1, parent.parent);
-            Assert.AreEqual(2, parent.Child.foo);
+            ClassicAssert.AreEqual(1, parent.parent);
+            ClassicAssert.AreEqual(2, parent.Child.foo);
         }
 
         public class ParentOfMissingChild<T>
@@ -348,7 +349,7 @@ namespace Insight.Tests
 
             // this should map a DbNull, since the child isn't missing
             p.Child = new MissingChild<T>();
-            Assert.AreEqual(default(T), Connection().ExecuteScalarSql<T>("SELECT @Member", p));
+            ClassicAssert.AreEqual(default(T), Connection().ExecuteScalarSql<T>("SELECT @Member", p));
         }
 
         [Test]
@@ -383,7 +384,7 @@ namespace Insight.Tests
             var p = new ParentWithConflictedField() { ID = 1 };
             p.Child = new ChildWithConflictedField() { ID = 2 };
 
-            Assert.AreEqual(1, Connection().ExecuteScalarSql<int>("SELECT @ID, @OtherFieldToTriggerDepthSearch", p));
+            ClassicAssert.AreEqual(1, Connection().ExecuteScalarSql<int>("SELECT @ID, @OtherFieldToTriggerDepthSearch", p));
         }
 
         class TVPParent
@@ -406,11 +407,11 @@ namespace Insight.Tests
             list.Add(parent);
 
             Connection().InsertList("InsertMultipleTestData", list);
-            Assert.AreNotEqual(0, parent.X);
+            ClassicAssert.AreNotEqual(0, parent.X);
 
             var result = Connection().QuerySql<TVPParent, TVPChild>("SELECT * FROM InsertTestDataTable WHERE X = @x", parent).Single();
-            Assert.AreEqual(parent.X, result.X);
-            Assert.AreEqual(parent.Child.Z, result.Child.Z);
+            ClassicAssert.AreEqual(parent.X, result.X);
+            ClassicAssert.AreEqual(parent.Child.Z, result.Child.Z);
         }
         #endregion
 
@@ -433,8 +434,8 @@ namespace Insight.Tests
         public void CanUseColumnAttributeOnDerivedClass()
         {
             var result = Connection().QuerySql<DerivedForRenaming>("SELECT DerivedRenamed='derived', BaseRenamed='base'", null).First();
-            Assert.AreEqual("derived", result.RenamedInDerived);
-            Assert.AreEqual("base", result.RenamedInBase);
+            ClassicAssert.AreEqual("derived", result.RenamedInDerived);
+            ClassicAssert.AreEqual("base", result.RenamedInBase);
         }
         #endregion
 
@@ -448,7 +449,7 @@ namespace Insight.Tests
         {
             var p = new ObjectAccess_PrivateParams();
             var result = Connection().QuerySql<ObjectAccess_Result>("SELECT MyValue=@ImPrivate", p).First();
-            Assert.AreEqual("abc", result.MyValue);
+            ClassicAssert.AreEqual("abc", result.MyValue);
         }
 
         private class ObjectAccess_PrivateParams
@@ -471,8 +472,8 @@ namespace Insight.Tests
 
             IList<String> listOfFoo = repo.GetOneFooString();
 
-            Assert.AreEqual(1, listOfFoo.Count());
-            Assert.AreEqual("foo", listOfFoo[0]);
+            ClassicAssert.AreEqual(1, listOfFoo.Count());
+            ClassicAssert.AreEqual("foo", listOfFoo[0]);
         }
 
         internal interface IMyRepoInterface
@@ -490,8 +491,8 @@ namespace Insight.Tests
 
             IList<String> listOfFoo = repo.GetOneFooString();
 
-            Assert.AreEqual(1, listOfFoo.Count());
-            Assert.AreEqual("foo", listOfFoo[0]);
+            ClassicAssert.AreEqual(1, listOfFoo.Count());
+            ClassicAssert.AreEqual("foo", listOfFoo[0]);
         }
 
         internal abstract class MyAbstractRepo
@@ -526,7 +527,7 @@ namespace Insight.Tests
             ColumnMapping.Tables.AddMapper(new MyColumnMapper());
 
             var results = Connection().QuerySql<ParentTestData>("SELECT ParentY = 2, WithMapping = 1");
-            Assert.AreEqual(results.First().ParentX, 2);
+            ClassicAssert.AreEqual(results.First().ParentX, 2);
         }
 
         [Test]
@@ -535,7 +536,7 @@ namespace Insight.Tests
             ColumnMapping.Tables.AddMapper(new MyColumnMapper());
 
             var results = Connection().QuerySql<ParentTestData>("SELECT ParentX = 2, NoMapping = 1");
-            Assert.AreEqual(results.First().ParentX, 0);
+            ClassicAssert.AreEqual(results.First().ParentX, 0);
         }
         #endregion
     }
@@ -586,8 +587,8 @@ namespace Insight.Tests
 
             // send the object up to the server and get them back
             var results = Connection().Query<ParentTestDataWithColumn>("MappingTestProc", list).First();
-            Assert.AreEqual(original.ParentX, results.ParentX);
-            Assert.AreEqual(original.X, results.X);
+            ClassicAssert.AreEqual(original.ParentX, results.ParentX);
+            ClassicAssert.AreEqual(original.X, results.X);
         }
         #endregion
 
@@ -610,10 +611,10 @@ namespace Insight.Tests
 
                 // run the query
                 var items = Connection().QuerySql<ParentTestData>("SELECT * FROM MappingBulkCopyTestTable");
-                Assert.IsNotNull(items);
-                Assert.AreEqual(i, items.Count);
+                ClassicAssert.IsNotNull(items);
+                ClassicAssert.AreEqual(i, items.Count);
                 for (int j = 0; j < i; j++)
-                    Assert.AreEqual(j, items[j].ParentX);
+                    ClassicAssert.AreEqual(j, items[j].ParentX);
             }
         }
         #endregion
@@ -628,7 +629,7 @@ namespace Insight.Tests
             var results = Connection().Query<int>("MappingTestProc2", parentTestData);
             int data = results.First();
 
-            Assert.AreEqual(parentTestData.ParentX, data);
+            ClassicAssert.AreEqual(parentTestData.ParentX, data);
         }
 
 #if !NO_SQL_TYPES
@@ -690,7 +691,7 @@ namespace Insight.Tests
             {
                 var o = Connection().SingleSql<PrivateSetterInt>("SELECT X=1");
 				// should map
-                Assert.AreEqual(1, o.X);
+                ClassicAssert.AreEqual(1, o.X);
             }
 
             [Test]
@@ -698,7 +699,7 @@ namespace Insight.Tests
             {
                 var o = Connection().SingleSql<PrivateNoSetterInt>("SELECT X=1");
 				// should not map
-                Assert.AreEqual(0, o.X);
+                ClassicAssert.AreEqual(0, o.X);
             }
 
             [Test]
@@ -706,7 +707,7 @@ namespace Insight.Tests
             {
                 var o = Connection().SingleSql<PrivateNoSetterInt>("SELECT X='string'");
 				// should not map and should not throw due to incompatible type
-                Assert.AreEqual(0, o.X);
+                ClassicAssert.AreEqual(0, o.X);
             }
 
             private class PrivateSetterInt
@@ -732,7 +733,7 @@ namespace Insight.Tests
 					Connection().ExecuteSql("CREATE PROCEDURE ProcWithUmlaut(@paräm int) AS SELECT @paräm");
 
 					var result = Connection().ExecuteScalar<int>("ProcWithUmlaut", new { paräm = 5 });
-					Assert.AreEqual(result, 5);
+					ClassicAssert.AreEqual(result, 5);
 				}
 				finally
 				{
@@ -744,7 +745,7 @@ namespace Insight.Tests
 			public void TestUmlautParamsSql()
 			{
 				var result = Connection().ExecuteScalarSql<int>("SELECT @paräm", new { paräm = 5 });
-				Assert.AreEqual(result, 5);
+				ClassicAssert.AreEqual(result, 5);
 			}
 		}
 #endregion

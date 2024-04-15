@@ -1,5 +1,6 @@
 ﻿using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 
@@ -41,8 +42,8 @@ namespace Insight.Tests.Cases
 					Query.ReturnsSingle(Some<Parent>.Records)
 					.ThenChildren(OneToOne<Children>.Records, id: (d) => d.ParentId, into: (p, c) => p.Children = c));
 
-				Assert.AreEqual(response.ParentId, 1);
-				Assert.AreEqual(response.Name, "Parent");
+				ClassicAssert.AreEqual(response.ParentId, 1);
+				ClassicAssert.AreEqual(response.Name, "Parent");
 
 			}
 			catch (Exception e)
@@ -75,7 +76,7 @@ namespace Insight.Tests.Cases
 					Query.ReturnsSingle(Some<Parent>.Records)
 					.ThenChildren(Some<Children>.Records, id: (d) => d.ParentId, into: (p, c) => p.Children = c));
 
-				Assert.AreEqual(response, null);
+				ClassicAssert.AreEqual(response, null);
 
 			}
 			finally
@@ -104,7 +105,7 @@ namespace Insight.Tests.Cases
 					Query.ReturnsSingle(Some<Parent>.Records)
 					.ThenChildren(OneToOne<Children>.Records, id: (d) => d.ParentId, into: (p, c) => p.Children = c));
 
-				Assert.AreEqual(response, null);
+				ClassicAssert.AreEqual(response, null);
 
 			}
 			finally

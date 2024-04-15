@@ -1,5 +1,6 @@
 ﻿using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -23,23 +24,23 @@ namespace Insight.Tests
 
 		public void Verify(bool withGraph = true)
 		{
-			Assert.AreEqual(2, ParentX);
+			ClassicAssert.AreEqual(2, ParentX);
 
 			if (withGraph)
 			{
-				Assert.IsNotNull(TestData);
-				Assert.AreEqual(5, TestData.X);
+				ClassicAssert.IsNotNull(TestData);
+				ClassicAssert.AreEqual(5, TestData.X);
 			}
 			else
-				Assert.IsNull(TestData);
+				ClassicAssert.IsNull(TestData);
 		}
 
 		public static void Verify(IEnumerable results, bool withGraph = true)
 		{
 			var list = results.OfType<ParentTestData>().ToList();
 
-			Assert.IsNotNull(results);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(results);
+			ClassicAssert.AreEqual(1, list.Count);
 
 			list[0].Verify(withGraph);
 		}
@@ -65,11 +66,11 @@ namespace Insight.Tests
 
 		public static void Verify(IList<TestData2> results)
 		{
-			Assert.IsNotNull(results);
-			Assert.AreEqual(1, results.Count);
+			ClassicAssert.IsNotNull(results);
+			ClassicAssert.AreEqual(1, results.Count);
 
 			var data = results[0];
-			Assert.AreEqual(7, data.Y);
+			ClassicAssert.AreEqual(7, data.Y);
 		}
 	}
 }

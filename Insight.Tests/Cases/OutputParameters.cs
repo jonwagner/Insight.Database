@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +20,7 @@ namespace Insight.Tests.Cases
 
 		public void Verify(OutParameters output)
 		{
-			Assert.AreEqual(In, Out1);
+			ClassicAssert.AreEqual(In, Out1);
 			output.Verify(In);
 		}
 	}
@@ -34,8 +35,8 @@ namespace Insight.Tests.Cases
 
 		public void Verify(int input)
 		{
-			Assert.AreEqual(input, Out2);
-			Assert.AreEqual(input, Return_Value);
+			ClassicAssert.AreEqual(input, Out2);
+			ClassicAssert.AreEqual(input, Return_Value);
 		}
 	}
 }

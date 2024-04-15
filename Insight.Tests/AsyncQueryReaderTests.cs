@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
-
+using NUnit.Framework.Legacy;
 namespace Insight.Tests
 {
 	[TestFixture]
@@ -22,7 +22,7 @@ namespace Insight.Tests
 			{
 				var result = c.QuerySqlAsync("SELECT @p", new { p = 1 }, reader => 1).Result;
 
-				Assert.AreEqual(1, result);
+				ClassicAssert.AreEqual(1, result);
 			});
 		}
 
@@ -35,7 +35,7 @@ namespace Insight.Tests
 
 				var result = c.QuerySqlAsync("SELECT @p", new { p = 1 }, reader => 1, commandBehavior: CommandBehavior.CloseConnection).Result;
 
-				Assert.AreEqual(ConnectionState.Closed, c.State);
+				ClassicAssert.AreEqual(ConnectionState.Closed, c.State);
 				if (wasOpen)
 					c.Open();
 			});

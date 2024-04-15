@@ -46,8 +46,8 @@ namespace Insight.Tests.MySqlConnector
 		{
 			var result = _connection.QuerySql<long>("SELECT @p as p", new { p = 5 });
 
-			Assert.AreEqual(1, result.Count);
-			Assert.AreEqual(5, result[0]);
+			ClassicAssert.AreEqual(1, result.Count);
+			ClassicAssert.AreEqual(5, result[0]);
 		}
 
 		[Test]
@@ -81,7 +81,7 @@ namespace Insight.Tests.MySqlConnector
 				var output = new TestData() { X = 11, Z = 0 };
 				var result = _connection.Execute("MySqlTestOutput", output, outputParameters: output);
 
-				Assert.AreEqual(output.X, output.Z);
+				ClassicAssert.AreEqual(output.X, output.Z);
 			}
 			finally
 			{
@@ -96,8 +96,8 @@ namespace Insight.Tests.MySqlConnector
 			{
 				_connection.ExecuteSql("CREATE PROCEDURE MySqlTestProc (i int) BEGIN select i as p; END");
 				var result = _connection.Query<int>("MySqlTestProc", new { i = 5 });
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -113,8 +113,8 @@ namespace Insight.Tests.MySqlConnector
 				_connection.ExecuteSql("CREATE PROCEDURE MySqlTestProc (i int) BEGIN select i as p; END");
 				var result = _connection.Dynamic<int>().MySqlTestProc(i: 5);
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -130,9 +130,9 @@ namespace Insight.Tests.MySqlConnector
 				_connection.ExecuteSql("CREATE PROCEDURE MySqlTestRecordset() BEGIN select 2 as x, 3 as z; END");
 				var result = _connection.Query<TestData>("MySqlTestRecordset");
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(2, result[0].X);
-				Assert.AreEqual(3, result[0].Z);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(2, result[0].X);
+				ClassicAssert.AreEqual(3, result[0].Z);
 			}
 			finally
 			{
@@ -149,8 +149,8 @@ namespace Insight.Tests.MySqlConnector
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
 				var items = _connection.QuerySql(sql, new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
 	}

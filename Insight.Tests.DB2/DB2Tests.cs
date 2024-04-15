@@ -62,8 +62,8 @@ namespace Insight.Tests.DB2
         {
             var result = _connection.QuerySql<int>("SELECT CAST(@p AS INT) as p FROM SYSIBM.DUAL", new { p = 5 });
 
-            Assert.AreEqual(1, result.Count);
-            Assert.AreEqual(5, result[0]);
+            ClassicAssert.AreEqual(1, result.Count);
+            ClassicAssert.AreEqual(5, result[0]);
         }
 
         [Test]
@@ -71,8 +71,8 @@ namespace Insight.Tests.DB2
         {
             var result = _connection.QuerySql<TestData>("SELECT 5 as x, 7 as z FROM SYSIBM.DUAL;").First();
 
-            Assert.AreEqual(5, result.X);
-            Assert.AreEqual(7, result.Z);
+            ClassicAssert.AreEqual(5, result.X);
+            ClassicAssert.AreEqual(7, result.Z);
         }
 
 #if !NO_DERIVE_PARAMETERS
@@ -99,7 +99,7 @@ namespace Insight.Tests.DB2
 				var output = new TestData() { X = 11, Z = 0 };
 				var result = _connection.Execute("DB2TestOutput", output, outputParameters: output);
 
-				Assert.AreEqual(output.X, output.Z);
+				ClassicAssert.AreEqual(output.X, output.Z);
 			}
 			finally
 			{
@@ -120,8 +120,8 @@ namespace Insight.Tests.DB2
 					OPEN c;
 					END");
 				var result = _connection.Query<int>("DB2TestProc", new { i = 5 });
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -143,8 +143,8 @@ namespace Insight.Tests.DB2
 					END");
 				var result = _connection.Dynamic<int>().DB2TestProc(i: 5);
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -166,9 +166,9 @@ namespace Insight.Tests.DB2
 					END");
 				var result = _connection.Query<TestData>("DB2TestRecordset");
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(2, result[0].X);
-				Assert.AreEqual(3, result[0].Z);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(2, result[0].X);
+				ClassicAssert.AreEqual(3, result[0].Z);
 			}
 			finally
 			{
@@ -185,8 +185,8 @@ namespace Insight.Tests.DB2
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
 				var items = _connection.QuerySql(sql, new { x = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
 
@@ -210,10 +210,10 @@ namespace Insight.Tests.DB2
 
 				var results = _connection.Query<ParentTestData, TestData>("DB2XmlTableProc", parentTestData);
 				var resultParent = results[0];
-				Assert.AreEqual(parentTestData.ID, resultParent.ID);
-				Assert.IsNotNull(resultParent.TestData);
-				Assert.AreEqual(parentTestData.TestData.X, resultParent.TestData.X);
-				Assert.AreEqual(parentTestData.TestData.Z, resultParent.TestData.Z);
+				ClassicAssert.AreEqual(parentTestData.ID, resultParent.ID);
+				ClassicAssert.IsNotNull(resultParent.TestData);
+				ClassicAssert.AreEqual(parentTestData.TestData.X, resultParent.TestData.X);
+				ClassicAssert.AreEqual(parentTestData.TestData.Z, resultParent.TestData.Z);
 			}
 			finally
 			{
@@ -243,12 +243,12 @@ namespace Insight.Tests.DB2
 
 					// run the query
 					var items = _connection.QuerySql<ParentTestData>("SELECT * FROM InsightTestData");
-					Assert.IsNotNull(items);
-					Assert.AreEqual(i, items.Count);
+					ClassicAssert.IsNotNull(items);
+					ClassicAssert.AreEqual(i, items.Count);
 					for (int j = 0; j < i; j++)
 					{
-						Assert.AreEqual(j, items[j].ID);
-						Assert.AreEqual(j, items[j].Dec);
+						ClassicAssert.AreEqual(j, items[j].ID);
+						ClassicAssert.AreEqual(j, items[j].Dec);
 					}
 
 					_connection.ExecuteSql("DELETE FROM InsightTestData");

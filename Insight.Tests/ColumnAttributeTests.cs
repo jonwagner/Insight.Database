@@ -5,6 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 #pragma warning disable 0649
 
@@ -31,8 +32,8 @@ namespace Insight.Tests
 		{
 			Data data = Connection().QuerySql<Data>("SELECT [Column]=4").First();
 
-			Assert.AreEqual(4, data.ColumnA);
-			Assert.AreEqual(0, data.Column);
+			ClassicAssert.AreEqual(4, data.ColumnA);
+			ClassicAssert.AreEqual(0, data.Column);
 		}
 
 		[Test]
@@ -40,8 +41,8 @@ namespace Insight.Tests
 		{
 			Data data = Connection().QuerySql<Data>("SELECT [OtherProperty]=4").First();
 
-			Assert.AreEqual(4, data.Property);
-			Assert.AreEqual(0, data.OtherProperty);
+			ClassicAssert.AreEqual(4, data.Property);
+			ClassicAssert.AreEqual(0, data.OtherProperty);
 		}
 	}
 }

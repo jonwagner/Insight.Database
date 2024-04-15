@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -34,7 +35,7 @@ namespace Insight.Tests
 
 				c.QueryAsync<Beer>(Beer.SelectAllProc, commandBehavior: CommandBehavior.CloseConnection).Wait();
 
-				Assert.AreEqual(ConnectionState.Closed, c.State);
+				ClassicAssert.AreEqual(ConnectionState.Closed, c.State);
 				if (wasOpen)
 					c.Open();
 			});
@@ -63,9 +64,9 @@ namespace Insight.Tests
 				Query.Returns(Some<InfiniteBeerList>.Records)
 					.ThenChildren(OneToOne<InfiniteBeerList, InfiniteBeer>.Records)).Result;
 
-			Assert.AreEqual(3, result.Count());
-			Assert.AreEqual(1, result[0].List.Count());
-			Assert.IsNotNull(result[0].List[0].More);
+			ClassicAssert.AreEqual(3, result.Count());
+			ClassicAssert.AreEqual(1, result[0].List.Count());
+			ClassicAssert.IsNotNull(result[0].List[0].More);
 			result[0].List[0].More.Verify();
 		}
 	}

@@ -1,5 +1,6 @@
 ﻿using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,30 +121,30 @@ namespace Insight.Tests
 			private static void Verify(Parent parent)
 			{
 
-				Assert.AreEqual(1, parent.ID);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 
 			private static void Verify(Parent2 parent)
 			{
-				Assert.AreEqual(1, parent.ID);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
-				Assert.AreEqual(1, parent.Children[0].ParentID);
-				Assert.AreEqual(1, parent.Children[1].ParentID);
+				ClassicAssert.AreEqual(1, parent.ID);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.Children[0].ParentID);
+				ClassicAssert.AreEqual(1, parent.Children[1].ParentID);
 			}
 
 			private static void Verify(Parent3 parent)
 			{
-				Assert.AreEqual(1, parent.Parent3_id);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
-				Assert.AreEqual(1, parent.Children[0].Parent3_id);
-				Assert.AreEqual(1, parent.Children[1].Parent3_id);
+				ClassicAssert.AreEqual(1, parent.Parent3_id);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.Children[0].Parent3_id);
+				ClassicAssert.AreEqual(1, parent.Children[1].Parent3_id);
 			}
 
 		}
@@ -202,12 +203,12 @@ namespace Insight.Tests
 			private static void Verify(Parent parent)
 			{
 
-				Assert.AreEqual(1, parent.ID);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(parent.ID, parent.Children[0].OtherID);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(parent.ID, parent.Children[1].OtherID);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(parent.ID, parent.Children[0].OtherID);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(parent.ID, parent.Children[1].OtherID);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -264,10 +265,10 @@ namespace Insight.Tests
 			private static void Verify(Parent parent)
 			{
 
-				Assert.AreEqual(1, parent.ID);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -325,13 +326,13 @@ namespace Insight.Tests
 								.ThenChildren(Some<Child>.Records))
 								.First();
 
-				Assert.AreEqual(1, parent.Int1 = 1);
-				Assert.AreEqual(10, parent.Int2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
-				Assert.AreEqual(1, parent.Children[0].ParentId);
-				Assert.AreEqual(30, parent.Children[0].Int3);
+				ClassicAssert.AreEqual(1, parent.Int1 = 1);
+				ClassicAssert.AreEqual(10, parent.Int2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.Children[0].ParentId);
+				ClassicAssert.AreEqual(30, parent.Children[0].Int3);
 			}
 
 			/// <summary>
@@ -350,13 +351,13 @@ namespace Insight.Tests
 								.ThenChildren(Some<Child2>.Records))
 								.First();
 
-				Assert.AreEqual(1, parent.ParentKey = 1);
-				Assert.AreEqual(10, parent.Int2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
-				Assert.AreEqual(1, parent.Children[0].ParentKey);
-				Assert.AreEqual(30, parent.Children[0].ChildKey);
+				ClassicAssert.AreEqual(1, parent.ParentKey = 1);
+				ClassicAssert.AreEqual(10, parent.Int2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.Children[0].ParentKey);
+				ClassicAssert.AreEqual(30, parent.Children[0].ChildKey);
 			}
 
 			/// <summary>
@@ -377,14 +378,14 @@ namespace Insight.Tests
 								.ThenChildren(Some<ChildMappingTests.TestClasses.Glass238b>.Records))
 								.First();
 
-				Assert.AreEqual(1, beer.ID = 1);
-				Assert.AreEqual(2, beer.GlassesB.Count);
-				Assert.IsNull(beer.GlassesA);
-				Assert.AreEqual(2, beer.GlassesB.Count);
-				Assert.AreEqual(1, beer.GlassesB[0].Beer238_ID);
-				Assert.AreEqual(1, beer.GlassesB[1].Beer238_ID);
-				Assert.AreEqual(40, beer.GlassesB[0].Value);
-				Assert.AreEqual(41, beer.GlassesB[1].Value);
+				ClassicAssert.AreEqual(1, beer.ID = 1);
+				ClassicAssert.AreEqual(2, beer.GlassesB.Count);
+				ClassicAssert.IsNull(beer.GlassesA);
+				ClassicAssert.AreEqual(2, beer.GlassesB.Count);
+				ClassicAssert.AreEqual(1, beer.GlassesB[0].Beer238_ID);
+				ClassicAssert.AreEqual(1, beer.GlassesB[1].Beer238_ID);
+				ClassicAssert.AreEqual(40, beer.GlassesB[0].Value);
+				ClassicAssert.AreEqual(41, beer.GlassesB[1].Value);
 			}
 
 		}
@@ -445,11 +446,11 @@ namespace Insight.Tests
 			private static void Verify(Parent parent)
 			{
 
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.ID2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.ID2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -523,13 +524,13 @@ namespace Insight.Tests
 								.ThenChildren(Some<Child4>.Records))
 								.First();
 
-				Assert.AreEqual(1, parent.Int1 = 1);
-				Assert.AreEqual(10, parent.Int2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
-				Assert.AreEqual(1, parent.Children[0].Int1);
-				Assert.AreEqual(10, parent.Children[0].Int2);
+				ClassicAssert.AreEqual(1, parent.Int1 = 1);
+				ClassicAssert.AreEqual(10, parent.Int2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.Children[0].Int1);
+				ClassicAssert.AreEqual(10, parent.Children[0].Int2);
 			}
 
 			[Test]
@@ -551,11 +552,11 @@ namespace Insight.Tests
 			private static void Verify(Parent parent)
 			{
 
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.ID2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.ID2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -594,10 +595,10 @@ namespace Insight.Tests
 					.ThenChildren(Some<Child>.Records.GroupBy(c => Tuple.Create(c.ParentID1, c.ParentID2)), id: p => Tuple.Create(p.ID1, p.ID2)))
 						.First();
 
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 
 			[Test]
@@ -607,10 +608,10 @@ namespace Insight.Tests
 					Query.ReturnsSingle(Some<Parent>.Records)
 						.ThenChildren(Some<Child>.Records.GroupBy(c => Tuple.Create(c.ParentID1, c.ParentID2)), id: p => Tuple.Create(p.ID1, p.ID2)));
 
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 
 			[Test]
@@ -622,15 +623,15 @@ namespace Insight.Tests
 
 			private static void Verify(Parent parent)
 			{
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.ID2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(parent.ID1, parent.Children[0].ParentID1);
-				Assert.AreEqual(parent.ID2, parent.Children[0].ParentID2);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(parent.ID1, parent.Children[1].ParentID1);
-				Assert.AreEqual(parent.ID2, parent.Children[1].ParentID2);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.ID2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(parent.ID1, parent.Children[0].ParentID1);
+				ClassicAssert.AreEqual(parent.ID2, parent.Children[0].ParentID2);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(parent.ID1, parent.Children[1].ParentID1);
+				ClassicAssert.AreEqual(parent.ID2, parent.Children[1].ParentID2);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -689,11 +690,11 @@ namespace Insight.Tests
 
 			private static void Verify(Parent parent)
 			{
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.ID2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.ID2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -750,11 +751,11 @@ namespace Insight.Tests
 
 			private static void Verify(Parent parent)
 			{
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.ID2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.ID2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -815,15 +816,15 @@ namespace Insight.Tests
 
 			private static void Verify(Parent parent)
 			{
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.ID2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(parent.ID1, parent.Children[0].ParentID1);
-				Assert.AreEqual(parent.ID2, parent.Children[0].ParentID2);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(parent.ID1, parent.Children[1].ParentID1);
-				Assert.AreEqual(parent.ID2, parent.Children[1].ParentID2);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.ID2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(parent.ID1, parent.Children[0].ParentID1);
+				ClassicAssert.AreEqual(parent.ID2, parent.Children[0].ParentID2);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(parent.ID1, parent.Children[1].ParentID1);
+				ClassicAssert.AreEqual(parent.ID2, parent.Children[1].ParentID2);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -880,12 +881,12 @@ namespace Insight.Tests
 
 			private static void Verify(Parent parent)
 			{
-				Assert.AreEqual(1, parent.ID);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(parent.ID, parent.Children[0].ParentID);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(parent.ID, parent.Children[1].ParentID);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(parent.ID, parent.Children[0].ParentID);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(parent.ID, parent.Children[1].ParentID);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -943,12 +944,12 @@ namespace Insight.Tests
 
 			private static void Verify(Parent parent)
 			{
-				Assert.AreEqual(1, parent.ID);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(parent.ID, parent.Children[0].Foo);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(parent.ID, parent.Children[1].Foo);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(parent.ID, parent.Children[0].Foo);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(parent.ID, parent.Children[1].Foo);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion
@@ -1011,15 +1012,15 @@ namespace Insight.Tests
 
 			private static void Verify(Parent parent)
 			{
-				Assert.AreEqual(1, parent.ID1);
-				Assert.AreEqual(2, parent.ID2);
-				Assert.AreEqual(2, parent.Children.Count);
-				Assert.AreEqual(parent.ID1, parent.Children[0].Foo1);
-				Assert.AreEqual(parent.ID2, parent.Children[0].Foo2);
-				Assert.AreEqual(2, parent.Children[0].Value);
-				Assert.AreEqual(parent.ID1, parent.Children[1].Foo1);
-				Assert.AreEqual(parent.ID2, parent.Children[1].Foo2);
-				Assert.AreEqual(3, parent.Children[1].Value);
+				ClassicAssert.AreEqual(1, parent.ID1);
+				ClassicAssert.AreEqual(2, parent.ID2);
+				ClassicAssert.AreEqual(2, parent.Children.Count);
+				ClassicAssert.AreEqual(parent.ID1, parent.Children[0].Foo1);
+				ClassicAssert.AreEqual(parent.ID2, parent.Children[0].Foo2);
+				ClassicAssert.AreEqual(2, parent.Children[0].Value);
+				ClassicAssert.AreEqual(parent.ID1, parent.Children[1].Foo1);
+				ClassicAssert.AreEqual(parent.ID2, parent.Children[1].Foo2);
+				ClassicAssert.AreEqual(3, parent.Children[1].Value);
 			}
 		}
 		#endregion

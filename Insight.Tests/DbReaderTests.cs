@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database;
 using System.Dynamic;
 
@@ -36,11 +37,11 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<Data>("SELECT TestEnum='Two'", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(TestEnum.Two, item.TestEnum);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(TestEnum.Two, item.TestEnum);
 		}
 		
 		[Test]
@@ -48,11 +49,11 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<Data>("SELECT TestEnum=2", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(TestEnum.Two, item.TestEnum);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(TestEnum.Two, item.TestEnum);
 		}
 		
 		[Test]
@@ -60,11 +61,11 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<Data>("SELECT NullableTestEnum='Two'", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(TestEnum.Two, item.NullableTestEnum);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(TestEnum.Two, item.NullableTestEnum);
 		}
 		
 		[Test]
@@ -72,11 +73,11 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<Data>("SELECT NullableTestEnum=2", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(TestEnum.Two, item.NullableTestEnum);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(TestEnum.Two, item.NullableTestEnum);
 		}
 		
 		[Test]
@@ -84,12 +85,12 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<Data>("SELECT Int=1, String='foo'", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(1, item.Int);
-			Assert.AreEqual("foo", item.String);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(1, item.Int);
+			ClassicAssert.AreEqual("foo", item.String);
 		}
 
 		[Test]
@@ -97,18 +98,18 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<Data>("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(2, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(2, list.Count);
 
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(1, item.Int);
-			Assert.AreEqual("foo", item.String);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(1, item.Int);
+			ClassicAssert.AreEqual("foo", item.String);
 
 			item = list[1];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(2, item.Int);
-			Assert.AreEqual("moo", item.String);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(2, item.Int);
+			ClassicAssert.AreEqual("moo", item.String);
 		}
 
 		[Test]
@@ -116,18 +117,18 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(2, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(2, list.Count);
 
 			dynamic item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(1, item["Int"]);
-			Assert.AreEqual("foo", item["String"]);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(1, item["Int"]);
+			ClassicAssert.AreEqual("foo", item["String"]);
 
 			item = list[1];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(2, item["Int"]);
-			Assert.AreEqual("moo", item["String"]);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(2, item["Int"]);
+			ClassicAssert.AreEqual("moo", item["String"]);
 		}
 
 		[Test]
@@ -135,18 +136,18 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<dynamic>("SELECT Int=1, String='foo' UNION SELECT Int=2, String='moo'", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(2, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(2, list.Count);
 
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(1, item["Int"]);
-			Assert.AreEqual("foo", item["String"]);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(1, item["Int"]);
+			ClassicAssert.AreEqual("foo", item["String"]);
 
 			item = list[1];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(2, item["Int"]);
-			Assert.AreEqual("moo", item["String"]);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(2, item["Int"]);
+			ClassicAssert.AreEqual("moo", item["String"]);
 		}
 
 		[Test]
@@ -160,8 +161,8 @@ namespace Insight.Tests
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
 				var items = Connection().QuerySql(sql, new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
 
@@ -198,11 +199,11 @@ namespace Insight.Tests
 		{
 			var list = Connection().QuerySql<Data>("SELECT TimeSpan=CONVERT(time, '00:01:01')", new { });
 
-			Assert.IsNotNull(list);
-			Assert.AreEqual(1, list.Count);
+			ClassicAssert.IsNotNull(list);
+			ClassicAssert.AreEqual(1, list.Count);
 			var item = list[0];
-			Assert.IsNotNull(item);
-			Assert.AreEqual(TimeSpan.Parse("00:01:01"), item.TimeSpan);
+			ClassicAssert.IsNotNull(item);
+			ClassicAssert.AreEqual(TimeSpan.Parse("00:01:01"), item.TimeSpan);
 		}
 		#endregion
 
@@ -245,7 +246,7 @@ namespace Insight.Tests
 		public void PrivateParentPropertiesCanBeSet()
 		{
 			var results = Connection().QuerySql<ChildWithPrivate>("SELECT Name='name'").First();
-			Assert.AreEqual("name", results.Name);
+			ClassicAssert.AreEqual("name", results.Name);
 		}
 
 		[Test]
@@ -253,7 +254,7 @@ namespace Insight.Tests
 		{
 			var child = new ChildWithPrivate("name");
 			var results = Connection().ExecuteScalarSql<string>("SELECT @VirtualName", child);
-			Assert.AreEqual("virtualname", results);
+			ClassicAssert.AreEqual("virtualname", results);
 		}
 		#endregion
 	}

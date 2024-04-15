@@ -5,6 +5,7 @@ using System.Linq;
 using Insight.Database;
 using Insight.Database.Mapping;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -162,7 +163,7 @@ namespace Insight.Tests
 
 			var result = Connection().SingleSql<int>(sql, new { values });
 
-			Assert.AreEqual(result, 4);
+			ClassicAssert.AreEqual(result, 4);
 		}
 
 		private SimpleDate WithDate(DateTime value)
@@ -404,7 +405,7 @@ namespace Insight.Tests
 				var orderedList = new[] { "a72863cf-c573-4bf8-9a0b-02212f84698a", "56a0c8ef-c826-45a5-bbce-fb334e59f4b7", "26525d03-1a64-4843-bab4-9daf88e9ae02" };
 				var result = Connection().ExecuteScalar<int>("SampleTable_GetOrderedItems", new { TableEntryIDs = orderedList });
 
-				Assert.AreEqual(result, 3);
+				ClassicAssert.AreEqual(result, 3);
 			}
 			finally
 			{

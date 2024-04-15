@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -35,7 +36,7 @@ namespace Insight.Tests
 				var input = new InOutParameters { In = 5 };
 				var recordCount = c.InsertSql("SELECT @In", input, commandBehavior: CommandBehavior.CloseConnection);
 
-				Assert.AreEqual(ConnectionState.Closed, c.State);
+				ClassicAssert.AreEqual(ConnectionState.Closed, c.State);
 				if (wasOpen)
 					c.Open();
 			});

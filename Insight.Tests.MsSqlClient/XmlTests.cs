@@ -54,10 +54,10 @@ namespace Insight.Tests.MsSqlClient
         {
             var list = Connection().QuerySql<XmlDocument>("SELECT CONVERT(xml, '<data/>')", new { });
 
-            Assert.IsNotNull(list);
+            ClassicAssert.IsNotNull(list);
             var doc = list[0];
-            Assert.IsNotNull(doc);
-            Assert.AreEqual("<data />", doc.OuterXml);
+            ClassicAssert.IsNotNull(doc);
+            ClassicAssert.AreEqual("<data />", doc.OuterXml);
         }
 
         [Test]
@@ -65,10 +65,10 @@ namespace Insight.Tests.MsSqlClient
         {
             var list = Connection().QuerySql<XDocument>("SELECT CONVERT(xml, '<data/>')", new { });
 
-            Assert.IsNotNull(list);
+            ClassicAssert.IsNotNull(list);
             var doc = list[0];
-            Assert.IsNotNull(doc);
-            Assert.AreEqual("<data />", doc.ToString());
+            ClassicAssert.IsNotNull(doc);
+            ClassicAssert.AreEqual("<data />", doc.ToString());
         }
 
         [Test]
@@ -76,10 +76,10 @@ namespace Insight.Tests.MsSqlClient
         {
             var list = Connection().QuerySql<string>("SELECT CONVERT(xml, '<data/>')", new { });
 
-            Assert.IsNotNull(list);
+            ClassicAssert.IsNotNull(list);
             var s = list[0];
-            Assert.IsNotNull(s);
-            Assert.AreEqual("<data />", s);
+            ClassicAssert.IsNotNull(s);
+            ClassicAssert.AreEqual("<data />", s);
         }
         #endregion
 
@@ -89,11 +89,11 @@ namespace Insight.Tests.MsSqlClient
         {
             var list = Connection().QuerySql<Result>("SELECT String=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
 
-            Assert.IsNotNull(list);
+            ClassicAssert.IsNotNull(list);
             var result = list[0];
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.String);
-            Assert.AreEqual("<Data><Text>foo</Text></Data>", result.String);
+            ClassicAssert.IsNotNull(result);
+            ClassicAssert.IsNotNull(result.String);
+            ClassicAssert.AreEqual("<Data><Text>foo</Text></Data>", result.String);
         }
 
         [Test]
@@ -101,11 +101,11 @@ namespace Insight.Tests.MsSqlClient
         {
             var list = Connection().QuerySql<Result>("SELECT XmlDocument=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
 
-            Assert.IsNotNull(list);
+            ClassicAssert.IsNotNull(list);
             var result = list[0];
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.XmlDocument);
-            Assert.AreEqual("<Data><Text>foo</Text></Data>", result.XmlDocument.OuterXml);
+            ClassicAssert.IsNotNull(result);
+            ClassicAssert.IsNotNull(result.XmlDocument);
+            ClassicAssert.AreEqual("<Data><Text>foo</Text></Data>", result.XmlDocument.OuterXml);
         }
 
         [Test]
@@ -113,11 +113,11 @@ namespace Insight.Tests.MsSqlClient
         {
             var list = Connection().QuerySql<Result>("SELECT XDocument=CONVERT(xml, '<Data><Text>foo</Text></Data>')", new { });
 
-            Assert.IsNotNull(list);
+            ClassicAssert.IsNotNull(list);
             var result = list[0];
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.XDocument);
-            Assert.AreEqual(String.Format("<Data>{0}  <Text>foo</Text>{0}</Data>", Environment.NewLine), result.XDocument.ToString());
+            ClassicAssert.IsNotNull(result);
+            ClassicAssert.IsNotNull(result.XDocument);
+            ClassicAssert.AreEqual(String.Format("<Data>{0}  <Text>foo</Text>{0}</Data>", Environment.NewLine), result.XDocument.ToString());
         }
 
         [Test]
@@ -125,11 +125,11 @@ namespace Insight.Tests.MsSqlClient
         {
             var list = Connection().QuerySql<Result>("SELECT Data=CONVERT(xml, '<XmlTests.Data xmlns=\"http://schemas.datacontract.org/2004/07/Insight.Tests.MsSqlClient\"><Text>foo</Text></XmlTests.Data>')", new { });
 
-            Assert.IsNotNull(list);
+            ClassicAssert.IsNotNull(list);
             var result = list[0];
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(result.Data);
-            Assert.AreEqual("foo", result.Data.Text);
+            ClassicAssert.IsNotNull(result);
+            ClassicAssert.IsNotNull(result.Data);
+            ClassicAssert.AreEqual("foo", result.Data.Text);
         }
         #endregion
 
@@ -143,8 +143,8 @@ namespace Insight.Tests.MsSqlClient
 
             var list = Connection().Query<XmlDocument>("ReflectXml", new { Xml = doc });
             var data = list[0];
-            Assert.IsNotNull(data);
-            Assert.AreEqual(doc.OuterXml, data.OuterXml);
+            ClassicAssert.IsNotNull(data);
+            ClassicAssert.AreEqual(doc.OuterXml, data.OuterXml);
         }
 
         [Test]
@@ -155,8 +155,8 @@ namespace Insight.Tests.MsSqlClient
 
             var list = Connection().Query<XDocument>("ReflectXml", new { Xml = doc });
             var data = list[0];
-            Assert.IsNotNull(data);
-            Assert.AreEqual(doc.ToString(), data.ToString());
+            ClassicAssert.IsNotNull(data);
+            ClassicAssert.AreEqual(doc.ToString(), data.ToString());
         }
 
         [Test]
@@ -170,8 +170,8 @@ namespace Insight.Tests.MsSqlClient
 
             var list = Connection().Query<Result>("ReflectXmlAsData", new { Xml = d });
             var data = list[0];
-            Assert.IsNotNull(data);
-            Assert.AreEqual(d.Text, data.Data.Text);
+            ClassicAssert.IsNotNull(data);
+            ClassicAssert.AreEqual(d.Text, data.Data.Text);
         }
 
         [Test]
@@ -182,8 +182,8 @@ namespace Insight.Tests.MsSqlClient
 
             var list = Connection().Query<string>("ReflectXml", new { Xml = doc });
             var data = list[0];
-            Assert.IsNotNull(data);
-            Assert.AreEqual(doc, data);
+            ClassicAssert.IsNotNull(data);
+            ClassicAssert.AreEqual(doc, data);
         }
         #endregion
     }
@@ -213,7 +213,7 @@ namespace Insight.Tests.MsSqlClient
             var list = Connection().Query<Result>("ReflectXmlTable", new { p = new List<Result>() { r } });
             var item = list[0];
 
-            Assert.AreEqual(r.Data.Text, item.Data.Text);
+            ClassicAssert.AreEqual(r.Data.Text, item.Data.Text);
         }
 
         [Test]
@@ -225,7 +225,7 @@ namespace Insight.Tests.MsSqlClient
             var list = Connection().Query<string>("ReflectXmlTableAsVarChar", new { p = input.Select(x => new { id = 1, data = x }).ToList() });
             var item = list[0];
 
-            Assert.AreEqual(s, item);
+            ClassicAssert.AreEqual(s, item);
         }
     }
 }

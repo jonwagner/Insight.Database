@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Tests.Cases;
 using Insight.Database.Structure;
 
@@ -124,22 +125,22 @@ namespace Insight.Tests
 		#region Validation Methods
 		private void Validate(IList<Parent> results)
 		{
-			Assert.AreEqual(1, results.Count);
+			ClassicAssert.AreEqual(1, results.Count);
 
 			Validate(results[0]);
 		}
 
 		private void Validate(Parent parent)
 		{
-			Assert.AreEqual(1, parent.ParentID);
-			Assert.AreEqual("Parent", parent.ParentName);
+			ClassicAssert.AreEqual(1, parent.ParentID);
+			ClassicAssert.AreEqual("Parent", parent.ParentName);
 			
 			var children = parent.Children;
-			Assert.AreEqual(2, children.Count);
-			Assert.AreEqual(11, children[0].ChildID);
-			Assert.AreEqual("ChildA", children[0].ChildName);
-			Assert.AreEqual(12, children[1].ChildID);
-			Assert.AreEqual("ChildB", children[1].ChildName);
+			ClassicAssert.AreEqual(2, children.Count);
+			ClassicAssert.AreEqual(11, children[0].ChildID);
+			ClassicAssert.AreEqual("ChildA", children[0].ChildName);
+			ClassicAssert.AreEqual(12, children[1].ChildID);
+			ClassicAssert.AreEqual("ChildB", children[1].ChildName);
 		}
 		#endregion
 

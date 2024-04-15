@@ -5,6 +5,7 @@ using System.Text;
 using Insight.Database;
 using Insight.Database.Reliable;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.Data.SqlClient;
 using System.Data;
 using System.Threading.Tasks;
@@ -101,7 +102,7 @@ namespace Insight.Tests
 			{
 			}
 
-			Assert.IsFalse(Retries > 0);
+			ClassicAssert.IsFalse(Retries > 0);
 		}
 
 		[Test]
@@ -120,7 +121,7 @@ namespace Insight.Tests
 			{
 			}
 
-			Assert.IsTrue(Retries > 0);
+			ClassicAssert.IsTrue(Retries > 0);
 		}
 		#endregion
 
@@ -145,7 +146,7 @@ namespace Insight.Tests
 			{
 			}
 
-			Assert.AreEqual(5, retries);
+			ClassicAssert.AreEqual(5, retries);
 		}
 		#endregion
 
@@ -166,7 +167,7 @@ namespace Insight.Tests
 
 					int result = retry.Query<int>("ReliableInsightTestProc", new { Value = 1 }, transaction: t).First();
 
-					Assert.AreEqual(1, result);
+					ClassicAssert.AreEqual(1, result);
 				}
 			}
 		}
@@ -182,7 +183,7 @@ namespace Insight.Tests
 				// This test ensures that reliable connections work with this.
 				var result = retry.Query<int>("ReflectInt32Table", new int[] { 1, 2, 3, 4, 5 });
 
-				Assert.AreEqual(5, result.Count());
+				ClassicAssert.AreEqual(5, result.Count());
 			}
 		}
 		#endregion
@@ -205,7 +206,7 @@ namespace Insight.Tests
 			{
 			}
 
-			Assert.AreEqual(5, Retries);
+			ClassicAssert.AreEqual(5, Retries);
 		}
 
 		[Test]
@@ -224,7 +225,7 @@ namespace Insight.Tests
 			{
 			}
 
-			Assert.AreEqual(5, Retries);
+			ClassicAssert.AreEqual(5, Retries);
 		}
 
 		[Test]
@@ -236,7 +237,7 @@ namespace Insight.Tests
 
 			int result = retry.QuerySqlAsync<int>("SELECT 10").Result.First();
 
-			Assert.AreEqual(10, result);
+			ClassicAssert.AreEqual(10, result);
 		}
 		#endregion
 
@@ -247,7 +248,7 @@ namespace Insight.Tests
 			// this was throwing an exception during provider lookup
 
 			RetryStrategy retry = new RetryStrategy();
-			Assert.IsFalse(retry.IsTransientException(new InvalidOperationException()));
+			ClassicAssert.IsFalse(retry.IsTransientException(new InvalidOperationException()));
 		}
 		#endregion
 

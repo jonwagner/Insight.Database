@@ -57,8 +57,8 @@ namespace Insight.Tests.PostgreSQL
 		{
 			var result = _connection.QuerySql<int>("SELECT @p as p", new { p = 5 });
 
-			Assert.AreEqual(1, result.Count);
-			Assert.AreEqual(5, result[0]);
+			ClassicAssert.AreEqual(1, result.Count);
+			ClassicAssert.AreEqual(5, result[0]);
 		}
 
 		[Test]
@@ -67,8 +67,8 @@ namespace Insight.Tests.PostgreSQL
 			var date = DateTime.Parse("1/1/1978");
 			var result = _connection.QuerySql<DateTime>("SELECT @p as p", new { p = date });
 
-			Assert.AreEqual(1, result.Count);
-			Assert.AreEqual(date, result[0]);
+			ClassicAssert.AreEqual(1, result.Count);
+			ClassicAssert.AreEqual(date, result[0]);
 		}
 
 		[Test]
@@ -136,7 +136,7 @@ namespace Insight.Tests.PostgreSQL
 
 				dynamic output = result[0];
 
-				Assert.AreEqual(11, output.Z);
+				ClassicAssert.AreEqual(11, output.Z);
 			}
 			finally
 			{
@@ -169,10 +169,10 @@ namespace Insight.Tests.PostgreSQL
 						END;
 						$$ LANGUAGE plpgsql;");
 					var result = connection.QueryResults<int, int>(@"PostgreSQLTestProc", new { i = 5 });
-					Assert.AreEqual(1, result.Set1.Count);
-					Assert.AreEqual(5, result.Set1[0]);
-					Assert.AreEqual(1, result.Set2.Count);
-					Assert.AreEqual(5, result.Set2[0]);
+					ClassicAssert.AreEqual(1, result.Set1.Count);
+					ClassicAssert.AreEqual(5, result.Set1[0]);
+					ClassicAssert.AreEqual(1, result.Set2.Count);
+					ClassicAssert.AreEqual(5, result.Set2[0]);
 				}
 			}
 			finally
@@ -207,10 +207,10 @@ namespace Insight.Tests.PostgreSQL
 						END;
 						$$ LANGUAGE plpgsql;");
 					var result = connection.QueryResultsAsync<int, int>(@"PostgreSQLTestProc", new { i = 5 }).Result;
-					Assert.AreEqual(1, result.Set1.Count);
-					Assert.AreEqual(5, result.Set1[0]);
-					Assert.AreEqual(1, result.Set2.Count);
-					Assert.AreEqual(5, result.Set2[0]);
+					ClassicAssert.AreEqual(1, result.Set1.Count);
+					ClassicAssert.AreEqual(5, result.Set1[0]);
+					ClassicAssert.AreEqual(1, result.Set2.Count);
+					ClassicAssert.AreEqual(5, result.Set2[0]);
 				}
 			}
 			finally
@@ -236,8 +236,8 @@ namespace Insight.Tests.PostgreSQL
 					$$ LANGUAGE plpgsql;");
 				var result = _connection.Dynamic<int>().PostgreSQLTestProc(i: 5);
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(5, result[0]);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(5, result[0]);
 			}
 			finally
 			{
@@ -262,9 +262,9 @@ namespace Insight.Tests.PostgreSQL
 					$$ LANGUAGE plpgsql;");
 				var result = _connection.Query<TestData>("PostgreSQLTestRecordset");
 
-				Assert.AreEqual(1, result.Count);
-				Assert.AreEqual(2, result[0].X);
-				Assert.AreEqual(3, result[0].Z);
+				ClassicAssert.AreEqual(1, result.Count);
+				ClassicAssert.AreEqual(2, result[0].X);
+				ClassicAssert.AreEqual(3, result[0].Z);
 			}
 			finally
 			{
@@ -282,8 +282,8 @@ namespace Insight.Tests.PostgreSQL
 			{
 				int[] array = Enumerable.Range(0, i).ToArray();
 				var items = _connection.QuerySql(sql, new { p = array });
-				Assert.IsNotNull(items);
-				Assert.AreEqual(i, items.Count);
+				ClassicAssert.IsNotNull(items);
+				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
 	
@@ -307,10 +307,10 @@ namespace Insight.Tests.PostgreSQL
 
 				var results = _connection.Query<ParentTestData, TestData>("XmlTableProc", parentTestData);
 				var resultParent = results[0];
-				Assert.AreEqual(parentTestData.ID, resultParent.ID);
-				Assert.IsNotNull(resultParent.TestData);
-				Assert.AreEqual(parentTestData.TestData.X, resultParent.TestData.X);
-				Assert.AreEqual(parentTestData.TestData.Z, resultParent.TestData.Z);
+				ClassicAssert.AreEqual(parentTestData.ID, resultParent.ID);
+				ClassicAssert.IsNotNull(resultParent.TestData);
+				ClassicAssert.AreEqual(parentTestData.TestData.X, resultParent.TestData.X);
+				ClassicAssert.AreEqual(parentTestData.TestData.Z, resultParent.TestData.Z);
 			}
 			finally
 			{
@@ -346,13 +346,13 @@ namespace Insight.Tests.PostgreSQL
 
 					// run the query
 					var items = _connection.QuerySql<PostgresBulkData>("SELECT * FROM InsightTestData");
-					Assert.IsNotNull(items);
-					Assert.AreEqual(i, items.Count);
+					ClassicAssert.IsNotNull(items);
+					ClassicAssert.AreEqual(i, items.Count);
 					for (int j = 0; j < i; j++)
 					{
-						Assert.AreEqual(j, items[j].ID);
-						Assert.AreEqual(j, items[j].Dec);
-						Assert.AreEqual(text, items[j].Text);
+						ClassicAssert.AreEqual(j, items[j].ID);
+						ClassicAssert.AreEqual(j, items[j].Dec);
+						ClassicAssert.AreEqual(text, items[j].Text);
 					}
 
 					_connection.ExecuteSql("DELETE FROM InsightTestData");
@@ -383,14 +383,14 @@ namespace Insight.Tests.PostgreSQL
 
                 _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteSql("INSERT INTO InsightTestData VALUES (1)");
                 _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteSql("INSERT INTO InsightTestData VALUES (2)");
-                Assert.AreEqual(1, _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
-                Assert.AreEqual(2, _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
+                ClassicAssert.AreEqual(1, _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
+                ClassicAssert.AreEqual(2, _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
 
 // npgsql 3.x fails this test
 #if !NETCOREAPP1_0
 				var parallel = _connectionStringBuilder.ConnectionWithSchema("test2").AsParallel<ISwitchSchemas>();
-				Assert.AreEqual(2, parallel.SelectValue());
-				Assert.AreEqual(2, parallel.SelectValue());
+				ClassicAssert.AreEqual(2, parallel.SelectValue());
+				ClassicAssert.AreEqual(2, parallel.SelectValue());
 #endif
             }
             finally
@@ -436,7 +436,7 @@ namespace Insight.Tests.PostgreSQL
 					$$ LANGUAGE plpgsql;");
 				var result = _connection.Query<Users>("TestStringToJsonProcParameters", users).First();
 
-				Assert.AreEqual(users.JsonData, result.JsonData);
+				ClassicAssert.AreEqual(users.JsonData, result.JsonData);
 			}
 			finally
 			{
@@ -467,8 +467,8 @@ namespace Insight.Tests.PostgreSQL
 				var result = _connection.Query<Users>("TestStringToJsonbProcParameters", users).First();
 
 				var deserialized = (TestData)JsonObjectSerializer.Serializer.DeserializeObject(typeof(TestData), result.JsonData);
-				Assert.AreEqual(input.X, deserialized.X);
-				Assert.AreEqual(input.Z, deserialized.Z);
+				ClassicAssert.AreEqual(input.X, deserialized.X);
+				ClassicAssert.AreEqual(input.Z, deserialized.Z);
 			}
 			finally
 			{
@@ -498,8 +498,8 @@ namespace Insight.Tests.PostgreSQL
 					$$ LANGUAGE plpgsql;");
 
 				var result = _connection.Query<UsersWithTestData>("TestObjectToJsonProcParameters", users).First();
-				Assert.AreEqual(input.X, result.JsonData.X);
-				Assert.AreEqual(input.Z, result.JsonData.Z);
+				ClassicAssert.AreEqual(input.X, result.JsonData.X);
+				ClassicAssert.AreEqual(input.Z, result.JsonData.Z);
 			}
 			finally
 			{
@@ -529,8 +529,8 @@ namespace Insight.Tests.PostgreSQL
 					$$ LANGUAGE plpgsql;");
 
 				var result = _connection.Query<UsersWithTestData>("TestObjectToJsonbProcParameters", users).First();
-				Assert.AreEqual(input.X, result.JsonData.X);
-				Assert.AreEqual(input.Z, result.JsonData.Z);
+				ClassicAssert.AreEqual(input.X, result.JsonData.X);
+				ClassicAssert.AreEqual(input.Z, result.JsonData.Z);
 			}
 			finally
 			{
@@ -556,7 +556,7 @@ namespace Insight.Tests.PostgreSQL
 
 				var result = _connection.QuerySql<Users>(@"SELECT Users.* FROM Users").First();
 
-				Assert.AreEqual(users.JsonData, result.JsonData);
+				ClassicAssert.AreEqual(users.JsonData, result.JsonData);
 			}
 			finally
 			{
@@ -576,8 +576,8 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql("INSERT INTO Users (Id, JsonData) VALUES (@Id, @JsonData)", users);
 
 				var result = _connection.QuerySql<UsersWithTestData>(@"SELECT Users.* FROM Users").First();
-				Assert.AreEqual(input.X, result.JsonData.X);
-				Assert.AreEqual(input.Z, result.JsonData.Z);
+				ClassicAssert.AreEqual(input.X, result.JsonData.X);
+				ClassicAssert.AreEqual(input.Z, result.JsonData.Z);
 			}
 			finally
 			{
@@ -597,8 +597,8 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql("INSERT INTO Users (Id, JsonData) VALUES (@Id, @JsonData)", users);
 
 				var result = _connection.QuerySql<UsersWithTestData>(@"SELECT Users.* FROM Users").First();
-				Assert.AreEqual(input.X, result.JsonData.X);
-				Assert.AreEqual(input.Z, result.JsonData.Z);
+				ClassicAssert.AreEqual(input.X, result.JsonData.X);
+				ClassicAssert.AreEqual(input.Z, result.JsonData.Z);
 			}
 			finally
 			{
@@ -621,8 +621,8 @@ namespace Insight.Tests.PostgreSQL
 //												"SELECT Users.* FROM Users WHERE JsonData @> '{ \"Text\": \"MyText\" }'",
 												"SELECT Users.* FROM Users WHERE JsonData @> ('{ \"Text\": \"' || @Text || '\" }')::jsonb",
 												new { Text = "MyText" }).FirstOrDefault();
-				Assert.AreEqual(input.X, result.JsonData.X);
-				Assert.AreEqual(input.Z, result.JsonData.Z);
+				ClassicAssert.AreEqual(input.X, result.JsonData.X);
+				ClassicAssert.AreEqual(input.Z, result.JsonData.Z);
 			}
 			finally
 			{
@@ -747,9 +747,9 @@ namespace Insight.Tests.PostgreSQL
 
 				var result = _connection.Query<ClassWithEnum>("PostgresSQLSmallInt", e);
 
-				Assert.AreEqual(MyEnum.One, result.First().Value);
-				Assert.AreEqual(MyEnum.Two, result.First().NullableValue);
-				Assert.AreEqual(null, result.First().NullValue);
+				ClassicAssert.AreEqual(MyEnum.One, result.First().Value);
+				ClassicAssert.AreEqual(MyEnum.Two, result.First().NullableValue);
+				ClassicAssert.AreEqual(null, result.First().NullValue);
 			}
 			finally
 			{
@@ -805,7 +805,7 @@ namespace Insight.Tests.PostgreSQL
 				var id = repo.InsertWidget(new Widget { name = "Test" });
 				var widget = repo.GetWidget(id);
 
-				Assert.AreEqual("Test", widget.name);
+				ClassicAssert.AreEqual("Test", widget.name);
 			}
 		}		
 		#endregion
@@ -842,8 +842,8 @@ namespace Insight.Tests.PostgreSQL
 				var repo = connection.As<IGuidWidgetRepository>();
 				var widget = repo.GetWidget(guid);
 
-				Assert.AreEqual(guid, widget.id);
-				Assert.AreEqual("Test", widget.name);
+				ClassicAssert.AreEqual(guid, widget.id);
+				ClassicAssert.AreEqual("Test", widget.name);
 			}
 		}		
 		#endregion

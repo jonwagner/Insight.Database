@@ -162,7 +162,7 @@ namespace Insight.Tests.MsSqlClient
 
 			var result = Connection().SingleSql<int>(sql, new { values });
 
-			Assert.AreEqual(result, 4);
+			ClassicAssert.AreEqual(result, 4);
 		}
 
 		private SimpleDate WithDate(DateTime value)

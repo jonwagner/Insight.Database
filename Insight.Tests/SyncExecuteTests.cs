@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Tests.Cases;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 namespace Insight.Tests
 {
@@ -21,7 +22,7 @@ namespace Insight.Tests
 			{
 				var recordCount = c.ExecuteSql("SELECT @p", new { p = 1 });
 
-				Assert.AreEqual(-1, recordCount);
+				ClassicAssert.AreEqual(-1, recordCount);
 			});
 		}
 
@@ -33,7 +34,7 @@ namespace Insight.Tests
 				bool wasOpen = c.State == ConnectionState.Open;
 				var recordCount = c.ExecuteSql("SELECT @p", new { p = 1 }, closeConnection: true);
 
-				Assert.AreEqual(ConnectionState.Closed, c.State);
+				ClassicAssert.AreEqual(ConnectionState.Closed, c.State);
 				if (wasOpen)
 					c.Open();
 			});

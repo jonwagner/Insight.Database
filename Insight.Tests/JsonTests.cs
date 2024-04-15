@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -48,12 +49,12 @@ namespace Insight.Tests
 			var input = new JsonClass();
 			input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
-			Assert.AreEqual("{\"Bar\":5,\"Foo\":\"foo\"}", Connection().Single<string>("ClassAsJsonParameter", input));
+			ClassicAssert.AreEqual("{\"Bar\":5,\"Foo\":\"foo\"}", Connection().Single<string>("ClassAsJsonParameter", input));
 
 			var result = Connection().Query<JsonClass, JsonSubClass>("ClassAsJsonParameter", input).First();
-			Assert.IsNotNull(result.SubClass);
-			Assert.AreEqual(input.SubClass.Foo, result.SubClass.Foo);
-			Assert.AreEqual(input.SubClass.Bar, result.SubClass.Bar);
+			ClassicAssert.IsNotNull(result.SubClass);
+			ClassicAssert.AreEqual(input.SubClass.Foo, result.SubClass.Foo);
+			ClassicAssert.AreEqual(input.SubClass.Bar, result.SubClass.Bar);
 		}
 
 		[Test]
@@ -62,11 +63,11 @@ namespace Insight.Tests
 			var input = new JsonClass();
 			input.SubStruct = new JsonSubStruct() { Foo = "foo", Bar = 5 };
 
-			Assert.AreEqual("{\"Bar\":5,\"Foo\":\"foo\"}", Connection().Single<string>("StructAsJsonParameter", input));
+			ClassicAssert.AreEqual("{\"Bar\":5,\"Foo\":\"foo\"}", Connection().Single<string>("StructAsJsonParameter", input));
 
 			var result = Connection().Query<JsonClass, JsonSubStruct>("StructAsJsonParameter", input).First();
-			Assert.AreEqual(input.SubStruct.Foo, result.SubStruct.Foo);
-			Assert.AreEqual(input.SubStruct.Bar, result.SubStruct.Bar);
+			ClassicAssert.AreEqual(input.SubStruct.Foo, result.SubStruct.Foo);
+			ClassicAssert.AreEqual(input.SubStruct.Bar, result.SubStruct.Bar);
 		}
 
 		[Test]
@@ -77,19 +78,19 @@ namespace Insight.Tests
 			input.ListOfClass.Add(new JsonSubClass() { Foo = "foo", Bar = 5 });
 			input.ListOfClass.Add(new JsonSubClass() { Foo = "foo2", Bar = 6 });
 
-			Assert.AreEqual("[{\"Bar\":5,\"Foo\":\"foo\"},{\"Bar\":6,\"Foo\":\"foo2\"}]", Connection().Single<string>("ListAsJsonParameter", input));
+			ClassicAssert.AreEqual("[{\"Bar\":5,\"Foo\":\"foo\"},{\"Bar\":6,\"Foo\":\"foo2\"}]", Connection().Single<string>("ListAsJsonParameter", input));
 
 			var result = Connection().Query<JsonClass, JsonSubClass>("ListAsJsonParameter", input).First();
-			Assert.IsNotNull(result.ListOfClass);
-			Assert.AreEqual(input.ListOfClass.Count, result.ListOfClass.Count);
-			Assert.AreEqual(input.ListOfClass[0].Foo, result.ListOfClass[0].Foo);
+			ClassicAssert.IsNotNull(result.ListOfClass);
+			ClassicAssert.AreEqual(input.ListOfClass.Count, result.ListOfClass.Count);
+			ClassicAssert.AreEqual(input.ListOfClass[0].Foo, result.ListOfClass[0].Foo);
 		}
 
 		[Test]
 		public void TestNullValue()
 		{
 			var result = Connection().QuerySql<JsonClass, JsonSubClass>("SELECT SubClass=CONVERT (varchar(MAX),NULL)").First();
-			Assert.IsNull(result.SubClass);
+			ClassicAssert.IsNull(result.SubClass);
 		}
 
 		#region Test Case for Issue 140
@@ -129,7 +130,7 @@ namespace Insight.Tests
 
 				var result = connection.Single<EntityDefinitionDataModel>("LargeSerialization", entity);
 
-				Assert.AreEqual(entity.Definition.Name, result.Definition.Name);
+				ClassicAssert.AreEqual(entity.Definition.Name, result.Definition.Name);
 			}
 		}
 		#endregion

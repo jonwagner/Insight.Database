@@ -42,12 +42,12 @@ namespace Insight.Tests.Json
 				var input = new JsonClass();
 				input.SubClass = new JsonSubClass() { Foo = "foo", Bar = 5 };
 
-				Assert.AreEqual("{\"Foo\":\"foo\",\"Bar\":5}", connection.Single<string>("ClassAsJsonNetParameter", input));
+				ClassicAssert.AreEqual("{\"Foo\":\"foo\",\"Bar\":5}", connection.Single<string>("ClassAsJsonNetParameter", input));
 
 				var result = connection.Query<JsonClass, JsonSubClass>("ClassAsJsonNetParameter", input).First();
-				Assert.IsNotNull(result.SubClass);
-				Assert.AreEqual(input.SubClass.Foo, result.SubClass.Foo);
-				Assert.AreEqual(input.SubClass.Bar, result.SubClass.Bar);
+				ClassicAssert.IsNotNull(result.SubClass);
+				ClassicAssert.AreEqual(input.SubClass.Foo, result.SubClass.Foo);
+				ClassicAssert.AreEqual(input.SubClass.Bar, result.SubClass.Bar);
 			}
 		}
 
@@ -57,7 +57,7 @@ namespace Insight.Tests.Json
 			using (var connection = ConnectionWithTransaction())
 			{
 				var result = connection.QuerySql<JsonClass, JsonSubClass>("SELECT SubClass=CONVERT (varchar(MAX),NULL)").First();
-				Assert.IsNull(result.SubClass);
+				ClassicAssert.IsNull(result.SubClass);
 			}
 		}
     }
