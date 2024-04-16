@@ -115,14 +115,12 @@ GO
 -- BulkCopyData
 ----------------------------------------------------------
 CREATE TABLE BulkCopyData (
-	[Int] [int],
-	[Computed] AS [Int] + 1
+	[Int] [int]
 )
 GO
 
 CREATE TABLE BulkCopyWithUdt (
 	[Int] [int],
-	[Computed] AS [Int] + 1,
 	[Geometry] [geometry]
 )
 GO
