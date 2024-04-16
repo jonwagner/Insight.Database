@@ -54,12 +54,3 @@ services:
     environment:
     - WEB_CONSOLE=false
     - ORACLE_PWD=Oradoc_db1
-
-  sybase:
-    image: datagrip/sybase:16.0
-    ports:
-    - "5001:5000"
-    environment:
-    - SYBASE_USER=test
-    - SYBASE_PASSWORD=InsightTest1234
-    - SYBASE_DB=test

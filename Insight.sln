@@ -50,10 +50,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.MySqlConnecto
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.MySqlConnector", "Insight.Database.Providers.MySqlConnector\Insight.Database.Providers.MySqlConnector.csproj", "{02E20629-4030-48D4-B5FC-3DBE0A3AB4A8}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.SybaseAse", "Insight.Database.Providers.SybaseAse\Insight.Database.Providers.SybaseAse.csproj", "{7092FCD1-7816-4ED1-98B0-3A0864C7BE35}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.SybaseAse", "Insight.Tests.SybaseAse\Insight.Tests.SybaseAse.csproj", "{7D2A697A-4BE4-453F-A335-09E69418D164}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.OracleManaged.Core", "Insight.Database.Providers.OracleManaged.Core\Insight.Database.Providers.OracleManaged.Core.csproj", "{FBB1619B-E290-4A01-B77A-341D83634107}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.OracleManaged.Core", "Insight.Tests.OracleManaged.Core\Insight.Tests.OracleManaged.Core.csproj", "{2C602D6A-D10C-487C-AD14-B10CECDF7045}"
