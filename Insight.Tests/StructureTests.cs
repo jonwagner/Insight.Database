@@ -1178,9 +1178,9 @@ namespace Insight.Tests
 			var oto1 = new OneToOne<TestEntity>();
 			var oto2 = new OneToOne<TestEntity>();
 
-			Assert.AreEqual(oto1,oto2);
+			ClassicAssert.AreEqual(oto1,oto2);
 			//If two objects compare as equal, the GetHashCode() method for each object must return the same value
-			Assert.AreEqual(oto1.GetHashCode(), oto2.GetHashCode());
+			ClassicAssert.AreEqual(oto1.GetHashCode(), oto2.GetHashCode());
 		}
 
 		// this re-creates the actual issue causing the memory leak
@@ -1206,7 +1206,7 @@ namespace Insight.Tests
 				rr2 = oto2.GetRecordReader(dataReader);
 			}
 
-			Assert.AreEqual(rr1, rr2);
+			ClassicAssert.AreEqual(rr1, rr2);
 
 			// peek at the _deserializers dictionary to confirm there is no leak
 			var assm = typeof(OneToOne<TestEntity>).Assembly;
@@ -1228,7 +1228,7 @@ namespace Insight.Tests
 				}
 			}
 
-			Assert.AreEqual(1, rrCount);
+			ClassicAssert.AreEqual(1, rrCount);
 		}
 	}
 
