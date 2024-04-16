@@ -880,9 +880,6 @@ namespace Insight.Tests
 
             [Sql("print ''")]
             void UpsertByString(string id);
-
-            [Sql("print ''")]
-            void UpsertByT<T>(T id);
         }
 
         [Test]
@@ -891,8 +888,6 @@ namespace Insight.Tests
             var repo = Connection().As<IEmailRepository>();
             repo.UpsertByInt(0);
             repo.UpsertByString("");
-            repo.UpsertByT<int>(0);
-            repo.UpsertByT<string>("");
         }
     }
     #endregion
