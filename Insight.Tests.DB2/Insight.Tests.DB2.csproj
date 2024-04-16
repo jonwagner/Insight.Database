@@ -1,27 +1,18 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
+    <TargetFrameworks>net8.0</TargetFrameworks>
     <ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>None</ResolveAssemblyWarnOrErrorOnTargetArchitectureMismatch>
   </PropertyGroup>
+
   <Import Project="..\SharedConfiguration.csproj" />
-  <PropertyGroup Condition="$(TargetFramework) != 'net451'">
+  <Import Project="..\SharedTestConfiguration.csproj" />
+
+  <PropertyGroup>
     <DefineConstants>$(DefineConstants);USE_CORE;NO_BULK_COPY;NO_DERIVE_PARAMETERS;NO_SCHEMA_TABLE</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
-    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj" />
-	<PackageReference Include="IBM.Data.DB2.Core$(INSIGHT_NETCORE_RUNTIME_SUFFIX)" Version="1.2.2.100" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
-  </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />
-    <PackageReference Include="NUnit" Version="3.7.1" />
-    <PackageReference Include="NUnit.Console" Version="3.7.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />

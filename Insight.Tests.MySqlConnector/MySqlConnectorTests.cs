@@ -2,6 +2,7 @@
 using System.Linq;
 using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using MySqlConnector;
 using System.Data;
 

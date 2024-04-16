@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Insight.Database;
 using Microsoft.Data.SqlClient;
 using System.Data;

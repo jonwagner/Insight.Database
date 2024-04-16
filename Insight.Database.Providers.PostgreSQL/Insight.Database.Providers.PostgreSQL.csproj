@@ -11,20 +11,14 @@
     <ProjectType>LibraryPackage</ProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5;net451</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
 
-  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.5'">
-    <PackageReference Include="Npgsql" Version="3.2.2" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) != 'netstandard1.5'">
-    <PackageReference Include="Npgsql" Version="4.0.3" />
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="8.0.2" />
   </ItemGroup>
 
   <ItemGroup>

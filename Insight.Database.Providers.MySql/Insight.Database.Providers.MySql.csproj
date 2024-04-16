@@ -11,23 +11,16 @@
     <ProjectType>LibraryPackage</ProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netstandard2.0;net452</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="MySql.Data" Version="8.0.11" />
+    <PackageReference Include="MySql.Data" Version="8.3.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
-  </ItemGroup>
-
-  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.6' or $(TargetFramework) == 'netstandard2.0'">
-    <PackageReference Include="Microsoft.CSharp" Version="4.3.0" />
   </ItemGroup>
 </Project>

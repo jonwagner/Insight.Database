@@ -1,4 +1,5 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -7,7 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
 using Insight.Database.Providers.SybaseAse;
-using Sybase.Data.AseClient;
+using AdoNetCore.AseClient;
 using Insight.Database.Reliable;
 using System.Data;
 
@@ -39,7 +40,7 @@ namespace Insight.Tests.SybaseAse
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new AseConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = String.Format("Data Source={0};Port=5000;User ID=test;Password=InsightTest1234;Database=test", BaseTest.TestHost ?? "localhost");
+			_connectionStringBuilder.ConnectionString = String.Format("Data Source={0};Port=5001;User ID=test;Password=InsightTest1234;Database=test;Pooling=false", BaseTest.TestHost ?? "localhost");
 			_connection = new AseConnection(_connectionStringBuilder.ConnectionString);
 			_connection.Open();
 		}

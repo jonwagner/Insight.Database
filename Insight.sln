@@ -13,17 +13,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		Build.psake.ps1 = Build.psake.ps1
 		Building.txt = Building.txt
 		CodeAnalysisRules.ruleset = CodeAnalysisRules.ruleset
-		Insight.Database.snk = Insight.Database.snk
 		License.txt = License.txt
 		SharedConfiguration.csproj = SharedConfiguration.csproj
 		Vagrantfile = Vagrantfile
 	EndProjectSection
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.MiniProfiler", "Insight.Database.Providers.MiniProfiler\Insight.Database.Providers.MiniProfiler.csproj", "{EC7AE6EC-45B0-4E5F-9097-4F4CB6A5296D}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.OracleManaged", "Insight.Database.Providers.OracleManaged\Insight.Database.Providers.OracleManaged.csproj", "{943C7B30-FF23-45DC-9E62-5B6765D5BCF2}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.OracleManaged", "Insight.Tests.OracleManaged\Insight.Tests.OracleManaged.csproj", "{CC0ED003-AED2-41E9-9E85-F4D12A8A49F9}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.MySql", "Insight.Database.Providers.MySql\Insight.Database.Providers.MySql.csproj", "{4C56215E-8A87-4C3C-82B2-30B514F109E5}"
 EndProject
@@ -37,12 +30,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.DB2", "Insigh
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.DB2", "Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj", "{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.Glimpse", "Insight.Database.Providers.Glimpse\Insight.Database.Providers.Glimpse.csproj", "{35D1B878-0D4B-4F85-ACE8-176A58216293}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.Glimpse", "Insight.Tests.Glimpse\Insight.Tests.Glimpse.csproj", "{816401C6-6434-498E-B74F-D6784F75F3AF}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.MiniProfiler", "Insight.Tests.MiniProfiler\Insight.Tests.MiniProfiler.csproj", "{BD181CF5-582E-4312-9117-EDBB0E1348F4}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Json", "Insight.Database.Json\Insight.Database.Json.csproj", "{A54BAC21-88C8-4605-9505-8CA7FC807648}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.Json", "Insight.Tests.Json\Insight.Tests.Json.csproj", "{1B01D722-DDD2-4FAB-A4DD-819FF646CF10}"
@@ -53,42 +40,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Configuration", "Insight.Database.Configuration\Insight.Database.Configuration.csproj", "{9DC0AC84-B760-42C4-8703-CAD48AEEF612}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Vagrant", "Vagrant", "{1F526CFD-E8A0-4108-8DCE-A2E6A2D96022}"
-	ProjectSection(SolutionItems) = preProject
-		Vagrant\60-databases.conf = Vagrant\60-databases.conf
-		Vagrant\chkconfig = Vagrant\chkconfig
-		Vagrant\cleandisk.sh = Vagrant\cleandisk.sh
-		Vagrant\fstab.diff = Vagrant\fstab.diff
-		Vagrant\my.cnf = Vagrant\my.cnf
-		Vagrant\oracle-shm = Vagrant\oracle-shm
-		Vagrant\oracle-xe.rsp = Vagrant\oracle-xe.rsp
-		Vagrant\pg_hba.conf = Vagrant\pg_hba.conf
-		Vagrant\postgresql.conf = Vagrant\postgresql.conf
-		Vagrant\sybase.init = Vagrant\sybase.init
-		Vagrant\sybase.rsp = Vagrant\sybase.rsp
-		Vagrantfile = Vagrantfile
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Sample", "Insight.Sample\Insight.Sample.csproj", "{B16AE5A7-3400-426B-9158-3B5F1C9DB136}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Core", "Insight.Database.Core\Insight.Database.Core.csproj", "{BD5F9E22-0D6E-4323-A41A-0E9532702C98}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database", "Insight.Database\Insight.Database.csproj", "{F058BD64-332F-44F5-A16A-DAB4A30045DA}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "insight-docker", "insight-docker", "{11F6B06C-2E77-4B6E-B53F-3DB8326A69EA}"
-	ProjectSection(SolutionItems) = preProject
-		insight-docker\docker-compose.yml = insight-docker\docker-compose.yml
-		insight-docker\docker-env.bat = insight-docker\docker-env.bat
-		insight-docker\Dockerfile.db2 = insight-docker\Dockerfile.db2
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.MySqlConnector", "Insight.Tests.MySqlConnector\Insight.Tests.MySqlConnector.csproj", "{A48F20CD-7B7A-406A-9893-D5E3EA62DFC4}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.MySqlConnector", "Insight.Database.Providers.MySqlConnector\Insight.Database.Providers.MySqlConnector.csproj", "{02E20629-4030-48D4-B5FC-3DBE0A3AB4A8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.Odbc", "Insight.Database.Providers.Odbc\Insight.Database.Providers.Odbc.csproj", "{294730CA-4835-45BF-B656-F543B4412CA8}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.Odbc", "Insight.Tests.Odbc\Insight.Tests.Odbc.csproj", "{378CD778-54A9-401B-A735-805CC8AA690C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.SybaseAse", "Insight.Database.Providers.SybaseAse\Insight.Database.Providers.SybaseAse.csproj", "{7092FCD1-7816-4ED1-98B0-3A0864C7BE35}"
 EndProject
@@ -451,10 +411,6 @@ Global
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{1F526CFD-E8A0-4108-8DCE-A2E6A2D96022} = {CEDD5EAD-7CF5-45EE-8676-EFEC0CBAB552}
-		{11F6B06C-2E77-4B6E-B53F-3DB8326A69EA} = {CEDD5EAD-7CF5-45EE-8676-EFEC0CBAB552}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {EC5083B8-5B67-4A84-B386-EB8C87BEFA39}

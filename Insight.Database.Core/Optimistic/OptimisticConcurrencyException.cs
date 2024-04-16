@@ -10,7 +10,6 @@ namespace Insight.Database
 	/// <summary>
 	/// Indicates that a database call failed due to an optimistic concurrency issue.
 	/// </summary>
-	[Serializable]
 	public class OptimisticConcurrencyException : Exception
 	{
 		/// <summary>
@@ -44,16 +43,5 @@ namespace Insight.Database
 		public OptimisticConcurrencyException(string message) : base(message)
 		{
 		}
-
-#if !NETSTANDARD1_5
-        /// <summary>
-        /// Initializes a new instance of the OptimisticConcurrencyException class.
-        /// </summary>
-        /// <param name="serializationInfo">The serialization info.</param>
-        /// <param name="context">The serialization context.</param>
-        protected OptimisticConcurrencyException(SerializationInfo serializationInfo, StreamingContext context) : base(serializationInfo, context)
-		{
-		}
-#endif
     }
 }

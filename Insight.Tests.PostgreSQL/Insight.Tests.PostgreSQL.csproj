@@ -1,33 +1,16 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netcoreapp5.0;net451</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netcoreapp5.0</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
+  <Import Project="..\SharedTestConfiguration.csproj" />
+
   <ItemGroup>
     <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
-    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
     <ProjectReference Include="..\Insight.Database.Providers.PostgreSQL\Insight.Database.Providers.PostgreSQL.csproj" />
   </ItemGroup>
-  <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="$(TestSDKVersion)" Condition="$(TestSDKVersion) != ''" />
-    <PackageReference Include="NUnit" Version="3.7.1" />
-    <PackageReference Include="NUnit.Console" Version="3.7.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Configuration" Condition="$(HasConnectionSettings)" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) == 'net451'">
-    <PackageReference Include="Npgsql" Version="4.0.3" />
-  </ItemGroup>
-  <ItemGroup Condition="$(TargetFramework) != 'net451'">
-    <PackageReference Include="Npgsql" Version="5.0.0" />
-  </ItemGroup>
+
   <ItemGroup>
     <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
     <Service Include="{82a7f48d-3b50-4b1e-b82e-3ada8210c358}" />

@@ -48,16 +48,17 @@ services:
 
   # this requires you to log into docker hub and agree to terms of service
   oracle:
-    image: container-registry.oracle.com/database/free:latest
+    image: container-registry.oracle.com/database/enterprise:19.19.0.0
     ports:
     - "1521:1521"
     environment:
     - WEB_CONSOLE=false
+    - ORACLE_PWD=Oradoc_db1
 
   sybase:
-    image: datagrip/sybase
+    image: datagrip/sybase:16.0
     ports:
-    - "5000:5000"
+    - "5001:5000"
     environment:
     - SYBASE_USER=test
     - SYBASE_PASSWORD=InsightTest1234

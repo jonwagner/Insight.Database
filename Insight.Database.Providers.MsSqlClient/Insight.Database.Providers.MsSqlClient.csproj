@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>The SQL Server provider that depends on the Microsoft.Sql.DataClient nuget package.</Description>
     <PackageTags>Insight orm sql micro-orm sqlserver</PackageTags>
@@ -8,11 +8,8 @@
     <ProjectType>LibraryPackage</ProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netstandard2.0;net46</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
 
   <Import Project="..\SharedConfiguration.csproj" />
@@ -21,6 +18,6 @@
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.7" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="$(MsSqlClientVersion)" />
   </ItemGroup>
 </Project>

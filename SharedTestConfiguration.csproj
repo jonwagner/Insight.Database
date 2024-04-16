@@ -1,0 +1,13 @@
+﻿<Project>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.9.0"/>
+    <PackageReference Include="NUnit" Version="4.1.0" />
+    <PackageReference Include="NUnit.Console" Version="3.17.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="4.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+    <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,5 +1,6 @@
 ﻿using Insight.Database;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
