@@ -7,11 +7,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if USE_CORE
-using IBM.Data.DB2.Core;
-#else
-using IBM.Data.DB2;
-#endif
+using IBM.Data.Db2;
 
 namespace Insight.Database.Providers.DB2
 {

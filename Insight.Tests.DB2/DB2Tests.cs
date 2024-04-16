@@ -3,15 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-#if USE_CORE
-using IBM.Data.DB2.Core;
-#else
-using IBM.Data.DB2;
-#endif
+using IBM.Data.Db2;
 using Insight.Database;
 using Insight.Database.Providers.DB2;
 using Insight.Database.Reliable;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System.Data;
 
 namespace Insight.Tests.DB2

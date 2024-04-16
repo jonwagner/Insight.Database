@@ -10,19 +10,11 @@
     <ProjectType>LibraryPackage</ProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5;net451</TargetFrameworks>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
   
   <Import Project="..\SharedConfiguration.csproj" />
-
-  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.5' or $(TargetFramework) == 'netstandard2.0'">
-    <Reference Include="System.Data" Condition="$(SqlClientVersion) == ''" />
-    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != ''" />
-  </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />

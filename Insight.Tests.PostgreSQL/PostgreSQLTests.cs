@@ -7,6 +7,7 @@ using Insight.Database;
 using Insight.Database.Providers.PostgreSQL;
 using Insight.Database.Reliable;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Npgsql;
 using System.Data;
 

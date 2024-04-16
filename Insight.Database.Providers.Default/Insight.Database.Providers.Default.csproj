@@ -1,8 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>The SQLServer, ODBC, and OLEDB providers for Insight.Database.
-				 These are automatically included in the Insight.Database package,
-				 except the ODBC provider for .NET Core 2.0, which is in Insight.Database.Providers.Odbc.</Description>
+				 These are legacy providers. Recommend use Insight.Database.Providers.MsSqlServer.</Description>
     <PackageTags>Insight orm sql micro-orm sqlserver odbc oledb</PackageTags>
   </PropertyGroup>
 
@@ -10,25 +9,17 @@
     <ProjectType>LibraryPackage</ProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5;net451</TargetFrameworks>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netstandard2.0;netstandard1.5</TargetFrameworks>
-  </PropertyGroup>
-
+  
   <Import Project="..\SharedConfiguration.csproj" />
 
-  <ItemGroup Condition="$(TargetFramework) == 'netstandard1.5' or $(TargetFramework) == 'netstandard2.0'">
-    <Reference Include="System.Data" Condition="$(SqlClientVersion) == ''" />
-    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" Condition="$(SqlClientVersion) != ''" />
-    <PackageReference Include="System.Diagnostics.Tools" Version="$(SystemDiagnosticsToolsVersion)" Condition="$(SystemDiagnosticsToolsVersion) != ''" />
-  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Remove="OdbcInsightDbProvider.cs" Condition="$(HasOdbc) != 'true' or $(TargetFramework) == 'netstandard2.0'" />
-    <Compile Remove="OleDbInsightDbProvider.cs" Condition="$(HasOleDb) != 'true'" />
+    <PackageReference Include="System.Data.SqlClient" Version="$(SqlClientVersion)" />
   </ItemGroup>
 </Project>

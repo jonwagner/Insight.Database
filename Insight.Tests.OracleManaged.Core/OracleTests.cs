@@ -7,6 +7,7 @@ using Insight.Database;
 using Insight.Database.Providers.OracleManaged;
 using Insight.Database.Reliable;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using Oracle.ManagedDataAccess.Client;
 using Oracle.ManagedDataAccess.Types;
 using System.Data;
@@ -42,7 +43,7 @@ namespace Insight.Tests.OracleManaged
 		public void SetUpFixture()
 		{
 			_connectionStringBuilder = new OracleConnectionStringBuilder();
-			_connectionStringBuilder.ConnectionString = string.Format("Data Source = (DESCRIPTION=(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1.localdomain))(ADDRESS=(PROTOCOL=TCP)(HOST={0})(PORT=1521))); User Id=system; Password=Oradoc_db1",
+			_connectionStringBuilder.ConnectionString = string.Format("Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST=localhost)(PORT=1521))(CONNECT_DATA=(SERVICE_NAME=ORCLPDB1)));User ID=system; Password=Oradoc_db1",
 				BaseTest.TestHost ?? "localhost");
 			_connection = _connectionStringBuilder.Open();
 		}

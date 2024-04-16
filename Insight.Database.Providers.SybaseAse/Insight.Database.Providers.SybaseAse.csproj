@@ -11,19 +11,14 @@
     <ProjectType>LibraryPackage</ProjectType>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' == ''">
-    <TargetFrameworks>net451</TargetFrameworks>
-	  <NoWarn>NU1701</NoWarn>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(INSIGHT_NETCOREONLY)' != ''">
-    <TargetFrameworks>netstandard2.0</TargetFrameworks>
-	  <NoWarn>NU1701</NoWarn>
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
   </PropertyGroup>  
 
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="Sybase.AdoNet4.AseClient" Version="1.0.0" />
+    <PackageReference Include="AdoNetCore.AseClient" Version="0.19.2" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />

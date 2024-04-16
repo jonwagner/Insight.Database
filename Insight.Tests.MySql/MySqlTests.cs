@@ -7,6 +7,7 @@ using Insight.Database;
 using Insight.Database.Providers.MySql;
 using Insight.Database.Reliable;
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using MySql.Data.MySqlClient;
 using System.Data;
 

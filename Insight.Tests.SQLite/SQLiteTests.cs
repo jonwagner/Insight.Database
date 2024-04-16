@@ -1,11 +1,12 @@
 ﻿using NUnit.Framework;
+using NUnit.Framework.Legacy;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Insight.Database;
-using System.Data.SQLite;
+using Microsoft.Data.Sqlite;
 using System.IO;
 
 namespace Insight.Tests.SQLite
@@ -14,15 +15,14 @@ namespace Insight.Tests.SQLite
     public class SQLiteTests
     {
 		private static string _filename = "testdb.sqlite";
-		private SQLiteConnectionStringBuilder _builder;
-		private SQLiteConnection _connection;
+		private SqliteConnectionStringBuilder _builder;
+		private SqliteConnection _connection;
 
 		[SetUp]
 		public void SetUp()
 		{
-			SQLiteConnection.CreateFile(_filename);
-			_builder = new SQLiteConnectionStringBuilder() { DataSource = _filename };
-			_connection = new SQLiteConnection(_builder.ConnectionString);
+			_builder = new SqliteConnectionStringBuilder() { DataSource = _filename };
+			_connection = new SqliteConnection(_builder.ConnectionString);
 		}
 
 		[TearDown]

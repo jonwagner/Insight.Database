@@ -13,6 +13,7 @@ using Insight.Tests.MsSqlClient;
 using Microsoft.SqlServer.Types;
 #endif
 using NUnit.Framework;
+using NUnit.Framework.Legacy;
 
 #pragma warning disable 0649
 
@@ -960,7 +961,7 @@ namespace Insight.Tests.MsSqlClient
         public void DateFieldsShouldConvertFromString()
         {
             DateTime d = DateTime.Today;
-            var results = Connection().Query<DateTime>("TestDateTimeConvert", new { p = d.ToString() }).First();
+            var results = Connection().Query<DateTime>("TestDateTimeConvert", new { p = d.ToString("u") }).First();
             ClassicAssert.AreEqual(d, results);
         }
 

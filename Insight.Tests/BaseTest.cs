@@ -18,7 +18,7 @@ namespace Insight.Tests
 		/// <summary>
 		/// The connection string for our database.
 		/// </summary>
-		public static readonly string ConnectionString = "Data Source = .; Initial Catalog = InsightDbTests; Integrated Security = true";
+		public static readonly string ConnectionString;
 		public static readonly string TestHost;
 		public static readonly string Password;
 
@@ -32,7 +32,7 @@ namespace Insight.Tests
 
 			Password = Environment.GetEnvironmentVariable("INSIGHT_TEST_PASSWORD");
 
-			ConnectionString = String.Format("Data Source = {0}; Initial Catalog = InsightDbTests; Integrated Security = {1}; {2}",
+			ConnectionString = String.Format("Data Source = {0}; Initial Catalog = InsightDbTests; Integrated Security = {1}; {2}; TrustServerCertificate=True",
 				TestHost ?? ".",
 				(Password != null) ? "false" : "true",
 				(Password != null) ? String.Format("User ID=sa; Password={0}", Password) : "");
