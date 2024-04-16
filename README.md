@@ -161,6 +161,7 @@ Go ahead. You know you need to buy something anyway...
 
 ## Major Insight Releases ##
 
+* v8.0 - Support for .NET 8.0. Note that many unpopular providers have been removed.
 * v6.3 - Microsoft.Data.SqlClient compatibility, c# 8 interface default methods, cleaned up package organization.
 * v6.0 - .Net Standard 2.0 compatibility. 
 * v5.0 - Composite keys, Deep parameter binding. 
