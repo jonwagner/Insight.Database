@@ -13,10 +13,14 @@ while getopts "cdobtp" opt; do
   case $opt in
     c)
       for folder in ./Insight.Database*; do
-        dotnet clean  $folder/*.csproj || break
+        rm -rf $folder/bin
+        rm -rf $folder/obj
+        dotnet clean $folder/*.csproj || break
       done
       for folder in ./Insight.Tests*; do
-        dotnet clean  $folder/*.csproj || break
+        rm -rf $folder/bin
+        rm -rf $folder/obj
+        dotnet clean $folder/*.csproj || break
       done
       ;;
     d)
@@ -38,7 +42,7 @@ while getopts "cdobtp" opt; do
       ;;
     p)
       echo "Running Package" >&2
-      rm -rf echo ${OUTPUT_FOLDER}
+      rm -rf ${OUTPUT_FOLDER}
       mkdir ${OUTPUT_FOLDER}
       for folder in ./Insight.Database*; do
         dotnet pack -c $INSIGHT_CONFIGURATION ${INSIGHT_NOBUILD} $folder/*.csproj || break
