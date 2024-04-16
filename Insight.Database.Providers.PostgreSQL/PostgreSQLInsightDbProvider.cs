@@ -120,11 +120,7 @@ namespace Insight.Database.Providers.PostgreSQL
         {
             if (command == null) throw new ArgumentNullException("command");
 
-#if NETSTANDARD1_5
-            Insight.Database.Providers.PostgreSQL.Compatibility.NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
-#else
             NpgsqlCommandBuilder.DeriveParameters(command as NpgsqlCommand);
-#endif
 
             // remove the @ from any parameters
             foreach (var p in command.Parameters.OfType<NpgsqlParameter>())
@@ -185,6 +181,19 @@ namespace Insight.Database.Providers.PostgreSQL
                     var value = p.Value;
                     p.Value = JsonObjectSerializer.Serializer.SerializeObject(value.GetType(), value);
                 }
+            }
+
+            // go back to legacy behavior where we called functions instead of stored procedures
+            if (command.CommandType == CommandType.StoredProcedure)
+            {
+                command.CommandType = CommandType.Text;
+                command.CommandText = String.Format(
+                    "SELECT * FROM {0} ({1})",
+                    command.CommandText,
+                    String.Join(',', command.Parameters
+                                        .OfType<DbParameter>()
+                                        .Where(p => (p.Direction & ParameterDirection.Input) == ParameterDirection.Input)
+                                        .Select(p => "@" + p.ParameterName)));
             }
         }
 

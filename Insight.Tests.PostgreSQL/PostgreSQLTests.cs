@@ -65,7 +65,7 @@ namespace Insight.Tests.PostgreSQL
 		[Test]
 		public void TestExecuteWithDateTimeParameters()
 		{
-			var date = DateTime.Parse("1/1/1978");
+			var date = DateTime.Parse("1/1/1978").ToUniversalTime();
 			var result = _connection.QuerySql<DateTime>("SELECT @p as p", new { p = date });
 
 			ClassicAssert.AreEqual(1, result.Count);
@@ -262,7 +262,7 @@ namespace Insight.Tests.PostgreSQL
 					END;
 					$$ LANGUAGE plpgsql;");
 				var result = _connection.Query<TestData>("PostgreSQLTestRecordset");
-
+				
 				ClassicAssert.AreEqual(1, result.Count);
 				ClassicAssert.AreEqual(2, result[0].X);
 				ClassicAssert.AreEqual(3, result[0].Z);
