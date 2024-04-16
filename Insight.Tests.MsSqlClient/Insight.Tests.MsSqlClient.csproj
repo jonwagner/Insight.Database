@@ -24,7 +24,7 @@
     <PackageReference Include="NUnit" Version="3.7.1" />
     <PackageReference Include="NUnit.Console" Version="3.7.0" />
     <PackageReference Include="NUnit3TestAdapter" Version="3.8.0" />
-	<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.4" />
+	<PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.7" />
     <PackageReference Include="Microsoft.SqlServer.Types" Version="$(SqlTypesVersion)" />
   </ItemGroup>
   <ItemGroup>
