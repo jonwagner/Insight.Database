@@ -26,10 +26,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.PostgreSQL", "Insight.Tests.PostgreSQL\Insight.Tests.PostgreSQL.csproj", "{E33BF471-D602-4366-B4CA-17A16E91F49E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.DB2", "Insight.Tests.DB2\Insight.Tests.DB2.csproj", "{E88BF946-1D51-4586-8E55-36350A091E8A}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Providers.DB2", "Insight.Database.Providers.DB2\Insight.Database.Providers.DB2.csproj", "{18FDA61B-6A4D-4F27-9F18-0B3287106D5F}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Database.Json", "Insight.Database.Json\Insight.Database.Json.csproj", "{A54BAC21-88C8-4605-9505-8CA7FC807648}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Insight.Tests.Json", "Insight.Tests.Json\Insight.Tests.Json.csproj", "{1B01D722-DDD2-4FAB-A4DD-819FF646CF10}"
