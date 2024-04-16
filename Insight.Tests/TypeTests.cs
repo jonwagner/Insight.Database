@@ -1062,6 +1062,18 @@ namespace Insight.Tests
 				c.ExecuteSql("drop type [moneyList]");
 			}
 		}
+		
+		[Test]
+		public void DateTimeShouldSerializeProperlyToTextQueries()
+		{
+			// Issute #501
+			var s = "10/25/2023 4:38:35 PM";
+			var sql = "DECLARE @vConfirmTime AS datetime = @ConfirmTime; SELECT @vConfirmTime";
+			var p = new { @ConfirmTime = s };
+
+			var result = Connection().QuerySql<DateTime>(sql, p).FirstOrDefault();
+			ClassicAssert.AreEqual(DateTime.Parse(s), result);
+		}
 #endregion
 
 #region Guid Tests
