@@ -18,7 +18,7 @@
   <Import Project="..\SharedConfiguration.csproj" />
 
   <ItemGroup>
-    <PackageReference Include="Npgsql" Version="8.0.2" />
+    <PackageReference Include="Npgsql" Version="8.0.3" />
   </ItemGroup>
 
   <ItemGroup>
