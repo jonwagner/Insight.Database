@@ -849,7 +849,7 @@ namespace Insight.Tests.PostgreSQL
 		}
 		#endregion
 
-		#region BulkCopy NullRef issue
+		#region Issue 514
 
 		public class TestPOCO
 		{
