@@ -846,7 +846,47 @@ namespace Insight.Tests.PostgreSQL
 				ClassicAssert.AreEqual(guid, widget.id);
 				ClassicAssert.AreEqual("Test", widget.name);
 			}
-		}		
+		}
+		#endregion
+
+		#region BulkCopy NullRef issue
+
+		public class TestPOCO
+		{
+			public long Id { get; set; }
+			public string Text { get; set; }
+		}
+
+
+		[Test]
+		public async Task TestDirectBulkCopy()
+		{
+			TestPOCO[] testItems = [
+					new TestPOCO() { Id = 1, Text = "foo" },
+					new TestPOCO() { Id = 2 },
+				];
+
+			try
+			{
+				_connection.ExecuteSql(@"CREATE TABLE TestData (Id integer NOT NULL, Text text)");
+
+				var count = await _connection.BulkCopyAsync<TestPOCO>("TestData", testItems, conf =>
+				{
+				}, false, InsightBulkCopyOptions.Default);
+
+				ClassicAssert.AreEqual(count, 2);
+			}
+			catch (Exception)
+			{
+				// Expected
+				ClassicAssert.Fail("Nullref thrown by BulkCopy");
+			}
+			finally
+			{
+				Cleanup("DROP TABLE TestData");
+			}
+		}
+
 		#endregion
 	}
 }
