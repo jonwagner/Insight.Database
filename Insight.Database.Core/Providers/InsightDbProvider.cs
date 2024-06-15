@@ -37,7 +37,23 @@ namespace Insight.Database.Providers
 		/// <comments>
 		/// "/*NOBIND*/" before a variable should prevent it from binding.
 		/// </comments>
-        private static Regex _parameterSkipRegex = new Regex(@"\/\*\s*NOBIND\s*\*\/\s+[@:]([^\s])+", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        private static Regex _parameterSkipRegex = new Regex(@"\/\*\s*NOBIND\s*\*\/\s+[@:]([^\s]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Regex to detect type of parameters in sql text.
+        /// </summary>
+		/// <comments>
+		/// "/*NOBIND*/" before a variable should prevent it from binding.
+		/// </comments>
+        private static Regex _parameterTypeRegex = new Regex(@"\/\*\s*TYPE:\s*([^\s]+)\s*\*\/\s*[@:]([^\s]+)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+        /// <summary>
+        /// Regex to parse parameter types.
+        /// </summary>
+		/// <comments>
+		/// "/*NOBIND*/" before a variable should prevent it from binding.
+		/// </comments>
+        private static Regex _parameterParseTypeRegex = new Regex(@"^(\w+)\(((\d+|(MAX)))(\s*,\s*(\d+))?\)", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
         /// <summary>
         /// The default provider to use if we don't understand a given type.
@@ -182,7 +198,13 @@ namespace Insight.Database.Providers
 
             var skips = _parameterSkipRegex.Matches(command.CommandText)
                 .Cast<Match>()
-                .Select(m => m.Groups[1].Value);
+                .Select(m => m.Groups[1].Value)
+                .ToList();
+
+            var types = _parameterTypeRegex.Matches(command.CommandText)
+                .Cast<Match>()
+                .Select(m => new { Name = m.Groups[2].Value, Type = m.Groups[1].Value })
+                .ToList();
 
             var parameters = _parameterRegex.Matches(command.CommandText)
                 .Cast<Match>()
@@ -197,8 +219,41 @@ namespace Insight.Database.Providers
                 {
                     var dbParameter = (IDataParameter)command.CreateParameter();
                     dbParameter.ParameterName = p;
+
+                    var type = types.FirstOrDefault(t => t.Name.Equals(p, StringComparison.OrdinalIgnoreCase));
+                    if (type != null)
+                    {
+                        var typeDetails = _parameterParseTypeRegex.Matches(type.Type)
+                            .Cast<Match>()
+                            .Select(m => m.Groups)
+                            .First();
+
+                        dbParameter.DbType = (DbType)Enum.Parse(typeof(DbType), typeDetails[1].Value, true);
+                        dynamic dynamicParameter = dbParameter;
+                        if (TypeHelper.IsDbTypeAString(dbParameter.DbType))
+                        {
+                            string size = typeDetails[2].Value;
+                            dynamicParameter.Size = size == "MAX" ? -1 : int.Parse(size);
+                        }
+                        else
+                        {
+                            if (typeDetails[2].Success)
+                            {
+                                dynamicParameter.Precision = byte.Parse(typeDetails[2].Value);
+                            }
+
+                            if (typeDetails[6].Success)
+                            {
+                                dynamicParameter.Scale = byte.Parse(typeDetails[6].Value);
+                            }
+                        }
+
+                        return dbParameter;
+                    }
+
                     return dbParameter;
                 }))
+
                 command.Parameters.Add(p);
         }
 

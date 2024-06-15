@@ -133,8 +133,38 @@ namespace Insight.Tests
         public void TestIssue426()
         {
             // allow NOBIND to inform insight to not bind the parameter
-            var result = Connection().ExecuteScalarSql<int>("DECLARE /*NOBIND*/ @i int = 5, @j int; SELECT @i", new { i = 10 });
+            var result = Connection().ExecuteScalarSql<int>("DECLARE /*NOBIND*/ @inky int = 5, @j int; SELECT @inky", new { inky = 10 });
             ClassicAssert.AreEqual(result, 5);
         }
+
+        #region Issue512
+        public interface ITestIssue512
+        {
+            [Sql("SELECT Name FROM Beer WHERE name like '%' + /* TYPE:String(1500) */ @name + '%'")]
+            IList<string> SelectWithContains(string name);
+
+            [Sql("SELECT /* TYPE:Decimal(10) */ @value")]
+            decimal SelectDecimalWithPrecision(decimal value);
+
+            [Sql("SELECT /* TYPE:Decimal(10,2) */ @value")]
+            decimal SelectDecimalWithPrecisionAndScale(decimal value);
+        }
+
+        [Test]
+        public void TestIssue512()
+        {
+            Connection().ExecuteSql("INSERT INTO [Beer] VALUES ('google ipa', 'http://www.google.com')");
+            Connection().ExecuteSql("INSERT INTO [Beer] VALUES ('microsoft pale ale', 'http://www.microsoft.com')");
+
+            var result = Connection().As<ITestIssue512>().SelectWithContains("google");
+            ClassicAssert.IsTrue(result.Contains("google ipa"));
+
+            var decimalValue = Connection().As<ITestIssue512>().SelectDecimalWithPrecision(123.45678m);
+            ClassicAssert.AreEqual(123.45678m, decimalValue);
+
+            var decimalValueWithScale = Connection().As<ITestIssue512>().SelectDecimalWithPrecisionAndScale(123.45678m);
+            ClassicAssert.AreEqual(123.45m, decimalValueWithScale);
+        }
+        #endregion
     }
 }
