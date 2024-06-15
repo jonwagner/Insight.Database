@@ -263,7 +263,7 @@ namespace Insight.Database.Providers.PostgreSQL
 
                         object value = reader.GetValue(i);
 
-                        if (value != DBNull.Value)
+                        if (value != DBNull.Value && value != null)
                         {
                             writer.Write(CsvQuote);
                             writer.Write(_csvRegex.Replace(value.ToString(), CsvReplacement));
