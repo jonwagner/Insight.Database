@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlTypes;
 using System.Linq;
@@ -411,6 +412,63 @@ namespace Insight.Tests
 			{
 				Connection().ExecuteSql("DROP PROC [SampleTable_GetOrderedItems]");
 				Connection().ExecuteSql("DROP TYPE [UniqueIdTable]");
+			}
+		}
+	}
+	#endregion
+
+	#region Issue 516 Tests
+	[TestFixture]
+	public class Issue516Tests : BaseTest
+	{
+		public class UpdateDate
+		{
+			public DateTimeOffset CreatedAt { get; set; }
+			public DateTimeOffset? ModifiedAt { get; set; }
+		}
+
+		public interface Issue516TestsIConnection : IDbConnection
+		{
+			[Sql("UpdateDates")]
+			void UpdateDates(IEnumerable<UpdateDate> dates);
+		}
+
+		[Test]
+		public void TestIssue516()
+		{
+			try
+			{
+				Connection().ExecuteSql(
+					@"CREATE TYPE DatesTable AS TABLE (
+						CreatedAt datetimeoffset(0) NULL,
+						ModifiedAt datetimeoffset(0) NULL
+					)");
+
+				Connection().ExecuteSql(
+					@"CREATE PROCEDURE UpdateDates
+						(@DatesTable DatesTable READONLY)
+						AS
+						BEGIN
+							SELECT NULL
+						END
+					");
+
+					// Calling code
+					var dates = new List<UpdateDate>
+					{
+						new UpdateDate
+						{
+							CreatedAt = DateTimeOffset.Now,
+							ModifiedAt = null
+						}
+					};
+
+					Connection().As<Issue516TestsIConnection>().UpdateDates(dates);
+			}
+			finally
+			{
+				Connection().ExecuteSql("DROP PROC [UpdateDates]");
+				Connection().ExecuteSql("DROP TYPE [DatesTable]");
 			}
 		}
 	}
