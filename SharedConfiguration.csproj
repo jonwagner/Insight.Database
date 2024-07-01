@@ -99,7 +99,7 @@
     <HasSchemaTable>false</HasSchemaTable>
     <HasSqlTypes>false</HasSqlTypes>
     <HasUdt>false</HasUdt>
-  	<MsSqlClientVersion>5.2.0</MsSqlClientVersion>
+  	<MsSqlClientVersion>5.2.1</MsSqlClientVersion>
   	<SqlClientVersion>4.8.6</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>17.9.0</TestSDKVersion>

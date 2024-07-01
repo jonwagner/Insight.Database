@@ -231,7 +231,7 @@ namespace Insight.Tests.MsSqlClient
 
 	#region Issue 448 Tests
 	[TestFixture]
-	public class Issue448Tests : BaseTest
+	public class Issue448Tests : MsSqlClientBaseTest
 	{
 		[Test]
 		public void TestIssue448()
@@ -275,12 +275,13 @@ namespace Insight.Tests.MsSqlClient
 
 	#region Issue 516 Tests
 	[TestFixture]
-	public class Issue516Tests : BaseTest
+	public class Issue516Tests : MsSqlClientBaseTest
 	{
 		public class UpdateDate
 		{
 			public DateTimeOffset CreatedAt { get; set; }
 			public DateTimeOffset? ModifiedAt { get; set; }
+			public DateTime OtherDateTime { get; set; }
 		}
 
 		public interface Issue516TestsIConnection : IDbConnection
@@ -297,7 +298,8 @@ namespace Insight.Tests.MsSqlClient
 				Connection().ExecuteSql(
 					@"CREATE TYPE DatesTable AS TABLE (
 						CreatedAt datetimeoffset(0) NULL,
-						ModifiedAt datetimeoffset(0) NULL
+						ModifiedAt datetimeoffset NULL,
+						OtherDateTime datetime2(0) NULL
 					)");
 
 				Connection().ExecuteSql(
@@ -315,7 +317,8 @@ namespace Insight.Tests.MsSqlClient
 						new UpdateDate
 						{
 							CreatedAt = DateTimeOffset.Now,
-							ModifiedAt = null
+							ModifiedAt = DateTimeOffset.Now,
+							OtherDateTime = DateTime.Now
 						}
 					};
 
