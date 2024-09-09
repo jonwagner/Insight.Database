@@ -190,7 +190,7 @@ namespace Insight.Database.Providers.PostgreSQL
                 command.CommandText = String.Format(
                     "SELECT * FROM {0} ({1})",
                     command.CommandText,
-                    String.Join(',', command.Parameters
+                    String.Join(",", command.Parameters
                                         .OfType<DbParameter>()
                                         .Where(p => (p.Direction & ParameterDirection.Input) == ParameterDirection.Input)
                                         .Select(p => "@" + p.ParameterName)));
