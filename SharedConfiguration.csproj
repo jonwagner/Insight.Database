@@ -34,13 +34,9 @@
     <TestSDKVersion></TestSDKVersion>
   </PropertyGroup>
 
-  <PropertyGroup Condition="$(TargetFramework) == 'net45'">
-    <HasDbParameter>false</HasDbParameter>
-    <TestSDKVersion>15.0.0</TestSDKVersion>
-  </PropertyGroup>
-
-  <PropertyGroup Condition="$(TargetFramework) == 'net451'">
+  <PropertyGroup Condition="$(TargetFramework) == 'net451' or $(TargetFramework) == 'net48'">
     <SqlClientVersion>4.8.6</SqlClientVersion>
+    <MsSqlClientVersion>5.2.1</MsSqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
@@ -155,5 +151,10 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
 	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework) == 'net48'">
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" PrivateAssets="All" />
+  </ItemGroup>
 
 </Project>
