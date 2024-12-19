@@ -10,7 +10,8 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFrameworks>net8.0;net48</TargetFrameworks>
+    <TargetFrameworks>net8.0;netstandard2.0;net48</TargetFrameworks>
+    <NoWarn>612,618</NoWarn> <!-- Ignore warnings about obsolete methods in System.Data.SqlClient -->
   </PropertyGroup>
   
   <Import Project="..\SharedConfiguration.csproj" />
