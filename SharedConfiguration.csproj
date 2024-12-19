@@ -29,6 +29,7 @@
   </PropertyGroup>
   <PropertyGroup>
 	  <SqlClientVersion></SqlClientVersion>
+    <MsSqlClientVersion>5.2.1</MsSqlClientVersion>
     <SqlTypesVersion>14.0.314.76</SqlTypesVersion>
     <SystemDiagnosticsToolsVersion></SystemDiagnosticsToolsVersion>
     <TestSDKVersion></TestSDKVersion>
@@ -73,7 +74,7 @@
     <HasSchemaTable>false</HasSchemaTable>
     <HasSqlTypes>false</HasSqlTypes>
     <HasUdt>false</HasUdt>
-  	<SqlClientVersion>4.8.6</SqlClientVersion>
+  	<SqlClientVersion>4.9.0</SqlClientVersion>
     <SystemDiagnosticsToolsVersion>4.3.0</SystemDiagnosticsToolsVersion>
     <TestSDKVersion>15.0.0</TestSDKVersion>
   </PropertyGroup>
@@ -151,6 +152,10 @@
   <PropertyGroup Condition="'$(Configuration)' == 'Release'">
 	  <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <ItemGroup Condition="$(TargetFramework) == 'netstandard2.0'">
+    <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
+  </ItemGroup>
 
   <ItemGroup Condition="$(TargetFramework) == 'net48'">
     <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Version="1.0.0" PrivateAssets="All" />
