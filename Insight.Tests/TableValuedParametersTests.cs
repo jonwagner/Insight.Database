@@ -473,4 +473,63 @@ namespace Insight.Tests
 		}
 	}
 	#endregion
+
+	#region Issue 523 Tests
+	[TestFixture]
+	public class Issue532Tests : BaseTest
+	{
+		[SetUp]
+		public void SetUp()
+		{
+			Connection().ExecuteSql(@"
+				CREATE TYPE dbo.My_Type AS TABLE (Value INT)
+			");
+			Connection().ExecuteSql(@"
+				CREATE OR ALTER FUNCTION dbo.testing(
+					@my_type My_Type READONLY
+				)
+				RETURNS @result TABLE (result VARCHAR(MAX))
+				AS
+				BEGIN
+					INSERT INTO @result (result)
+					SELECT 'it works'
+					FROM @my_type;
+
+					RETURN;				
+				END
+			");
+		}
+
+		[TearDown]
+		public void TearDown()
+		{
+			try { Connection().ExecuteSql("DROP FUNCTION dbo.testing");} catch {}
+			try { Connection().ExecuteSql("DROP TYPE dbo.My_Type"); } catch {}
+		}
+
+		public class SqlMyType
+		{
+			public int Value { get; set; }
+		}
+
+		public interface IIssue523TestsConnection : IDbConnection
+		{
+			[Sql("SELECT * FROM dbo.testing (@my_type)", commandType: CommandType.Text)]
+			string Testing(IEnumerable<SqlMyType> my_type);
+		}
+
+		[Test]
+		public void TVPShouldBeAutomaticallyDetected()
+		{
+			var result = Connection().As<IIssue523TestsConnection>().Testing(new[]
+			{
+				new SqlMyType { Value = 1 },
+				new SqlMyType { Value = 2 },
+				new SqlMyType { Value = 3 },
+			});
+
+			ClassicAssert.AreEqual("it works", result);
+		}
+	}
+	#endregion
 }
