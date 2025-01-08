@@ -1,0 +1,18 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>net8.0</TargetFrameworks>
+  </PropertyGroup>
+
+  <Import Project="..\SharedConfiguration.csproj" />
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
+    <ProjectReference Include="..\Insight.Tests\Insight.Tests.csproj" />
+    <ProjectReference Include="..\Insight.Database\Insight.Database.csproj" />
+    <ProjectReference Include="..\Insight.Database.Json\Insight.Database.Json.csproj" />
+    <ProjectReference Include="..\Insight.Database.Configuration\Insight.Database.Configuration.csproj" />
+    <ProjectReference Include="..\Insight.Database.Providers.MiniProfiler\Insight.Database.Providers.MiniProfiler.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+</Project>

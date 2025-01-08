@@ -1,0 +1,25 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <description>
+      An Insight.Database provider for MiniProfiler profiling framework so the two can play together nicely.
+    </description>
+    <PackageTags>Insight orm sql micro-orm profiler miniprofiler</PackageTags>
+  </PropertyGroup>
+  
+  <PropertyGroup>
+    <ProjectType>LibraryPackage</ProjectType>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFrameworks>net8.0;netstandard2.0;net48</TargetFrameworks>
+  </PropertyGroup>
+
+  <Import Project="..\SharedConfiguration.csproj" />
+
+  <ItemGroup>
+    <PackageReference Include="MiniProfiler.Shared" Version="4.5.4" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Insight.Database.Core\Insight.Database.Core.csproj" />
+  </ItemGroup>
+</Project>
