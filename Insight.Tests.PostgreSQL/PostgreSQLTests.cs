@@ -888,5 +888,53 @@ namespace Insight.Tests.PostgreSQL
 		}
 
 		#endregion
+
+		#region Issue 528
+		class TestData528
+		{
+			public int P { get; set; }
+			public string Q { get; set; }
+		}
+		[Test]
+		public void TestIssue528()
+		{
+			using (var connection = new NpgsqlConnectionWithRecordsets(_connectionStringBuilder).OpenWithTransaction())
+			{
+				try
+				{
+					connection.ExecuteSql("CREATE TABLE PostgreSQLTestTable (p int, q varchar(256))");
+					connection.ExecuteSql("INSERT INTO PostgreSQLTestTable (p, q) VALUES (1, 'a')");
+					connection.ExecuteSql("INSERT INTO PostgreSQLTestTable (p, q) VALUES (2, 'b')");
+
+					connection.ExecuteSql(@"
+						CREATE FUNCTION PostgreSQLTestOutput (x int, out z int, out cur refcursor)
+						AS $$
+						BEGIN 
+							z := x; 
+							cur ='cur';
+							open cur for select * from PostgreSQLTestTable;
+						END; 
+						$$ LANGUAGE plpgsql;");
+					
+					var testData = new TestData() { X = 11, Z = 0 };
+
+					var result = connection.Query<TestData528>("PostgreSQLTestOutput", testData);
+
+					ClassicAssert.AreEqual(11, testData.Z);
+					ClassicAssert.AreEqual(2, result.Count);
+					ClassicAssert.AreEqual(1, result[0].P);
+					ClassicAssert.AreEqual("a", result[0].Q);
+					ClassicAssert.AreEqual(2, result[1].P);
+					ClassicAssert.AreEqual("b", result[1].Q);
+				}
+				finally
+				{
+					try { connection.ExecuteSql("DROP FUNCTION PostgreSQLTestOutput (x int, out z int)"); } catch { }
+					try { connection.ExecuteSql("DROP TABLE PostgreSQLTestTable"); } catch { }
+				}
+			}
+
+		}
+		#endregion
 	}
 }

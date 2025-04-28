@@ -66,15 +66,11 @@ namespace Insight.Database.Providers.PostgreSQL
 		{
 			// Transparently dereference returned cursors, where possible
 			bool cursors = false;
-			bool noncursors = false;
 			for (int i = 0; i < reader.FieldCount; i++)
 			{
-				if (reader.GetDataTypeName(i) == "refcursor") cursors = true;
-				else noncursors = true;
+				if (reader.GetDataTypeName(i) == "refcursor")
+					cursors = true;
 			}
-
-			if (cursors && noncursors)
-				throw new InvalidOperationException("Command returns both cursor and non-cursor results. To read this data, please code your own FETCH commands for the cursor data.");
 
 			return cursors;
 		}
@@ -93,7 +89,10 @@ namespace Insight.Database.Providers.PostgreSQL
 			while (reader.Read())
 			{
 				for (int i = 0; i < reader.FieldCount; i++)
-					sb.AppendFormat(@"FETCH ALL FROM ""{0}"";", reader.GetString(i));
+				{
+					if (reader.GetDataTypeName(i) == "refcursor")
+						sb.AppendFormat(@"FETCH ALL FROM ""{0}"";", reader.GetString(i));
+				}
 			}
 
 			reader.Dispose();
