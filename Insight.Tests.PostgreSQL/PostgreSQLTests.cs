@@ -965,5 +965,23 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 		#endregion 
+
+		#region Issue 529
+		[Test]
+		public void TestIssue529()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TABLE InventoryItemLocation (InventoryItemLocationId int, IsAvailable boolean, MaximumLevel int)");
+
+				var sql = @" UPDATE InventoryItemLocation SET IsAvailable=@p_IsAvailable, MaximumLevel=@p_MaximumLevel WHERE InventoryItemLocationId=@p_LocationId";
+				_connection.ExecuteSql(sql, new { p_IsAvailable = true, p_MaximumLevel = (int?)null, p_LocationId=1 });
+			}
+			finally
+			{
+				Cleanup("DROP TABLE InventoryItemLocation");
+			}
+		}
+		#endregion
 	}
 }
