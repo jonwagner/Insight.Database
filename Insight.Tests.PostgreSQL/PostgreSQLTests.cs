@@ -936,5 +936,34 @@ namespace Insight.Tests.PostgreSQL
 
 		}
 		#endregion
+
+		#region Issue 531
+		[Test]
+		public void TestCountRecordset()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE TABLE CountTestTable (id int)");
+				_connection.ExecuteSql("INSERT INTO CountTestTable VALUES (1), (2), (3)");
+				_connection.ExecuteSql(@"
+					CREATE OR REPLACE FUNCTION GetCount()
+					RETURNS TABLE (count bigint)
+					AS $$
+					BEGIN
+						RETURN QUERY SELECT COUNT(*) FROM CountTestTable;
+					END;
+					$$ LANGUAGE plpgsql;");
+
+				// PostgreSQL COUNT(*) returns bigint, which should fail when trying to cast to int
+				// This is intentional to force developers to handle the conversion explicitly
+				Assert.Throws<InvalidCastException>(() => _connection.Query<int>("GetCount"));
+			}
+			finally
+			{
+				Cleanup("DROP FUNCTION GetCount()");
+				Cleanup("DROP TABLE CountTestTable");
+			}
+		}
+		#endregion 
 	}
 }
