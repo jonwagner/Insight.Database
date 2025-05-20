@@ -40,6 +40,9 @@ namespace Insight.Database
 			if (typeof(IEnumerable).IsAssignableFrom(type))
 				return false;
 
+			if (dbType == DbType.Object)
+				return false;
+
 			return true;
 		}
 

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
@@ -137,7 +138,6 @@ namespace Insight.Database.Providers.PostgreSQL
         {
             NpgsqlParameter p = (NpgsqlParameter)parameter;
             var clone = (NpgsqlParameter)p.Clone();
-            clone.NpgsqlDbType = p.NpgsqlDbType;
             return clone;
         }
 
@@ -162,6 +162,23 @@ namespace Insight.Database.Providers.PostgreSQL
                         break;
                 }
             }
+        }
+
+        /// <inheritdoc/>
+        public override bool IsTableValuedParameter(IDbCommand command, IDataParameter parameter)
+        {
+            NpgsqlParameter p = (NpgsqlParameter)parameter;
+            return false;
+        }
+
+        /// <inheritdoc/>
+        public override void SetupTableValuedParameter(IDbCommand command, IDataParameter parameter, IEnumerable list, Type listType)
+        {
+            if (parameter == null) throw new ArgumentNullException("parameter");
+
+            // rely on npgsql to serialize the list of objects if the types match
+            NpgsqlParameter p = (NpgsqlParameter)parameter;
+            p.Value = list;
         }
 
         /// <inheritdoc/>

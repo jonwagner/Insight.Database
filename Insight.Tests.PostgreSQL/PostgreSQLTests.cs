@@ -178,7 +178,7 @@ namespace Insight.Tests.PostgreSQL
 			}
 			finally
 			{
-				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestProc (i int)"); } catch {}
+				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestProc (i int)"); } catch { }
 				try { _connection.ExecuteSql("DROP TABLE PostgreSQLTestTable"); } catch { }
 			}
 		}
@@ -242,7 +242,7 @@ namespace Insight.Tests.PostgreSQL
 			}
 			finally
 			{
-				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestProc (i int)"); } catch {}
+				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestProc (i int)"); } catch { }
 				try { _connection.ExecuteSql("DROP TYPE PostgreSQLTestType"); } catch { }
 			}
 		}
@@ -262,14 +262,14 @@ namespace Insight.Tests.PostgreSQL
 					END;
 					$$ LANGUAGE plpgsql;");
 				var result = _connection.Query<TestData>("PostgreSQLTestRecordset");
-				
+
 				ClassicAssert.AreEqual(1, result.Count);
 				ClassicAssert.AreEqual(2, result[0].X);
 				ClassicAssert.AreEqual(3, result[0].Z);
 			}
 			finally
 			{
-				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestRecordset()"); } catch {}
+				try { _connection.ExecuteSql("DROP FUNCTION PostgreSQLTestRecordset()"); } catch { }
 				try { _connection.ExecuteSql("DROP TYPE PostgreSQLTestType"); } catch { }
 			}
 		}
@@ -287,7 +287,7 @@ namespace Insight.Tests.PostgreSQL
 				ClassicAssert.AreEqual(i, items.Count);
 			}
 		}
-	
+
 		[Test]
 		public void TestXmlTypes()
 		{
@@ -320,7 +320,8 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 
-		public class PostgresBulkData {
+		public class PostgresBulkData
+		{
 			public int ID;
 			public Decimal Dec;
 			public TestData TestData;
@@ -372,36 +373,36 @@ namespace Insight.Tests.PostgreSQL
 			int SelectValue();
 		}
 
-        [Test]
-        public void TestSchemaSwitching()
-        {
-            try
-            {
-                _connection.ExecuteSql("CREATE SCHEMA test1");
-                _connection.ExecuteSql("CREATE TABLE test1.InsightTestData (ID int)");
-                _connection.ExecuteSql("CREATE SCHEMA test2");
-                _connection.ExecuteSql("CREATE TABLE test2.InsightTestData (ID int)");
+		[Test]
+		public void TestSchemaSwitching()
+		{
+			try
+			{
+				_connection.ExecuteSql("CREATE SCHEMA test1");
+				_connection.ExecuteSql("CREATE TABLE test1.InsightTestData (ID int)");
+				_connection.ExecuteSql("CREATE SCHEMA test2");
+				_connection.ExecuteSql("CREATE TABLE test2.InsightTestData (ID int)");
 
-                _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteSql("INSERT INTO InsightTestData VALUES (1)");
-                _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteSql("INSERT INTO InsightTestData VALUES (2)");
-                ClassicAssert.AreEqual(1, _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
-                ClassicAssert.AreEqual(2, _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
+				_connectionStringBuilder.ConnectionWithSchema("test1").ExecuteSql("INSERT INTO InsightTestData VALUES (1)");
+				_connectionStringBuilder.ConnectionWithSchema("test2").ExecuteSql("INSERT INTO InsightTestData VALUES (2)");
+				ClassicAssert.AreEqual(1, _connectionStringBuilder.ConnectionWithSchema("test1").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
+				ClassicAssert.AreEqual(2, _connectionStringBuilder.ConnectionWithSchema("test2").ExecuteScalarSql<int>("SELECT * FROM InsightTestData"));
 
-// npgsql 3.x fails this test
+				// npgsql 3.x fails this test
 #if !NETCOREAPP1_0
 				var parallel = _connectionStringBuilder.ConnectionWithSchema("test2").AsParallel<ISwitchSchemas>();
 				ClassicAssert.AreEqual(2, parallel.SelectValue());
 				ClassicAssert.AreEqual(2, parallel.SelectValue());
 #endif
-            }
-            finally
-            {
-                Cleanup("DROP TABLE test2.InsightTestData");
-                Cleanup("DROP TABLE test1.InsightTestData");
-                Cleanup("DROP SCHEMA test2");
-                Cleanup("DROP SCHEMA test1");
-            }
-        }
+			}
+			finally
+			{
+				Cleanup("DROP TABLE test2.InsightTestData");
+				Cleanup("DROP TABLE test1.InsightTestData");
+				Cleanup("DROP SCHEMA test2");
+				Cleanup("DROP SCHEMA test1");
+			}
+		}
 
 		public class Users
 		{
@@ -413,7 +414,7 @@ namespace Insight.Tests.PostgreSQL
 		{
 			public long Id { get; set; }
 
-			[Column(SerializationMode=SerializationMode.Json)]
+			[Column(SerializationMode = SerializationMode.Json)]
 			public TestData JsonData { get; set; }
 		}
 
@@ -549,7 +550,7 @@ namespace Insight.Tests.PostgreSQL
 				var users = new Users()
 				{
 					Id = 1,
-					JsonData = (string)JsonObjectSerializer.Serializer.SerializeObject(typeof (TestData), new TestData() { X = 1, Z = 2 })
+					JsonData = (string)JsonObjectSerializer.Serializer.SerializeObject(typeof(TestData), new TestData() { X = 1, Z = 2 })
 				};
 
 				_connection.ExecuteSql(@"CREATE TABLE Users (Id integer NOT NULL, JsonData json)");
@@ -606,7 +607,7 @@ namespace Insight.Tests.PostgreSQL
 				Cleanup("DROP TABLE Users");
 			}
 		}
-       
+
 		[Test]
 		public void TestJsonQueryParameter()
 		{
@@ -619,7 +620,7 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql("INSERT INTO Users (Id, JsonData) VALUES (@Id, @JsonData)", users);
 
 				var result = _connection.QuerySql<UsersWithTestData>(
-//												"SELECT Users.* FROM Users WHERE JsonData @> '{ \"Text\": \"MyText\" }'",
+												//												"SELECT Users.* FROM Users WHERE JsonData @> '{ \"Text\": \"MyText\" }'",
 												"SELECT Users.* FROM Users WHERE JsonData @> ('{ \"Text\": \"' || @Text || '\" }')::jsonb",
 												new { Text = "MyText" }).FirstOrDefault();
 				ClassicAssert.AreEqual(input.X, result.JsonData.X);
@@ -631,19 +632,19 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 
-        [Test]
-        public void InvalidSchemaShouldThrow()
-        {
-            Assert.Throws<ArgumentException>(() => _connectionStringBuilder.ConnectionWithSchema("; DROP TABLE InsightTestData"));
-        }
+		[Test]
+		public void InvalidSchemaShouldThrow()
+		{
+			Assert.Throws<ArgumentException>(() => _connectionStringBuilder.ConnectionWithSchema("; DROP TABLE InsightTestData"));
+		}
 
-        private void Cleanup(string sql)
-        {
-            try
-            {
-                _connection.ExecuteSql(sql);
-            }
-            catch { }
+		private void Cleanup(string sql)
+		{
+			try
+			{
+				_connection.ExecuteSql(sql);
+			}
+			catch { }
 		}
 
 		#region Issue 210
@@ -657,8 +658,8 @@ namespace Insight.Tests.PostgreSQL
 		}
 
 		[Test]
-        public void TestIssue210() 
-        {
+		public void TestIssue210()
+		{
 			using (var connection = _connectionStringBuilder.Connection().OpenWithTransaction())
 			{
 				connection.ExecuteSql("DROP TABLE IF EXISTS foo");
@@ -688,7 +689,7 @@ namespace Insight.Tests.PostgreSQL
 		#region Issue 342
 		public class User
 		{
-			public string first_name { get; set; }    
+			public string first_name { get; set; }
 			public string last_name { get; set; }
 			public string email { get; set; }
 		}
@@ -711,7 +712,7 @@ namespace Insight.Tests.PostgreSQL
 			{
 				try { _connection.ExecuteSql("DROP TABLE InsightTestData"); }
 				catch { }
-			}				
+			}
 		}
 		#endregion
 
@@ -728,7 +729,7 @@ namespace Insight.Tests.PostgreSQL
 			public MyEnum? NullableValue;
 			public MyEnum? NullValue;
 		}
-    
+
 		[Test]
 		public void TestEnumToSmallInt()
 		{
@@ -759,7 +760,7 @@ namespace Insight.Tests.PostgreSQL
 			}
 		}
 		#endregion
-	
+
 		#region Issue 380
 		public class Widget
 		{
@@ -808,7 +809,7 @@ namespace Insight.Tests.PostgreSQL
 
 				ClassicAssert.AreEqual("Test", widget.name);
 			}
-		}		
+		}
 		#endregion
 
 		#region Issue 381
@@ -915,7 +916,7 @@ namespace Insight.Tests.PostgreSQL
 							open cur for select * from PostgreSQLTestTable;
 						END; 
 						$$ LANGUAGE plpgsql;");
-					
+
 					var testData = new TestData() { X = 11, Z = 0 };
 
 					var result = connection.Query<TestData528>("PostgreSQLTestOutput", testData);
@@ -964,7 +965,7 @@ namespace Insight.Tests.PostgreSQL
 				Cleanup("DROP TABLE CountTestTable");
 			}
 		}
-		#endregion 
+		#endregion
 
 		#region Issue 529
 		[Test]
@@ -975,11 +976,124 @@ namespace Insight.Tests.PostgreSQL
 				_connection.ExecuteSql("CREATE TABLE InventoryItemLocation (InventoryItemLocationId int, IsAvailable boolean, MaximumLevel int)");
 
 				var sql = @" UPDATE InventoryItemLocation SET IsAvailable=@p_IsAvailable, MaximumLevel=@p_MaximumLevel WHERE InventoryItemLocationId=@p_LocationId";
-				_connection.ExecuteSql(sql, new { p_IsAvailable = true, p_MaximumLevel = (int?)null, p_LocationId=1 });
+				_connection.ExecuteSql(sql, new { p_IsAvailable = true, p_MaximumLevel = (int?)null, p_LocationId = 1 });
 			}
 			finally
 			{
 				Cleanup("DROP TABLE InventoryItemLocation");
+			}
+		}
+		#endregion
+
+		#region Composite Types
+		public record InventoryItem
+		{
+			public string Name { get; set; } = "";
+			public int Supplierid { get; set; }
+			public decimal Price { get; set; }
+		}
+
+		[Test]
+		public void TestCompositeTypeAsParameter()
+		{
+			try
+			{
+				_connection.ExecuteSql(@"
+					CREATE TYPE inventory_item AS (
+						name            text,
+						supplierid      integer,
+						price           numeric
+					);");
+
+				_connection.ExecuteSql(@"
+					CREATE FUNCTION test_composite_type(item inventory_item)
+					RETURNS SETOF inventory_item
+					AS $$
+					BEGIN
+						RETURN QUERY SELECT item.*;
+					END;
+					$$ LANGUAGE plpgsql;");
+
+				var dataSourceBuilder = new NpgsqlDataSourceBuilder(_connectionStringBuilder.ConnectionString);
+				dataSourceBuilder.MapComposite<InventoryItem>();
+				using (var dataSource = dataSourceBuilder.Build())
+				{
+					using (var connection = dataSource.OpenConnection())
+					{
+						var item = new InventoryItem { Name = "Test", Supplierid = 1, Price = 100 };
+
+						var result = connection.Single<InventoryItem>("test_composite_type", new
+						{
+							item = item
+						});
+
+						ClassicAssert.AreEqual(item.Name, result.Name);
+						ClassicAssert.AreEqual(item.Supplierid, result.Supplierid);
+						ClassicAssert.AreEqual(item.Price, result.Price);
+					}
+				}
+			}
+			finally
+			{
+				Cleanup("DROP FUNCTION test_composite_type(inventory_item)");
+				Cleanup("DROP TYPE inventory_item");
+			}
+		}
+
+		[Test]
+		public void TestCompositeTypeAsTVP()
+		{
+			try
+			{
+				_connection.ExecuteSql(@"
+					CREATE TYPE inventory_item AS (
+						name            text,
+						supplierid     integer,
+						price           numeric
+					);");
+
+				_connection.ExecuteSql(@"
+					CREATE FUNCTION test_composite_type(items inventory_item[])
+					RETURNS SETOF inventory_item
+					AS $$
+					BEGIN
+						RETURN QUERY SELECT * FROM unnest(items);
+					END;
+					$$ LANGUAGE plpgsql;");
+
+				var dataSourceBuilder = new NpgsqlDataSourceBuilder(_connectionStringBuilder.ConnectionString);
+				dataSourceBuilder.MapComposite<InventoryItem>();
+				using (var dataSource = dataSourceBuilder.Build())
+				{
+					using (var connection = dataSource.OpenConnection())
+					{
+						var items = new[] {
+							new InventoryItem { Name = "Test", Supplierid = 1, Price = 100 },
+							new InventoryItem { Name = "Test 2", Supplierid = 2, Price = 200 },
+						};
+
+						// call directly with npgsql
+						using var cmd = new NpgsqlCommand("SELECT test_composite_type(@input)", connection);
+						cmd.Parameters.AddWithValue("input", items);
+						var r = cmd.ExecuteScalar();
+
+						// same query with insight
+						var result = connection.Query<InventoryItem>("test_composite_type", new
+						{
+							items = items
+						});
+
+						ClassicAssert.AreEqual(2, result.Count);
+						ClassicAssert.AreEqual(items[1].Name, result[1].Name);
+						ClassicAssert.AreEqual(items[1].Supplierid, result[1].Supplierid);
+						ClassicAssert.AreEqual(items[1].Price, result[1].Price);
+					}
+				}
+			}
+			finally
+			{
+				Cleanup("DROP FUNCTION test_composite_type(inventory_item[])");
+				Cleanup("DROP TYPE inventory_item");
 			}
 		}
 		#endregion
