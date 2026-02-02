@@ -207,6 +207,10 @@ namespace Insight.Tests.MsSqlClient
             NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
             NullableData<TimeSpan>.Test(TimeSpan.Parse("00:00:00"), _connection, "time");
             NullableData<TimeSpan>.Test(TimeSpan.Parse("00:00:00"), _connection, "datetime");
+            
+            // DateOnly and TimeOnly tests
+            NullableData<DateOnly>.Test(DateOnly.FromDateTime(DateTime.Now), _connection, "date");
+            NullableData<TimeOnly>.Test(new TimeOnly(12, 30, 45), _connection, "time");
 
             // class types
             Data<string>.Test("foo", _connection, "varchar(128)");

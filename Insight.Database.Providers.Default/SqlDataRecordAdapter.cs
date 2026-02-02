@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
@@ -37,6 +37,10 @@ namespace Insight.Database.Providers.Default
 			{ typeof(Guid), SqlDbType.UniqueIdentifier },
 			{ typeof(DateTime), SqlDbType.DateTime },
 			{ typeof(DateTimeOffset), SqlDbType.DateTimeOffset },
+#if NET6_0_OR_GREATER
+{ typeof(DateOnly), SqlDbType.Date },
+			{ typeof(TimeOnly), SqlDbType.Time },
+#endif
 			{ typeof(TimeSpan), SqlDbType.Time },
 			{ typeof(byte[]), SqlDbType.VarBinary },
 		};

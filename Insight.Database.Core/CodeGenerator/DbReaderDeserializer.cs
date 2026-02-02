@@ -73,6 +73,10 @@ namespace Insight.Database.CodeGenerator
             _simpleDeserializers.TryAdd(typeof(double), GetValueDeserializer<double>());
             _simpleDeserializers.TryAdd(typeof(DateTime), GetValueDeserializer<DateTime>());
             _simpleDeserializers.TryAdd(typeof(DateTimeOffset), GetValueDeserializer<DateTimeOffset>());
+#if NET6_0_OR_GREATER
+            _simpleDeserializers.TryAdd(typeof(DateOnly), GetValueDeserializer<DateOnly>());
+            _simpleDeserializers.TryAdd(typeof(TimeOnly), GetValueDeserializer<TimeOnly>());
+#endif
             _simpleDeserializers.TryAdd(typeof(TimeSpan), GetValueDeserializer(typeof(TimeSpan)));
 
             _simpleDeserializers.TryAdd(typeof(byte?), GetValueDeserializer<byte?>());
@@ -84,6 +88,10 @@ namespace Insight.Database.CodeGenerator
             _simpleDeserializers.TryAdd(typeof(double?), GetValueDeserializer<double?>());
             _simpleDeserializers.TryAdd(typeof(DateTime?), GetValueDeserializer<DateTime?>());
             _simpleDeserializers.TryAdd(typeof(DateTimeOffset?), GetValueDeserializer<DateTimeOffset?>());
+#if NET6_0_OR_GREATER
+            _simpleDeserializers.TryAdd(typeof(DateOnly?), GetValueDeserializer<DateOnly?>());
+            _simpleDeserializers.TryAdd(typeof(TimeOnly?), GetValueDeserializer<TimeOnly?>());
+#endif
             _simpleDeserializers.TryAdd(typeof(TimeSpan?), GetValueDeserializer(typeof(TimeSpan?)));
         }
         #endregion

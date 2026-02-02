@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
@@ -63,6 +63,9 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(Guid), DbType.Guid },
 			{ typeof(DateTime), DbType.DateTime },
 			{ typeof(DateTimeOffset), DbType.DateTimeOffset },
+#if NET6_0_OR_GREATER
+				                                                           { typeof(TimeOnly), DbType.Time },
+#endif
 			{ typeof(TimeSpan), DbType.Time },
 			{ typeof(byte[]), DbType.Binary },
 			{ typeof(byte?), DbType.Byte },
@@ -81,6 +84,10 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(Guid?), DbType.Guid },
 			{ typeof(DateTime?), DbType.DateTime },
 			{ typeof(DateTimeOffset?), DbType.DateTimeOffset },
+#if NET6_0_OR_GREATER
+				                                                           { typeof(DateOnly?), DbType.Date },
+				                                                           { typeof(TimeOnly?), DbType.Time },
+#endif
 			{ typeof(TimeSpan?), DbType.Time },
 			{ TypeHelper.LinqBinaryType, DbType.Binary },
 		};
@@ -107,13 +114,15 @@ namespace Insight.Database.CodeGenerator
 			{ DbType.String, typeof(string) },
 			{ DbType.StringFixedLength, typeof(char) },
 			{ DbType.Guid, typeof(Guid) },
-			{ DbType.Date, typeof(DateTime) },
-			{ DbType.DateTime, typeof(DateTime) },
-			{ DbType.DateTime2, typeof(DateTime) },
-			{ DbType.DateTimeOffset, typeof(DateTimeOffset) },
-			{ DbType.Time, typeof(TimeSpan) },
-			{ DbType.Binary, typeof(byte[]) },
-			{ DbType.Object, typeof(object) },
+#if NET6_0_OR_GREATER
+				                                                           { DbType.Date, typeof(DateOnly) },
+				                                                           { DbType.DateTime, typeof(DateTime) },
+				                                                           { DbType.DateTime2, typeof(DateTime) },
+				                                                           { DbType.DateTimeOffset, typeof(DateTimeOffset) },
+				                                                           { DbType.Time, typeof(TimeOnly) },
+#endif
+				                                                           { DbType.Binary, typeof(byte[]) },
+				                                                           { DbType.Object, typeof(object) },
             { DbType.Xml, typeof(string) },
 		};
 

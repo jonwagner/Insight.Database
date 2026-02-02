@@ -380,6 +380,48 @@ namespace Insight.Database.CodeGenerator
 			// We don't know how to convert it. Let .NET handle it.
 			return o;
 		}
+
+#if NET6_0_OR_GREATER
+		/// <summary>
+		/// Converts a DateTime to a DateOnly.
+		/// </summary>
+		/// <param name="dateTime">The DateTime to convert.</param>
+		/// <returns>The corresponding DateOnly.</returns>
+		public static DateOnly DateTimeToDateOnly(DateTime dateTime)
+		{
+			return DateOnly.FromDateTime(dateTime);
+		}
+
+		/// <summary>
+		/// Converts a TimeSpan to a TimeOnly.
+		/// </summary>
+		/// <param name="timeSpan">The TimeSpan to convert.</param>
+		/// <returns>The corresponding TimeOnly.</returns>
+		public static TimeOnly TimeSpanToTimeOnly(TimeSpan timeSpan)
+		{
+			return new TimeOnly(timeSpan.Ticks);
+		}
+
+		/// <summary>
+		/// Converts a DateOnly to a DateTime.
+		/// </summary>
+		/// <param name="dateOnly">The DateOnly to convert.</param>
+		/// <returns>The corresponding DateTime.</returns>
+		public static DateTime DateOnlyToDateTime(DateOnly dateOnly)
+		{
+			return dateOnly.ToDateTime(TimeOnly.MinValue);
+		}
+
+		/// <summary>
+		/// Converts a TimeOnly to a TimeSpan.
+		/// </summary>
+		/// <param name="timeOnly">The TimeOnly to convert.</param>
+		/// <returns>The corresponding TimeSpan.</returns>
+		public static TimeSpan TimeOnlyToTimeSpan(TimeOnly timeOnly)
+		{
+			return new TimeSpan(timeOnly.Ticks);
+		}
+#endif
 		#endregion
 
 		#region Code Generation Helpers
@@ -493,7 +535,25 @@ namespace Insight.Database.CodeGenerator
 			if (sourceType == typeof(DateTime) && targetType == typeof(TimeSpan))
 				return typeof(TypeConverterGenerator).GetMethod("SqlDateTimeToTimeSpan");
 
-			return null;
+#if NET6_0_OR_GREATER
+// handle converting DateTime to DateOnly
+if (sourceType == typeof(DateTime) && targetType == typeof(DateOnly))
+return typeof(TypeConverterGenerator).GetMethod("DateTimeToDateOnly");
+
+// handle converting TimeSpan to TimeOnly
+if (sourceType == typeof(TimeSpan) && targetType == typeof(TimeOnly))
+return typeof(TypeConverterGenerator).GetMethod("TimeSpanToTimeOnly");
+
+// handle converting DateOnly to DateTime
+if (sourceType == typeof(DateOnly) && targetType == typeof(DateTime))
+return typeof(TypeConverterGenerator).GetMethod("DateOnlyToDateTime");
+
+// handle converting TimeOnly to TimeSpan
+if (sourceType == typeof(TimeOnly) && targetType == typeof(TimeSpan))
+return typeof(TypeConverterGenerator).GetMethod("TimeOnlyToTimeSpan");
+#endif
+
+return null;
 		}
 
 		/// <summary>
