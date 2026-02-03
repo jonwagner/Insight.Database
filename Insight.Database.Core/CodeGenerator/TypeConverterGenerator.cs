@@ -123,6 +123,34 @@ namespace Insight.Database.CodeGenerator
 
                 // after: stack => [target][xDocument]
             }
+#if NET6_0_OR_GREATER
+            else if (underlyingTargetType == typeof(DateOnly))
+            {
+                // Convert DateTime to DateOnly
+                // before: stack => [target][object-value]
+                il.Emit(OpCodes.Unbox_Any, typeof(DateTime));
+                il.Emit(OpCodes.Call, typeof(DateOnly).GetMethod("FromDateTime", new[] { typeof(DateTime) }));
+                
+                // if the target is nullable, then construct the nullable
+                if (Nullable.GetUnderlyingType(targetType) != null)
+                    il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { typeof(DateOnly) }));
+                
+                // after: stack => [target][DateOnly or DateOnly?]
+            }
+            else if (underlyingTargetType == typeof(TimeOnly))
+            {
+                // Convert DateTime or TimeSpan to TimeOnly
+                // before: stack => [target][object-value]
+                il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("SqlObjectToTimeOnly"));
+                il.Emit(OpCodes.Unbox_Any, typeof(TimeOnly));
+                
+                // if the target is nullable, then construct the nullable
+                if (Nullable.GetUnderlyingType(targetType) != null)
+                    il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { typeof(TimeOnly) }));
+                
+                // after: stack => [target][TimeOnly or TimeOnly?]
+            }
+#endif
             else if (serializer != null && serializer.CanDeserialize(sourceType, targetType))
             {
                 // we are getting a string from the database, but the target is not a string, and it's a reference type
@@ -380,6 +408,33 @@ namespace Insight.Database.CodeGenerator
 			// We don't know how to convert it. Let .NET handle it.
 			return o;
 		}
+
+#if NET6_0_OR_GREATER
+		/// <summary>
+		/// Converts a SQL DateTime or TimeSpan to a .NET TimeOnly.
+		/// </summary>
+		/// <param name="o">The object to convert.</param>
+		/// <returns>The corresponding .NET TimeOnly.</returns>
+		public static object SqlObjectToTimeOnly(object o)
+		{
+			if (o == null)
+				return null;
+
+			// Convert DateTime to TimeSpan first, then to TimeOnly
+			if (o is DateTime)
+			{
+				var timeSpan = SqlDateTimeToTimeSpan((DateTime)o);
+				return TimeOnly.FromTimeSpan(timeSpan);
+			}
+
+			// If it's already a TimeSpan, convert to TimeOnly
+			if (o is TimeSpan)
+				return TimeOnly.FromTimeSpan((TimeSpan)o);
+
+			// Already TimeOnly or unknown type
+			return o;
+		}
+#endif
 		#endregion
 
 		#region Code Generation Helpers

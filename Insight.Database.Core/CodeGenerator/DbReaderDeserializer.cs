@@ -74,6 +74,10 @@ namespace Insight.Database.CodeGenerator
             _simpleDeserializers.TryAdd(typeof(DateTime), GetValueDeserializer<DateTime>());
             _simpleDeserializers.TryAdd(typeof(DateTimeOffset), GetValueDeserializer<DateTimeOffset>());
             _simpleDeserializers.TryAdd(typeof(TimeSpan), GetValueDeserializer(typeof(TimeSpan)));
+#if NET6_0_OR_GREATER
+            _simpleDeserializers.TryAdd(typeof(DateOnly), GetValueDeserializer(typeof(DateOnly)));
+            _simpleDeserializers.TryAdd(typeof(TimeOnly), GetValueDeserializer(typeof(TimeOnly)));
+#endif
 
             _simpleDeserializers.TryAdd(typeof(byte?), GetValueDeserializer<byte?>());
             _simpleDeserializers.TryAdd(typeof(short?), GetValueDeserializer<short?>());
@@ -85,6 +89,10 @@ namespace Insight.Database.CodeGenerator
             _simpleDeserializers.TryAdd(typeof(DateTime?), GetValueDeserializer<DateTime?>());
             _simpleDeserializers.TryAdd(typeof(DateTimeOffset?), GetValueDeserializer<DateTimeOffset?>());
             _simpleDeserializers.TryAdd(typeof(TimeSpan?), GetValueDeserializer(typeof(TimeSpan?)));
+#if NET6_0_OR_GREATER
+            _simpleDeserializers.TryAdd(typeof(DateOnly?), GetValueDeserializer(typeof(DateOnly?)));
+            _simpleDeserializers.TryAdd(typeof(TimeOnly?), GetValueDeserializer(typeof(TimeOnly?)));
+#endif
         }
         #endregion
 
@@ -251,6 +259,20 @@ namespace Insight.Database.CodeGenerator
                 // convert whatever object it is to a boxed timespan
                 il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("SqlObjectToTimeSpan"));
             }
+#if NET6_0_OR_GREATER
+            else if (type == typeof(DateOnly) || type == typeof(DateOnly?))
+            {
+                // convert DateTime to DateOnly
+                il.Emit(OpCodes.Unbox_Any, typeof(DateTime));
+                il.Emit(OpCodes.Call, typeof(DateOnly).GetMethod("FromDateTime", new[] { typeof(DateTime) }));
+                il.Emit(OpCodes.Box, typeof(DateOnly));
+            }
+            else if (type == typeof(TimeOnly) || type == typeof(TimeOnly?))
+            {
+                // convert SQL value (DateTime or TimeSpan) to TimeOnly
+                il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("SqlObjectToTimeOnly"));
+            }
+#endif
 
             // not null, so unbox it and return it
             if (underlyingType != null)

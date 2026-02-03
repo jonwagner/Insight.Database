@@ -82,6 +82,12 @@ namespace Insight.Database.CodeGenerator
 			{ typeof(DateTime?), DbType.DateTime },
 			{ typeof(DateTimeOffset?), DbType.DateTimeOffset },
 			{ typeof(TimeSpan?), DbType.Time },
+#if NET6_0_OR_GREATER
+			{ typeof(DateOnly), DbType.Date },
+			{ typeof(DateOnly?), DbType.Date },
+			{ typeof(TimeOnly), DbType.Time },
+			{ typeof(TimeOnly?), DbType.Time },
+#endif
 			{ TypeHelper.LinqBinaryType, DbType.Binary },
 		};
 
@@ -297,6 +303,27 @@ namespace Insight.Database.CodeGenerator
 				Label readyToSetLabel = il.DefineLabel();
 				ClassPropInfo.EmitGetValue(type, mapping.PathToMember, il, readyToSetLabel);
 
+#if NET6_0_OR_GREATER
+				// Convert DateOnly to DateTime and TimeOnly to TimeSpan FIRST
+				// so that TimeOnly→TimeSpan can then be converted to DateTime if needed
+				var underlyingType = Nullable.GetUnderlyingType(memberType) ?? memberType;
+				if (underlyingType == typeof(DateOnly))
+				{
+					// Call helper method to convert DateOnly to DateTime
+					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("ConvertDateOnlyToDateTime", BindingFlags.NonPublic | BindingFlags.Static));
+				}
+				else if (underlyingType == typeof(TimeOnly))
+				{
+					// Call helper method to convert TimeOnly to TimeSpan
+					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("ConvertTimeOnlyToTimeSpan", BindingFlags.NonPublic | BindingFlags.Static));
+				}
+				else if (underlyingType == typeof(object))
+				{
+					// For object type, check runtime type and convert if needed
+					il.Emit(OpCodes.Call, typeof(DbParameterGenerator).GetMethod("ConvertDateTimeOnlyTypes", BindingFlags.NonPublic | BindingFlags.Static));
+				}
+#endif
+
 				// special conversions for timespan to datetime
 				if ((sqlType == DbType.Time && dbParameter.DbType != DbType.Time) ||
 					(dbParameter.DbType == DbType.DateTime || dbParameter.DbType == DbType.DateTime2 || dbParameter.DbType == DbType.DateTimeOffset))
@@ -468,6 +495,57 @@ namespace Insight.Database.CodeGenerator
 			}
 		}
 
+#if NET6_0_OR_GREATER
+		/// <summary>
+		/// Convert DateOnly to DateTime.
+		/// </summary>
+		/// <param name="value">The DateOnly value.</param>
+		/// <returns>The DateTime value.</returns>
+		private static object ConvertDateOnlyToDateTime(object value)
+		{
+			if (value == null || value is DBNull)
+				return DBNull.Value;
+			
+			var dateOnly = (DateOnly)value;
+			return dateOnly.ToDateTime(TimeOnly.MinValue);
+		}
+
+		/// <summary>
+		/// Convert TimeOnly to TimeSpan.
+		/// </summary>
+		/// <param name="value">The TimeOnly value.</param>
+		/// <returns>The TimeSpan value.</returns>
+		private static object ConvertTimeOnlyToTimeSpan(object value)
+		{
+			if (value == null || value is DBNull)
+				return DBNull.Value;
+			
+			var timeOnly = (TimeOnly)value;
+			return timeOnly.ToTimeSpan();
+		}
+
+		/// <summary>
+		/// Convert DateOnly/TimeOnly to DateTime/TimeSpan if needed (checks runtime type).
+		/// </summary>
+		/// <param name="value">The value to potentially convert.</param>
+		/// <returns>The converted value or original value.</returns>
+		private static object ConvertDateTimeOnlyTypes(object value)
+		{
+			if (value == null || value is DBNull)
+				return value;
+			
+			var valueType = value.GetType();
+			var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+			
+			if (underlyingType == typeof(DateOnly))
+				return ConvertDateOnlyToDateTime(value);
+			else if (underlyingType == typeof(TimeOnly))
+				return ConvertTimeOnlyToTimeSpan(value);
+			
+			return value;
+		}
+#endif
+
 		/// <summary>
 		/// Create a parameter generator for a dynamic object.
 		/// </summary>
@@ -509,6 +587,24 @@ namespace Insight.Database.CodeGenerator
                             }
                         }
                     }
+
+					// Convert DateOnly/TimeOnly to DateTime/TimeSpan before setting parameter value
+#if NET6_0_OR_GREATER
+					if (value != null && !(value is DBNull))
+					{
+						var valueType = value.GetType();
+						var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
+						
+						if (underlyingType == typeof(DateOnly))
+						{
+							value = ConvertDateOnlyToDateTime(value);
+						}
+						else if (underlyingType == typeof(TimeOnly))
+						{
+							value = ConvertTimeOnlyToTimeSpan(value);
+						}
+					}
+#endif
 
 					p.Value = value;
 

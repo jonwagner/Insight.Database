@@ -86,6 +86,10 @@ namespace Insight.Database.CodeGenerator
 			if (type == typeof(DateTimeOffset)) return true;
 			if (type == typeof(Guid)) return true;
 			if (type == typeof(TimeSpan)) return true;
+#if NET6_0_OR_GREATER
+			if (type == typeof(DateOnly)) return true;
+			if (type == typeof(TimeOnly)) return true;
+#endif
 
 			// all of the primitive types, array, etc. are atomic
 			return type.GetTypeInfo().IsPrimitive;

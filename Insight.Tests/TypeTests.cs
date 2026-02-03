@@ -206,6 +206,10 @@ namespace Insight.Tests
 			NullableData<DateTimeOffset>.Test(DateTimeOffset.Now, _connection, "datetimeoffset");
 			NullableData<TimeSpan>.Test(TimeSpan.Parse("00:00:00"), _connection, "time");
 			NullableData<TimeSpan>.Test(TimeSpan.Parse("00:00:00"), _connection, "datetime");
+#if NET6_0_OR_GREATER
+			NullableData<DateOnly>.Test(DateOnly.FromDateTime(DateTime.Now), _connection, "date");
+			NullableData<TimeOnly>.Test(TimeOnly.FromTimeSpan(TimeSpan.Parse("14:30:00")), _connection, "time");
+#endif
 
 			// class types
 			Data<string>.Test("foo", _connection, "varchar(128)");
@@ -225,7 +229,55 @@ namespace Insight.Tests
 		}
 
 		class TestData { public int P; }
-#endregion
+
+#if NET6_0_OR_GREATER
+		[Test]
+		public void TestDateOnlyType()
+		{
+			var _connection = Connection();
+			var testDate = new DateOnly(2024, 3, 15);
+
+			// Test basic round-trip
+			var result = _connection.QuerySql<DateOnly>("SELECT @p", new { p = testDate }).First();
+			ClassicAssert.AreEqual(testDate, result);
+
+			// Test with SQL date conversion
+			var result2 = _connection.QuerySql<DateOnly>("SELECT CONVERT(date, @p)", new { p = testDate }).First();
+			ClassicAssert.AreEqual(testDate, result2);
+
+			// Test nullable DateOnly
+			var nullableResult = _connection.QuerySql<DateOnly?>("SELECT @p", new { p = (DateOnly?)testDate }).First();
+			ClassicAssert.AreEqual(testDate, nullableResult);
+
+			// Test null DateOnly
+			var nullResult = _connection.QuerySql<DateOnly?>("SELECT @p", new { p = (DateOnly?)null }).First();
+			ClassicAssert.IsNull(nullResult);
+		}
+
+		[Test]
+		public void TestTimeOnlyType()
+		{
+			var _connection = Connection();
+			var testTime = new TimeOnly(14, 30, 45);
+
+			// Test basic round-trip
+			var result = _connection.QuerySql<TimeOnly>("SELECT @p", new { p = testTime }).First();
+			ClassicAssert.AreEqual(testTime, result);
+
+			// Test with SQL time conversion
+			var result2 = _connection.QuerySql<TimeOnly>("SELECT CONVERT(time, @p)", new { p = testTime }).First();
+			ClassicAssert.AreEqual(testTime, result2);
+
+			// Test nullable TimeOnly
+			var nullableResult = _connection.QuerySql<TimeOnly?>("SELECT @p", new { p = (TimeOnly?)testTime }).First();
+			ClassicAssert.AreEqual(testTime, nullableResult);
+
+			// Test null TimeOnly
+			var nullResult = _connection.QuerySql<TimeOnly?>("SELECT @p", new { p = (TimeOnly?)null }).First();
+			ClassicAssert.IsNull(nullResult);
+		}
+#endif
+		#endregion
 
 #region Single Column Tests
 		[Test]
