@@ -1072,7 +1072,7 @@ namespace Insight.Tests
 			var p = new { @ConfirmTime = s };
 
 			var result = Connection().QuerySql<DateTime>(sql, p).FirstOrDefault();
-			ClassicAssert.AreEqual(DateTime.Parse(s), result);
+			ClassicAssert.AreEqual(DateTime.Parse(s, System.Globalization.CultureInfo.InvariantCulture), result);
 		}
 #endregion
 
