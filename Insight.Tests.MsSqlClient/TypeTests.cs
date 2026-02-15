@@ -222,7 +222,32 @@ namespace Insight.Tests.MsSqlClient
             ClassicAssert.AreEqual("foo", data2[1]);
         }
 
+        [Test]
+        public void NativeJsonStoredProcedureParameterIsBound()
+        {
+            using (var connection = ConnectionWithTransaction())
+            {
+                if (!SupportsNativeJson(connection))
+                    Assert.Ignore("Native json type is not available on this SQL Server instance.");
+
+                connection.ExecuteSql("CREATE PROC ReflectNativeJson @p json AS SELECT Value=CONVERT(nvarchar(max), @p)");
+
+                const string json = "{\"foo\":1}";
+                var value = connection.ExecuteScalar<string>("ReflectNativeJson", new { p = json });
+
+                ClassicAssert.AreEqual(json, value);
+            }
+        }
+
         class TestData { public int P; }
+
+        private static bool SupportsNativeJson(IDbConnection connection)
+        {
+            return connection.ExecuteScalarSql<int>(
+                @"SELECT COUNT(*) FROM sys.types t
+                    INNER JOIN sys.schemas s ON t.schema_id = s.schema_id
+                    WHERE s.name = 'sys' AND t.name = 'json'") > 0;
+        }
         #endregion
 
         #region Single Column Tests

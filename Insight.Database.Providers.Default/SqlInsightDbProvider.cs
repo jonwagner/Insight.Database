@@ -373,12 +373,22 @@ namespace Insight.Database
             // DeriveParameters will just skip the parameter
             // so we are going to check the list ourselves for anything missing
             var parameterNames = command.Connection.QuerySql(
-                @"SELECT ParameterName = p.name, SchemaName = s.name, TypeName = t.name FROM sys.parameters p
+                @"SELECT ParameterName = p.name, SchemaName = s.name, TypeName = t.name, IsOutput = p.is_output FROM sys.parameters p
 					LEFT JOIN sys.types t ON (p.user_type_id = t.user_type_id)
 					LEFT JOIN sys.schemas s ON (t.schema_id = s.schema_id)
 					WHERE p.object_id = OBJECT_ID(@Name)",
                 new { Name = command.CommandText },
                 transaction: command.Transaction);
+
+            // Some SqlClient versions can skip native JSON parameters while deriving metadata.
+            // Add those missing parameters from sys.parameters so binding can continue.
+            foreach (var typeParameter in parameterNames.Where(n => !parameters.Any(p => String.Compare(p.ParameterName, (string)n["ParameterName"], StringComparison.OrdinalIgnoreCase) == 0)))
+            {
+                if (!IsNativeJsonParameter(typeParameter))
+                    continue;
+
+                command.Parameters.Add(CreateNativeJsonParameter(typeParameter));
+            }
 
             // make sure that we aren't missing any parameters
             // SQL will skip the parameter in DeriveParameters if the user does not have EXECUTE permissions on the type
@@ -413,6 +423,45 @@ namespace Insight.Database
 					p.UdtTypeName = String.Format(CultureInfo.InvariantCulture, "[{0}].[{1}]", typeParameter["SchemaName"], typeParameter["TypeName"]);
 			}
 #endif
+        }
+
+        /// <summary>
+        /// Determines whether this parameter metadata represents the native SQL Server json type.
+        /// </summary>
+        /// <param name="typeParameter">The parameter metadata row from sys.parameters.</param>
+        /// <returns>True when the parameter is a native json type.</returns>
+        private static bool IsNativeJsonParameter(dynamic typeParameter)
+        {
+            return String.Compare((string)typeParameter["SchemaName"], "sys", StringComparison.OrdinalIgnoreCase) == 0 &&
+                String.Compare((string)typeParameter["TypeName"], "json", StringComparison.OrdinalIgnoreCase) == 0;
+        }
+
+        /// <summary>
+        /// Creates a fallback parameter for native SQL Server json values.
+        /// </summary>
+        /// <param name="typeParameter">The parameter metadata row from sys.parameters.</param>
+        /// <returns>A configured SQL parameter.</returns>
+        private static SqlParameter CreateNativeJsonParameter(dynamic typeParameter)
+        {
+            SqlParameter p = new SqlParameter();
+            p.ParameterName = (string)typeParameter["ParameterName"];
+
+            SqlDbType jsonSqlType;
+            if (Enum.TryParse("Json", true, out jsonSqlType))
+            {
+                p.SqlDbType = jsonSqlType;
+            }
+            else
+            {
+                // Older clients may not have SqlDbType.Json yet, but SQL Server accepts nvarchar input for json.
+                p.SqlDbType = SqlDbType.NVarChar;
+                p.Size = -1;
+            }
+
+            if (Convert.ToBoolean(typeParameter["IsOutput"], CultureInfo.InvariantCulture))
+                p.Direction = ParameterDirection.InputOutput;
+
+            return p;
         }
 
         /// <summary>
