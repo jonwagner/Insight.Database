@@ -29,6 +29,14 @@ namespace Insight.Tests.MySqlConnector
 			public int Z;
 		}
 
+#if NET6_0_OR_GREATER
+		public class DateOnlyData
+		{
+			public DateOnly Value;
+			public DateOnly? NullableValue;
+		}
+#endif
+
 		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
@@ -50,6 +58,30 @@ namespace Insight.Tests.MySqlConnector
 			ClassicAssert.AreEqual(1, result.Count);
 			ClassicAssert.AreEqual(5, result[0]);
 		}
+
+#if NET6_0_OR_GREATER
+		[Test]
+		public void TestDateOnlyConversions()
+		{
+			var expected = new DateOnly(2024, 3, 15);
+
+			var raw = _connection.ExecuteScalarSql<object>("SELECT CAST('2024-03-15' AS DATE)");
+			ClassicAssert.IsTrue(raw is DateOnly || raw is DateTime, "Expected provider date to materialize as DateOnly or DateTime.");
+
+			var scalar = _connection.QuerySql<DateOnly>("SELECT CAST('2024-03-15' AS DATE)").First();
+			ClassicAssert.AreEqual(expected, scalar);
+
+			var fromParameter = _connection.QuerySql<DateOnly>("SELECT CAST(@p AS DATE)", new { p = expected }).First();
+			ClassicAssert.AreEqual(expected, fromParameter);
+
+			var mapped = _connection.QuerySql<DateOnlyData>("SELECT CAST('2024-03-15' AS DATE) AS Value, CAST(NULL AS DATE) AS NullableValue").First();
+			ClassicAssert.AreEqual(expected, mapped.Value);
+			ClassicAssert.IsNull(mapped.NullableValue);
+
+			var nullable = _connection.QuerySql<DateOnly?>("SELECT CAST(NULL AS DATE)").First();
+			ClassicAssert.IsNull(nullable);
+		}
+#endif
 
 		[Test]
 		public void TestExecuteProcedure()

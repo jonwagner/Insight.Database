@@ -36,6 +36,14 @@ namespace Insight.Tests.PostgreSQL
 			public string Text;
 		}
 
+#if NET6_0_OR_GREATER
+		public class DateOnlyData
+		{
+			public DateOnly Value;
+			public DateOnly? NullableValue;
+		}
+#endif
+
 		[OneTimeSetUp]
 		public void SetUpFixture()
 		{
@@ -71,6 +79,30 @@ namespace Insight.Tests.PostgreSQL
 			ClassicAssert.AreEqual(1, result.Count);
 			ClassicAssert.AreEqual(date, result[0]);
 		}
+
+#if NET6_0_OR_GREATER
+		[Test]
+		public void TestDateOnlyConversions()
+		{
+			var expected = new DateOnly(2024, 3, 15);
+
+			var raw = _connection.ExecuteScalarSql<object>("SELECT DATE '2024-03-15'");
+			ClassicAssert.IsTrue(raw is DateOnly || raw is DateTime, "Expected provider date to materialize as DateOnly or DateTime.");
+
+			var scalar = _connection.QuerySql<DateOnly>("SELECT DATE '2024-03-15'").First();
+			ClassicAssert.AreEqual(expected, scalar);
+
+			var fromParameter = _connection.QuerySql<DateOnly>("SELECT @p::date", new { p = expected }).First();
+			ClassicAssert.AreEqual(expected, fromParameter);
+
+			var mapped = _connection.QuerySql<DateOnlyData>("SELECT DATE '2024-03-15' AS Value, NULL::date AS NullableValue").First();
+			ClassicAssert.AreEqual(expected, mapped.Value);
+			ClassicAssert.IsNull(mapped.NullableValue);
+
+			var nullable = _connection.QuerySql<DateOnly?>("SELECT NULL::date").First();
+			ClassicAssert.IsNull(nullable);
+		}
+#endif
 
 		[Test]
 		public void TestExecuteProcedure()
