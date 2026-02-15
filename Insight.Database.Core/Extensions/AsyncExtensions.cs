@@ -1184,6 +1184,7 @@ namespace Insight.Database
             CancellationToken cancellationToken,
             object outputParameters)
         {
+            IDbCommand command = null;
             IDataReader reader = null;
 
             bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
@@ -1192,7 +1193,7 @@ namespace Insight.Database
             try
             {
                 // get the command
-                IDbCommand command = getCommand(connection);
+                command = getCommand(connection);
 
                 // if we have a command, execute it
                 if (command != null && callGetReader)
@@ -1218,6 +1219,8 @@ namespace Insight.Database
             {
                 if (reader != null)
                     reader.Dispose();
+                if (command != null)
+                    command.Dispose();
                 if (closeConnection)
                     connection.Close();
             }

@@ -42,7 +42,10 @@ namespace Insight.Database.Providers.PostgreSQL
 			if (!ShouldDereference(reader))
 				return reader;
 
-			return CreateDereferenceDbCommand(reader).ExecuteReader(behavior);
+			using (var command = CreateDereferenceDbCommand(reader))
+			{
+				return command.ExecuteReader(behavior);
+			}
 		}
 
 		/// <inheritdoc/>
@@ -53,7 +56,10 @@ namespace Insight.Database.Providers.PostgreSQL
 			if (!ShouldDereference(reader))
 				return reader;
 
-			return await CreateDereferenceDbCommand(reader).ExecuteReaderAsync(behavior).ConfigureAwait(false);
+			using (var command = CreateDereferenceDbCommand(reader))
+			{
+				return await command.ExecuteReaderAsync(behavior).ConfigureAwait(false);
+			}
 		}
 
 		/// <summary>

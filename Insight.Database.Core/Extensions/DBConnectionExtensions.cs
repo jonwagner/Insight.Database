@@ -1483,6 +1483,7 @@ namespace Insight.Database
             Func<IDbCommand, IDataReader, T> translate,
             CommandBehavior commandBehavior)
         {
+            IDbCommand command = null;
             IDataReader reader = null;
             bool closeConnection = commandBehavior.HasFlag(CommandBehavior.CloseConnection);
 
@@ -1491,7 +1492,7 @@ namespace Insight.Database
                 DetectAutoOpen(connection, ref closeConnection);
 
                 // generate the command
-                var command = getCommand(connection);
+                command = getCommand(connection);
 
                 // if the command is not null, then automatically generate the reader
                 if (command != null)
@@ -1506,6 +1507,9 @@ namespace Insight.Database
             {
                 if (reader != null && !reader.IsClosed)
                     reader.Dispose();
+
+                if (command != null)
+                    command.Dispose();
 
                 if (closeConnection)
                     connection.EnsureIsClosed();
@@ -1675,6 +1679,7 @@ namespace Insight.Database
 
             return (T)result;
         }
+
         #endregion
     }
 }
