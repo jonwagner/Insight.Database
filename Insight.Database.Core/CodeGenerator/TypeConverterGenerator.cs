@@ -130,11 +130,11 @@ namespace Insight.Database.CodeGenerator
                 // before: stack => [target][object-value]
                 il.Emit(OpCodes.Unbox_Any, typeof(DateTime));
                 il.Emit(OpCodes.Call, typeof(DateOnly).GetMethod("FromDateTime", new[] { typeof(DateTime) }));
-                
+
                 // if the target is nullable, then construct the nullable
                 if (Nullable.GetUnderlyingType(targetType) != null)
                     il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { typeof(DateOnly) }));
-                
+
                 // after: stack => [target][DateOnly or DateOnly?]
             }
             else if (underlyingTargetType == typeof(TimeOnly))
@@ -143,11 +143,11 @@ namespace Insight.Database.CodeGenerator
                 // before: stack => [target][object-value]
                 il.Emit(OpCodes.Call, typeof(TypeConverterGenerator).GetMethod("SqlObjectToTimeOnly"));
                 il.Emit(OpCodes.Unbox_Any, typeof(TimeOnly));
-                
+
                 // if the target is nullable, then construct the nullable
                 if (Nullable.GetUnderlyingType(targetType) != null)
                     il.Emit(OpCodes.Newobj, targetType.GetConstructor(new[] { typeof(TimeOnly) }));
-                
+
                 // after: stack => [target][TimeOnly or TimeOnly?]
             }
 #endif

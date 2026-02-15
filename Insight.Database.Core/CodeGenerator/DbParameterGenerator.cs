@@ -505,7 +505,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			if (value == null || value is DBNull)
 				return DBNull.Value;
-			
+
 			var dateOnly = (DateOnly)value;
 			return dateOnly.ToDateTime(TimeOnly.MinValue);
 		}
@@ -519,7 +519,7 @@ namespace Insight.Database.CodeGenerator
 		{
 			if (value == null || value is DBNull)
 				return DBNull.Value;
-			
+
 			var timeOnly = (TimeOnly)value;
 			return timeOnly.ToTimeSpan();
 		}
@@ -533,15 +533,15 @@ namespace Insight.Database.CodeGenerator
 		{
 			if (value == null || value is DBNull)
 				return value;
-			
+
 			var valueType = value.GetType();
 			var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
-			
+
 			if (underlyingType == typeof(DateOnly))
 				return ConvertDateOnlyToDateTime(value);
 			else if (underlyingType == typeof(TimeOnly))
 				return ConvertTimeOnlyToTimeSpan(value);
-			
+
 			return value;
 		}
 #endif
@@ -594,7 +594,7 @@ namespace Insight.Database.CodeGenerator
 					{
 						var valueType = value.GetType();
 						var underlyingType = Nullable.GetUnderlyingType(valueType) ?? valueType;
-						
+
 						if (underlyingType == typeof(DateOnly))
 						{
 							value = ConvertDateOnlyToDateTime(value);
